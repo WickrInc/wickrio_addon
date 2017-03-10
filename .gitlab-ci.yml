@@ -1,0 +1,68 @@
+stages:
+  - clean
+  - test
+  - build
+
+######################################################
+# Mac
+build_mac:
+  stage: clean
+  script:
+    - bash autobuild.sh
+  only:
+    - tags
+  tags:
+    - macos
+
+test_mac:
+  cache:
+    paths:
+    - build/
+  stage: test
+  script:
+    - bash autobuild.sh
+  tags:
+    - macos
+
+######################################################
+# Windows
+test_win:
+  cache:
+    paths:
+    - build/
+  stage: test
+  script:
+    - bash autobuild.sh
+  tags:
+    - windows
+
+test_win:
+  cache:
+    paths:
+    - build/
+  stage: test
+  script:
+    - bash autobuild.sh
+  tags:
+    - windows
+
+######################################################
+# Linux
+build_linux:
+  stage: clean
+  script:
+    - bash autobuild.sh
+  only:
+    - tags
+  tags:
+    - linux
+
+test_linux:
+  cache:
+    paths:
+    - build/
+  stage: test
+  script:
+    - bash autobuild.sh
+  tags:
+    - linux

@@ -1,0 +1,129 @@
+#ifndef WICKRIOECLIENTMAIN_H
+#define WICKRIOECLIENTMAIN_H
+
+#include <QObject>
+#include <QThread>
+#include <QTimer>
+#include <QString>
+
+#include "wickriodatabase.h"
+#include "wickriojson.h"
+#include "wickrbotlog.h"
+#include "operationdata.h"
+#include "wickrioipc.h"
+#include "wickrioreceivethread.h"
+#include "wickriocallbackthread.h"
+#include "user/wickrUser.h"
+#include "services/wickrTaskService.h"
+
+#include "wickrioconvohdlr.h"
+#include "wickrIOLoginHdlr.h"
+#include "wickrIOActionHdlr.h"
+
+#define WICKRBOT WickrIOEClientMain::theBot
+
+#define WICKRBOT_NEXTMSG_TIME           86400       // Number of seconds to wait before reponding to received message
+
+#define WICKRBOT_CONFIG_USERNAME    "wickruser"
+#define WICKRBOT_CONFIG_PASSWORD    "wickrpassword"
+#define WICKRBOT_CONFIG_DORECEIVE   "doreceive"
+#define WICKRBOT_CONFIG_SERVERNAME  "servername"
+
+
+class WickrIOEClientMain : public QThread
+{
+    Q_OBJECT
+
+    friend class WickrIOConvoHdlr;
+public:
+    WickrIOEClientMain(OperationData *operation);
+    ~WickrIOEClientMain();
+
+    bool startTheClient();
+
+    static WickrIOEClientMain *theBot;
+
+    // Parse the settings file (replaces the JSON config file)
+    bool parseSettings(QSettings *settings);
+
+    // Function to set connection to the IPC signals
+    void setIPC(WickrBotMainIPC *ipc);
+
+    WickrIOConvoHdlr m_convoHdlr;
+
+private:
+    OperationData *m_operation;
+    WickrIOLoginHdlr m_loginHdlr;
+    WickrIOActionHdlr m_actionHdlr;
+
+    QTimer timer;
+    QString m_serverName;
+
+    WickrBotMainIPC *m_wickrIPC;
+    WickrIOCallbackThread *m_callbackThread;
+    WickrIOReceiveThread *m_rxThread;
+
+    // Timer definitions
+    void startTimer()
+    {
+        connect(&timer, SIGNAL(timeout()), this, SLOT(slotDoTimerWork()));
+        timer.start(1000);
+    }
+    void stopTimer()
+    {
+        disconnect(&timer, SIGNAL(timeout()), this, SLOT(slotDoTimerWork()));
+        if (timer.isActive())
+            timer.stop();
+    }
+
+    void stopAndExit(int procState);
+
+private slots:
+    void slotDoTimerWork();
+    void slotLoginSuccess();
+    void slotRxProcessStarted();
+
+    void processStarted();
+    void stopAndExitSlot();
+    void pauseAndExitSlot();
+
+    void slotDeleteRoom(const QString& vGroupID, bool selfInitiated);
+    void slotRemoveFromRoom(const QString& vGroupID);
+
+    void slotTaskServiceState(WickrTaskThread::ThreadState state, const QString& text);
+    void slotSwitchboardState(WickrSwitchboardThread::ThreadState state, const QString& text);
+    void slotMessageCheckState(WickrMessageCheckThread::ThreadState state, const QString& text);
+    void slotMessageDownloadState(WickrMessageDownloadThread::ThreadState state, const QString& text);
+
+    void slotOnLoginMsgSynchronizationComplete();
+    void slotMessageCommitState(WickrMessageCommitThread *thread,
+                                WickrMessageCommitThread::ThreadState state,
+                                const QString& text);
+
+    void slotDatabaseLoadDone();
+
+signals:
+    void signalStarted();
+    void signalExit();
+    void signalLoginSuccess();
+
+    void signalMessageCheck(WickrApplicationState appContext);
+    void signalMessageSend(WickrSendContext *context);
+    void signalLoginTaskService();
+    void signalLogoutTaskService();
+
+    void signalLoginSwitchboard(const QString& serverAddress, const QString& userIdHash,
+                                const QString& appIdHash, const QString& authToken, bool relogin);
+    void signalLogoutSwitchboard();
+    void signalLoginMessageService();
+    void signalLogoutMessageService();
+
+    // Task service requests
+    void signalMakeRequest(WickrRequestContext* context);
+    void signalMakeJob(WickrJobContext* job);
+    void signalDatabaseLoadRequest(bool isDebug);
+
+};
+
+
+#endif // WICKRIOECLIENTMAIN_H

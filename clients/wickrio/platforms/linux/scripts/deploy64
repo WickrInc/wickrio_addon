@@ -1,0 +1,163 @@
+#!/bin/sh
+
+# a second stage deploy script...
+
+set -e
+current=`dirname $0`
+cd $current
+
+QTVER="5_4_2"
+if test -z "$QTDIR" ; then
+	QTDIR=`echo ~/Qt*/5.4/gcc_64`
+	QTVER="5_4_2"
+fi
+
+#
+# Setup the version number(s)
+#
+maj=`cat ../../../OFFICIAL_BUILD_VERSION | cut -c1-1`
+min=`cat ../../../OFFICIAL_BUILD_VERSION | cut -c2-2`
+pat=`cat ../../../OFFICIAL_BUILD_VERSION | cut -c3-3`
+bld=`cat ../../../OFFICIAL_BUILD_NUMBER | cut -c4-6`
+
+version="${maj}.${min}.${pat}-${bld}"
+
+echo "Version=$version"
+
+prefix=~/tmp/wickrio-deb
+debian=~/tmp/wickrio-deb/DEBIAN
+bindir=$prefix/usr/bin
+sbindir=$prefix/usr/sbin
+libdir=$prefix/usr/lib/wickrio
+docdir=$prefix/usr/share/doc/wickrio
+plugins=$prefix/usr/lib/wickrio/plugins
+
+# Service related definitions
+svcinitdir=$prefix/etc/init.d
+
+optdir=$prefix/opt/WickrIO
+scriptsdir=$optdir/scripts
+imagedir=$optdir/attachments/image
+
+platform=$current/../../../../../platforms/linux/generic-64
+support=$current/../support
+
+# Client definitions
+menus=$prefix/usr/share/applications
+pixmaps=$prefix/usr/share/pixmaps
+messages=$prefix/usr/share/indicators/messages/applications
+appdata=$prefix/usr/share/appdata
+
+# Cleanup the target location (i.e. remove the target directory)
+rm -rf $prefix
+
+# Create the appropriate directories in the target location
+mkdir -p $debian
+mkdir -p $bindir
+mkdir -p $sbindir
+mkdir -p $docdir
+mkdir -p $libdir
+mkdir -p $optdir
+mkdir -p $scriptsdir
+mkdir -p $imagedir
+#mkdir -p $crondir
+mkdir -p $plugins/sqldrivers
+mkdir -p $svcinitdir
+
+# Client directories
+mkdir -p $pixmaps
+mkdir -p $menus
+mkdir -p $appdata
+
+#
+# Copy the executables
+#
+cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Release/bots/wickrio/settings_init/wickrbot_settings_init $bindir/wickrbot_settings_init
+cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Release/bots/wickrio/service_control/wickrio_service_control $bindir/wickrio_service_control
+cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Release/bots/wickrio/client/WickrIOClient $bindir
+cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Release/bots/wickrio/enterpriseclient/WickrIOEClient $bindir
+cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Release/bots/wickrio/console/WickrIOConsole $bindir
+cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Release/bots/wickrio/consoleserver/WickrIOCSvr $sbindir
+cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Release/bots/wickrio/clientserver/WickrIOSvr $sbindir
+
+cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Release/libs/qamqpsrc/libqamqp.* $libdir
+cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Release/libs/QtWebApp/libQtWebApp.* $libdir
+cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Release/libs/WickrBot/libWickrBot.* $libdir
+cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Release/libs/WickrBotGUI/libWickrBotGUI.* $libdir
+cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Debug/libs/SMTPEmail/libSMTPEmail.* $libdir
+
+chrpath -r /usr/lib/wickrio $bindir/wickrio_service_control
+chrpath -r /usr/lib/wickrio $bindir/wickrbot_settings_init
+chrpath -r /usr/lib/wickrio $bindir/WickrIOClient
+chrpath -r /usr/lib/wickrio $bindir/WickrIOEClient
+chrpath -r /usr/lib/wickrio $bindir/WickrIOConsole
+chrpath -r /usr/lib/wickrio $sbindir/WickrIOSvr
+chrpath -r /usr/lib/wickrio $sbindir/WickrIOCSvr
+
+#
+# Copy support files.
+# Change the contents appropriately for  version Release versions
+#
+sed -e "s/EXTENSION//g" -e "s/INSTALLEXT//g" -e "s/VERSION/$version/" <$current/control64 > $debian/control
+
+# Installer pre and post installation scripts
+sed -e "s/EXTENSION//g" -e "s/INSTALLEXT//g" <$current/preinst > $debian/preinst
+sed -e "s/EXTENSION//g" -e "s/INSTALLEXT//g" <$current/postinst > $debian/postinst
+sed -e "s/EXTENSION//g" -e "s/INSTALLEXT//g" <$current/prerm > $debian/prerm
+
+# WickrIO Client Server settings file
+sed -e "s/EXTENSION//g" -e "s/INSTALLEXT//g" <$current/WickrIOSvr.ini > $optdir/WickrIOSvr.ini
+
+# Daemon init script
+sed -e "s/EXTENSION//g" -e "s/INSTALLEXT//g" <$current/WickrIOSvr.script > $svcinitdir/WickrIOSvr
+
+# Daemon init script
+sed -e "s/EXTENSION//g" -e "s/INSTALLEXT//g" <$current/WickrIOCSvr.script > $svcinitdir/WickrIOCSvr
+
+#
+# Copy the library files
+#
+cp -a $platform/*.so $platform/*.so.* $libdir/
+cp -a $QTDIR/lib/*.so $QTDIR/lib/*.so.* $libdir/
+cp -a $QTDIR/plugins/* $plugins/
+rm -f $plugins/sqldrivers/*
+cp -a $current/../../../../../platforms/linux/plugins-64/* $plugins/sqldrivers/
+cp -a $QTDIR/libexec/* $libdir/
+cp -a $QTDIR/icudtl.dat $libdir/
+cp -Lp /usr/lib/x86_64-linux-gnu/libicu*.so.52 $libdir/
+mkdir -p $messages
+echo "/usr/share/applications/wickrio.client" >$messages/wickrio
+
+#
+# Generate the MD5 SUM value
+#
+cd $prefix
+find . -type f ! -regex '.*?debian-binary.*' ! -regex '.*?DEBIAN.*' -printf '%P ' | xargs md5sum > DEBIAN/md5sums
+
+#
+# Change the mode of the installed files
+#
+cd ~/tmp
+chmod 0644 $debian/*
+chmod -R g-w $prefix/usr
+chmod -x $libdir/*.so*
+chmod 755 $debian/preinst
+chmod 755 $debian/postinst
+chmod 755 $debian/prerm
+chmod 755 $svcinitdir/WickrIOSvr
+chmod 755 $svcinitdir/WickrIOCSvr
+chmod 644 $optdir/WickrIOSvr.ini
+
+#
+# Create the actual package
+#
+rm -f wickrio_*.deb
+fakeroot chown -R root:root $prefix
+chmod 4755 $bindir/WickrIOConsole
+
+fakeroot dpkg -b wickrio-deb/ wickrio_${version}_amd64.deb
+if [ "`basename $0`" = "deploy64" ]
+then
+  sha256sum wickrio_${version}_amd64.deb >wickrio-${version}.amd64.sha256
+fi
+

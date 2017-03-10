@@ -1,0 +1,5 @@
+bool isVERSIONDEBUG()
+{
+    return true;
+}
+
