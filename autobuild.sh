@@ -117,7 +117,7 @@ case "$platform" in
 osx)
     echo "DONE!"
 #    set -e
-#    (cd $build ; qmake ../wickr-desktop-base.pro $qmake)
+#    (cd $build ; qmake ../wickr-wickrio.pro $qmake)
 #    (cd $build ; $BUILD_CMD)
     ;;
 linux)
@@ -126,7 +126,7 @@ linux)
     make update
     make linux.release
     make linux.release.install
-    (cd $build ; qmake ../wickr-desktop-base.pro $qmake)
+    (cd $build ; qmake ../wickr-wickrio.pro $qmake)
     (cd $build ; $BUILD_CMD)
     ;;
 win32)
@@ -136,7 +136,7 @@ win32)
 #    make update
 #    make win32.release
 #    make win32.install.release
-#    (cd $build ; qmake ../wickr-desktop-base.pro $qmake)
+#    (cd $build ; qmake ../wickr-wickrio.pro $qmake)
 #    (cd $build ; $BUILD_CMD)
     ;;
 esac
