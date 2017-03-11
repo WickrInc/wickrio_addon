@@ -104,10 +104,10 @@ CONFIG += depend_includepath
 # qsqlcipher_wickr
 
 win32 {
-    CONFIG(debug, debug|release):LIBPATH += $$DEPTH/libs/qsqlcipher_wickr/debug
-    else:LIBPATH += $$DEPTH/libs/qsqlcipher_wickr/release
+    CONFIG(debug, debug|release):LIBPATH += $$DEPTH/wickr-sdk/libs/qsqlcipher_wickr/debug
+    else:LIBPATH += $$DEPTH/wickr-sdk/libs/qsqlcipher_wickr/release
 } else {
-    LIBPATH += $$DEPTH/libs/qsqlcipher_wickr/
+    LIBPATH += $$DEPTH/wickr-sdk/libs/qsqlcipher_wickr/
 }
 LIBS += -lqsqlcipher_wickr
 

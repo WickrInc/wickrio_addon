@@ -1,5 +1,5 @@
 #include "wickrIOMsgEmailService.h"
-#include "libs/qbson/qbson.h"
+#include "qbson.h"
 #include "wickriotokens.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////

@@ -30,23 +30,6 @@ $(WICKR_SDK)/wickr-sdk.pro:
 	@echo "Finished to install wickr-sdk from GIT"
 	@echo $(HEADER_END)
 
-install.headers:
-	@echo "Start copying headers to" $(HEADERDIR)
-	mkdir -p $(HEADERDIR)
-	@cd $(WICKR_SDK)/src; cp *.h $(HEADERDIR);
-	@cd $(WICKR_SDK)/wccorebson/exports/; cp *.h $(HEADERDIR);
-	mkdir -p $(HEADERDIR)/aes
-	@cd $(WICKR_SDK)/src/aes; cp *.h $(HEADERDIR)/aes
-	mkdir -p $(HEADERDIR)/crypto
-	@cd $(WICKR_SDK)/src/crypto; cp *.h $(HEADERDIR)/crypto
-	mkdir -p $(HEADERDIR)/strings
-	@cd $(WICKR_SDK)/src/strings; cp *.h $(HEADERDIR)/strings
-	mkdir -p $(HEADERDIR)/hashing
-	@cd $(WICKR_SDK)/src/hashing; cp *.h $(HEADERDIR)/hashing
-	mkdir -p $(HEADERDIR)/cryptobinding
-	@cd $(WICKR_SDK)/src/cryptobinding; cp *.h $(HEADERDIR)/cryptobinding
-	@echo "Done copying headers to" $(HEADERDIR)
-
 sdk.update:
 	@echo $(HEADER_START)
 	@echo "Update the submodules"
@@ -66,10 +49,10 @@ osx.release:
 osx.clean:
 	cd $(WICKR_SDK); make osx.clean
 
-osx.install: osx install.headers
+osx.install: osx
 	@cd $(WICKR_SDK); make osx.install
 
-osx.release.install: osx.release install.headers
+osx.release.install: osx.release
 	@cd $(WICKR_SDK); make osx.release.install
 
 
@@ -82,10 +65,10 @@ win32:
 win32.release:
 	cd $(WICKR_SDK); make win32.release
 
-win32.install: win32 install.headers
+win32.install: win32
 	@cd $(WICKR_SDK); make win32.install
 
-win32.release.install: win32.release install.headers
+win32.release.install: win32.release
 	@cd $(WICKR_SDK); make win32.release.install
 
 win32.clean:
@@ -104,10 +87,10 @@ linux.release:
 linux.clean:
 	cd $(WICKR_SDK); make linux.clean
 
-linux.install: linux install.headers
+linux.install: linux
 	@cd $(WICKR_SDK); make linux.install
 
-linux.release.install: linux.release install.headers
+linux.release.install: linux.release
 	@cd $(WICKR_SDK); make linux.release.install
 
 

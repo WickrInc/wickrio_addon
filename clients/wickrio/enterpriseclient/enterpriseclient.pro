@@ -44,7 +44,7 @@ include($${COMMON}_http/common_http.pri)
 #include($${DEPTH}/libs/WickrBase/WickrBase.pri)
 #include($${DEPTH}/qtsingleapplication/qtsingleapplication.pri)
 
-INCLUDEPATH += $$DEPTH/export $$DEPTH/src $$DEPTH/export/Wickr
+INCLUDEPATH += $$DEPTH/wickr-sdk/export $$DEPTH/wickr-sdk/src $$DEPTH/wickr-sdk/export/Wickr
 
 #
 # Include the Wickr IO library
@@ -128,10 +128,10 @@ HEADERS += \
 # qsqlcipher_wickr
 
 win32 {
-    CONFIG(debug, debug|release):LIBPATH += $$DEPTH/libs/qsqlcipher_wickr/debug
-    else:LIBPATH += $$DEPTH/libs/qsqlcipher_wickr/release
+    CONFIG(debug, debug|release):LIBPATH += $$DEPTH/wickr-sdk/libs/qsqlcipher_wickr/debug
+    else:LIBPATH += $$DEPTH/wickr-sdk/libs/qsqlcipher_wickr/release
 } else {
-    LIBPATH += $$DEPTH/libs/qsqlcipher_wickr/
+    LIBPATH += $$DEPTH/wickr-sdk/libs/qsqlcipher_wickr/
 }
 LIBS += -lqsqlcipher_wickr
 
@@ -143,11 +143,11 @@ macx {
     QMAKE_LFLAGS += -F$$PWD/$$DEPTH/platforms/mac/lib64
     QMAKE_CXXFLAGS += -Wunused-parameter
     QMAKE_LFLAGS_SONAME  = -Wl,-install_name,@executable_path/../Frameworks/
-    LIBS += -L$$PWD/$$DEPTH/platforms/mac/lib64/ -framework IOKit
+    LIBS += -L$$PWD/$$DEPTH/wickr-sdk/platforms/mac/lib64/ -framework IOKit
     LIBS += -framework CoreFoundation -framework Carbon -lobjc
     LIBS += -framework Quincy -framework CrashReporter
-    INCLUDEPATH += $$DEPTH/platforms/mac/crashdumper
-    INCLUDEPATH += $$DEPTH/platforms/mac/include
+    INCLUDEPATH += $$DEPTH/wickr-sdk/platforms/mac/crashdumper
+    INCLUDEPATH += $$DEPTH/wickr-sdk/platforms/mac/include
     INCLUDEPATH += $$DEPTH
     LIBS += -lavdevice -lavcodec -lavformat -lavfilter -lswscale -lswresample -lavutil -lcrypto
 
@@ -156,8 +156,8 @@ macx {
     LIBS += -L/opt/local/lib -lprotobuf
 
     OTHER_FILES += \
-        $$DEPTH/platforms/mac/lib64/libcrypto.a \
-        $$DEPTH/platforms/mac/lib64/libssl.a
+        $$DEPTH/wickr-sdk/wickr-sdk/platforms/mac/lib64/libcrypto.a \
+        $$DEPTH/wickr-sdk/wickr-sdk/platforms/mac/lib64/libssl.a
 }
 
 linux-g++* {
@@ -168,18 +168,18 @@ linux-g++* {
     else {
         QMAKE_RPATHDIR = /usr/lib/wickrIO-beta
     }
-    INCLUDEPATH += $$DEPTH/platforms/linux/include
+    INCLUDEPATH += $$DEPTH/wickr-sdk/platforms/linux/include
     INCLUDEPATH += $$DEPTH
     contains(QT_ARCH,x86_64) {
-        LIBS += -L$$PWD/$$DEPTH/platforms/linux/generic-64
+        LIBS += -L$$PWD/$$DEPTH/wickr-sdk/platforms/linux/generic-64
     }
     else {
-        LIBS += -L$$PWD/$$DEPTH/platforms/linux/generic-32
+        LIBS += -L$$PWD/$$DEPTH/wickr-sdk/platforms/linux/generic-32
     }
 
-    LIBS += -L$$OUT_PWD/$$DEPTH/src -lwickr-desktop-base
-    LIBS += -L$$PWD/$$DEPTH/platforms/linux/generic-64
-    LIBS += -L$$PWD/$$DEPTH/platforms/linux/generic-64/$${BUILD_TYPE}
+    LIBS += -L$$OUT_PWD/$$DEPTH/wickr-sdk/src -lwickr-desktop-base
+    LIBS += -L$$PWD/$$DEPTH/wickr-sdk/platforms/linux/generic-64
+    LIBS += -L$$PWD/$$DEPTH/wickr-sdk/platforms/linux/generic-64/$${BUILD_TYPE}
     LIBS += -lWickrCoreC
     LIBS += -lbsd -luuid -ldl
     LIBS += -lssl
@@ -187,18 +187,18 @@ linux-g++* {
     LIBS += -lprotobuf
     LIBS += -lcrypto
 
-    LIBS += -L$$OUT_PWD/$${DEPTH}/libs/qbson -lqbson \
-            -L$$OUT_PWD/$${DEPTH}/libs/libbson -lbson \
-            -L$$OUT_PWD/$${DEPTH}/libs/cloud/qcloud -lQCloud \
-            -L$$OUT_PWD/$${DEPTH}/libs/WickrProto -lWickrProto
+    LIBS += -L$$OUT_PWD/$${DEPTH}/wickr-sdk/libs/qbson -lqbson \
+            -L$$OUT_PWD/$${DEPTH}/wickr-sdk/libs/libbson -lbson \
+            -L$$OUT_PWD/$${DEPTH}/wickr-sdk/libs/cloud/qcloud -lQCloud \
+            -L$$OUT_PWD/$${DEPTH}/wickr-sdk/libs/WickrProto -lWickrProto
 
     LIBS += -L$$OUT_PWD/../libs/SMTPEmail -lSMTPEmail
 
 }
 
 win32 {
-    INCLUDEPATH += $$DEPTH/platforms/win/include
-    LIBS += -L$$PWD/$$DEPTH/platforms/win/lib32
+    INCLUDEPATH += $$DEPTH/wickr-sdk/platforms/win/include
+    LIBS += -L$$PWD/$$DEPTH/wickr-sdk/platforms/win/lib32
     LIBS += -lCFLite
 
     LIBS += -lwickrcore -lssleay32
@@ -265,19 +265,19 @@ macx {
     OTHER_FILES += $${QMAKE_INFO_PLIST} $${ENTITLEMENTS}
 
     QMAKE_POST_LINK += mkdir -p $${TARGET}.app/Contents/Frameworks;
-    QMAKE_POST_LINK += cp $${PWD}/$$DEPTH/platforms/mac/lib64/libavdevice.55.dylib $${TARGET}.app/Contents/Frameworks;
-    QMAKE_POST_LINK += cp $${PWD}/$$DEPTH/platforms/mac/lib64/libavfilter.4.dylib $${TARGET}.app/Contents/Frameworks;
-    QMAKE_POST_LINK += cp $${PWD}/$$DEPTH/platforms/mac/lib64/libswscale.2.dylib $${TARGET}.app/Contents/Frameworks;
-    QMAKE_POST_LINK += cp $${PWD}/$$DEPTH/platforms/mac/lib64/libpostproc.52.dylib $${TARGET}.app/Contents/Frameworks;
-    QMAKE_POST_LINK += cp $${PWD}/$$DEPTH/platforms/mac/lib64/libavformat.55.dylib $${TARGET}.app/Contents/Frameworks;
-    QMAKE_POST_LINK += cp $${PWD}/$$DEPTH/platforms/mac/lib64/libavcodec.55.dylib $${TARGET}.app/Contents/Frameworks;
-    QMAKE_POST_LINK += cp $${PWD}/$$DEPTH/platforms/mac/lib64/libswresample.0.dylib $${TARGET}.app/Contents/Frameworks;
-    QMAKE_POST_LINK += cp $${PWD}/$$DEPTH/platforms/mac/lib64/libavutil.52.dylib $${TARGET}.app/Contents/Frameworks;
+    QMAKE_POST_LINK += cp $${PWD}/$$DEPTH/wickr-sdk/platforms/mac/lib64/libavdevice.55.dylib $${TARGET}.app/Contents/Frameworks;
+    QMAKE_POST_LINK += cp $${PWD}/$$DEPTH/wickr-sdk/platforms/mac/lib64/libavfilter.4.dylib $${TARGET}.app/Contents/Frameworks;
+    QMAKE_POST_LINK += cp $${PWD}/$$DEPTH/wickr-sdk/platforms/mac/lib64/libswscale.2.dylib $${TARGET}.app/Contents/Frameworks;
+    QMAKE_POST_LINK += cp $${PWD}/$$DEPTH/wickr-sdk/platforms/mac/lib64/libpostproc.52.dylib $${TARGET}.app/Contents/Frameworks;
+    QMAKE_POST_LINK += cp $${PWD}/$$DEPTH/wickr-sdk/platforms/mac/lib64/libavformat.55.dylib $${TARGET}.app/Contents/Frameworks;
+    QMAKE_POST_LINK += cp $${PWD}/$$DEPTH/wickr-sdk/platforms/mac/lib64/libavcodec.55.dylib $${TARGET}.app/Contents/Frameworks;
+    QMAKE_POST_LINK += cp $${PWD}/$$DEPTH/wickr-sdk/platforms/mac/lib64/libswresample.0.dylib $${TARGET}.app/Contents/Frameworks;
+    QMAKE_POST_LINK += cp $${PWD}/$$DEPTH/wickr-sdk/platforms/mac/lib64/libavutil.52.dylib $${TARGET}.app/Contents/Frameworks;
 
     # Copy the ICU Libraries
-    QMAKE_POST_LINK += cp $${PWD}/$$DEPTH/platforms/mac/lib64/libicui18n.53.dylib $${TARGET}.app/Contents/Frameworks/ ;
-    QMAKE_POST_LINK += cp $${PWD}/$$DEPTH/platforms/mac/lib64/libicudata.53.dylib $${TARGET}.app/Contents/Frameworks/ ;
-    QMAKE_POST_LINK += cp $${PWD}/$$DEPTH/platforms/mac/lib64/libicuuc.53.dylib $${TARGET}.app/Contents/Frameworks/;
+    QMAKE_POST_LINK += cp $${PWD}/$$DEPTH/wickr-sdk/platforms/mac/lib64/libicui18n.53.dylib $${TARGET}.app/Contents/Frameworks/ ;
+    QMAKE_POST_LINK += cp $${PWD}/$$DEPTH/wickr-sdk/platforms/mac/lib64/libicudata.53.dylib $${TARGET}.app/Contents/Frameworks/ ;
+    QMAKE_POST_LINK += cp $${PWD}/$$DEPTH/wickr-sdk/platforms/mac/lib64/libicuuc.53.dylib $${TARGET}.app/Contents/Frameworks/;
 
     QMAKE_POST_LINK += install_name_tool -id "@executable_path/../Frameworks/libicui18n.53.dylib" "$${TARGET}.app/Contents/Frameworks/libicui18n.53.dylib";
     QMAKE_POST_LINK += install_name_tool -id "@executable_path/../Frameworks/libicudata.53.dylib" "$${TARGET}.app/Contents/Frameworks/libicudata.53.dylib";
@@ -292,8 +292,8 @@ macx {
 
 
     QMAKE_POST_LINK += rm -fr $${TARGET}.app/Contents/Frameworks/Quincy.framework $${TARGET}.app/Contents/Frameworks/CrashReporter.framework;
-    QMAKE_POST_LINK += cp -R $${PWD}/$$DEPTH/platforms/mac/lib64/Quincy.framework $${TARGET}.app/Contents/Frameworks;
-    QMAKE_POST_LINK += cp -R $${PWD}/$$DEPTH/platforms/mac/lib64/CrashReporter.framework $${TARGET}.app/Contents/Frameworks;
+    QMAKE_POST_LINK += cp -R $${PWD}/$$DEPTH/wickr-sdk/platforms/mac/lib64/Quincy.framework $${TARGET}.app/Contents/Frameworks;
+    QMAKE_POST_LINK += cp -R $${PWD}/$$DEPTH/wickr-sdk/platforms/mac/lib64/CrashReporter.framework $${TARGET}.app/Contents/Frameworks;
     QMAKE_POST_LINK += install_name_tool -change @loader_path/../Frameworks/Quincy.framework/Versions/A/Quincy @executable_path/../Frameworks/Quincy.framework/Versions/A/Quincy $${TARGET}.app/Contents/MacOS/$${TARGET};
     QMAKE_POST_LINK += install_name_tool -change @rpath/CrashReporter.framework/Versions/A/CrashReporter @executable_path/../Frameworks/CrashReporter.framework/Versions/A/CrashReporter $${TARGET}.app/Contents/MacOS/$${TARGET};
 
@@ -318,15 +318,15 @@ macx {
 
     ### MAC INSTALLER
     mkinstaller.depends += Wickr.app/Contents/MacOS/Wickr WickrBeta.app/Contents/MacOS/WickrBeta
-    mkinstaller.commands += chmod +x $${PWD}/$$DEPTH/platforms/mac/installer/builddmg.sh ;
-    mkinstaller.commands += $${PWD}/$$DEPTH/platforms/mac/installer/builddmg.sh Wickr.app Wickr-TopSecretMessenger $${PWD}/$$DEPTH/platforms/mac/installer/wickr_desktop_mac_bg_installer.png $${PWD}/$$DEPTH/platforms/mac/installer/Wickr_installer.icns ;
-    mkinstaller.commands += $${PWD}/$$DEPTH/platforms/mac/installer/builddmg.sh WickrBeta.app WickrBeta-TopSecretMessenger $${PWD}/$$DEPTH/platforms/mac/installer/wickr_desktop_mac_bg_installer.png $${PWD}/$$DEPTH/platforms/mac/installer/Wickr_installer.icns ;
+    mkinstaller.commands += chmod +x $${PWD}/$$DEPTH/wickr-sdk/platforms/mac/installer/builddmg.sh ;
+    mkinstaller.commands += $${PWD}/$$DEPTH/wickr-sdk/platforms/mac/installer/builddmg.sh Wickr.app Wickr-TopSecretMessenger $${PWD}/$$DEPTH/platforms/mac/installer/wickr_desktop_mac_bg_installer.png $${PWD}/$$DEPTH/platforms/mac/installer/Wickr_installer.icns ;
+    mkinstaller.commands += $${PWD}/$$DEPTH/wickr-sdk/platforms/mac/installer/builddmg.sh WickrBeta.app WickrBeta-TopSecretMessenger $${PWD}/$$DEPTH/platforms/mac/installer/wickr_desktop_mac_bg_installer.png $${PWD}/$$DEPTH/platforms/mac/installer/Wickr_installer.icns ;
 
     QMAKE_EXTRA_TARGETS += mkinstaller
 }
 
-INCLUDEPATH += $$PWD/$${DEPTH}/libs/qbson
-INCLUDEPATH += $$PWD/$${DEPTH}/libs/libbson
-INCLUDEPATH += $$PWD/$${DEPTH}/libs/cloud/qcloud
-INCLUDEPATH += $$PWD/$${DEPTH}/libs/WickrProto
+INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/libs/qbson
+INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/libs/libbson
+INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/libs/cloud/qcloud
+INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/libs/WickrProto
 
