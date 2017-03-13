@@ -39,7 +39,7 @@ private:
 
     QString m_appNm;
     QSettings *m_settings;
-    HttpListener *m_listener;
+    stefanfrings::HttpListener *m_listener;
 
 private slots:
     void slotTimeoutProcess();

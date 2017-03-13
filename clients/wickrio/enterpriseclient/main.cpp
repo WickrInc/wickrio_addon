@@ -43,7 +43,7 @@ extern QString getAppVersion();
 
 OperationData *operation = NULL;
 RequestHandler *requestHandler = NULL;
-HttpListener *httpListener = NULL;
+stefanfrings::HttpListener *httpListener = NULL;
 
 // TODO: UPDATE THIS
 static void
@@ -366,7 +366,7 @@ int main(int argc, char *argv[])
          */
         settings->beginGroup(WBSETTINGS_LISTENER_HEADER);
         requestHandler = new RequestHandler(operation, app);
-        httpListener = new HttpListener(settings,requestHandler,app);
+        httpListener = new stefanfrings::HttpListener(settings,requestHandler,app);
         settings->endGroup();
     });
     WICKRBOT->start();

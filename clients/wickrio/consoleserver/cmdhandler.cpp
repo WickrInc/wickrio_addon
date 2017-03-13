@@ -43,7 +43,7 @@ CmdHandler::~CmdHandler() {
  * @param request
  * @param response
  */
-void CmdHandler::service(HttpRequest& request, HttpResponse& response) {
+void CmdHandler::service(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response) {
 
     QByteArray path=request.getPath();
     QByteArray method=request.getMethod();
@@ -268,7 +268,7 @@ CmdHandler::updateSSLSettings()
  * @param response
  */
 void
-CmdHandler::addClient(WickrIOConsoleUser *pCUser, HttpRequest& request, HttpResponse& response)
+CmdHandler::addClient(WickrIOConsoleUser *pCUser, stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response)
 {
     // Need to verify that this user can add a new client
     if (pCUser->maxclients > 0) {
@@ -367,7 +367,7 @@ CmdHandler::addClient(WickrIOConsoleUser *pCUser, HttpRequest& request, HttpResp
  * @param response
  */
 void
-CmdHandler::deleteClient(WickrIOConsoleUser *pCUser, const QString& clientID, HttpResponse& response)
+CmdHandler::deleteClient(WickrIOConsoleUser *pCUser, const QString& clientID, stefanfrings::HttpResponse& response)
 {
     WickrIOClients *client = m_ioDB->getClientUsingName(clientID);
 
@@ -412,7 +412,7 @@ CmdHandler::deleteClient(WickrIOConsoleUser *pCUser, const QString& clientID, Ht
  * @param response
  */
 void
-CmdHandler::getClients(WickrIOConsoleUser *pCUser, HttpResponse& response)
+CmdHandler::getClients(WickrIOConsoleUser *pCUser, stefanfrings::HttpResponse& response)
 {
 #if 0
     QByteArray paramStart = request.getParameter(APIPARAM_START);
@@ -490,7 +490,7 @@ CmdHandler::getClients(WickrIOConsoleUser *pCUser, HttpResponse& response)
  * @param response
  */
 void
-CmdHandler::getClient(WickrIOConsoleUser *pCUser, const QString& clientID, HttpResponse& response)
+CmdHandler::getClient(WickrIOConsoleUser *pCUser, const QString& clientID, stefanfrings::HttpResponse& response)
 {
     WickrIOClients * client = m_ioDB->getClientUsingName(clientID);
 
@@ -553,7 +553,7 @@ CmdHandler::getClient(WickrIOConsoleUser *pCUser, const QString& clientID, HttpR
  * @param response
  */
 void
-CmdHandler::updateClient(WickrIOConsoleUser *pCUser, const QString& clientID, HttpRequest& request, HttpResponse& response)
+CmdHandler::updateClient(WickrIOConsoleUser *pCUser, const QString& clientID, stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response)
 {
     QByteArray paramState = request.getParameter(APIPARAM_STATE);
     int state;
@@ -888,7 +888,7 @@ CmdHandler::startClient(WickrBotClients *client)
 /******* USERS *******/
 
 void
-CmdHandler::addUser(HttpRequest& request, HttpResponse& response)
+CmdHandler::addUser(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response)
 {
     // Get the new user information from the URL
     QByteArray paramUser = request.getParameter(APIPARAM_USER);
@@ -945,7 +945,7 @@ CmdHandler::addUser(HttpRequest& request, HttpResponse& response)
 
 
 void
-CmdHandler::deleteUser(const QString& clientID, HttpResponse& response)
+CmdHandler::deleteUser(const QString& clientID, stefanfrings::HttpResponse& response)
 {
     WickrIOConsoleUser cUser;
 
@@ -963,7 +963,7 @@ CmdHandler::deleteUser(const QString& clientID, HttpResponse& response)
 }
 
 void
-CmdHandler::getUsers(HttpResponse& response)
+CmdHandler::getUsers(stefanfrings::HttpResponse& response)
 {
     QJsonArray userArrayValue;
     QList<WickrIOConsoleUser *> cusers;
@@ -995,7 +995,7 @@ CmdHandler::getUsers(HttpResponse& response)
 }
 
 void
-CmdHandler::getUser(const QString& clientID, HttpResponse& response)
+CmdHandler::getUser(const QString& clientID, stefanfrings::HttpResponse& response)
 {
     WickrIOConsoleUser cuser;
 
@@ -1021,7 +1021,7 @@ CmdHandler::getUser(const QString& clientID, HttpResponse& response)
 }
 
 void
-CmdHandler::updateUser(const QString& clientID, HttpRequest& request, HttpResponse& response)
+CmdHandler::updateUser(const QString& clientID, stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response)
 {
     QByteArray paramMaxClients = request.getParameter(APIPARAM_MAXCLIENTS);
     bool success=false;
@@ -1075,7 +1075,7 @@ CmdHandler::getClientStats(WickrBotClients *client)
 }
 
 void
-CmdHandler::getStatistics(HttpResponse& response)
+CmdHandler::getStatistics(stefanfrings::HttpResponse& response)
 {
     QJsonArray clientArrayValue;
 
@@ -1100,7 +1100,7 @@ CmdHandler::getStatistics(HttpResponse& response)
 }
 
 void
-CmdHandler::getStatistics(const QString& clientName, HttpResponse& response)
+CmdHandler::getStatistics(const QString& clientName, stefanfrings::HttpResponse& response)
 {
     QJsonObject statsObject;
     WickrBotClients *client = m_operation->m_botDB->getClientUsingName(clientName);

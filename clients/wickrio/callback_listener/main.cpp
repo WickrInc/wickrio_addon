@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
         settings->sync();
 
         CmdHandler *cmdHandler = new CmdHandler(NULL);
-        HttpListener *m_listener = new HttpListener(settings, cmdHandler, NULL);
+        stefanfrings::HttpListener *m_listener = new stefanfrings::HttpListener(settings, cmdHandler, NULL);
 
         return app->exec();
     }

@@ -47,7 +47,7 @@ RequestHandler::~RequestHandler() {
  * @param request
  * @param response
  */
-void RequestHandler::service(HttpRequest& request, HttpResponse& response) {
+void RequestHandler::service(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response) {
 
     QByteArray path=request.getPath();
     QByteArray method=request.getMethod();
@@ -183,7 +183,7 @@ void RequestHandler::service(HttpRequest& request, HttpResponse& response) {
  * @param response
  */
 void
-RequestHandler::processSendMessage(HttpRequest& request, HttpResponse& response)
+RequestHandler::processSendMessage(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response)
 {
     QByteArray body=request.getBody();
     WickrBotJsonData *jsonHandler = new WickrBotJsonData();
@@ -207,7 +207,7 @@ RequestHandler::processSendMessage(HttpRequest& request, HttpResponse& response)
  * @return
  */
 void
-RequestHandler::processGetMessages(HttpRequest& request, HttpResponse& response)
+RequestHandler::processGetMessages(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response)
 {
     QByteArray paramStart = request.getParameter(APIPARAM_START);
     QByteArray paramCount = request.getParameter(APIPARAM_COUNT);
@@ -359,7 +359,7 @@ perftests[3]->stop();
 }
 
 void
-RequestHandler::processDeleteMessages(HttpResponse& response)
+RequestHandler::processDeleteMessages(stefanfrings::HttpResponse& response)
 {
     int messagesDeleted = 0;
 
@@ -441,7 +441,7 @@ RequestHandler::getJsonArrayValue(QJsonObject jsonObject, QString jsonName, QStr
 }
 
 void
-RequestHandler::processAddRoom(HttpRequest& request, HttpResponse& response)
+RequestHandler::processAddRoom(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response)
 {
     QByteArray jsonString = request.getBody();
 
@@ -625,7 +625,7 @@ RequestHandler::deleteConvo(bool isSecureConvo, const QString& vgroupID)
 }
 
 void
-RequestHandler::processDeleteRoom(const QString &clientID, HttpResponse& response)
+RequestHandler::processDeleteRoom(const QString &clientID, stefanfrings::HttpResponse& response)
 {
     WickrCore::WickrConvo *convo = WickrCore::WickrConvo::getConvoWithvGroupID(clientID);
     if (convo) {
@@ -642,7 +642,7 @@ RequestHandler::processDeleteRoom(const QString &clientID, HttpResponse& respons
 }
 
 void
-RequestHandler::processGetRooms(const QString &clientID, HttpResponse& response)
+RequestHandler::processGetRooms(const QString &clientID, stefanfrings::HttpResponse& response)
 {
 #if 0
     QByteArray paramStart = request.getParameter(APIPARAM_START);
@@ -767,7 +767,7 @@ RequestHandler::numMessages()
 }
 
 void
-RequestHandler::getStatistics(const QString& apiKey, HttpResponse& response)
+RequestHandler::getStatistics(const QString& apiKey, stefanfrings::HttpResponse& response)
 {
     QJsonObject msgValues;
     QJsonObject statValues;

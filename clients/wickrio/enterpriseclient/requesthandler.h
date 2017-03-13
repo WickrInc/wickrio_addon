@@ -25,23 +25,23 @@ public:
       @param request The received HTTP request
       @param response Must be used to return the response
     */
-    void service(HttpRequest& request, HttpResponse& response);
+    void service(stefanfrings::HttpRequest& request,stefanfrings::HttpResponse& response);
 
 private:
-    void processSendMessage(HttpRequest& request, HttpResponse& response);
-    void processGetMessages(HttpRequest& request, HttpResponse& response);
-    void processDeleteMessages(HttpResponse& response);
+    void processSendMessage(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response);
+    void processGetMessages(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response);
+    void processDeleteMessages(stefanfrings::HttpResponse& response);
 
-    void processAddRoom(HttpRequest& request, HttpResponse& response);
-    void processDeleteRoom(const QString &clientID, HttpResponse& response);
-    void processGetRooms(const QString &clientID, HttpResponse& response);
+    void processAddRoom(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response);
+    void processDeleteRoom(const QString &clientID, stefanfrings::HttpResponse& response);
+    void processGetRooms(const QString &clientID, stefanfrings::HttpResponse& response);
 
     // TODO: This should move to a library!!!!
     void onCreateSecureRoom(const QString& vGroupID, const QStringList& mastersHashList, int destructionTime, const QString& roomTitle, const QString& roomDescription);
     bool deleteConvo(bool isSecureConvo, const QString& vgroupID);
     void onDeleteSecureRoom(const QString& vGroupID);
 
-    void getStatistics(const QString& apiKey, HttpResponse& response);
+    void getStatistics(const QString& apiKey, stefanfrings::HttpResponse& response);
     int numMessages();
 
     // Helper functions

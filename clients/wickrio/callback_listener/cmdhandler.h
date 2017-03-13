@@ -13,7 +13,7 @@
 
 #include "httpserver/httplistener.h"
 
-class CmdHandler : public HttpRequestHandler
+class CmdHandler : public stefanfrings::HttpRequestHandler
 {
     Q_OBJECT
 public:
@@ -24,7 +24,7 @@ public:
       @param request The received HTTP request
       @param response Must be used to return the response
     */
-    void service(HttpRequest& request, HttpResponse& response);
+    void service(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response);
 };
 
 #endif // CMDHANDLER_H
