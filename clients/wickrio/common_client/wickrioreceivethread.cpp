@@ -1,4 +1,5 @@
 #include <QJsonArray>
+#include <QJsonDocument>
 
 #include "wickrioreceivethread.h"
 #include "wickriodatabase.h"
@@ -79,7 +80,6 @@ WickrIOReceiveThread::processMessage(WickrDBObject *item)
         return false;
     }
 
-#if 0
     /*
      * Check if there is a callback defined, for this current client.
      * If there is no callback then we do not need to process the messages.
@@ -113,24 +113,6 @@ WickrIOReceiveThread::processMessage(WickrDBObject *item)
     qDebug() << "slotProcessMessage: have a message to be processed!";
 
     if (msg && msg->isInbox()) {
-        // Unlock the message
-        WickrStatus msgstatus = msg->unlock();
-        if( msgstatus.isError() ) {
-            QString errorString = QString("Message id %1 failed: %2").arg(msg->getID()).arg(msgstatus.getValue());
-            m_operation->error(errorString);
-            m_messagesRecvFailed++;
-            // Increment the statistic in the database
-            if (m_operation->m_botDB != NULL) {
-                m_operation->m_botDB->incStatistic(m_operation->m_client->id, DB_STATID_MSGS_RX, DB_STATDESC_TOTAL, 1);
-            }
-
-#if 0  // TODO: Need to process this NOT from a signal
-            msg->dodelete();
-            delete msg;
-#endif
-            return true;
-        }
-
         QString inboxState;
         bool gotInboxMsg = false;
         m_messagesRecv++;
@@ -174,7 +156,7 @@ WickrIOReceiveThread::processMessage(WickrDBObject *item)
 
             if (processMsg) {
                 // Get the sender of this message
-                WickrCore::WickrUser *sender = inbox->getSender();
+                WickrCore::WickrUser *sender = inbox->getSenderUser();
                 jsonObject.insert(APIJSON_MSGSENDER, sender->getUserID());
 
                 // Setup the users array
@@ -206,6 +188,7 @@ WickrIOReceiveThread::processMessage(WickrDBObject *item)
                 if (mclass != MsgClass_File) {
                     int msgID = db->insertMessage(msg->getMsgTimestamp(), m_operation->m_client->id, saveDoc.toJson(), (int)msg->getMsgClass(), 0);
                 } else {
+#if 0
                     WickrIORxDownloadFile *rxDownload = NULL;
 
                     // Check if we are already downloading or decrypting this file
@@ -286,6 +269,7 @@ WickrIOReceiveThread::processMessage(WickrDBObject *item)
                             deleteMsg = true;
                         }
                     }
+#endif
                 }
             }
 
@@ -302,7 +286,6 @@ WickrIOReceiveThread::processMessage(WickrDBObject *item)
         if (!m_processing)
             makeIdle();
     }
-#endif
     return deleteMsg;
 }
 
@@ -341,13 +324,8 @@ void WickrIOReceiveThread::startReceiving()
     if (! m_receiving) {
         m_receiving = true;
 
-#if 0
-        // Setup the receive handling (Thould this be handled in a different thread?)
-        WickrConvolistService *cls = new WickrConvolistService();
-        m_convoList = NULL;
-        connect(cls, SIGNAL(serviceExecuteDone(WickrService*)), this, SLOT(slotConvolistDone(WickrService*)), Qt::QueuedConnection);
-        cls->makeServiceRequest();
-#endif
+        m_convoList = WickrCore::WickrConvo::getConvoList();
+        attachConvos();
     }
 }
 
