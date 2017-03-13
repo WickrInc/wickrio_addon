@@ -6,6 +6,8 @@
 #include "logmessage.h"
 #include <QThread>
 
+using namespace stefanfrings;
+
 LogMessage::LogMessage(const QtMsgType type, const QString& message, QHash<QString, QString>* logVars, const QString &file, const QString &function, const int line)
 {
     this->type=type;
@@ -41,17 +43,22 @@ QString LogMessage::toString(const QString& msgFormat, const QString& timestampF
     switch (type)
     {
         case QtDebugMsg:
-            decorated.replace("{type}","DEBUG");
+            decorated.replace("{type}","DEBUG   ");
             break;
         case QtWarningMsg:
-            decorated.replace("{type}","WARNING");
+            decorated.replace("{type}","WARNING ");
             break;
         case QtCriticalMsg:
             decorated.replace("{type}","CRITICAL");
             break;
         case QtFatalMsg:
-            decorated.replace("{type}","FATAL");
+            decorated.replace("{type}","FATAL   ");
             break;
+    #if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
+        case QtInfoMsg:
+            decorated.replace("{type}","INFO    ");
+            break;
+    #endif
         default:
             decorated.replace("{type}",typeNr);
     }

@@ -3,23 +3,17 @@
 TARGET = QtWebApp
 TEMPLATE = lib
 QT -= gui
-VERSION = 1.6.1
-
-CONFIG += c++11
+VERSION = 1.7.2
 
 mac {
-#   QMAKE_MAC_SDK = macosx10.10
+   QMAKE_MAC_SDK = macosx10.10
    QMAKE_CXXFLAGS += -std=c++11
+   CONFIG += c++11
    QMAKE_LFLAGS_SONAME  = -Wl,-install_name,/usr/local/lib/
 }
 
-linux-g++* {
-    CONFIG += staticlib
-}
-
 win32 {
-    DEFINES += QTWEBAPPLIB_EXPORT
-    CONFIG += staticlib
+   DEFINES += QTWEBAPPLIB_EXPORT
 }
 
 # Windows and Unix get the suffix "d" to indicate a debug version of the library.

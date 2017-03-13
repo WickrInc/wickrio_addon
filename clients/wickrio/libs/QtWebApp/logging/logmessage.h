@@ -11,6 +11,8 @@
 #include <QHash>
 #include "logglobal.h"
 
+namespace stefanfrings {
+
 /**
   Represents a single log message together with some data
   that are used to decorate the log message.
@@ -24,7 +26,7 @@
   - {msg}       Message text
   - {xxx}       For any user-defined logger variable
 
-  Plus some new variables since QT 5.0:
+  Plus some new variables since QT 5.0, only filled when compiled in debug mode:
 
   - {file}      Filename where the message was generated
   - {function}  Function where the message was generated
@@ -89,5 +91,7 @@ private:
     int line;
 
 };
+
+} // end of namespace
 
 #endif // LOGMESSAGE_H

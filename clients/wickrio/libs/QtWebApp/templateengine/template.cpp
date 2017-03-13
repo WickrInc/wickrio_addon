@@ -6,6 +6,8 @@
 #include "template.h"
 #include <QFileInfo>
 
+using namespace stefanfrings;
+
 Template::Template(QString source, QString sourceName)
     : QString(source)
 {
@@ -26,6 +28,9 @@ Template::Template(QFile& file, QTextCodec* textCodec)
     if (data.size()==0 || file.error())
     {
         qCritical("Template: cannot read from %s, %s",qPrintable(sourceName),qPrintable(file.errorString()));
+    }
+    else
+    {
         append(textCodec->toUnicode(data));
     }
 }

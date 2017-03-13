@@ -8,6 +8,8 @@
 #include <QDir>
 #include <QDateTime>
 
+using namespace stefanfrings;
+
 StaticFileController::StaticFileController(QSettings* settings, QObject* parent)
     :HttpRequestHandler(parent)
 {
@@ -153,5 +155,33 @@ void StaticFileController::setContentType(QString fileName, HttpResponse& respon
     {
         response.setHeader("Content-Type", "text/javascript");
     }
+    else if (fileName.endsWith(".svg"))
+    {
+        response.setHeader("Content-Type", "image/svg+xml");
+    }
+    else if (fileName.endsWith(".woff"))
+    {
+        response.setHeader("Content-Type", "font/woff");
+    }
+    else if (fileName.endsWith(".woff2"))
+    {
+        response.setHeader("Content-Type", "font/woff2");
+    }
+    else if (fileName.endsWith(".ttf"))
+    {
+        response.setHeader("Content-Type", "application/x-font-ttf");
+    }
+    else if (fileName.endsWith(".eot"))
+    {
+        response.setHeader("Content-Type", "application/vnd.ms-fontobject");
+    }
+    else if (fileName.endsWith(".otf"))
+    {
+        response.setHeader("Content-Type", "application/font-otf");
+    }
     // Todo: add all of your content types
+    else
+    {
+        qDebug("StaticFileController: unknown MIME type for filename '%s'", qPrintable(fileName));
+    }
 }
