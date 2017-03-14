@@ -56,211 +56,78 @@ WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
 
 
 
-
-
-
-
-
-
-
-
-
-    WickrSwitchboardThread *switchboard = WickrCore::WickrRuntime::getSwitchboard();
-    WickrMessageSendThread *messagesend = WickrCore::WickrRuntime::getMessageSend();
-    WickrMessageCheckThread *messagecheck = WickrCore::WickrRuntime::getMessageCheck();
-    WickrMessageDownloadThread *messagedownload = WickrCore::WickrRuntime::getMessageDownload();
-    WickrMessageCommitThread *messagecommit= WickrCore::WickrRuntime::getMessageCommit();
-    WickrTaskThread *tasksvc = WickrCore::WickrRuntime::getTaskThread();
-
-    if (switchboard && messagecheck && messagedownload && messagecommit && tasksvc) {
-        // Signals to switchboard (from wickrMain for Login,LoginUpdate,Logout)
-        connect(this,
-                &WickrIOEClientMain::signalLoginSwitchboard,
-                switchboard,
-                &WickrSwitchboardThread::slotLogin);
-        connect(this,
-                &WickrIOEClientMain::signalLogoutSwitchboard,
-                switchboard,
-                &WickrSwitchboardThread::slotLogout);
-
+    WickrSwitchboardService *swbsvc = WickrCore::WickrRuntime::swbSvc();
+    WickrMessageService *msgsvc = WickrCore::WickrRuntime::msgSvc();
+    WickrTaskService *tasksvc = WickrCore::WickrRuntime::taskSvc();
+    if (swbsvc && msgsvc && tasksvc) {
+        // Signals from switchboard
+        connect(swbsvc,
+                &WickrSwitchboardService::signalState,
+                this,
+                &WickrIOEClientMain::slotSwitchboardServiceState);
 #if 0
-        // Signals to switchboard (from convomodels for signalConvoDevicSync)
-        connect(secureRoomModel,
-                &ConvoModel::signalConvoDeviceSync,
-                switchboard,
-                &WickrSwitchboardThread::slotReportDeviceSync);
-        connect(oneToOneModel,
-                &ConvoModel::signalConvoDeviceSync,
-                switchboard,
-                &WickrSwitchboardThread::slotReportDeviceSync);
+        connect(swbsvc,
+                &WickrSwitchboardService::signalUserVideoUpdate,
+                this,
+                &WickrIOEClientMain::slotUserVideoUpdate);
+#endif
+        connect(swbsvc,
+                &WickrSwitchboardService::signalAdminUserSuspend,
+                this,
+                &WickrIOEClientMain::slotAdminUserSuspend);
+        connect(swbsvc,
+                &WickrSwitchboardService::signalAdminDeviceSuspend,
+                this,
+                &WickrIOEClientMain::slotAdminDeviceSuspend);
+#if 0
+        connect(swbsvc,
+                &WickrSwitchboardService::signalProfileImageUpdated,
+                this,
+                &WickrIOEClientMain::slotProfileImageUpdated);
 #endif
 
-        // Signals from switchboard (StateChange,MessageCheck)
-        connect(switchboard,
-                &WickrSwitchboardThread::signalState,
+        // Signals from message service
+        connect(msgsvc,
+                &WickrMessageService::signalState,
                 this,
-                &WickrIOEClientMain::slotSwitchboardState);
+                &WickrIOEClientMain::slotMessageServiceState);
+        connect(msgsvc,
+                &WickrMessageService::signalSuspendedAccount,
+                this,
+                &WickrIOEClientMain::slotSetSuspendError);
+        connect(msgsvc,
+                &WickrMessageService::signalSuspendedAccount, this, [=] {
 #if 0
-        connect(switchboard,
-                &WickrSwitchboardThread::signalUserVideoUpdate,
-                controller,
-                &wickrMain::slotUserVideoUpdate);
-        connect(switchboard,
-                &WickrSwitchboardThread::signalAdminForcedLogout,
-                controller,
-                &wickrMain::slotAdminForcedLogout);
+            emit sigLogout();
 #endif
-
-        // Signals to message service(message send) (from wickrMain for Login,Logout,MessageSend)
-        connect(this,
-                &WickrIOEClientMain::signalLoginMessageService,
-                messagesend,
-                &WickrMessageSendThread::slotLogin);
-        connect(this,
-                &WickrIOEClientMain::signalLogoutMessageService,
-                messagesend,
-                &WickrMessageSendThread::slotLogout);
-        connect(&m_actionHdlr,
-                &WickrIOActionHdlr::signalMessageSend,
-                messagesend,
-                &WickrMessageSendThread::slotMessageSendRequest);
-
-#if 0
-        // Signals from message service(message send) (StateChange, Network Status, Suspend)
-        connect(messagesend,
-                &WickrMessageSendThread::signalState,
-                controller,
-                &wickrMain::slotMessageSendState);
-        connect(messagesend,
-                &WickrMessageSendThread::signalReceivedSuspendedAccountError,
-                controller,
-                &wickrMain::slotSetSuspendError);
-#endif
-
-        // Signals to message service(message check) (from wickrMain for Login,Logout,MessageCheck)
-        connect(this,
-                &WickrIOEClientMain::signalLoginMessageService,
-                messagecheck,
-                &WickrMessageCheckThread::slotLogin);
-        connect(this,
-                &WickrIOEClientMain::signalLogoutMessageService,
-                messagecheck,
-                &WickrMessageCheckThread::slotLogout);
-        connect(this,
-                &WickrIOEClientMain::signalMessageCheck,
-                messagecheck,
-                &WickrMessageCheckThread::slotMessageCheckRequest);
-
-        // Signals from message service(message check) (StateChange, Network Status)
-        connect(messagecheck,
-                &WickrMessageCheckThread::signalState,
-                this,
-                &WickrIOEClientMain::slotMessageCheckState);
-        connect(messagecheck,
-                &WickrMessageCheckThread::signalDownloadAtLoginEnd,
-                this,
-                &WickrIOEClientMain::slotOnLoginMsgSynchronizationComplete);
-
-        connect(messagecheck, &WickrMessageCheckThread::signalReceivedSuspendedAccountError, this, [=]
-        {
-//            emit sigLogout();
-            qDebug() << "Your Wickr ID has been suspended. If you feel this is in error please contact us by email at support@wickr.com";
+            qDebug() << "Your Wickr ID has been suspended. If you feel this is in error please contact us by email at support@wickr.com" << "Suspended account";
         });
-
-
-
-        // Signals to message service(message download) (from wickrMain for Login,Logout)
-        connect(this,
-                &WickrIOEClientMain::signalLoginMessageService,
-                messagedownload,
-                &WickrMessageDownloadThread::slotLogin);
-        connect(this,
-                &WickrIOEClientMain::signalLogoutMessageService,
-                messagedownload,
-                &WickrMessageDownloadThread::slotLogout);
-
-        // Signals from message service(message download) (StateChange)
-        connect(messagedownload,
-                &WickrMessageDownloadThread::signalState,
+        connect(msgsvc,
+                &WickrMessageService::signalDownloadAtLoginStart,
                 this,
-                &WickrIOEClientMain::slotMessageDownloadState);
-#if 0
-        connect(messagedownload,
-                &WickrMessageDownloadThread::signalDownloadAtLoginStart,
+                &WickrIOEClientMain::slotMessageDownloadStatusStart);
+        connect(msgsvc,
+                &WickrMessageService::signalDownloadAtLoginUpdate,
                 this,
-                &wickrQuickMain::slotMessageDownloadStatusStart);
-#endif
-
-        // Signals to message service(message commit) (from wickrMain for Login,Logout)
-        connect(this,
-                &WickrIOEClientMain::signalLoginMessageService,
-                messagecommit,
-                &WickrMessageCommitThread::slotLogin);
-        connect(this,
-                &WickrIOEClientMain::signalLogoutMessageService,
-                messagecommit,
-                &WickrMessageCommitThread::slotLogout);
-
-        // Signals from message service(message commit) (StateChange, DecodeError)
-        connect(messagecommit,
-                &WickrMessageCommitThread::signalState,
-                this,
-                &WickrIOEClientMain::slotMessageCommitState);
-#if 0
-        connect(messagecommit,
-                &WickrMessageCommitThread::signalDownloadAtLoginUpdate,
-                this,
-                &wickrQuickMain::slotMessageDownloadStatusUpdate);
-#endif
-        connect(messagecommit,
-                &WickrMessageCommitThread::signalDownloadAtLoginEnd,
+                &WickrIOEClientMain::slotMessageDownloadStatusUpdate);
+        connect(msgsvc,
+                &WickrMessageService::signalDownloadAtLoginEnd,
                 this,
                 &WickrIOEClientMain::slotOnLoginMsgSynchronizationComplete);
 
-
-        // Signals from message service(message commit) (StateChange, DecodeError)
+        // Signals from task service
+        //
         connect(tasksvc,
-                &WickrTaskThread::signalState,
+                &WickrTaskService::signalState,
                 this,
                 &WickrIOEClientMain::slotTaskServiceState);
 
-        connect(this,
-                &WickrIOEClientMain::signalLoginTaskService,
-                tasksvc,
-                &WickrTaskThread::slotLogin);
-        connect(this,
-                &WickrIOEClientMain::signalLogoutTaskService,
-                tasksvc,
-                &WickrTaskThread::slotLogout);
-        connect(&m_loginHdlr,
-                &WickrIOLoginHdlr::signalMakeRequest,
-                tasksvc,
-                &WickrTaskThread::slotMakeRequest);
-        connect(&m_actionHdlr,
-                &WickrIOActionHdlr::signalMakeRequest,
-                tasksvc,
-                &WickrTaskThread::slotMakeRequest);
-        connect(this,
-                &WickrIOEClientMain::signalMakeJob,
-                tasksvc,
-                &WickrTaskThread::slotMakeJob);
-        connect(this,
-                &WickrIOEClientMain::signalDatabaseLoadRequest,
-                tasksvc,
-                &WickrTaskThread::slotDatabaseLoadRequest);
         qDebug() << "MESSAGE SERVICES: Application connections initialized.";
 
     } else {
-        if (!switchboard || !messagecheck || !messagedownload || !messagecommit)
-            qDebug() << "initMessageServicesConnections(): MESSAGE SERVICES - Not initialized.";
+        if (!swbsvc || !msgsvc || !tasksvc)
+            qDebug() << "WickrIOEClientMain(): SWITCHBOARD, MESSAGE, TASK SERVICES - Not initialized.";
     }
-
-
-
-
-
-
-
 
 
     WickrCore::WickrSecureRoomMgr *roomMgr = WickrCore::WickrRuntime::getRoomMgr();
@@ -339,17 +206,30 @@ void WickrIOEClientMain::slotRemoveFromRoom(const QString& vGroupID)
 void WickrIOEClientMain::slotLoginSuccess()
 {
     // Execute database load
-    WickrTaskThread *taskThread = WickrCore::WickrRuntime::getTaskThread();
-    connect(taskThread, &WickrTaskThread::signalDatabaseLoadComplete, this, &WickrIOEClientMain::slotDatabaseLoadDone, Qt::QueuedConnection);
-    emit signalDatabaseLoadRequest(WickrUtil::dbDump);
+    WickrDatabaseLoadContext *c = new WickrDatabaseLoadContext(WickrUtil::dbDump);
+    connect(c, &WickrDatabaseLoadContext::signalRequestCompleted, this, &WickrIOEClientMain::slotDatabaseLoadDone, Qt::QueuedConnection);
+    WickrCore::WickrRuntime::taskSvcMakeRequest(c);
+
+}
+
+/**
+ * @brief WickrIOEClientMain::slotDatabaseLoadDone
+ * Complete database load.
+ */
+void WickrIOEClientMain::slotDatabaseLoadDone(WickrDatabaseLoadContext *context)
+{
+    // Cleanup request
+    context->deleteLater();
+
     emit signalLoginSuccess();
 
     // Update switchboard login credentials (login is performed only if not already logged in)
-    emit signalLoginSwitchboard(WickrCore::WickrSession::getActiveSession()->getSwitchboardServer(),
-                                WickrCore::WickrUser::getSelfUser()->getServerIDHash(),
-                                WickrCore::WickrSession::getActiveSession()->getAppID(),
-                                WickrCore::WickrSession::getActiveSession()->getSwitchboardToken(),
-                                true);
+    WickrCore::WickrRuntime::swbSvcLogin(WickrCore::WickrSession::getActiveSession()->getSwitchboardServer(),
+                                         WickrCore::WickrUser::getSelfUser()->getServerIDHash(),
+                                         WickrCore::WickrSession::getActiveSession()->getAppID(),
+                                         WickrCore::WickrSession::getActiveSession()->getSwitchboardToken(),
+                                         WickrCore::WickrSession::getActiveSession()->getNetworkIdFromLogin(),
+                                         true);
 
     // Start the callback thread
     m_callbackThread->start();
@@ -359,17 +239,7 @@ void WickrIOEClientMain::slotLoginSuccess()
     m_rxThread->start();
 
     // ONLINE: Login successful, so login to message service
-    emit signalLoginMessageService();
-}
-
-/**
- * @brief WickrIOEClientMain::slotDatabaseLoadDone
- * Complete database load.
- */
-void WickrIOEClientMain::slotDatabaseLoadDone()
-{
-    WickrTaskThread *taskThread = WickrCore::WickrRuntime::getTaskThread();
-    disconnect(taskThread, &WickrTaskThread::signalDatabaseLoadComplete, this, &WickrIOEClientMain::slotDatabaseLoadDone);
+    WickrCore::WickrRuntime::msgSvcLogin();
 
     startTimer();
 #if 0
@@ -380,6 +250,62 @@ void WickrIOEClientMain::slotDatabaseLoadDone()
     processUserSetup();
 #endif
 }
+
+/**
+ * @brief slotAdminUserSuspend (SWITCHBOARD SIGNAL)
+ * Administrator forced logout received via switchboard.
+ */
+void WickrIOEClientMain::slotAdminUserSuspend(const QString& reason)
+{
+    // Display Informational Message
+    qDebug() << "You have been logged out of the system.\nREASON: " << reason;
+
+#if 0
+    // Force logout
+    slotOnLogout(false);
+#endif
+}
+
+/**
+ * @brief slotAdminDeviceSuspend (SWITCHBOARD SIGNAL)
+ * Administrator forced logout and reset received via switchboard. Essentially a device reset/suspension.
+ */
+void WickrIOEClientMain::slotAdminDeviceSuspend()
+{
+    // Display Informational Message
+    qDebug() << "System has reset this device as a result of either a forgot password performed by user, or a user account deletion.";
+
+#if 0
+    // Logout and Reset device
+    slotResetDevice();
+#endif
+}
+
+void WickrIOEClientMain::slotSetSuspendError() {
+#if 0
+    m_gotSuspendError = true;
+    logout();
+    m_gotSuspendError = false;
+#endif
+}
+
+/**
+ * @brief slotMessageDownloadStatusStart
+ * Slot called to begin tracking progress of message download.
+ * NOTE: Used to display progress on initial login only.
+ * @param msgsToDownload
+ */
+void WickrIOEClientMain::slotMessageDownloadStatusStart(int msgsToDownload)
+{
+    qDebug() << "Messages to download:" << msgsToDownload;
+}
+
+void WickrIOEClientMain::slotMessageDownloadStatusUpdate(int msgsDownloaded)
+{
+    Q_UNUSED(msgsDownloaded);
+}
+
+
 
 void WickrIOEClientMain::slotRxProcessStarted()
 {
@@ -450,13 +376,13 @@ void WickrIOEClientMain::slotDoTimerWork()
 void WickrIOEClientMain::stopAndExit(int procState)
 {
     // logout of switchboard service
-    emit signalLogoutSwitchboard();
+    WickrCore::WickrRuntime::swbSvcLogout();
 
     // logout to message service
-    emit signalLogoutMessageService();
+    WickrCore::WickrRuntime::msgSvcLogout();
 
     // logout to task service (NOTE: only if closing application)
-    emit signalLogoutTaskService();
+    WickrCore::WickrRuntime::taskSvcLogout();
 
 //    WickrService::requestLogoff();
 
@@ -549,7 +475,7 @@ bool WickrIOEClientMain::startTheClient()
     }
 
     // TASK SERVICE: Utility service login here (to ensure rest api available)
-    emit signalLoginTaskService();
+    WickrCore::WickrRuntime::taskSvcLogin();
 
     m_loginHdlr.initiateLogin();
 
@@ -558,81 +484,94 @@ bool WickrIOEClientMain::startTheClient()
 }
 
 /**
- * @brief wickrMain::slotTaskServiceState
+ * @brief WickrIOEClientMain::slotSwitchboardState (SWITCHBOARD SIGNAL)
+ * Slot accepts state change update signals from switchboard service
+ * Can be used to synchronize startup/shutdown procedures.
+ * @param state
+ */
+void WickrIOEClientMain::slotSwitchboardServiceState(WickrServiceState state, const QString& text)
+{
+    switch(state) {
+    case WickrServiceState::SERVICE_LOGGED_IN:
+        // Finish login
+#if 0 // TODO: implement this, change the login process
+        completePostLogin();
+#endif
+        break;
+
+    case WickrServiceState::SERVICE_LOGGED_OUT:
+#if 0
+        // If client state is LOGIN STARTED, we will force logout of switchboard, and
+        // subsequently log client out.
+        if (m_clientState == SERVICE_LOGIN_COMPLETE || text == "Login Timeout") {
+            if (text == "Login Timeout")
+                qDebug() << "Switchboard login has timed out, you are being logged out.";
+            else
+                qDebug() << "Switchboard currently unavailable, you are being logged out.";
+            WickrCore::WickrRuntime::swbSvcLogout();
+            logout();
+        }
+#endif
+
+    default:
+        break;
+    }
+}
+
+/**
+ * @brief WickrIOEClientMain::slotMessageServiceState
+ * @param state
+ * @param text
+ */
+void WickrIOEClientMain::slotMessageServiceState(WickrServiceState state)
+{
+    switch(state) {
+    case WickrServiceState::SERVICE_LOGGED_IN:
+        // Register service with active session.
+        WickrCore::WickrSession::serviceLoggedIn("MessageService");
+
+#if 0
+        // ROOM MANAGEMENT: recover or check recovery status
+        if (m_personalize.isFirstLogin()) {
+            // Recover rooms (on first login)
+            recoverRooms();
+        } else {
+            // Report unrecovered rooms status
+            recoverStatus();
+        }
+        m_personalize.setFirstLogin(false);
+#endif
+
+        // MESSAGE CHECK: Perform initial message check
+        WickrCore::WickrRuntime::msgSvcScheduleCheck(ON_LOGIN);
+        break;
+
+    case WickrServiceState::SERVICE_LOGGED_OUT:
+        // Unregister service with active session.
+        // This will block closing the session and database until all services have unregistered.
+        WickrCore::WickrSession::serviceLoggedOut("MessageService");
+        break;
+
+    default:
+        break;
+    }
+}
+
+
+/**
+ * @brief WickrIOEClientMain::slotTaskServiceState
  * Slot accepts state change update signals from task service.
  * Can be used to synchronize startup/shutdown procedures.
  * @param state
  */
-void WickrIOEClientMain::slotTaskServiceState(WickrTaskThread::ThreadState state,
-                                              const QString& text)
+void WickrIOEClientMain::slotTaskServiceState(WickrServiceState state)
 {
-    Q_UNUSED(text);
     switch(state) {
-    case WickrTaskThread::LOGGED_IN:
+    case WickrServiceState::SERVICE_LOGGED_IN:
         WickrCore::WickrSession::serviceLoggedIn("TaskService");
         break;
-    case WickrTaskThread::LOGGED_OUT:
+    case WickrServiceState::SERVICE_LOGGED_OUT:
         WickrCore::WickrSession::serviceLoggedOut("TaskService");
-        break;
-    default:
-        break;
-    }
-}
-
-/**
- * @brief WickrIOEClientMain::slotSwitchboardState
- * Slot accepts state change update signals from switchboard service.
- * @param state
- */
-void WickrIOEClientMain::slotSwitchboardState(WickrSwitchboardThread::ThreadState state, const QString& text)
-{
-    switch(state) {
-    case WickrSwitchboardThread::LOGGED_IN:
-        // Finish login
-//        completePostLogin();
-        break;
-
-    case WickrSwitchboardThread::LOGGED_OUT:  // <- Logged Out will ALWAYS transition to DISCONNECTED
-        // Intermediate states, no action taken
-        break;
-
-    case WickrSwitchboardThread::DISCONNECTED:
-    default:
-        break;
-    }
-}
-
-/**
- * @brief WickrIOEClientMain::slotMessageCheckState
- * Slot accepts state change update signals from message service (message check thread).
- * Can be used to synchronize startup/shutdown procedures.
- * @param state
- */
-void WickrIOEClientMain::slotMessageCheckState(WickrMessageCheckThread::ThreadState state, const QString& text)
-{
-    Q_UNUSED(text);
-
-    switch(state) {
-    case WickrMessageCheckThread::LOGGED_IN:
-    case WickrMessageCheckThread::LOGGED_OUT:
-        break;
-    default:
-        break;
-    }
-}
-
-/**
- * @brief WickrIOEClientMain::slotMessageDownloadState
- * Slot accepts state change update signals from message service (message download thread).
- * Can be used to synchronize startup/shutdown procedures.
- * @param state
- */
-void WickrIOEClientMain::slotMessageDownloadState(WickrMessageDownloadThread::ThreadState state, const QString& text)
-{
-    Q_UNUSED(text);
-    switch(state) {
-    case WickrMessageDownloadThread::LOGGED_IN:
-    case WickrMessageDownloadThread::LOGGED_OUT:
         break;
     default:
         break;
@@ -656,55 +595,21 @@ void WickrIOEClientMain::slotOnLoginMsgSynchronizationComplete()
     // ONLINE PROCESSING
 
     // Perform immediate houskeeping after download (backups if required, unsuspend convo backup after login)
-    WickrCore::WickrRuntime::getTaskThread()->suspendConvoBackUp(false);
+    WickrCore::WickrRuntime::taskSvc()->suspendConvoBackUp(false);
     WickrConvoBackupContext *c = new WickrConvoBackupContext();
-    c->setAutoDelete(true); // No processing of response, Task Service will automatically delete.
-    emit signalMakeRequest(c);
+    WickrCore::WickrRuntime::taskSvcMakeRequest(c, true);
 
     // Start housekeeping timer (i.e. periodic backup check on interval)
 //    housekeepingTimerStart();
 
     // After initial download complete, login to switchboard
-    emit signalLoginSwitchboard(WickrCore::WickrSession::getActiveSession()->getSwitchboardServer(),
-                                WickrCore::WickrUser::getSelfUser()->getServerIDHash(),
-                                WickrCore::WickrSession::getActiveSession()->getAppID(),
-                                WickrCore::WickrSession::getActiveSession()->getSwitchboardToken(),
-                                false);
+    WickrCore::WickrRuntime::swbSvcLogin(WickrCore::WickrSession::getActiveSession()->getSwitchboardServer(),
+                                         WickrCore::WickrUser::getSelfUser()->getServerIDHash(),
+                                         WickrCore::WickrSession::getActiveSession()->getAppID(),
+                                         WickrCore::WickrSession::getActiveSession()->getSwitchboardToken(),
+                                         WickrCore::WickrSession::getActiveSession()->getNetworkIdFromLogin(),
+                                         false);
 }
-
-/**
- * @brief WickrIOEClientMain::slotMessageCommitState
- * Slot accepts state change update signals from message service (message commit thread).
- * Can be used to synchronize startup/shutdown procedures.
- * @param state
- */
-void WickrIOEClientMain::slotMessageCommitState(WickrMessageCommitThread *thread,
-                                       WickrMessageCommitThread::ThreadState state,
-                                       const QString& text)
-{
-    Q_UNUSED(text);
-    switch(state) {
-    case WickrMessageCommitThread::LOGGED_IN:
-        WickrCore::WickrSession::serviceLoggedIn("MessageService");
-
-        // Perform initial message check
-        emit signalMessageCheck(ON_LOGIN);
-        break;
-
-    case WickrMessageCommitThread::LOGGED_OUT:
-
-        // Let's close the database only when the message service is completely logged out
-        // This needs to be done by the WickrSession::closeSession(), which should
-        // have a way to know the "message service" is done
-        WickrCore::WickrSession::serviceLoggedOut("MessageService");
-        break;
-    default:
-        break;
-    }
-}
-
-
-
 
 
 bool WickrIOEClientMain::parseSettings(QSettings *settings)

@@ -25,7 +25,7 @@ WickrIOActionHdlr::WickrIOActionHdlr(OperationData *operation) :
     this->connect(this, &WickrIOActionHdlr::signalSendMessageDoneGetUsers, this, &WickrIOActionHdlr::slotSendMessagePostGetUsers);
     this->connect(this, &WickrIOActionHdlr::signalStartProcessDatabase, this, &WickrIOActionHdlr::processDatabase);
 
-    WickrCore::WickrCloudTransferMgr *cloudMgr = WickrCore::WickrRuntime::getCTM();
+    WickrCore::WickrCloudTransferMgr *cloudMgr = WickrCore::WickrRuntime::getCloudMgr();
     if (cloudMgr) {
         connect(cloudMgr, &WickrCore::WickrCloudTransferMgr::statusChanged, this, &WickrIOActionHdlr::slotSendFileStatusChange);
     }
@@ -65,11 +65,11 @@ WickrIOActionHdlr::sendMessageTo1To1(WickrCore::WickrConvo *convo)
     /*
      * Setup and send the message
      */
+#if 0
     QList<WickrCore::WickrAttachment> attachments;
 
     // TODO: Handle the attachment
     QList<QString> attachmentFiles = m_jsonHandler->getAttachments();
-#if 0
     if (attachmentFiles.size() > 0) {
         for (QString attachmentFile : attachmentFiles) {
             QFile att(attachmentFile);
@@ -85,22 +85,20 @@ WickrIOActionHdlr::sendMessageTo1To1(WickrCore::WickrConvo *convo)
             }
         }
     }
-#endif
 
     if (attachmentFiles.size() > 0) {
         if (! sendFile(convo, attachmentFiles, m_jsonHandler->getMessage())) {
             m_processAction = false;
         }
     } else {
+#endif
         // Send message
-        WickrMessageSendThread *messagesend = WickrCore::WickrRuntime::getMessageSend();
-        if (messagesend) {
-            WickrSendContext *context = new WickrSendContext(MsgType_Text, convo, WickrCore::WickrMessage::createTextMsgBody(m_jsonHandler->getMessage(),convo));
-            connect(context, &WickrSendContext::signalRequestCompleted, this, &WickrIOActionHdlr::slotMessageDone, Qt::QueuedConnection);
-
-            emit signalMessageSend(context);
-        }
+        WickrSendContext *context = new WickrSendContext(MsgType_Text, convo, WickrCore::WickrMessage::createTextMsgBody(m_jsonHandler->getMessage(),convo));
+        connect(context, &WickrSendContext::signalRequestCompleted, this, &WickrIOActionHdlr::slotMessageDone, Qt::QueuedConnection);
+        WickrCore::WickrRuntime::msgSvcSend(context);
+#if 0
     }
+#endif
 
     // Free the JSON Handler object
     delete m_jsonHandler;
@@ -218,7 +216,7 @@ void WickrIOActionHdlr::sendMessageValidateUser()
         WickrUserValidateSearch *c = new WickrUserValidateSearch(WICKR_USERNAME_ALIAS,id,0);
         QObject::connect(c, &WickrUserValidateSearch::signalRequestCompleted,
                          this, &WickrIOActionHdlr::slotUserValidated,Qt::QueuedConnection);
-        emit signalMakeRequest(c);
+        WickrCore::WickrRuntime::taskSvcMakeRequest(c);
 
         qDebug() << "searching for " << id;
     } else {
@@ -304,11 +302,11 @@ void WickrIOActionHdlr::sendMessageToConvo(WickrCore::WickrConvo *convo)
     /*
      * Setup and send the message
      */
+#if 0
     QList<WickrCore::WickrAttachment> attachments;
 
     // TODO: Handle the attachment
     QList<QString> attachmentFiles = m_jsonHandler->getAttachments();
-#if 0
     if (attachmentFiles.size() > 0) {
         for (QString attachmentFile : attachmentFiles) {
             QFile att(attachmentFile);
@@ -331,20 +329,20 @@ void WickrIOActionHdlr::sendMessageToConvo(WickrCore::WickrConvo *convo)
         ttl = convo->getDestruct();
     }
 
+#if 0
     if (attachmentFiles.size() > 0) {
         if (!sendFile(convo, attachmentFiles, m_jsonHandler->getMessage())) {
             m_processAction = false;
         }
     } else {
+#endif
         // Send message
-        WickrMessageSendThread *messagesend = WickrCore::WickrRuntime::getMessageSend();
-        if (messagesend) {
-            WickrSendContext *context = new WickrSendContext(MsgType_Text, convo, WickrCore::WickrMessage::createTextMsgBody(m_jsonHandler->getMessage(),convo));
-            connect(context, &WickrSendContext::signalRequestCompleted, this, &WickrIOActionHdlr::slotMessageDone, Qt::QueuedConnection);
-
-            emit signalMessageSend(context);
-        }
-    }
+        WickrSendContext *context = new WickrSendContext(MsgType_Text, convo, WickrCore::WickrMessage::createTextMsgBody(m_jsonHandler->getMessage(),convo));
+        connect(context, &WickrSendContext::signalRequestCompleted, this, &WickrIOActionHdlr::slotMessageDone, Qt::QueuedConnection);
+        WickrCore::WickrRuntime::msgSvcSend(context);
+#if 0
+   }
+#endif
 
     // Free the JSON Handler object
     delete m_jsonHandler;
@@ -358,7 +356,7 @@ bool WickrIOActionHdlr::sendFile(WickrCore::WickrConvo *targetConvo, const QList
 
     QString name = files.at(0);
 
-    WickrCore::WickrCloudTransferMgr *cloudMgr = WickrCore::WickrRuntime::getCTM();
+    WickrCore::WickrCloudTransferMgr *cloudMgr = WickrCore::WickrRuntime::getCloudMgr();
     if (! cloudMgr) {
         return false;
     }

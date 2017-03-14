@@ -84,7 +84,7 @@ void WickrIOLoginHdlr::registerUser(const QString &wickrid, const QString &passw
     c->putArg(arg_PASSWORD, password );
     connect(c, &WickrRegisterUserContext::signalRequestCompleted,
             this, &WickrIOLoginHdlr::slotRegistrationDone, Qt::QueuedConnection);
-    emit signalMakeRequest(c);
+    WickrCore::WickrRuntime::taskSvcMakeRequest(c);
 }
 
 /**
@@ -189,7 +189,7 @@ void WickrIOLoginHdlr::slotLoginStart(const QString& username, const QString& pa
 
     WickrLoginContext *c = new WickrLoginContext(username,password,ClientVersionInfo::versionForLogin());
     connect(c, &WickrLoginContext::signalRequestCompleted, this, &WickrIOLoginHdlr::slotLoginDone, Qt::QueuedConnection);
-    emit signalMakeRequest(c);
+    WickrCore::WickrRuntime::taskSvcMakeRequest(c);
 }
 
 /**
@@ -211,12 +211,7 @@ void WickrIOLoginHdlr::slotLoginDone(WickrLoginContext *ls)
         qDebug() << "Dumping Wickr database counts:";
         qDebug() << WickrDBAdapter::dumpTableCounts();
 
-        WickrCore::WickrUser *user = WickrCore::WickrUser::getSelfUser();
-        if (user) {
-            qDebug() << "User is=" << user->getUserID();
-        }
-
-        WickrCore::WickrCloudTransferMgr *cloudTransferMgr = WickrCore::WickrRuntime::getCTM();
+        WickrCore::WickrCloudTransferMgr *cloudTransferMgr = WickrCore::WickrRuntime::getCloudMgr();
         if ( cloudTransferMgr ) {
             QString s3_bucketId = ls->s3BucketId();
             QString s3_secret = ls->s3Secret();
@@ -226,11 +221,7 @@ void WickrIOLoginHdlr::slotLoginDone(WickrLoginContext *ls)
             qDebug() << "Amazon S3 info: " << s3_bucketId << s3_key << s3_secret << s3_url;
         }
 
-#if 0
-        m_backupVersion = ls->getBackupVersion();
-#else
         m_backupVersion = -1;
-#endif
 
 #if 0 // TODO
         connect(WickrCore::WickrSession::getActiveSession()->getContactManager(), &WickrCore::WickrContactMan::contactDownloadComplete, this, [=]() {
@@ -315,7 +306,7 @@ void WickrIOLoginHdlr::refreshDirectory()
     WickrDirectoryGetContext *c = new WickrDirectoryGetContext(0);
     connect(c, &WickrDirectoryGetContext::signalRequestCompleted,
             this, &WickrIOLoginHdlr::slotRefreshDirectoryDone);
-    emit signalMakeRequest(c);
+    WickrCore::WickrRuntime::taskSvcMakeRequest(c);
 }
 
 // TODO: NEED TO GET THE BACKUP
@@ -324,7 +315,7 @@ void WickrIOLoginHdlr::slotRefreshDirectoryDone(WickrDirectoryGetContext* contex
     if (context->isSuccess()) {
         if (context->usersToValidate().size()) {
             WickrUserValidateUpdate *u = new WickrUserValidateUpdate(context->usersToValidate(),false,false,0);
-            emit signalMakeRequest(u);
+            WickrCore::WickrRuntime::taskSvcMakeRequest(u);
         }
 
         if (context->updatedUsers().size()) {
@@ -338,7 +329,7 @@ void WickrIOLoginHdlr::slotRefreshDirectoryDone(WickrDirectoryGetContext* contex
             connect(job, &WickrProfileJobContext::signalProfileImageUpdated,
                     this, &wickrMain::slotGetProfileImageUpdated, Qt::QueuedConnection);
             // Execute BATCH request (signal)
-            emit signalMakeJob(job);
+            WickrCore::WickrRuntime::taskSvcMakeRequest(job);
 #endif
         } else {
             // NO DIRECTORY UPDATE: So just continue with direct call

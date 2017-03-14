@@ -242,7 +242,7 @@ WickrIOReceiveThread::processMessage(WickrDBObject *item)
                     }
 
                     if (rxDownload != NULL) {
-                        WickrCore::WickrCloudTransferMgr *cloudMgr = WickrCore::WickrRuntime::getCTM();
+                        WickrCore::WickrCloudTransferMgr *cloudMgr = WickrCore::WickrRuntime::getCloudMgr();
                         if (cloudMgr) {
                             if (! rxDownload->m_downloaded) {
                                 if (rxDownload->m_downloading) {
@@ -442,273 +442,21 @@ void WickrIOReceiveThread::detachConvosMessages(WickrNotifyList *msgList)
 void WickrIOReceiveThread::startSwitchboard()
 {
     // Update switchboard login credentials (login is performed only if not already logged in)
-    emit signalLoginSwitchboard(WickrCore::WickrSession::getActiveSession()->getSwitchboardServer(),
-                                WickrCore::WickrUser::getSelfUser()->getServerIDHash(),
-                                WickrCore::WickrSession::getActiveSession()->getAppID(),
-                                WickrCore::WickrSession::getActiveSession()->getSwitchboardToken(),
-                                true);
+    WickrCore::WickrRuntime::swbSvcLogin(WickrCore::WickrSession::getActiveSession()->getSwitchboardServer(),
+                                         WickrCore::WickrUser::getSelfUser()->getServerIDHash(),
+                                         WickrCore::WickrSession::getActiveSession()->getAppID(),
+                                         WickrCore::WickrSession::getActiveSession()->getSwitchboardToken(),
+                                         WickrCore::WickrSession::getActiveSession()->getNetworkIdFromLogin(),
+                                         true);
 }
 
 void WickrIOReceiveThread::stopSwitchboard()
 {
-    emit signalLogoutSwitchboard();
+    WickrCore::WickrRuntime::swbSvcLogout();
 }
-
-/**
- * @brief wickrMain::slotSwitchboardState
- * Slot accepts state change update signals from switchboard service.
- * @param state
- */
-void WickrIOReceiveThread::slotSwitchboardState(WickrSwitchboardThread::ThreadState state, const QString& text)
-{
-    qDebug().noquote().nospace() << "SWITCHBOARD SERVICE: " << WickrSwitchboardThread::asStringState(state)
-                                 << ((!text.isEmpty()) ? (", " + text + ".") : ".");
-    switch(state) {
-    case WickrSwitchboardThread::LOGGED_IN:
-    {
-        m_enableSwitchboard = true;
-
-        // Switchboard login successful, so login to message service
-        emit signalLoginMessageService();
-
-        // Perform initial message check
-        qDebug() << "MESSAGE CHECK: Performing initial message check at login.";
-        emit signalMessageCheck(ON_LOGIN);;
-        break;
-    }
-
-    case WickrSwitchboardThread::UNINITIALIZED:
-    case WickrSwitchboardThread::STARTED:
-    case WickrSwitchboardThread::LOGGING_IN:
-    case WickrSwitchboardThread::CONNECTED:
-    case WickrSwitchboardThread::LOGGED_OUT:  // <- Logged Out will ALWAYS transition to DISCONNECTED
-        // Intermediate states, no action taken
-        break;
-
-    case WickrSwitchboardThread::LOGIN_FAILURE:
-        qDebug() << "Switchboard login failure!";
-        break;
-
-    case WickrSwitchboardThread::DISCONNECTED:
-        // Update application and disable switchboard mode (revert to polling)
-        if (m_enableSwitchboard) {
-            m_enableSwitchboard = false;
-
-            // Update status check (to force immediate polling)
-//            slotStatusTimerUpdateActivity();
-        }
-
-        // Network status
-        if ((text != "User Logout") && (text != "Login Failure")) {
-            // Switchboard logout/disconnect, so logout message servicve
-            // logout to message services
-            WickrMessageCheckThread *messagecheck = WickrCore::WickrRuntime::getMessageCheck();
-            WickrMessageDownloadThread *messagedownload = WickrCore::WickrRuntime::getMessageDownload();
-            WickrMessageCommitThread *messagecommit= WickrCore::WickrRuntime::getMessageCommit();
-            messagecheck->slotLogout();
-            messagedownload->slotLogout();
-            messagecommit->slotLogout();
-        }
-        break;
-    }
-}
-
-/**
- * @brief wickrMain::slotMessageCheckState
- * Slot accepts state change update signals from message service (message check thread).
- * Can be used to synchronize startup/shutdown procedures.
- * @param state
- */
-void WickrIOReceiveThread::slotMessageCheckState(WickrMessageCheckThread::ThreadState state, const QString& text)
-{
-    qDebug().noquote().nospace() << "MESSAGE CHECK: " << WickrMessageCheckThread::asStringState(state)
-                                 << ((!text.isEmpty()) ? (", " + text + ".") : ".");
-    switch(state) {
-    case WickrMessageCheckThread::UNINITIALIZED:
-    case WickrMessageCheckThread::STARTED:
-    case WickrMessageCheckThread::LOGGED_IN:
-    case WickrMessageCheckThread::LOGGED_OUT:
-        break;
-    }
-}
-
-/**
- * @brief wickrMain::slotMessageDownloadState
- * Slot accepts state change update signals from message service (message download thread).
- * Can be used to synchronize startup/shutdown procedures.
- * @param state
- */
-void WickrIOReceiveThread::slotMessageDownloadState(WickrMessageDownloadThread::ThreadState state, const QString& text)
-{
-    qDebug().noquote().nospace() << "MESSAGE DOWNLOAD: " << WickrMessageDownloadThread::asStringState(state)
-                                 << ((!text.isEmpty()) ? (", " + text + ".") : ".");
-    switch(state) {
-    case WickrMessageDownloadThread::UNINITIALIZED:
-    case WickrMessageDownloadThread::STARTED:
-    case WickrMessageDownloadThread::LOGGED_IN:
-    case WickrMessageDownloadThread::LOGGED_OUT:
-        break;
-    }
-}
-
-/**
- * @brief wickrMain::slotMessageCommitState
- * Slot accepts state change update signals from message service (message commit thread).
- * Can be used to synchronize startup/shutdown procedures.
- * @param state
- */
-void WickrIOReceiveThread::slotMessageCommitState(WickrMessageCommitThread *thread,
-                                       WickrMessageCommitThread::ThreadState state,
-                                       const QString& text)
-{
-    Q_UNUSED(thread)
-    qDebug().noquote().nospace() << "MESSAGE COMMIT: " << WickrMessageCommitThread::asStringState(state)
-                                 << ((!text.isEmpty()) ? (", " + text + ".") : ".");
-    switch(state) {
-    case WickrMessageCommitThread::LOGGED_IN:
-        break;
-
-    case WickrMessageCommitThread::LOGGED_OUT:
-        break;
-
-    case WickrMessageCommitThread::UNINITIALIZED:
-        break;
-    }
-}
-
-/**
- * @brief wickrMain::slotMessageModeToggle
- * Toggles between switcboard and polling message modes. Simply emit signal to login/logout
- * of switchboard, and switchboard state change should take care of the rest.
- * @param mode
- */
-void WickrIOReceiveThread::slotMessageModeToggle(const QString& toMode)
-{
-    if (toMode == "Polling") {
-        // Logout of switchboard, enabing polling mode.
-        if (m_enableSwitchboard) {
-            qDebug() << "Enabling Polling Mode.";
-            WickrSwitchboardThread *switchboard = WickrCore::WickrRuntime::getSwitchboard();
-            emit signalLogoutSwitchboard();
-        }
-    } else if (toMode == "Switchboard") {
-        // Login to switchboard, enabling switcboard mode.
-        if (!m_enableSwitchboard) {
-            qDebug() << "Enabling Switchboard Mode.";
-            // signals to switchboard service
-            emit signalLoginSwitchboard(WickrCore::WickrSession::getActiveSession()->getSwitchboardServer(),
-                                        WickrCore::WickrUser::getSelfUser()->getServerIDHash(),
-                                        WickrCore::WickrSession::getActiveSession()->getAppID(),
-                                        WickrCore::WickrSession::getActiveSession()->getSwitchboardToken(),
-                                        true);
-        }
-    }
-}
-
-
-
 
 
 
 void WickrIOReceiveThread::initMessageServicesConnections()
 {
-    WickrSwitchboardThread *switchboard = WickrCore::WickrRuntime::getSwitchboard();
-    WickrMessageCheckThread *messagecheck = WickrCore::WickrRuntime::getMessageCheck();
-    WickrMessageDownloadThread *messagedownload = WickrCore::WickrRuntime::getMessageDownload();
-    WickrMessageCommitThread *messagecommit= WickrCore::WickrRuntime::getMessageCommit();
-    if (switchboard && messagecheck && messagedownload && messagecommit) {
-        // Signals to switchboard (from wickrMain for Login,LoginUpdate,Logout)
-        connect(this,
-                &WickrIOReceiveThread::signalLoginSwitchboard,
-                switchboard,
-                &WickrSwitchboardThread::slotLogin);
-        connect(this,
-                &WickrIOReceiveThread::signalLogoutSwitchboard,
-                switchboard,
-                &WickrSwitchboardThread::slotLogout);
-
-        // Signals from switchboard (StateChange,MessageCheck)
-        connect(switchboard,
-                &WickrSwitchboardThread::signalState,
-                this,
-                &WickrIOReceiveThread::slotSwitchboardState);
-
-        // Signals to message service(message check) (from wickrMain for Login,Logout,MessageCheck)
-        connect(this,
-                &WickrIOReceiveThread::signalLoginMessageService,
-                messagecheck,
-                &WickrMessageCheckThread::slotLogin);
-        connect(this,
-                &WickrIOReceiveThread::signalLogoutMessageService,
-                messagecheck,
-                &WickrMessageCheckThread::slotLogout);
-        connect(this,
-                &WickrIOReceiveThread::signalMessageCheck,
-                messagecheck,
-                &WickrMessageCheckThread::slotMessageCheckRequest,
-                Qt::QueuedConnection);
-
-        // Signals from message service(message check) (StateChange)
-        connect(messagecheck,
-                &WickrMessageCheckThread::signalState,
-                this,
-                &WickrIOReceiveThread::slotMessageCheckState);
-//        connect(messagecheck,
-//                &WickrMessageCheckThread::signalDownloadAtLoginEnd,
-//                controller,
-//                &wickrMain::slotDownloadAtLoginEnd);
-
-        // Signals to message service(message download) (from wickrMain for Login,Logout)
-        connect(this,
-                &WickrIOReceiveThread::signalLoginMessageService,
-                messagedownload,
-                &WickrMessageDownloadThread::slotLogin);
-        connect(this,
-                &WickrIOReceiveThread::signalLogoutMessageService,
-                messagedownload,
-                &WickrMessageDownloadThread::slotLogout);
-
-        // Signals from message service(message download) (StateChange)
-        connect(messagedownload,
-                &WickrMessageDownloadThread::signalState,
-                this,
-                &WickrIOReceiveThread::slotMessageDownloadState);
-
-//        connect(messagedownload,
-//                &WickrMessageDownloadThread::signalDownloadAtLoginStart,
-//                this,
-//                &WickrIOReceiveThread::slotMessageDownloadStatusStart);
-
-        // Signals to message service(message commit) (from wickrMain for Login,Logout)
-        connect(this,
-                &WickrIOReceiveThread::signalLoginMessageService,
-                messagecommit,
-                &WickrMessageCommitThread::slotLogin);
-        connect(this,
-                &WickrIOReceiveThread::signalLogoutMessageService,
-                messagecommit,
-                &WickrMessageCommitThread::slotLogout);
-
-        // Signals from message service(message commit) (StateChange, DecodeError)
-        connect(messagecommit,
-                &WickrMessageCommitThread::signalState,
-                this,
-                &WickrIOReceiveThread::slotMessageCommitState);
-
-//        connect(messagecommit,
-//                &WickrMessageCommitThread::signalDownloadAtLoginUpdate,
-//                this,
-//                &wickrQuickMain::slotMessageDownloadStatusUpdate);
-
-//        connect(messagecommit,
-//                &WickrMessageCommitThread::signalDownloadAtLoginEnd,
-//                controller,
-//                &wickrMain::slotDownloadAtLoginEnd);
-
-        qDebug() << "MESSAGE SERVICES: Application connections initialized.";
-
-    } else {
-        if (!switchboard || !messagecheck || !messagedownload || !messagecommit)
-            qDebug() << "initMessageServicesConnections(): MESSAGE SERVICES - Not initialized.";
-    }
 }

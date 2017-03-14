@@ -79,9 +79,6 @@ signals:
 
     void signalNetworkStatus(bool);
 
-    // Task service requests
-    void signalMakeRequest(WickrRequestContext* context);
-
 private slots:
     void slotRegistrationDone(WickrRegisterUserContext *c);
     void slotLoginDone(WickrLoginContext *ls);

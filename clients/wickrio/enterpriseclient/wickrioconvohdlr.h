@@ -25,9 +25,6 @@ public:
         }
     }
 
-signals:
-    void signalMakeRequest(WickrRequestContext* context);
-
 private slots:
     void slotConvoRestoreDone(WickrConvoRestoreContext *context);
 };

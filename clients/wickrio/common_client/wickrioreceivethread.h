@@ -93,15 +93,6 @@ protected:
     void processStarted();
     void onTimerAction();
 
-public slots:
-    void slotSwitchboardState(WickrSwitchboardThread::ThreadState state, const QString& text);
-    void slotMessageCheckState(WickrMessageCheckThread::ThreadState state, const QString& text);
-    void slotMessageDownloadState(WickrMessageDownloadThread::ThreadState state, const QString& text);
-    void slotMessageCommitState(WickrMessageCommitThread *thread,
-                                WickrMessageCommitThread::ThreadState state,
-                                const QString& text);
-    void slotMessageModeToggle(const QString& toMode);
-
 private slots:
     void slotProcessMessage(WickrDBObject *item);
 
@@ -111,14 +102,6 @@ private slots:
 
 signals:
     void signalProcessStarted();
-
-    // signals to switchboard service
-    void signalLoginSwitchboard(const QString& serverAddress, const QString& userIdHash,
-                                const QString& appIdHash, const QString& authToken, bool relogin);
-    void signalLogoutSwitchboard();
-
-    void signalLoginMessageService();
-    void signalLogoutMessageService();
 
     void signalMessageCheck(WickrApplicationState appContext);
 

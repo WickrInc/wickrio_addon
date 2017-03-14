@@ -91,10 +91,6 @@ signals:
     void signalStartProcessDatabase(int actionID);
     void signalExit();
 
-    // UTILITY (signals to services)
-    void signalMakeRequest(WickrRequestContext *context);
-    void signalMessageSend(WickrSendContext *context);
-
 private slots:
     // Message Send slots
     void slotMessageDone(WickrSendContext *context);
