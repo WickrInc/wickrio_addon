@@ -90,17 +90,20 @@ private slots:
     void slotDeleteRoom(const QString& vGroupID, bool selfInitiated);
     void slotRemoveFromRoom(const QString& vGroupID);
 
-    void slotTaskServiceState(WickrTaskThread::ThreadState state, const QString& text);
-    void slotSwitchboardState(WickrSwitchboardThread::ThreadState state, const QString& text);
-    void slotMessageCheckState(WickrMessageCheckThread::ThreadState state, const QString& text);
-    void slotMessageDownloadState(WickrMessageDownloadThread::ThreadState state, const QString& text);
+    void slotSwitchboardServiceState(WickrServiceState state, const QString& text);
+    void slotMessageServiceState(WickrServiceState state);
+
+    void slotTaskServiceState(WickrServiceState state);
 
     void slotOnLoginMsgSynchronizationComplete();
-    void slotMessageCommitState(WickrMessageCommitThread *thread,
-                                WickrMessageCommitThread::ThreadState state,
-                                const QString& text);
 
-    void slotDatabaseLoadDone();
+    void slotDatabaseLoadDone(WickrDatabaseLoadContext *context);
+
+    void slotAdminUserSuspend(const QString& reason);
+    void slotAdminDeviceSuspend();
+    void slotSetSuspendError();
+    void slotMessageDownloadStatusStart(int msgsToDownload);
+    void slotMessageDownloadStatusUpdate(int msgsDownloaded);
 
 signals:
     void signalStarted();
@@ -108,21 +111,6 @@ signals:
     void signalLoginSuccess();
 
     void signalMessageCheck(WickrApplicationState appContext);
-    void signalMessageSend(WickrSendContext *context);
-    void signalLoginTaskService();
-    void signalLogoutTaskService();
-
-    void signalLoginSwitchboard(const QString& serverAddress, const QString& userIdHash,
-                                const QString& appIdHash, const QString& authToken, bool relogin);
-    void signalLogoutSwitchboard();
-    void signalLoginMessageService();
-    void signalLogoutMessageService();
-
-    // Task service requests
-    void signalMakeRequest(WickrRequestContext* context);
-    void signalMakeJob(WickrJobContext* job);
-    void signalDatabaseLoadRequest(bool isDebug);
-
 };
 
 

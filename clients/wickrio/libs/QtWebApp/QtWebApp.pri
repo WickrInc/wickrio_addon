@@ -1,4 +1,4 @@
-QTWEBAPP_VERSION = 0.3.0
+QTWEBAPP_VERSION = 1.7.2
 
 isEmpty(QTWEBAPP_LIBRARY_TYPE) {
     QTWEBAPP_LIBRARY_TYPE = shared
@@ -40,11 +40,11 @@ macx {
 linux-g++* {
     CONFIG(release,debug|release) {
         LIBS += -L$$OUT_PWD/$$DEPTH/clients/wickrio/libs/QtWebApp/ -lQtWebApp
-        PRE_TARGETDEPS += $$OUT_PWD/$$DEPTH/clients/wickrio/libs/QtWebApp/libQtWebApp.a
+        PRE_TARGETDEPS += $$OUT_PWD/$$DEPTH/clients/wickrio/libs/QtWebApp/libQtWebApp.so
     }
     else {
         LIBS += -L$$OUT_PWD/$$DEPTH/clients/wickrio/libs/QtWebApp/ -lQtWebAppd
-        PRE_TARGETDEPS += $$OUT_PWD/$$DEPTH/clients/wickrio/libs/QtWebApp/libQtWebAppd.a
+        PRE_TARGETDEPS += $$OUT_PWD/$$DEPTH/clients/wickrio/libs/QtWebApp/libQtWebAppd.so
     }
 }
 win32 {

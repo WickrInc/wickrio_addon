@@ -28,25 +28,25 @@ public:
       @param request The received HTTP request
       @param response Must be used to return the response
     */
-    void service(HttpRequest& request, HttpResponse& response);
+    void service(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response);
 
 private:
     // These function handle the specific API actions
-    void addClient(WickrIOConsoleUser *pCUser, HttpRequest& request, HttpResponse& response);
-    void deleteClient(WickrIOConsoleUser *pCUser, const QString& clientID, HttpResponse& response);
-    void getClients(WickrIOConsoleUser *pCUser, HttpResponse& response);
-    void getClient(WickrIOConsoleUser *pCUser, const QString& clientID, HttpResponse& response);
-    void updateClient(WickrIOConsoleUser *pCUser, const QString& clientID, HttpRequest& request, HttpResponse& response);
+    void addClient(WickrIOConsoleUser *pCUser, stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response);
+    void deleteClient(WickrIOConsoleUser *pCUser, const QString& clientID, stefanfrings::HttpResponse& response);
+    void getClients(WickrIOConsoleUser *pCUser, stefanfrings::HttpResponse& response);
+    void getClient(WickrIOConsoleUser *pCUser, const QString& clientID, stefanfrings::HttpResponse& response);
+    void updateClient(WickrIOConsoleUser *pCUser, const QString& clientID, stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response);
 
-    void addUser(HttpRequest& request, HttpResponse& response);
-    void deleteUser(const QString& UserID, HttpResponse& response);
-    void getUsers(HttpResponse& response);
-    void getUser(const QString& UserID, HttpResponse& response);
-    void updateUser(const QString& UserID, HttpRequest& request, HttpResponse& response);
+    void addUser(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response);
+    void deleteUser(const QString& UserID, stefanfrings::HttpResponse& response);
+    void getUsers(stefanfrings::HttpResponse& response);
+    void getUser(const QString& UserID, stefanfrings::HttpResponse& response);
+    void updateUser(const QString& UserID, stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response);
 
     QJsonObject getClientStats(WickrBotClients *client);
-    void getStatistics(HttpResponse& response);
-    void getStatistics(const QString& clientName, HttpResponse& response);
+    void getStatistics(stefanfrings::HttpResponse& response);
+    void getStatistics(const QString& clientName, stefanfrings::HttpResponse& response);
 
     bool pauseClient(WickrBotClients *client);
     bool startClient(WickrBotClients *client);

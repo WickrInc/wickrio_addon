@@ -177,7 +177,7 @@ linux-g++* {
         LIBS += -L$$PWD/$$DEPTH/wickr-sdk/platforms/linux/generic-32
     }
 
-    LIBS += -L$$OUT_PWD/$$DEPTH/wickr-sdk/src -lwickr-desktop-base
+    LIBS += -L$$OUT_PWD/$$DEPTH/wickr-sdk/src -lwickr-sdk
     LIBS += -L$$PWD/$$DEPTH/wickr-sdk/platforms/linux/generic-64
     LIBS += -L$$PWD/$$DEPTH/wickr-sdk/platforms/linux/generic-64/$${BUILD_TYPE}
     LIBS += -lWickrCoreC

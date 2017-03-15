@@ -5,6 +5,8 @@
 
 #include "httpresponse.h"
 
+using namespace stefanfrings;
+
 HttpResponse::HttpResponse(QTcpSocket* socket)
 {
     this->socket=socket;
@@ -111,7 +113,8 @@ void HttpResponse::write(QByteArray data, bool lastPart)
         // else if we will not close the connection at the end, them we must use the chunked mode.
         else
         {
-            bool connectionClose=QString::compare(headers.value("Connection"),"close",Qt::CaseInsensitive)==0;
+            QByteArray connectionValue=headers.value("Connection",headers.value("connection"));
+            bool connectionClose=QString::compare(connectionValue,"close",Qt::CaseInsensitive)==0;
             if (!connectionClose)
             {
                 headers.insert("Transfer-Encoding","chunked");

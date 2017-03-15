@@ -32,7 +32,7 @@ CmdHandler::~CmdHandler() {
  * @param request
  * @param response
  */
-void CmdHandler::service(HttpRequest& request, HttpResponse& response) {
+void CmdHandler::service(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response) {
 
     QByteArray path=request.getPath();
     QByteArray method=request.getMethod();

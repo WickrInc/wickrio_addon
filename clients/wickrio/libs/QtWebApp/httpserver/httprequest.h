@@ -16,6 +16,8 @@
 #include <QUuid>
 #include "httpglobal.h"
 
+namespace stefanfrings {
+
 /**
   This object represents a single HTTP request. It reads the request
   from a TCP socket and provides getters for the individual parts
@@ -81,7 +83,7 @@ public:
 
     /**
       Get the value of a HTTP request header.
-      @param name Name of the header
+      @param name Name of the header, not case-senitive.
       @return If the header occurs multiple times, only the last
       one is returned.
     */
@@ -89,16 +91,19 @@ public:
 
     /**
       Get the values of a HTTP request header.
-      @param name Name of the header
+      @param name Name of the header, not case-senitive.
     */
     QList<QByteArray> getHeaders(const QByteArray& name) const;
 
-    /** Get all HTTP request headers */
+    /**
+     * Get all HTTP request headers. Note that the header names
+     * are returned in lower-case.
+     */
     QMultiMap<QByteArray,QByteArray> getHeaderMap() const;
 
     /**
       Get the value of a HTTP request parameter.
-      @param name Name of the parameter
+      @param name Name of the parameter, case-sensitive.
       @return If the parameter occurs multiple times, only the last
       one is returned.
     */
@@ -106,7 +111,7 @@ public:
 
     /**
       Get the values of a HTTP request parameter.
-      @param name Name of the parameter
+      @param name Name of the parameter, case-sensitive.
     */
     QList<QByteArray> getParameters(const QByteArray& name) const;
 
@@ -204,9 +209,9 @@ private:
     QByteArray boundary;
 
     /** Temp file, that is used to store the multipart/form-data body */
-    QTemporaryFile tempFile;
+    QTemporaryFile* tempFile;
 
-    /** Parset he multipart body, that has been stored in the temp file. */
+    /** Parse the multipart body, that has been stored in the temp file. */
     void parseMultiPartFile();
 
     /** Sub-procedure of readFromSocket(), read the first line of a request. */
@@ -228,5 +233,7 @@ private:
     QByteArray lineBuffer;
 
 };
+
+} // end of namespace
 
 #endif // HTTPREQUEST_H

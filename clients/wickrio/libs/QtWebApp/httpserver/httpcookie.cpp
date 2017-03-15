@@ -5,6 +5,8 @@
 
 #include "httpcookie.h"
 
+using namespace stefanfrings;
+
 HttpCookie::HttpCookie()
 {
     version=1;
@@ -12,7 +14,7 @@ HttpCookie::HttpCookie()
     secure=false;
 }
 
-HttpCookie::HttpCookie(const QByteArray name, const QByteArray value, const int maxAge, const QByteArray path, const QByteArray comment, const QByteArray domain, const bool secure)
+HttpCookie::HttpCookie(const QByteArray name, const QByteArray value, const int maxAge, const QByteArray path, const QByteArray comment, const QByteArray domain, const bool secure, const bool httpOnly)
 {
     this->name=name;
     this->value=value;
@@ -21,6 +23,7 @@ HttpCookie::HttpCookie(const QByteArray name, const QByteArray value, const int 
     this->comment=comment;
     this->domain=domain;
     this->secure=secure;
+    this->httpOnly=httpOnly;
     this->version=1;
 }
 
@@ -69,6 +72,10 @@ HttpCookie::HttpCookie(const QByteArray source)
         {
             secure=true;
         }
+        else if (name=="HttpOnly")
+        {
+            httpOnly=true;
+        }
         else if (name=="Version")
         {
             version=value.toInt();
@@ -115,6 +122,9 @@ QByteArray HttpCookie::toByteArray() const
     if (secure) {
         buffer.append("; Secure");
     }
+    if (httpOnly) {
+        buffer.append("; HttpOnly");
+    }
     buffer.append("; Version=");
     buffer.append(QByteArray::number(version));
     return buffer;
@@ -155,6 +165,11 @@ void HttpCookie::setSecure(const bool secure)
     this->secure=secure;
 }
 
+void HttpCookie::setHttpOnly(const bool httpOnly)
+{
+    this->httpOnly=httpOnly;
+}
+
 QByteArray HttpCookie::getName() const
 {
     return name;
@@ -188,6 +203,11 @@ QByteArray HttpCookie::getPath() const
 bool HttpCookie::getSecure() const
 {
     return secure;
+}
+
+bool HttpCookie::getHttpOnly() const
+{
+    return httpOnly;
 }
 
 int HttpCookie::getVersion() const

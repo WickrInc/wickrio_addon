@@ -54,7 +54,7 @@ mac {
     }
 
     INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/platforms/mac/include
-    LIBS += -L$$OUT_PWD/$$DEPTH/wickr-sdk/src -lwickr-desktop-base
+    LIBS += -L$$OUT_PWD/$$DEPTH/wickr-sdk/src -lwickr-sdk
 
     LIBS += -framework AppKit -framework AddressBook -framework SystemConfiguration
     LIBS += -framework Foundation
@@ -62,7 +62,7 @@ mac {
     LIBS += -framework CoreFoundation -framework Carbon -lobjc
     LIBS += -framework ApplicationServices -framework CoreMedia
 
-    QMAKE_POST_LINK += install_name_tool -change "/usr/local/lib/libwickr-desktop-base.1.dylib" "$${OUT_PWD}/$${DEPTH}/wickr-sdk/src/libwickr-desktop-base.1.dylib" "$${TARGET}" ;
+    QMAKE_POST_LINK += install_name_tool -change "/usr/local/lib/libwickr-sdk.1.dylib" "$${OUT_PWD}/$${DEPTH}/wickr-sdk/src/libwickr-sdk.1.dylib" "$${TARGET}" ;
     !CONFIG(release,release|debug):QMAKE_POST_LINK += install_name_tool -change @rpath/HockeySDK.framework/Versions/A/HockeySDK "$$PWD/$$DEPTH/wickr-sdk/platforms/mac/lib64/HockeySDK.framework/Versions/A/HockeySDK" $${TARGET};
 
 }
@@ -71,7 +71,7 @@ win32 {
     DEFINES += WIN32_LEAN_AND_MEAN
 
     INCLUDEPATH += $$PWD/$$DEPTH/wickr-sdk/platforms/win/include
-    LIBS += -L$$OUT_PWD/$$DEPTH/wickr-sdk/src/$${BUILD_TYPE} -lwickr-desktop-base
+    LIBS += -L$$OUT_PWD/$$DEPTH/wickr-sdk/src/$${BUILD_TYPE} -lwickr-sdk
     LIBS += -L$$PWD/$$DEPTH/wickr-sdk/platforms/win/lib32/$${BUILD_TYPE} -lWickrCore
     LIBS += -L$$PWD/$$DEPTH/wickr-sdk/platforms/win/lib32
     LIBS += -lCFLite
@@ -97,7 +97,7 @@ win32:LIBS += -lgdi32
 
 linux-g++* {
     INCLUDEPATH += $$PWD/$$DEPTH/wickr-sdk/platforms/linux/include
-    LIBS += -L$$OUT_PWD/$$DEPTH/wickr-sdk/src -lwickr-desktop-base
+    LIBS += -L$$OUT_PWD/$$DEPTH/wickr-sdk/src -lwickr-sdk
 
     LIBS += -L$$PWD/$$DEPTH/wickr-sdk/platforms/linux/generic-64
     LIBS += -L$$PWD/$$DEPTH/wickr-sdk/platforms/linux/generic-64/$${BUILD_TYPE}

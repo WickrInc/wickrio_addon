@@ -6,12 +6,6 @@ set -e
 current=`dirname $0`
 cd $current
 
-QTVER="5_6_1"
-if test -z "$QTDIR" ; then
-	QTDIR=`echo ~/Qt*/5.6/gcc_64`
-	QTVER="5_6_1"
-fi
-
 #
 # Setup the version number(s)
 #
@@ -19,6 +13,8 @@ maj=`cat ../../../OFFICIAL_BUILD_VERSION | cut -c1-1`
 min=`cat ../../../OFFICIAL_BUILD_VERSION | cut -c2-2`
 pat=`cat ../../../OFFICIAL_BUILD_VERSION | cut -c3-3`
 bld=`cat ../../../OFFICIAL_BUILD_NUMBER | cut -c4-6`
+
+builddir=build-wickr-wickrio-Desktop_Qt_5_7_1_GCC_64bit_BUILT-Debug
 
 version="${maj}.${min}.${pat}-${bld}~beta"
 
@@ -72,26 +68,24 @@ mkdir -p $appdata
 #
 # Copy the executables
 #
-cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Debug/bots/wickrio/settings_init/wickrbot_settings_init $bindir/wickrbot_settings_init-beta
-cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Debug/bots/wickrio/service_control/wickrio_service_control $bindir/wickrio_service_control-beta
-#cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Debug/bots/wickrio/client/WickrIOClientBeta $bindir
-cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Debug/bots/wickrio/enterpriseclient/WickrIOEClientBeta $bindir
-cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Debug/bots/wickrio/console/WickrIOConsoleBeta $bindir
-cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Debug/bots/wickrio/consoleserver/WickrIOCSvrBeta $sbindir
-cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Debug/bots/wickrio/clientserver/WickrIOSvrBeta $sbindir
+cp -a $current/../../../../../../${builddir}/clients/wickrio/settings_init/wickrio_settings_init $bindir/wickrio_settings_init-beta
+cp -a $current/../../../../../../${builddir}/clients/wickrio/service_control/wickrio_service_control $bindir/wickrio_service_control-beta
+cp -a $current/../../../../../../${builddir}/clients/wickrio/enterpriseclient/WickrIOEClientBeta $bindir
+cp -a $current/../../../../../../${builddir}/clients/wickrio/console/WickrIOConsoleBeta $bindir
+cp -a $current/../../../../../../${builddir}/clients/wickrio/consoleserver/WickrIOCSvrBeta $sbindir
+cp -a $current/../../../../../../${builddir}/clients/wickrio/clientserver/WickrIOSvrBeta $sbindir
 
 # only for Beta version
-cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Debug/bots/wickrio/callback_listener/WickrIOCallbackListenerBeta $bindir
+cp -a $current/../../../../../../${builddir}/clients/wickrio/callback_listener/WickrIOCallbackListenerBeta $bindir
 
-cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Debug/libs/qamqpsrc/libqamqp.* $libdir
-cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Debug/libs/QtWebApp/libQtWebAppd.* $libdir
-cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Debug/libs/WickrBot/libWickrBotd.* $libdir
-cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Debug/libs/WickrBotGUI/libWickrBotGUId.* $libdir
-cp -a $current/../../../../../../build-bots-Desktop_Qt_${QTVER}_GCC_64bit-Debug/libs/SMTPEmail/libSMTPEmail.* $libdir
+#cp -a $current/../../../../../../${builddir}/libs/qamqpsrc/libqamqp.* $libdir
+cp -a $current/../../../../../../${builddir}/clients/wickrio/libs/QtWebApp/libQtWebAppd.* $libdir
+cp -a $current/../../../../../../${builddir}/clients/wickrio/libs/WickrIOGUI/libWickrIOGUId.* $libdir
+cp -a $current/../../../../../../${builddir}/clients/wickrio/libs/WickrIOLib/libWickrIOLibd.* $libdir
+cp -a $current/../../../../../../${builddir}/clients/wickrio/libs/SMTPEmail/libSMTPEmail.* $libdir
 
 chrpath -r /usr/lib/wickrio-beta $bindir/wickrio_service_control-beta
 chrpath -r /usr/lib/wickrio-beta $bindir/wickrbot_settings_init-beta
-#chrpath -r /usr/lib/wickrio-beta $bindir/WickrIOClientBeta
 chrpath -r /usr/lib/wickrio-beta $bindir/WickrIOEClientBeta
 chrpath -r /usr/lib/wickrio-beta $bindir/WickrIOConsoleBeta
 chrpath -r /usr/lib/wickrio-beta $sbindir/WickrIOSvrBeta
@@ -124,14 +118,9 @@ sed -e "s/EXTENSION/-beta/g" -e "s/INSTALLEXT/Beta/g" <$current/WickrIOCSvr.scri
 # Copy the library files
 #
 cp -a $platform/*.so $platform/*.so.* $libdir/
-cp -a $QTDIR/lib/*.so $QTDIR/lib/*.so.* $libdir/
-cp -a $QTDIR/plugins/* $plugins/
 rm -f $plugins/sqldrivers/*
 #cp -a $current/../../../../../platforms/linux/plugins-64/* $plugins/sqldrivers/
 cp -a $current/../plugins-64/* $plugins/sqldrivers/
-cp -a $QTDIR/libexec/* $libdir/
-#cp -a $QTDIR/icudtl.dat $libdir/
-cp -a $QTDIR/resources/icudtl.dat $libdir/
 cp -Lp /usr/lib/x86_64-linux-gnu/libicu*.so.52 $libdir/
 mkdir -p $messages
 echo "/usr/share/applications/wickrio-beta.client" >$messages/wickrio-beta

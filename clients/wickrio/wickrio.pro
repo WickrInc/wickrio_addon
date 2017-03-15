@@ -31,7 +31,7 @@ win32 {
         mkinstaller.commands += windeployqt $${TARGET}.deploy/WickrIOCSvr.exe ;
 
         mkinstaller.commands += cp $${PWD}/../../platforms/win/lib32/*.dll $${TARGET}.deploy ;
-        mkinstaller.commands += cp $${OUT_PWD}/../../src/libwickr-desktop-base.a $${TARGET}.deploy ;
+        mkinstaller.commands += cp $${OUT_PWD}/../../src/libwickr-sdk.a $${TARGET}.deploy ;
         mkinstaller.commands += cp $${OUT_PWD}/libs/WickrIOLib/release/WickrBot1.dll $${TARGET}.deploy ;
         mkinstaller.commands += cp $${OUT_PWD}/libs/WickrIOGUI/release/WickrBotGUI1.dll $${TARGET}.deploy ;
         mkinstaller.commands += cp $${OUT_PWD}/libs/QtWebApp/release/QtWebApp1.dll $${TARGET}.deploy ;
@@ -53,7 +53,7 @@ win32 {
         mkinstaller.commands += windeployqt $${TARGET}.deploy/WickrIOCSvrBeta.exe ;
 
         mkinstaller.commands += cp $${PWD}/../../platforms/win/lib32/*.dll $${TARGET}.deploy ;
-        mkinstaller.commands += cp $${OUT_PWD}/../../src/liblibwickr-desktop-base.a $${TARGET}.deploy ;
+        mkinstaller.commands += cp $${OUT_PWD}/../../src/libwickr-sdk.a $${TARGET}.deploy ;
         mkinstaller.commands += cp $${OUT_PWD}/libs/WickrIOLib/debug/WickrBotd1.dll $${TARGET}.deploy ;
         mkinstaller.commands += cp $${OUT_PWD}/libs/WickrIOGUI/debug/WickrBotGUId1.dll $${TARGET}.deploy ;
         mkinstaller.commands += cp $${OUT_PWD}/libs/QtWebApp/debug/QtWebAppd1.dll $${TARGET}.deploy ;

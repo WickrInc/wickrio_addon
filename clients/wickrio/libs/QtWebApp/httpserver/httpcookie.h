@@ -10,6 +10,8 @@
 #include <QByteArray>
 #include "httpglobal.h"
 
+namespace stefanfrings {
+
 /**
   HTTP cookie as defined in RFC 2109. This class can also parse
   RFC 2965 cookies, but skips fields that are not defined in RFC
@@ -31,9 +33,10 @@ public:
       @param path Path for that the cookie will be sent, default="/" which means the whole domain
       @param comment Optional comment, may be displayed by the web browser somewhere
       @param domain Optional domain for that the cookie will be sent. Defaults to the current domain
-      @param secure If true, the cookie will only be sent on secure connections
+      @param secure If true, the cookie will be sent by the browser to the server only on secure connections
+      @param httpOnly If true, the browser does not allow client-side scripts to access the cookie
     */
-    HttpCookie(const QByteArray name, const QByteArray value, const int maxAge, const QByteArray path="/", const QByteArray comment=QByteArray(), const QByteArray domain=QByteArray(), const bool secure=false);
+    HttpCookie(const QByteArray name, const QByteArray value, const int maxAge, const QByteArray path="/", const QByteArray comment=QByteArray(), const QByteArray domain=QByteArray(), const bool secure=false, const bool httpOnly=false);
 
     /**
       Create a cookie from a string.
@@ -68,8 +71,11 @@ public:
     /** Set the path for that the cookie will be sent, default="/" which means the whole domain */
     void setPath(const QByteArray path);
 
-    /** Set secure mode, so that the cookie will only be sent on secure connections */
+    /** Set secure mode, so that the cookie will be sent by the browser to the server only on secure connections */
     void setSecure(const bool secure);
+
+    /** Set HTTP-only mode, so that he browser does not allow client-side scripts to access the cookie */
+    void setHttpOnly(const bool httpOnly);
 
     /** Get the name of this cookie */
     QByteArray getName() const;
@@ -83,7 +89,7 @@ public:
     /** Get the domain of this cookie */
     QByteArray getDomain() const;
 
-    /** Set the maximum age of this cookie in seconds. */
+    /** Get the maximum age of this cookie in seconds. */
     int getMaxAge() const;
 
     /** Set the path of this cookie */
@@ -91,6 +97,9 @@ public:
 
     /** Get the secure flag of this cookie */
     bool getSecure() const;
+
+    /** Get the HTTP-only flag of this cookie */
+    bool getHttpOnly() const;
 
     /** Returns always 1 */
     int getVersion() const;
@@ -104,8 +113,11 @@ private:
     int maxAge;
     QByteArray path;
     bool secure;
+    bool httpOnly;
     int version;
 
 };
+
+} // end of namespace
 
 #endif // HTTPCOOKIE_H

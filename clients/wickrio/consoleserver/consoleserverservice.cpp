@@ -165,7 +165,7 @@ void WickrIOConsoleServerService::start()
         qDebug() << "start: console server port NOT set";
         QCoreApplication::exit(0);
     }
-    m_listener = new HttpListener(m_settings, cmdHandler, this->parent());
+    m_listener = new stefanfrings::HttpListener(m_settings, cmdHandler, this->parent());
     m_settings->endGroup();
 
     m_processTimer = new QTimer(0);

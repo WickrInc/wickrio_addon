@@ -14,7 +14,7 @@
  * API handlers.
  * @param parent
  */
-WickrIOHttpRequestHdlr::WickrIOHttpRequestHdlr(QObject *parent) : HttpRequestHandler(parent),
+WickrIOHttpRequestHdlr::WickrIOHttpRequestHdlr(QObject *parent) : stefanfrings::HttpRequestHandler(parent),
     m_ioDB(NULL)
 {
 }
@@ -26,7 +26,7 @@ WickrIOHttpRequestHdlr::WickrIOHttpRequestHdlr(QObject *parent) : HttpRequestHan
  * @param response Refers to the outgoing HTTP response
  */
 void
-WickrIOHttpRequestHdlr::setupResponse(HttpRequest& request, HttpResponse& response)
+WickrIOHttpRequestHdlr::setupResponse(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response)
 {
     QList<QByteArray> origin = request.getHeaders("Origin");
     QList<QByteArray> method = request.getHeaders("Access-Control-Request-Method");
@@ -60,7 +60,7 @@ WickrIOHttpRequestHdlr::setupResponse(HttpRequest& request, HttpResponse& respon
  * @param lastPart
  */
 void
-WickrIOHttpRequestHdlr::sendSuccess(QByteArray data, HttpResponse& response, bool lastPart)
+WickrIOHttpRequestHdlr::sendSuccess(QByteArray data, stefanfrings::HttpResponse& response, bool lastPart)
 {
     response.setStatus(200, "OK");
     response.setHeader("Content-Type", "application/json");
@@ -75,7 +75,7 @@ WickrIOHttpRequestHdlr::sendSuccess(QByteArray data, HttpResponse& response, boo
  * @param lastPart
  */
 void
-WickrIOHttpRequestHdlr::sendSuccess(HttpResponse& response, bool lastPart)
+WickrIOHttpRequestHdlr::sendSuccess(stefanfrings::HttpResponse& response, bool lastPart)
 {
     response.setStatus(200, "OK");
     response.setHeader("Content-Type", "text/plain; charset=UTF-8");
@@ -90,7 +90,7 @@ WickrIOHttpRequestHdlr::sendSuccess(HttpResponse& response, bool lastPart)
  * @param lastPart
  */
 void
-WickrIOHttpRequestHdlr::sendAccepted(HttpResponse& response, bool lastPart)
+WickrIOHttpRequestHdlr::sendAccepted(stefanfrings::HttpResponse& response, bool lastPart)
 {
     response.setStatus(202, "Accepted");
     response.setHeader("Content-Type", "text/plain; charset=UTF-8");
@@ -107,7 +107,7 @@ WickrIOHttpRequestHdlr::sendAccepted(HttpResponse& response, bool lastPart)
  * @param lastPart
  */
 void
-WickrIOHttpRequestHdlr::sendFailure(int status, QByteArray msg, HttpResponse& response, bool lastPart)
+WickrIOHttpRequestHdlr::sendFailure(int status, QByteArray msg, stefanfrings::HttpResponse& response, bool lastPart)
 {
     QByteArray dsc;
     switch (status) {
@@ -139,7 +139,7 @@ WickrIOHttpRequestHdlr::sendFailure(int status, QByteArray msg, HttpResponse& re
 }
 
 void
-WickrIOHttpRequestHdlr::optionsResponse(HttpRequest& request, HttpResponse& response)
+WickrIOHttpRequestHdlr::optionsResponse(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response)
 {
     setupResponse(request, response);
     response.write("", true);
@@ -158,7 +158,7 @@ WickrIOHttpRequestHdlr::optionsResponse(HttpRequest& request, HttpResponse& resp
  * @return True if authentication is successful, false if not
  */
 bool
-WickrIOHttpRequestHdlr::validateAuthentication(HttpRequest& request, HttpResponse& response, WickrIOConsoleUser *cUser)
+WickrIOHttpRequestHdlr::validateAuthentication(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response, WickrIOConsoleUser *cUser)
 {
     QByteArray authorizationHeader = request.getHeader("Authorization");
     if (!authorizationHeader.isEmpty()) {
@@ -308,7 +308,7 @@ WickrIOHttpRequestHdlr::hmac_sha256(const QByteArray &key, const QByteArray &sec
  * @param response
  */
 void
-WickrIOHttpRequestHdlr::setMsgRecvCallback(const QString& apiKey, HttpRequest& request, HttpResponse& response)
+WickrIOHttpRequestHdlr::setMsgRecvCallback(const QString& apiKey, stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response)
 {
     bool success = false;
     QByteArray reason = "Failed setting callback";
@@ -346,7 +346,7 @@ WickrIOHttpRequestHdlr::setMsgRecvCallback(const QString& apiKey, HttpRequest& r
  * @param response
  */
 void
-WickrIOHttpRequestHdlr::getMsgRecvCallback(const QString& apiKey, HttpResponse& response)
+WickrIOHttpRequestHdlr::getMsgRecvCallback(const QString& apiKey, stefanfrings::HttpResponse& response)
 {
     QJsonObject msgRecvValue;
 
@@ -374,7 +374,7 @@ WickrIOHttpRequestHdlr::getMsgRecvCallback(const QString& apiKey, HttpResponse& 
  * @param response
  */
 void
-WickrIOHttpRequestHdlr::deleteMsgRecvCallback(const QString& apiKey, HttpResponse& response)
+WickrIOHttpRequestHdlr::deleteMsgRecvCallback(const QString& apiKey, stefanfrings::HttpResponse& response)
 {
     bool success = false;
 
@@ -411,7 +411,7 @@ WickrIOHttpRequestHdlr::deleteMsgRecvCallback(const QString& apiKey, HttpRespons
  * @param response
  */
 void
-WickrIOHttpRequestHdlr::setMsgRecvEmail(const QString& apiKey, HttpRequest& request, HttpResponse& response)
+WickrIOHttpRequestHdlr::setMsgRecvEmail(const QString& apiKey, stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response)
 {
     bool success = false;
     QString reason;
@@ -475,7 +475,7 @@ WickrIOHttpRequestHdlr::setMsgRecvEmail(const QString& apiKey, HttpRequest& requ
  * @param response
  */
 void
-WickrIOHttpRequestHdlr::getMsgRecvEmail(const QString& apiKey, HttpResponse& response)
+WickrIOHttpRequestHdlr::getMsgRecvEmail(const QString& apiKey, stefanfrings::HttpResponse& response)
 {
     QJsonObject msgRecvValue;
 
@@ -522,7 +522,7 @@ WickrIOHttpRequestHdlr::getMsgRecvEmail(const QString& apiKey, HttpResponse& res
  * @param response
  */
 void
-WickrIOHttpRequestHdlr::deleteMsgRecvEmail(const QString& apiKey, HttpResponse& response)
+WickrIOHttpRequestHdlr::deleteMsgRecvEmail(const QString& apiKey, stefanfrings::HttpResponse& response)
 {
     bool success = false;
 
