@@ -12,7 +12,6 @@
 #include "operationdata.h"
 #include "wickrioipc.h"
 #include "wickrioreceivethread.h"
-#include "wickriocallbackthread.h"
 #include "user/wickrUser.h"
 #include "services/wickrTaskService.h"
 
@@ -60,7 +59,6 @@ private:
     QString m_serverName;
 
     WickrBotMainIPC *m_wickrIPC;
-    WickrIOCallbackThread *m_callbackThread;
     WickrIOReceiveThread *m_rxThread;
 
     // Timer definitions

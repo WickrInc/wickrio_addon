@@ -16,6 +16,8 @@
 #include "clientconfigurationinfo.h"
 #include "clientversioninfo.h"
 
+#include "wickrIOClientRuntime.h"
+
 
 #ifdef WICKR_PLUGIN_SUPPORT
 Q_IMPORT_PLUGIN(WickrPlugin)
@@ -336,6 +338,11 @@ int main(int argc, char *argv[])
 
         operation->processName = WBIOCommon::getClientProcessName(username);
     }
+
+    /*
+     * Start the wickrIO Client Runtime
+     */
+    WickrIOClientRuntime::init(operation);
 
     /*
      * Start the WickrIO thread

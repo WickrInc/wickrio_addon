@@ -43,7 +43,6 @@ WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
         m_operation->startRcvSecs = 2;
     }
 
-    m_callbackThread = new WickrIOCallbackThread(operation);
     m_rxThread = new WickrIOReceiveThread(operation);
 
     this->connect(this, &WickrIOEClientMain::started, this, &WickrIOEClientMain::processStarted);
@@ -231,9 +230,6 @@ void WickrIOEClientMain::slotDatabaseLoadDone(WickrDatabaseLoadContext *context)
                                          WickrCore::WickrSession::getActiveSession()->getNetworkIdFromLogin(),
                                          true);
 
-    // Start the callback thread
-    m_callbackThread->start();
-
     // Start the receive thread
     connect(m_rxThread, &WickrIOReceiveThread::signalProcessStarted, this, &WickrIOEClientMain::slotRxProcessStarted, Qt::QueuedConnection);
     m_rxThread->start();
@@ -392,8 +388,9 @@ void WickrIOEClientMain::stopAndExit(int procState)
     m_actionHdlr.setShuttingDown(true);
     if (m_actionHdlr.isProcessingActions() ||
         m_actionHdlr.isProcessingCleanUp() ||
-        m_rxThread->m_threadState != Idle ||
-        m_callbackThread->m_threadState != Idle) {
+        m_rxThread->m_threadState != Idle) {
+        // TODO: Need to make sure the callbackservice is done
+
         // Wait till the action/cleanup/rcvmsg processes are finished
         QTimer timer;
         QEventLoop loop;
@@ -403,8 +400,8 @@ void WickrIOEClientMain::stopAndExit(int procState)
         int iterationsProcAction = 20;
         while ((m_actionHdlr.isProcessingActions() && iterationsProcAction > 0) ||
                m_actionHdlr.isProcessingCleanUp() ||
-               m_rxThread->m_threadState != Idle  ||
-               m_callbackThread->m_threadState != Idle) {
+               m_rxThread->m_threadState != Idle ) {
+            //TODO: need to make sure the callback service is stopped
             if (m_actionHdlr.isProcessingActions()) {
                 iterationsProcAction--;
                 qDebug() << "Waiting for client Action Handler process to finish!";
@@ -416,10 +413,12 @@ void WickrIOEClientMain::stopAndExit(int procState)
                 qDebug() << "Waiting for client Receive Messages process to finish!";
                 QMetaObject::invokeMethod(m_rxThread, "stopProcessing", Qt::QueuedConnection);
             }
+#if 0
             if ( m_callbackThread->m_threadState != Idle) {
                 qDebug() << "Waiting for Callback Thread process to finish!";
                 QMetaObject::invokeMethod(m_callbackThread, "stopProcessing", Qt::QueuedConnection);
             }
+#endif
 
             timer.start(1000);
             loop.exec();

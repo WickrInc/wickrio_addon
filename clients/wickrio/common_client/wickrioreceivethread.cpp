@@ -14,6 +14,7 @@
 #include "common/wickrNotifyList.h"
 
 #include "wickrIOMsgEmailService.h"
+#include "wickrIOClientRuntime.h"
 
 #define WICKRBOT_UPDATE_STATS_SECS      600
 
@@ -191,6 +192,7 @@ WickrIOReceiveThread::processMessage(WickrDBObject *item)
 
                 if (mclass != MsgClass_File) {
                     int msgID = db->insertMessage(msg->getMsgTimestamp(), m_operation->m_client->id, saveDoc.toJson(), (int)msg->getMsgClass(), 0);
+                    WickrIOClientRuntime::cbSvcMessagesPending();
                 } else {
 #if 0
                     WickrIORxDownloadFile *rxDownload = NULL;

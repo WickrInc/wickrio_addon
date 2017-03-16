@@ -112,7 +112,9 @@ SOURCES += \
     wickrIOLoginHdlr.cpp \
     wickrIOActionHdlr.cpp \
     clientconfigurationinfo.cpp \
-    clientversioninfo.cpp
+    clientversioninfo.cpp \
+    wickrIOClientRuntime.cpp \
+    wickrIOCallbackService.cpp
 
 HEADERS += \
     $${PWD}/../common/wickrbotactiondatabase.h \
@@ -123,7 +125,9 @@ HEADERS += \
     wickrIOActionHdlr.h \
     wickrbuildnumbers.h \
     clientconfigurationinfo.h \
-    clientversioninfo.h
+    clientversioninfo.h \
+    wickrIOClientRuntime.h \
+    wickrIOCallbackService.h
 
 # qsqlcipher_wickr
 

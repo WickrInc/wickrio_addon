@@ -1,35 +1,134 @@
-#include "wickriocallbackthread.h"
+#include "wickrIOCallbackService.h"
 #include "wickriodatabase.h"
-#include "wickrioapi.h"
-
-#include "wickrIOMsgEmailService.h"
 #include "common/wickrHttpRequest.h"
+#include "wickrIOClientRuntime.h"
 
-WickrIOCallbackThread::WickrIOCallbackThread(OperationData *operation) :
-    WickrIOThread(),
-    m_operation(operation)
+WickrIOCallbackService::WickrIOCallbackService()
+    : m_state(WickrServiceState::SERVICE_UNINITIALIZED)
+    , m_cbThread(nullptr)
 {
+  qRegisterMetaType<WickrServiceState>("WickrServiceState");
+  qRegisterMetaType<WickrApplicationState>("WickrApplicationState");
+
+  // Start threads
+  startThreads();
+
+  setObjectName("WickrIOCallbackThread");
+  qDebug() << "WICKRIOCALLBACK SERVICE: Started.";
+  m_state = WickrServiceState::SERVICE_STARTED;
 }
 
-WickrIOCallbackThread::~WickrIOCallbackThread()
-{
+/**
+* @brief WickrIOCallbackService::~WickrIOCallbackService
+* Destructor
+*/
+WickrIOCallbackService::~WickrIOCallbackService() {
+    // Stop threads
+    stopThreads();
 
+    qDebug() << "WICKRIOCALLBACK SERVICE: Shutdown.";
+    m_state = WickrServiceState::SERVICE_SHUTDOWN;
 }
 
-
-void WickrIOCallbackThread::processStarted()
+/**
+ * @brief WickrSwitchboardService::startThreads
+ * Starts all threads on message service.
+ */
+void WickrIOCallbackService::startThreads()
 {
-    qDebug() << "Started WickrIOCallbackThread";
+    QWriteLocker lockGuard(&m_lock);
+
+    // Allocate threads
+    m_cbThread = new WickrIOCallbackThread(&m_thread,this);
+
+    // Connect internal threads signals and slots
+    connect(this, &WickrIOCallbackService::signalMessagesPending,
+            m_cbThread, &WickrIOCallbackThread::slotProcessMessages, Qt::QueuedConnection);
+
+    // Perform startup here, creating and configuring ressources.
+    m_thread.start();
 }
 
-
-void WickrIOCallbackThread::onTimerAction()
+/**
+ * @brief WickrSwitchboardService::stopThreads
+ * Stops all threads on switchboard service.
+ */
+void WickrIOCallbackService::stopThreads()
 {
-    m_processing = true;
+    QWriteLocker lockGuard(&m_lock);
+
+    // Perform shutdown here, wait for resources to quit, and cleanup
+
+    // Task Service
+    m_thread.quit();
+    m_thread.wait();
+    qDebug("SWITCHBOARD THREAD: Shutdown Thread (%p)", &m_thread);
+}
+
+void WickrIOCallbackService::messagesPending()
+{
+    emit signalMessagesPending();
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief WickrIOCallbackThread::asStringState
+ * @param state
+ * @return
+ */
+QString WickrIOCallbackThread::cbStringState(CBThreadState state)
+{
+    switch(state) {
+    case CBThreadState::CB_UNINITIALIZED:   return "Uninitialized";
+    case CBThreadState::CB_STARTED:         return "Started";
+    case CBThreadState::CB_PROCESSING:      return "Processing";
+    case CBThreadState::CB_FINISHED:        return "Finished";
+    default:                                return "Unknown";
+    }
+}
+
+/**
+ * @brief WickrIOCallbackThread::WickrIOCallbackThread
+ * Constructor
+ */
+WickrIOCallbackThread::WickrIOCallbackThread(QThread *thread, WickrIOCallbackService *cbSvc)
+    : m_parent(cbSvc)
+    , m_state(CBThreadState::CB_UNINITIALIZED)
+{
+    m_operation = WickrIOClientRuntime::operationData();
+
+    thread->setObjectName("WickrIOCallbackThread");
+    this->moveToThread(thread);
+
+    // Signal to cleanup worker
+    connect(thread, &QThread::finished, this, &QObject::deleteLater);
+
+    m_state = CBThreadState::CB_STARTED;
+}
+
+/**
+ * @brief WickrIOCallbackThread::~WickrIOCallbackThread
+ * Destructor
+ */
+WickrIOCallbackThread::~WickrIOCallbackThread() {
+    qDebug() << "WICKRIOCALLBACK THREAD: Worker Destroyed.";
+}
+
+void
+WickrIOCallbackThread::slotProcessMessages()
+{
+    m_state = CBThreadState::CB_PROCESSING;
 
     WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
     if (db == NULL) {
-        m_processing = false;
+        m_state = CBThreadState::CB_STARTED;
     } else {
         WickrIOAppSettings appSetting;
 
@@ -38,7 +137,7 @@ void WickrIOCallbackThread::onTimerAction()
             if (! url.isEmpty()) {
                 startUrlCallback(url);
             } else {
-                m_processing = false;
+                m_state = CBThreadState::CB_STARTED;
             }
         } else if (db->getAppSetting(m_operation->m_client->id, DB_APPSETTINGS_TYPE_MSGRECVEMAIL, &appSetting)) {
             WickrIOEmailSettings *email = new WickrIOEmailSettings();
@@ -46,9 +145,9 @@ void WickrIOCallbackThread::onTimerAction()
                 startEmailCallback(email);
             }
             delete email;
-            m_processing = false;
+            m_state = CBThreadState::CB_STARTED;
         } else {
-            m_processing = false;
+            m_state = CBThreadState::CB_STARTED;
         }
     }
 }
@@ -169,7 +268,7 @@ WickrIOCallbackThread::startUrlCallback(QString url)
 
     if (!sendMessage()) {
         CLEANUP_SERVER_REQ(msgSendCallbackResponse,msgSendCallbackError);
-        m_processing = false;
+        m_state = CBThreadState::CB_STARTED;
     }
 }
 
@@ -206,7 +305,7 @@ WickrIOCallbackThread::gotReply(QNetworkReply *thereply)
     }
 
     // TODO: Need to handle the processing better
-    m_processing = false;
+    m_state = CBThreadState::CB_STARTED;
 }
 
 /**
@@ -278,7 +377,7 @@ WickrIOCallbackThread::msgSendCallbackResponse(QNetworkReply *thereply, QByteArr
     if (! sendMessage()) {
         CLEANUP_SERVER_REQ(msgSendCallbackResponse,msgSendCallbackError);
     }
-    m_processing = false;
+    m_state = CBThreadState::CB_STARTED;
 }
 
 void
@@ -287,6 +386,6 @@ WickrIOCallbackThread::msgSendCallbackError(QNetworkReply *thereply, QByteArray 
     if( thereply != this->reply ) return;
 
     CLEANUP_SERVER_REQ(msgSendCallbackResponse,msgSendCallbackError);
-    m_processing = false;
+    m_state = CBThreadState::CB_STARTED;
 }
 

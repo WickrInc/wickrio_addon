@@ -25,7 +25,7 @@ WickrIOMsgCallbackService::WickrIOMsgCallbackService()
     // Start threads
     startThreads();
 
-    setObjectName("WickrIOMsgCallbackService");
+    setObjectName("WickrShredderService");
     qDebug() << "SHREDDER SERVICE: Started.";
     m_state = STARTED;
 }
