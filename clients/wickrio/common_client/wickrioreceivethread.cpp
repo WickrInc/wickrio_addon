@@ -155,6 +155,9 @@ WickrIOReceiveThread::processMessage(WickrDBObject *item)
             }
 
             if (processMsg) {
+                if (inbox->getConvo()->getConvoType() == CONVO_SECURE_ROOM) {
+                    jsonObject.insert(APIJSON_VGROUPID, inbox->getConvo()->getVGroupID());
+                }
                 // Get the sender of this message
                 WickrCore::WickrUser *sender = inbox->getSenderUser();
                 jsonObject.insert(APIJSON_MSGSENDER, sender->getUserID());
@@ -174,6 +177,7 @@ WickrIOReceiveThread::processMessage(WickrDBObject *item)
                 usersArray.append(myUserEntry);
 
                 jsonObject.insert(APIJSON_USERS, usersArray);
+
 
                 // Message timestamp
                 long timestamp = msg->getMsgTimestamp();

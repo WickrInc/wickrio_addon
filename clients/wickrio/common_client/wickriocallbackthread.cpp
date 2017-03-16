@@ -167,10 +167,9 @@ WickrIOCallbackThread::startUrlCallback(QString url)
     QObject::connect(mgr, SIGNAL(finished(QNetworkReply*)), this, SLOT(gotReply(QNetworkReply*)));
     LINK_SERVER_REQ(msgSendCallbackResponse, msgSendCallbackError);
 
-    if (sendMessage()) {
-    } else {
+    if (!sendMessage()) {
         CLEANUP_SERVER_REQ(msgSendCallbackResponse,msgSendCallbackError);
-        m_processing = true;
+        m_processing = false;
     }
 }
 
@@ -205,6 +204,9 @@ WickrIOCallbackThread::gotReply(QNetworkReply *thereply)
         QString error = tr("Network Connectivity Error %1: Please check your Internet access").arg(statusCodeV.toString());
         emit sendError(reply, error.toLocal8Bit());
     }
+
+    // TODO: Need to handle the processing better
+    m_processing = false;
 }
 
 /**
@@ -236,6 +238,7 @@ WickrIOCallbackThread::sendMessage()
             QUrl serviceURL(m_url);
 
             QNetworkRequest request(serviceURL);
+
             request.setRawHeader("User-Agent", "WickrIO v1.1");
             request.setRawHeader("X-Custom-User-Agent", "WickrIO v1.1");
             request.setRawHeader("Content-Type", "application/json");
@@ -265,7 +268,6 @@ WickrIOCallbackThread::msgSendCallbackResponse(QNetworkReply *thereply, QByteArr
         WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
         if (db == NULL) {
             CLEANUP_SERVER_REQ(msgSendCallbackResponse,msgSendCallbackError);
-            m_processing = true;
         } else {
             db->deleteMessage(postedMsgID);
             postedMsgID = 0;
@@ -275,8 +277,8 @@ WickrIOCallbackThread::msgSendCallbackResponse(QNetworkReply *thereply, QByteArr
     // If there are no more messages to send then we are done
     if (! sendMessage()) {
         CLEANUP_SERVER_REQ(msgSendCallbackResponse,msgSendCallbackError);
-        m_processing = true;
     }
+    m_processing = false;
 }
 
 void
@@ -285,6 +287,6 @@ WickrIOCallbackThread::msgSendCallbackError(QNetworkReply *thereply, QByteArray 
     if( thereply != this->reply ) return;
 
     CLEANUP_SERVER_REQ(msgSendCallbackResponse,msgSendCallbackError);
-    m_processing = true;
+    m_processing = false;
 }
 
