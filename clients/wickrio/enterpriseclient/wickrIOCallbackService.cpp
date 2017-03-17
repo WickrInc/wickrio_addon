@@ -4,7 +4,8 @@
 #include "wickrIOClientRuntime.h"
 
 WickrIOCallbackService::WickrIOCallbackService()
-    : m_state(WickrServiceState::SERVICE_UNINITIALIZED)
+    : m_lock(QReadWriteLock::Recursive)
+    , m_state(WickrServiceState::SERVICE_UNINITIALIZED)
     , m_cbThread(nullptr)
 {
   qRegisterMetaType<WickrServiceState>("WickrServiceState");
@@ -101,9 +102,8 @@ QString WickrIOCallbackThread::cbStringState(CBThreadState state)
 WickrIOCallbackThread::WickrIOCallbackThread(QThread *thread, WickrIOCallbackService *cbSvc)
     : m_parent(cbSvc)
     , m_state(CBThreadState::CB_UNINITIALIZED)
+    , m_operation(nullptr)
 {
-    m_operation = WickrIOClientRuntime::operationData();
-
     thread->setObjectName("WickrIOCallbackThread");
     this->moveToThread(thread);
 
@@ -125,6 +125,10 @@ void
 WickrIOCallbackThread::slotProcessMessages()
 {
     m_state = CBThreadState::CB_PROCESSING;
+
+    if (m_operation == nullptr) {
+        m_operation = WickrIOClientRuntime::operationData();
+    }
 
     WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
     if (db == NULL) {
