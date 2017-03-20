@@ -51,11 +51,11 @@ win32 {
     DEFINES += QTWEBAPPLIB_IMPORT
 
     CONFIG(release,debug|release) {
-        LIBS += -L$$OUT_PWD/$$DEPTH/clients/wickrio/libs/QtWebApp/release -lQtWebApp
-        PRE_TARGETDEPS += $$OUT_PWD/$$DEPTH/clients/wickrio/libs/QtWebApp/release/QtWebApp.lib
+        LIBS += -L$$OUT_PWD/$$DEPTH/clients/wickrio/libs/QtWebApp/release -lQtWebApp1
+        PRE_TARGETDEPS += $$OUT_PWD/$$DEPTH/clients/wickrio/libs/QtWebApp/release/QtWebApp1.dll
     }
     else {
-        LIBS += -L$$OUT_PWD/$$DEPTH/clients/wickrio/libs/QtWebApp/debug -lQtWebAppd
-        PRE_TARGETDEPS += $$OUT_PWD/$$DEPTH/clients/wickrio/libs/QtWebApp/debug/QtWebAppd.lib
+        LIBS += -L$$OUT_PWD/$$DEPTH/clients/wickrio/libs/QtWebApp/debug -lQtWebAppd1
+        PRE_TARGETDEPS += $$OUT_PWD/$$DEPTH/clients/wickrio/libs/QtWebApp/debug/QtWebAppd1.dll
     }
 }
