@@ -131,12 +131,12 @@ linux)
     ;;
 win32)
     echo "DONE!"
-    set -e
-    make
-    make update
-    make win32.release
-    make win32.release.install
-    (cd $build ; qmake ../wickr-wickrio.pro $qmake)
-    (cd $build ; $BUILD_CMD)
+#    set -e
+#    make
+#    make update
+#    make win32.release
+#    make win32.release.install
+#    (cd $build ; qmake ../wickr-wickrio.pro $qmake)
+#    (cd $build ; $BUILD_CMD)
     ;;
 esac
