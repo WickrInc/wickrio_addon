@@ -7,12 +7,10 @@ isEmpty(WICKRIOGUI_LIBRARY_TYPE) {
 QT += gui widgets
 WICKRIOGUI_INCLUDEPATH = $${PWD}
 
-WICKRIOGUI_LIBS = -lwickrbotgui
 contains(WICKRIOGUI_LIBRARY_TYPE, staticlib) {
     DEFINES += WICKRIOGUI_STATIC
 } else {
     DEFINES += WICKRIOGUI_SHARED
-    win32:WICKRIOGUI_LIBS = -lwickrbotgui0
 }
 
 isEmpty(PREFIX) {

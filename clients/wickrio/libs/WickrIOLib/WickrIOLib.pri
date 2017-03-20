@@ -52,11 +52,11 @@ win32 {
 
     CONFIG(release,debug|release) {
         LIBS += -L$$OUT_PWD/$$DEPTH/clients/wickrio/libs/WickrIOLib/release -lWickrIOLib1
-        PRE_TARGETDEPS += $$OUT_PWD/$$DEPTH/clients/wickrio/libs/WickrIOLib/release/WickrIOLib1.lib
+        PRE_TARGETDEPS += $$OUT_PWD/$$DEPTH/clients/wickrio/libs/WickrIOLib/release/WickrIOLib1.dll
     }
     else {
         LIBS += -L$$OUT_PWD/$$DEPTH/clients/wickrio/libs/WickrIOLib/debug -lWickrIOLibd1
-        PRE_TARGETDEPS += $$OUT_PWD/$$DEPTH/clients/wickrio/libs/WickrIOLib/debug/WickrIOLibd1.lib
+        PRE_TARGETDEPS += $$OUT_PWD/$$DEPTH/clients/wickrio/libs/WickrIOLib/debug/WickrIOLibd1.dll
     }
 }
 
