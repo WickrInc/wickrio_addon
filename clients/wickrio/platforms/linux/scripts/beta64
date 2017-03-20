@@ -6,6 +6,8 @@ set -e
 current=`dirname $0`
 cd $current
 
+QTVER="5_7"
+
 #
 # Setup the version number(s)
 #
@@ -14,24 +16,28 @@ min=`cat ../../../OFFICIAL_BUILD_VERSION | cut -c2-2`
 pat=`cat ../../../OFFICIAL_BUILD_VERSION | cut -c3-3`
 bld=`cat ../../../OFFICIAL_BUILD_NUMBER | cut -c4-6`
 
-builddir=build-wickr-wickrio-Desktop_Qt_5_7_1_GCC_64bit_BUILT-Debug
+BLDTYPE="Debug"
+bldtype=alpha
+BldType=Alpha
 
-version="${maj}.${min}.${pat}-${bld}~beta"
+BUILDDIR=build-wickr-wickrio-Desktop_Qt_${QTVER}_GCC_64bit_BUILT-${BLDTYPE}
+
+version="${maj}.${min}.${pat}-${bld}~${bldtype}"
 
 echo "Version=$version"
 
-prefix=~/tmp/wickrio-beta-deb
-debian=~/tmp/wickrio-beta-deb/DEBIAN
+prefix=~/tmp/wickrio-${bldtype}-deb
+debian=~/tmp/wickrio-${bldtype}-deb/DEBIAN
 bindir=$prefix/usr/bin
 sbindir=$prefix/usr/sbin
-libdir=$prefix/usr/lib/wickrio-beta
-docdir=$prefix/usr/share/doc/wickrio-beta
-plugins=$prefix/usr/lib/wickrio-beta/plugins
+libdir=$prefix/usr/lib/wickrio-${bldtype}
+docdir=$prefix/usr/share/doc/wickrio-${bldtype}
+plugins=$prefix/usr/lib/wickrio-${bldtype}/plugins
 
 # Service related definitions
 svcinitdir=$prefix/etc/init.d
 
-optdir=$prefix/opt/WickrIOBeta
+optdir=$prefix/opt/WickrIO$BldType
 scriptsdir=$optdir/scripts
 imagedir=$optdir/attachments/image
 
@@ -68,62 +74,62 @@ mkdir -p $appdata
 #
 # Copy the executables
 #
-cp -a $current/../../../../../../${builddir}/clients/wickrio/settings_init/wickrio_settings_init $bindir/wickrio_settings_init-beta
-cp -a $current/../../../../../../${builddir}/clients/wickrio/service_control/wickrio_service_control $bindir/wickrio_service_control-beta
-cp -a $current/../../../../../../${builddir}/clients/wickrio/enterpriseclient/WickrIOEClientBeta $bindir
-cp -a $current/../../../../../../${builddir}/clients/wickrio/console/WickrIOConsoleBeta $bindir
-cp -a $current/../../../../../../${builddir}/clients/wickrio/consoleserver/WickrIOCSvrBeta $sbindir
-cp -a $current/../../../../../../${builddir}/clients/wickrio/clientserver/WickrIOSvrBeta $sbindir
+cp -a $current/../../../../../../${BUILDDIR}/clients/wickrio/settings_init/wickrio_settings_init $bindir/wickrio_settings_init-${bldtype}
+cp -a $current/../../../../../../${BUILDDIR}/clients/wickrio/service_control/wickrio_service_control $bindir/wickrio_service_control-${bldtype}
+#cp -a $current/../../../../../../${BUILDDIR}/clients/wickrio/client/WickrIOClient$BldType $bindir
+cp -a $current/../../../../../../${BUILDDIR}/clients/wickrio/enterpriseclient/WickrIOEClient$BldType $bindir
+cp -a $current/../../../../../../${BUILDDIR}/clients/wickrio/console/WickrIOConsole$BldType $bindir
+cp -a $current/../../../../../../${BUILDDIR}/clients/wickrio/consoleserver/WickrIOCSvr$BldType $sbindir
+cp -a $current/../../../../../../${BUILDDIR}/clients/wickrio/clientserver/WickrIOSvr$BldType $sbindir
 
 # only for Beta version
-cp -a $current/../../../../../../${builddir}/clients/wickrio/callback_listener/WickrIOCallbackListenerBeta $bindir
+cp -a $current/../../../../../../${BUILDDIR}/clients/wickrio/callback_listener/WickrIOCallbackListener$BldType $bindir
 
-#cp -a $current/../../../../../../${builddir}/libs/qamqpsrc/libqamqp.* $libdir
-cp -a $current/../../../../../../${builddir}/clients/wickrio/libs/QtWebApp/libQtWebAppd.* $libdir
-cp -a $current/../../../../../../${builddir}/clients/wickrio/libs/WickrIOGUI/libWickrIOGUId.* $libdir
-cp -a $current/../../../../../../${builddir}/clients/wickrio/libs/WickrIOLib/libWickrIOLibd.* $libdir
-cp -a $current/../../../../../../${builddir}/clients/wickrio/libs/SMTPEmail/libSMTPEmail.* $libdir
+cp -a $current/../../../../../../${BUILDDIR}/clients/wickrio/libs/QtWebApp/libQtWebAppd.* $libdir
+cp -a $current/../../../../../../${BUILDDIR}/clients/wickrio/libs/WickrIOLib/libWickrIOLibd.* $libdir
+cp -a $current/../../../../../../${BUILDDIR}/clients/wickrio/libs/WickrIOGUI/libWickrIOGUId.* $libdir
+cp -a $current/../../../../../../${BUILDDIR}/clients/wickrio/libs/SMTPEmail/libSMTPEmail.* $libdir
 
-chrpath -r /usr/lib/wickrio-beta $bindir/wickrio_service_control-beta
-chrpath -r /usr/lib/wickrio-beta $bindir/wickrbot_settings_init-beta
-chrpath -r /usr/lib/wickrio-beta $bindir/WickrIOEClientBeta
-chrpath -r /usr/lib/wickrio-beta $bindir/WickrIOConsoleBeta
-chrpath -r /usr/lib/wickrio-beta $sbindir/WickrIOSvrBeta
-chrpath -r /usr/lib/wickrio-beta $sbindir/WickrIOCSvrBeta
+chrpath -r /usr/lib/wickrio-${bldtype} $bindir/wickrio_service_control-${bldtype}
+chrpath -r /usr/lib/wickrio-${bldtype} $bindir/wickrio_settings_init-${bldtype}
+chrpath -r /usr/lib/wickrio-${bldtype} $bindir/WickrIOEClient$BldType
+chrpath -r /usr/lib/wickrio-${bldtype} $bindir/WickrIOConsole$BldType
+chrpath -r /usr/lib/wickrio-${bldtype} $sbindir/WickrIOSvr$BldType
+chrpath -r /usr/lib/wickrio-${bldtype} $sbindir/WickrIOCSvr$BldType
 
 # only for Beta version
-chrpath -r /usr/lib/wickrio-beta $bindir/WickrIOCallbackListenerBeta
+chrpath -r /usr/lib/wickrio-${bldtype} $bindir/WickrIOCallbackListener$BldType
 
 #
 # Copy support files.
 # Change the contents appropriately for Beta version Release versions
 #
-sed -e "s/EXTENSION/-beta/g" -e "s/INSTALLEXT/Beta/g" -e "s/VERSION/$version/" <$current/control64 > $debian/control
+sed -e "s/EXTENSION/-${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" -e "s/VERSION/$version/" <$current/control64 > $debian/control
 
 # Installer pre and post installation scripts
-sed -e "s/EXTENSION/-beta/g" -e "s/INSTALLEXT/Beta/g" <$current/preinst > $debian/preinst
-sed -e "s/EXTENSION/-beta/g" -e "s/INSTALLEXT/Beta/g" <$current/postinst > $debian/postinst
-sed -e "s/EXTENSION/-beta/g" -e "s/INSTALLEXT/Beta/g" <$current/prerm > $debian/prerm
+sed -e "s/EXTENSION/-${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" <$current/preinst > $debian/preinst
+sed -e "s/EXTENSION/-${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" <$current/postinst > $debian/postinst
+sed -e "s/EXTENSION/-${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" <$current/prerm > $debian/prerm
 
 # WickrIO Client Server settings file
-sed -e "s/EXTENSION/-beta/g" -e "s/INSTALLEXT/Beta/g" <$current/WickrIOSvr.ini > $optdir/WickrIOSvrBeta.ini
+sed -e "s/EXTENSION/-${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" <$current/WickrIOSvr.ini > $optdir/WickrIOSvr$BldType.ini
 
 # Daemon init script
-sed -e "s/EXTENSION/-beta/g" -e "s/INSTALLEXT/Beta/g" <$current/WickrIOSvr.script > $svcinitdir/WickrIOSvrBeta
+sed -e "s/EXTENSION/-${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" <$current/WickrIOSvr.script > $svcinitdir/WickrIOSvr$BldType
 
 # Daemon init script
-sed -e "s/EXTENSION/-beta/g" -e "s/INSTALLEXT/Beta/g" <$current/WickrIOCSvr.script > $svcinitdir/WickrIOCSvrBeta
+sed -e "s/EXTENSION/-${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" <$current/WickrIOCSvr.script > $svcinitdir/WickrIOCSvr$BldType
 
 #
 # Copy the library files
 #
-cp -a $platform/*.so $platform/*.so.* $libdir/
+#cp -a $platform/*.so $platform/*.so.* $libdir/
 rm -f $plugins/sqldrivers/*
 #cp -a $current/../../../../../platforms/linux/plugins-64/* $plugins/sqldrivers/
 cp -a $current/../plugins-64/* $plugins/sqldrivers/
 cp -Lp /usr/lib/x86_64-linux-gnu/libicu*.so.52 $libdir/
 mkdir -p $messages
-echo "/usr/share/applications/wickrio-beta.client" >$messages/wickrio-beta
+echo "/usr/share/applications/wickrio-${bldtype}.client" >$messages/wickrio-${bldtype}
 
 #
 # Generate the MD5 SUM value
@@ -141,18 +147,18 @@ chmod -x $libdir/*.so*
 chmod 755 $debian/preinst
 chmod 755 $debian/postinst
 chmod 755 $debian/prerm
-chmod 755 $svcinitdir/WickrIOSvrBeta
-chmod 755 $svcinitdir/WickrIOCSvrBeta
-chmod 644 $optdir/WickrIOSvrBeta.ini
+chmod 755 $svcinitdir/WickrIOSvr$BldType
+chmod 755 $svcinitdir/WickrIOCSvr$BldType
+chmod 644 $optdir/WickrIOSvr$BldType.ini
 
 #
 # Create the actual package
 #
-rm -f wickrio-beta_*.deb
+rm -f wickrio-${bldtype}_*.deb
 fakeroot chown -R root:root $prefix
-chmod 4755 $bindir/WickrIOConsoleBeta
+chmod 4755 $bindir/WickrIOConsole$BldType
 
-fakeroot dpkg -b wickrio-beta-deb/ wickrio-beta_${version}_amd64.deb
+fakeroot dpkg -b wickrio-${bldtype}-deb/ wickrio-${bldtype}_${version}_amd64.deb
 if [ "`basename $0`" = "deploy64" ]
 then
   sha256sum wickrio_${version}_amd64.deb >wickrio-${version}.amd64.sha256

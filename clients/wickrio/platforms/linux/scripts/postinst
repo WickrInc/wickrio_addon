@@ -19,7 +19,7 @@ case "$1" in
         #
         # Do any pre-execution setup
         #
-        wickrbot_settings_initEXTENSION /opt/WickrIOINSTALLEXT
+        wickrio_settings_initEXTENSION /opt/WickrIOINSTALLEXT
 
         #
         # Start the service(s)
