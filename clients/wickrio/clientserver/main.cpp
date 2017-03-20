@@ -58,6 +58,8 @@ void redirectedOutput(QtMsgType type, const QMessageLogContext &, const QString 
     }
 }
 
+Q_IMPORT_PLUGIN(QSQLCipherDriverPlugin)
+
 /**
  * @brief main
  * @param argc
