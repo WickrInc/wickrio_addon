@@ -166,12 +166,7 @@ macx {
 
 linux-g++* {
     QMAKE_CXXFLAGS += -Wunused-parameter
-    CONFIG(release,debug|release) {
-        QMAKE_RPATHDIR = /usr/lib/wickrIO
-    }
-    else {
-        QMAKE_RPATHDIR = /usr/lib/wickrIO-beta
-    }
+
     INCLUDEPATH += $$DEPTH/wickr-sdk/platforms/linux/include
     INCLUDEPATH += $$DEPTH
     contains(QT_ARCH,x86_64) {

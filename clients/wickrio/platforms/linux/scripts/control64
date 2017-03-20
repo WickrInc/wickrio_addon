@@ -3,9 +3,9 @@ Architecture: amd64
 Section: net
 Priority: optional
 Version: VERSION
-Depends: libc6, libssl1.0.0
+Depends: wickr-qt-5.7, libc6, libssl1.0.0, libicu55, libpcre16-3
 Recommends: 
-Maintainer: Wickr LLC <linux-support@wickr.com>
+Maintainer: Wickr Inc. <linux-support@wickr.com>
 Installed-Size: 200000
 Description: WickrIO Daemon
  WickrIO is a secure communications client

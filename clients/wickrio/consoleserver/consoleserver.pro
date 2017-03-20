@@ -65,9 +65,6 @@ include(../libs/WickrIOLib/WickrIOLib.pri)
 #
 include(../libs/SMTPEmail/SMTPEmail.pri)
 
-# IS THIS NEEDED
-unix:!macx:QMAKE_RPATHDIR += $${OUT_PWD}/../libs/WickrIOLib
-
 TEMPLATE = app
 
 QT  += core sql

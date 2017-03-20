@@ -50,9 +50,6 @@ include(../libs/QtWebApp/QtWebApp.pri)
 #
 include(../libs/WickrIOLib/WickrIOLib.pri)
 
-# IS THIS NEEDED
-unix:!macx:QMAKE_RPATHDIR += $${OUT_PWD}/$${DEPTH}/clients/wickrio/WickrIOLib
-
 TEMPLATE = app
 
 QT  += core sql

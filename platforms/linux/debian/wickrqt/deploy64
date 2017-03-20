@@ -1,0 +1,53 @@
+#!/bin/sh
+# a second stage deploy script...
+# Arguments to this script:
+
+set -e
+current=`dirname $0`
+cd $current
+current=$PWD
+
+target=wickr-qt
+baseversion=5.7
+version=5.7.1
+QTDIR=/usr/local/wickr/Qt-5.7
+
+output_dir="$1"
+if test -z "$output_dir" ; then
+	output_dir="/dev/null" ; fi
+
+prefix=~/tmp/${target}_${version}-deb
+debian=~/tmp/${target}_${version}-deb/DEBIAN
+
+libdir=${prefix}${QTDIR}/lib
+plugins=${prefix}${QTDIR}/plugins
+qmldir=${prefix}${QTDIR}/qml
+
+echo $libdir
+
+rm -rf $prefix
+mkdir -p $debian
+mkdir -p $libdir
+mkdir -p $plugins
+mkdir -p $qmldir
+
+sed -e "s/PACKAGE/${target}-${baseversion}/; s/VERSION/$version/" <./${target}.control64 >$debian/control
+
+cp -a $QTDIR/lib/*.so $QTDIR/lib/*.so.* $libdir/
+cp -a $QTDIR/plugins/* $plugins/
+cp -a $QTDIR/qml/* $qmldir
+
+cd $prefix
+find . -type f ! -regex '.*?debian-binary.*' ! -regex '.*?DEBIAN.*' -printf '%P ' | xargs md5sum > DEBIAN/md5sums
+
+cd ~/tmp
+chmod 0644 $debian/*
+chmod -R g-w $prefix/usr
+chmod -x $libdir/*.so*
+rm -f ${target}_*.deb
+fakeroot chown -R root:root $prefix
+fakeroot dpkg -b ${target}_${version}-deb/ ${target}_${version}_amd64.deb
+sha256sum ${target}_${version}_amd64.deb >${target}_${version}_amd64.deb.sha256
+if test -d "$output_dir" ; then
+	cp ${target}_${version}_amd64.* "$output_dir/" ; fi
+

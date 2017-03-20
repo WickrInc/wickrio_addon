@@ -17,8 +17,6 @@ include(../common/common_base.pri)
 #
 include(../libs/WickrIOLib/WickrIOLib.pri)
 
-unix:!macx:QMAKE_RPATHDIR += $${OUT_PWD}/../libs/WickrIOLib
-
 QT += widgets
 QT += sql
 QT -= gui
