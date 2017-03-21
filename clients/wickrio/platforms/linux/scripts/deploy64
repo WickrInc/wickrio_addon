@@ -154,7 +154,7 @@ sed -e "s/EXTENSION/${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" <$current/Wickr
 #
 # Copy the library files
 #
-#cp -a $platform/*.so $platform/*.so.* $libdir/
+cp -a $platform/*.so $platform/*.so.* $libdir/
 rm -f $plugins/sqldrivers/*
 #cp -a $current/../../../../../platforms/linux/plugins-64/* $plugins/sqldrivers/
 #cp -a $current/../plugins-64/* $plugins/sqldrivers/

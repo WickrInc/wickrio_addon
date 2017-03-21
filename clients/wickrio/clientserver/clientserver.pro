@@ -98,4 +98,3 @@ LIBS += -lqsqlcipher_wickr
 # sqlcipher
 
 LIBS += -lsqlcipher
-
