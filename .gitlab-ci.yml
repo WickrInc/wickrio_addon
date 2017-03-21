@@ -20,13 +20,14 @@ test_mac:
     - build/
   stage: test
   script:
+    - bash autobuild.sh
     - bash autotest.sh
   tags:
     - macos
 
 ######################################################
 # Windows
-test_win:
+build_win:
   cache:
     paths:
     - build/
@@ -42,6 +43,7 @@ test_win:
     - build/
   stage: test
   script:
+    - bash autobuild.sh
     - bash autotest.sh
   tags:
     - windows
@@ -63,6 +65,7 @@ test_linux:
     - build/
   stage: test
   script:
+    - bash autobuild.sh
     - bash autotest.sh
   tags:
     - linux
