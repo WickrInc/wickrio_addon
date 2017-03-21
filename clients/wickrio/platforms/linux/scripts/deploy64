@@ -67,6 +67,7 @@ plugins=$prefix/usr/lib/wickrio${bldtype}/plugins
 
 # Service related definitions
 svcinitdir=$prefix/etc/init.d
+systemdlibdir=$prefix/lib/systemd/system
 
 optdir=$prefix/opt/WickrIO$BldType
 scriptsdir=$optdir/scripts
@@ -96,6 +97,7 @@ mkdir -p $imagedir
 #mkdir -p $crondir
 mkdir -p $plugins/sqldrivers
 mkdir -p $svcinitdir
+mkdir -p $systemdlibdir
 
 # Client directories
 mkdir -p $pixmaps
@@ -151,6 +153,10 @@ sed -e "s/EXTENSION/${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" <$current/Wickr
 # Daemon init script
 sed -e "s/EXTENSION/${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" <$current/WickrIOCSvr.script > $svcinitdir/WickrIOCSvr$BldType
 
+# systemd service unit files
+sed -e "s/EXTENSION/${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" <$current/WickrIOCSvr.service > $systemdlibdir/WickrIOCSvr$BldType.service
+sed -e "s/EXTENSION/${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" <$current/WickrIOSvr.service > $systemdlibdir/WickrIOSvr$BldType.service
+
 #
 # Copy the library files
 #
@@ -181,6 +187,8 @@ chmod 755 $debian/prerm
 chmod 755 $svcinitdir/WickrIOSvr$BldType
 chmod 755 $svcinitdir/WickrIOCSvr$BldType
 chmod 644 $optdir/WickrIOSvr$BldType.ini
+chmod 755 $systemdlibdir/WickrIOSvr$BldType.service
+chmod 755 $systemdlibdir/WickrIOCSvr$BldType.service
 
 #
 # Create the actual package
