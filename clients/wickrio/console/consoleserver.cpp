@@ -64,7 +64,11 @@ ConsoleServer::toggleState(const QString &processName)
 
 #ifdef Q_OS_LINUX
         QProcess exec;
+#if 1
+        QString command = QString("systemctl %1 %2").arg(start ? "start" : "stop").arg(processName);
+#else
         QString command = QString("/etc/init.d/%1 %2").arg(processName).arg(start ? "start" : "stop");
+#endif
 
         exec.start(command);
         if (exec.waitForStarted()) {

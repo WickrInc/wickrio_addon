@@ -3,3 +3,4 @@ Description=WickrIO Client server
 
 [Service]
 ExecStart=/usr/sbin/WickrIOSvrINSTALLEXT
+ExecStop=/usr/bin/wickrio_service_controlEXTENSION WickrIOSvrINSTALLEXT stop

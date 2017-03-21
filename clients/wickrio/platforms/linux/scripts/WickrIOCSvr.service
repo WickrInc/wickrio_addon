@@ -3,3 +3,4 @@ Description=WickrIO Console server
 
 [Service]
 ExecStart=/usr/sbin/WickrIOCSvrINSTALLEXT
+ExecStop=/usr/bin/wickrio_service_controlEXTENSION WickrIOCSvrINSTALLEXT stop

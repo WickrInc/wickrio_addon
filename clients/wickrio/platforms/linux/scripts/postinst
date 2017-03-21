@@ -24,7 +24,7 @@ case "$1" in
         #
         # Start the service(s)
         #
-        service WickrIOSvrINSTALLEXT start
+        systemctl start WickrIOSvrINSTALLEXT
 
         # Add the service(s) to the list of startup services
         update-rc.d WickrIOSvrINSTALLEXT defaults
@@ -33,7 +33,8 @@ case "$1" in
         # Stop the WickrIO Console service
         #
         set +e
-        service WickrIOCSvrINSTALLEXT start
+        systemctl start WickrIOCSvrINSTALLEXT
+
         # Remove the startup entry for the service(s)
         update-rc.d -f WickrIOCSvrINSTALLEXT defaults
         set -e

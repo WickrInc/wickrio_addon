@@ -26,7 +26,7 @@ case "$1" in
         #
         # Stop the WickrIO service
         #
-        service WickrIOSvrINSTALLEXT stop
+        systemctl stop WickrIOSvrINSTALLEXT
         # Remove the startup entry for the service(s)
         update-rc.d -f WickrIOSvrINSTALLEXT remove
 
@@ -34,7 +34,8 @@ case "$1" in
         # Stop the WickrIO Console service
         #
         set +e
-        service WickrIOCSvrINSTALLEXT stop
+        systemctl stop WickrIOCSvrINSTALLEXT
+
         # Remove the startup entry for the service(s)
         update-rc.d -f WickrIOCSvrINSTALLEXT remove
         set -e
@@ -49,7 +50,7 @@ case "$1" in
         # Stop the WickrIO service
         #
         set +e
-        service WickrIOSvrINSTALLEXT stop
+        systemctl stop WickrIOSvrINSTALLEXT
         # Remove the startup entry for the service(s)
         update-rc.d -f WickrIOSvrINSTALLEXT remove
         set -e
@@ -58,7 +59,7 @@ case "$1" in
         # Stop the WickrIO Console service
         #
         set +e
-        service WickrIOCSvrINSTALLEXT stop
+        systemctl stop WickrIOCSvrINSTALLEXT
         # Remove the startup entry for the service(s)
         update-rc.d -f WickrIOCSvrINSTALLEXT remove
         set -e

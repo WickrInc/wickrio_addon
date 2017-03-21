@@ -20,7 +20,6 @@ public:
     WickrIOClientServerService(int argc, char **argv);
     virtual ~WickrIOClientServerService();
 
-protected:
     void start();
     void stop();
     void pause();

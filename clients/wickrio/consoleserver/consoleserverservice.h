@@ -20,7 +20,6 @@ public:
     WickrIOConsoleServerService(int argc, char **argv);
     virtual ~WickrIOConsoleServerService();
 
-protected:
     void start();
     void stop();
     void pause();

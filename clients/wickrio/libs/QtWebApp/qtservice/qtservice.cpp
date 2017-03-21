@@ -45,6 +45,7 @@
 #include <QTimer>
 #include <QVector>
 #include <QProcess>
+#include <QDebug>
 
 #if defined(QTSERVICE_DEBUG)
 #include <QDebug>
@@ -754,6 +755,8 @@ QtServiceBase::ServiceFlags QtServiceBase::serviceFlags() const
 */
 int QtServiceBase::exec()
 {
+    qDebug() << "entering exec()";
+
     if (d_ptr->args.size() > 1) {
         QString a =  d_ptr->args.at(1);
         if (a == QLatin1String("-i") || a == QLatin1String("-install")) {
@@ -834,15 +837,20 @@ int QtServiceBase::exec()
     if (::getenv("QTSERVICE_RUN")) {
         // Means we're the detached, real service process.
         int ec = d_ptr->run(true, d_ptr->args);
-        if (ec == -1)
+        if (ec == -1) {
             qErrnoWarning("The service failed to run.");
+            qDebug() << "The service failed to run";
+        }
         return ec;
     }
 #endif
     if (!d_ptr->start()) {
+        qDebug() << "The service %s could not start\n Run with argument -h for help!";
         fprintf(stderr, "The service %s could not start\n Run with argument -h for help.\n", serviceName().toLatin1().constData());
         return -4;
     }
+
+    qDebug() << "Leaving exec()";
     return 0;
 }
 

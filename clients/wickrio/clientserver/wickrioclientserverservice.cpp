@@ -13,6 +13,8 @@
 
 extern bool isVERSIONDEBUG();
 
+#define DEBUG_TRACE 1
+
 /**
  * @brief WickrIOClientServerService::WickrIOClientServerService
  * This is the constructor for the WickrIO service (windows) / Daemon (linux)

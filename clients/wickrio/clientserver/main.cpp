@@ -70,8 +70,20 @@ int main(int argc, char *argv[])
 {
     qInstallMessageHandler(redirectedOutput);
 
+    for (int i=0; i<argc; i++) {
+        qDebug() << "ARG[" << i+1 << "] =" << argv[i];
+    }
+
     WickrIOClientServerService service(argc, argv);
+
+#ifdef Q_OS_LINUX
+    QCoreApplication *app = new QCoreApplication(argc, argv);
+    service.start();
+    int svcret = app->exec();
+#else
     int svcret = service.exec();
+#endif
+
     qDebug() << "Leaving Service exec";
     return svcret;
 }
