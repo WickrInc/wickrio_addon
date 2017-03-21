@@ -135,6 +135,21 @@ bool OperationData::validateApiKey(const QString &apiKey)
     return false;
 }
 
+QString OperationData::getResponseURL()
+{
+    QString sendMsgURL;
+
+    if (m_client) {
+        sendMsgURL = QString("%1://%2/%3/Apps/%4/Messages")
+                        .arg(m_client->isHttps ? "https" : "http")
+                        .arg(m_client->iface)
+                        .arg(m_client->port)
+                        .arg(m_client->apiKey);
+    }
+    return sendMsgURL;
+}
+
+
 /**
  * @brief OperationData::alreadyActive
  * This method will check if this application is currently running. This is necessary just

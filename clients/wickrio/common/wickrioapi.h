@@ -101,5 +101,7 @@
 #define APIJSON_STATE_PAUSED    "paused"
 #define APIJSON_STATE_UNKNOWN   "unknown"
 
+#define APIJSON_RESPOND_API     "respond_api"
+
 
 #endif // WICKRIOAPI

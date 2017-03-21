@@ -188,6 +188,13 @@ WickrIOReceiveThread::processMessage(WickrDBObject *item)
                 QString statusText = msgDate.toString( QLocale::system().dateTimeFormat(QLocale::ShortFormat));
                 jsonObject.insert(APIJSON_MSGTIME, statusText);
 
+
+                OperationData *pOperation = WickrIOClientRuntime::operationData();
+                QString respondApiText = pOperation->getResponseURL();
+                if (!respondApiText.isEmpty()) {
+                    jsonObject.insert(APIJSON_RESPOND_API, respondApiText);
+                }
+
                 QJsonDocument saveDoc(jsonObject);
 
                 if (mclass != MsgClass_File) {

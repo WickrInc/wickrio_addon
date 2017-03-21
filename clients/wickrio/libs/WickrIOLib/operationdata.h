@@ -112,6 +112,8 @@ public:
     bool setApiKey(const QString &apiKey);
     bool validateApiKey(const QString &apiKey);
 
+    QString getResponseURL();
+
     bool alreadyActive();
     bool updateProcessState(int state, bool force=true);
 
