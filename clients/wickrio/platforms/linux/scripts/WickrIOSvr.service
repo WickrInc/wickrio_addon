@@ -1,0 +1,5 @@
+[Unit]
+Description=WickrIO Client server
+
+[Service]
+ExecStart=/usr/sbin/WickrIOSvrINSTALLEXT
