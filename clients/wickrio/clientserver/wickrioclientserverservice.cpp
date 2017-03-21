@@ -38,8 +38,8 @@ WickrIOClientServerService::WickrIOClientServerService(int argc, char **argv) :
 #if defined(Q_OS_LINUX)
 #if defined(WICKR_TARGET_PROD)
     QCoreApplication::addLibraryPath("/usr/lib/wickrio/plugins");
-#elif defined(WICKR_TARGET_PREVIEW)
-    QCoreApplication::addLibraryPath("/usr/lib/wickrio-prev/plugins");
+#elif defined(WICKR_TARGET_QA)
+    QCoreApplication::addLibraryPath("/usr/lib/wickrio-qa/plugins");
 #elif defined(WICKR_TARGET_BETA)
     QCoreApplication::addLibraryPath("/usr/lib/wickrio-beta/plugins");
 #elif defined(WICKR_TARGET_ALPHA)
@@ -314,7 +314,7 @@ bool WickrIOClientServerService::clientNeedsStart(QString name, bool isEnterpris
             }
 
             // Else it has been longer than 10 minutes, kill the old process and continue
-            QString appName = isEnterprise ? WBIO_ECLIENT_TARGET : WBIO_CLIENT_TARGET;
+            QString appName = WBIO_ECLIENT_TARGET;
             if (WickrBotUtils::isRunning(appName, procState.process_id)) {
                 m_operation->log(QString("Killing old process, id=%1").arg(procState.process_id));
                 WickrBotUtils::killProcess(procState.process_id);
@@ -478,7 +478,7 @@ bool WickrIOClientServerService::startClient(WickrBotClients *client)
     QStringList arguments;
     QString command;
 
-    command = client->isEnterprise() ? WBIO_ECLIENT_TARGET : WBIO_CLIENT_TARGET;
+    command = WBIO_ECLIENT_TARGET;
 
     arguments.append(QString("-config=%1").arg(configFileName));
     arguments.append(QString("-clientdbdir=%1").arg(clientDbDir));
@@ -491,6 +491,7 @@ bool WickrIOClientServerService::startClient(WickrBotClients *client)
         m_operation->log(QString("Started client for %1").arg(client->name));
     } else {
         m_operation->log(QString("Could NOT start client for %1").arg(client->name));
+        m_operation->log(QString("command=%1").arg(command));
 #ifdef DEBUG_TRACE
         qDebug() << "Leaving startClient: could not start!";
 #endif

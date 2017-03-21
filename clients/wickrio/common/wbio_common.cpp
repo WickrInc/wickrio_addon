@@ -77,9 +77,9 @@ WBIOCommon::getClientProcessName(QString name)
 {
     QString processName;
     if (name.isEmpty()) {
-        processName = WBIO_CLIENT_TARGET;
+        processName = WBIO_CLIENT_PROCESS;
     } else {
-        processName = QString("%1.%2").arg(WBIO_CLIENT_TARGET).arg(name);
+        processName = QString("%1.%2").arg(WBIO_CLIENT_PROCESS).arg(name);
     }
     return processName;
 }

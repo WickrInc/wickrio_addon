@@ -28,11 +28,6 @@ public:
 
 public:
     QString getIfaceTypeStr() { return isHttps ? QString("HTTPS") : QString("HTTP"); }
-    bool isEnterprise() {
-        if (!apiKey.isEmpty() && apiKey.toLower().startsWith("e"))
-            return true;
-        return false;
-    }
 };
 
 #endif

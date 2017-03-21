@@ -28,7 +28,7 @@
  * the TARGET definitions within the .pro files.
  */
 #if defined(WICKR_TARGET_BETA)
-#define WBIO_CLIENT_TARGET          "WickrIOClientBeta"
+#define WBIO_CLIENT_PROCESS         "WickrIOClientBeta"
 #define WBIO_ECLIENT_TARGET         "WickrIOEClientBeta"
 #define WBIO_CLIENTSERVER_TARGET    "WickrIOSvrBeta"
 #define WBIO_CONSOLE_TARGET         "WickrIOConsoleBeta"
@@ -36,7 +36,7 @@
 #define WBIO_GENERAL_TARGET         "WickrIOBeta"
 
 #elif defined(WICKR_TARGET_ALPHA)
-#define WBIO_CLIENT_TARGET          "WickrIOClientAlpha"
+#define WBIO_CLIENT_PROCESS         "WickrIOClientAlpha"
 #define WBIO_ECLIENT_TARGET         "WickrIOEClientAlpha"
 #define WBIO_CLIENTSERVER_TARGET    "WickrIOSvrAlpha"
 #define WBIO_CONSOLE_TARGET         "WickrIOConsoleAlpha"
@@ -44,20 +44,20 @@
 #define WBIO_GENERAL_TARGET         "WickrIOAlpha"
 
 #elif defined(WICKR_TARGET_PROD)
-#define WBIO_CLIENT_TARGET          "WickrIOClient"
+#define WBIO_CLIENT_PROCESS         "WickrIOClient"
 #define WBIO_ECLIENT_TARGET         "WickrIOEClient"
 #define WBIO_CLIENTSERVER_TARGET    "WickrIOSvr"
 #define WBIO_CONSOLE_TARGET         "WickrIOConsole"
 #define WBIO_CONSOLESERVER_TARGET   "WickrIOCSvr"
 #define WBIO_GENERAL_TARGET         "WickrIO"
 
-#elif defined(WICKR_TARGET_PREVIEW)
-#define WBIO_CLIENT_TARGET          "WickrIOClientPreview"
-#define WBIO_ECLIENT_TARGET         "WickrIOEClientPreview"
-#define WBIO_CLIENTSERVER_TARGET    "WickrIOSvrPreview"
-#define WBIO_CONSOLE_TARGET         "WickrIOConsolePreview"
-#define WBIO_CONSOLESERVER_TARGET   "WickrIOCSvrPreview"
-#define WBIO_GENERAL_TARGET         "WickrIOPreview"
+#elif defined(WICKR_TARGET_QA)
+#define WBIO_CLIENT_PROCESS         "WickrIOClientQA"
+#define WBIO_ECLIENT_TARGET         "WickrIOEClientQA"
+#define WBIO_CLIENTSERVER_TARGET    "WickrIOSvrQA"
+#define WBIO_CONSOLE_TARGET         "WickrIOConsoleQA"
+#define WBIO_CONSOLESERVER_TARGET   "WickrIOCSvrQA"
+#define WBIO_GENERAL_TARGET         "WickrIOQA"
 
 #else
 "No WICKR_TARGET defined!!!"

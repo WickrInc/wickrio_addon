@@ -41,8 +41,8 @@ Client::Client(QWidget *parent) :
     this->setWindowTitle("WickrIO Server Console (Alpha)");
 #elif defined(WICKR_TARGET_PROD)
     this->setWindowTitle("WickrIO Server Console");
-#elif defined(WICKR_TARGET_PREVIEW)
-    this->setWindowTitle("WickrIO Server Console (Preview)");
+#elif defined(WICKR_TARGET_QA)
+    this->setWindowTitle("WickrIO Server Console (QA)");
 #else
 "No WICKR_TARGET defined!!!"
 #endif

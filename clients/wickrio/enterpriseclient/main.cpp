@@ -211,8 +211,8 @@ int main(int argc, char *argv[])
 #ifdef Q_OS_LINUX
 #if defined(WICKR_TARGET_PROD)
     QCoreApplication::addLibraryPath("/usr/lib/wickrio/plugins");
-#elif defined(WICKR_TARGET_PREVIEW)
-    QCoreApplication::addLibraryPath("/usr/lib/wickrio-prev/plugins");
+#elif defined(WICKR_TARGET_QA)
+    QCoreApplication::addLibraryPath("/usr/lib/wickrio-qa/plugins");
 #elif defined(WICKR_TARGET_BETA)
     QCoreApplication::addLibraryPath("/usr/lib/wickrio-beta/plugins");
 #elif defined(WICKR_TARGET_ALPHA)
