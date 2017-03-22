@@ -65,8 +65,7 @@ WickrIOActionHdlr::sendMessageTo1To1(WickrCore::WickrConvo *convo)
     /*
      * Setup and send the message
      */
-#if 0
-    QList<WickrCore::WickrAttachment> attachments;
+//    QList<WickrCore::WickrAttachment> attachments;
 
     // TODO: Handle the attachment
     QList<QString> attachmentFiles = m_jsonHandler->getAttachments();
@@ -78,8 +77,8 @@ WickrIOActionHdlr::sendMessageTo1To1(WickrCore::WickrConvo *convo)
                 QByteArray contents = att.readAll();
                 att.close();
 
-                WickrCore::WickrAttachment a = WickrCore::WickrAttachment(contents);
-                attachments.append(a);
+//                WickrCore::WickrAttachment a = WickrCore::WickrAttachment(contents);
+//                attachments.append(a);
             } else {
                 m_operation->error("Cannot open attachment file: "+attachmentFile);
             }
@@ -91,14 +90,11 @@ WickrIOActionHdlr::sendMessageTo1To1(WickrCore::WickrConvo *convo)
             m_processAction = false;
         }
     } else {
-#endif
         // Send message
         WickrSendContext *context = new WickrSendContext(MsgType_Text, convo, WickrCore::WickrMessage::createTextMsgBody(m_jsonHandler->getMessage(),convo));
         connect(context, &WickrSendContext::signalRequestCompleted, this, &WickrIOActionHdlr::slotMessageDone, Qt::QueuedConnection);
         WickrCore::WickrRuntime::msgSvcSend(context);
-#if 0
     }
-#endif
 
     // Free the JSON Handler object
     delete m_jsonHandler;
@@ -363,7 +359,7 @@ bool WickrIOActionHdlr::sendFile(WickrCore::WickrConvo *targetConvo, const QList
 
     WickrCore::FetchInformation fetchInfo;
 
-    QByteArray encryptionKeyAES = convertCFDataToByteArray( ::randomLocalKey(), false );
+    QByteArray encryptionKeyAES = convertCFDataToByteArray( ::randomGCMKey(), false );
 
     QUuid uuid = QUuid::createUuid();
     fetchInfo.guid = uuid.toString().mid(1,36).toUpper();
@@ -388,9 +384,6 @@ bool WickrIOActionHdlr::sendFile(WickrCore::WickrConvo *targetConvo, const QList
     QList <WickrCore::FetchInformation> fetchInfoList;
     fetchInfoList.append(fetchInfo);
 
-    // construct FileMetaData
-    WickrCore::FileMetaData fileMetaData(metaDataMimeType, fileSize, fetchInfoList, comments);
-
     QString fileNameBeforeEncryption = name;
 
     QString fileNameAfterEncryption = WickrAppContext::getFilesDir() + fetchInfo.guid;
@@ -402,8 +395,8 @@ bool WickrIOActionHdlr::sendFile(WickrCore::WickrConvo *targetConvo, const QList
     connect(encryptionWatcher, &QFutureWatcher<QString>::finished, this, [=] {
 
         qDebug() << "file upload encryption finished";
-        QString imageHash(encryptionWatcher->result());
-        if ( imageHash.isEmpty() ) {
+        QString hashResult(encryptionWatcher->result());
+        if ( hashResult.isEmpty() ) {
             qDebug() << "WickrIOActionHdlr::sendFile: encryptFile failed, copying encrypted file!!";
             QFile::copy( fileNameBeforeEncryption, fileNameAfterEncryption );
         }
@@ -412,135 +405,22 @@ bool WickrIOActionHdlr::sendFile(WickrCore::WickrConvo *targetConvo, const QList
         if (metaDataMimeType == "image/png" || metaDataMimeType == "image/jpeg" || metaDataMimeType == "image/bmp" || metaDataMimeType == "image/gif")
         {
             QImage orig(fileNameBeforeEncryption);
-            if(!orig.isNull()) {
-                int maxPreviewHeight = 1000;
-                int maxPreviewWidth = 1000;
-                int maxThumbHeight = 100;
-                int maxThumbWidth = 100;
-
+            if(!orig.isNull())
+            {
                 WickrCore::Dimension fileDim;
                 fileDim.height = orig.height();
                 fileDim.width = orig.width();
-
-                // create the preview size from the original
-
-                QImage result(orig);
-
-                if(orig.height() > maxPreviewHeight || orig.width() > maxPreviewWidth)
-                {
-                    result = orig.scaledToHeight(maxPreviewWidth).scaledToHeight(maxPreviewHeight, Qt::SmoothTransformation);
-                    if(result.width() > maxPreviewWidth)
-                    {
-                        result = orig.scaledToWidth(maxPreviewWidth, Qt::SmoothTransformation);
-                    }
-                }
-
                 QString resourceName = QUuid::createUuid().toString().mid(1,36).toUpper();
 
-                QByteArray previewKeyAES = convertCFDataToByteArray( ::randomLocalKey(), false );
-                QString previewFileNameAfterEncryption( WickrAppContext::getFilesDir() + resourceName );
-                QString previewFileNameBeforeEncryption( previewFileNameAfterEncryption + "_tmp" );
-
-                //qDebug () << "saving preview image as " << previewFileNameBeforeEncryption;
-                result.save(previewFileNameBeforeEncryption, "PNG");
-
-                // ENCRYPT PREVIEW FILE HERE
-                // Disk encryption can overwrite the output of result.save
-                //  -or-
-                // Memory encryption can get the file contents of result, encrypt it, and save
-                QString previewHash = cloudMgr->encryptFile( previewKeyAES, previewFileNameBeforeEncryption, previewFileNameAfterEncryption );
-                if ( previewHash.isEmpty() ) {
-                    qDebug() << "WickrIOActionHdlr::sendFile: encryptFile failed, copying encrypted file!!";
-                    QFile::copy( previewFileNameBeforeEncryption, previewFileNameAfterEncryption );
-                } else {
-                    qDebug () << "encrypted preview image to " << previewFileNameAfterEncryption;
-                }
-
-                QFile::remove( previewFileNameBeforeEncryption );
-
-                WickrCore::FetchInformation previewfetchinfo;
-
-                previewfetchinfo.guid = resourceName;
-                previewfetchinfo.segment = 1;
-                previewfetchinfo.key = previewKeyAES;
-                QList <WickrCore::FetchInformation> previewfetchList;
-                previewfetchList.append(previewfetchinfo);
-
-                qint64 previewFileSize = 0;
-                QFileInfo previewFileInfo(previewFileNameAfterEncryption);
-                if(previewFileInfo.exists())
-                {
-                    previewFileSize = previewFileInfo.size();
-                }
-
-                WickrCore::Dimension previewDim;
-                previewDim.height = result.height();
-                previewDim.width = result.width();
-                WickrCore::FileMetaData previewMeta("image/png", previewFileSize, previewfetchList, previewHash, previewDim);
-
-                // create the thumbnail from the preview size
-                result = result.scaledToHeight(maxThumbHeight, Qt::SmoothTransformation);
-                if(result.width() > maxThumbWidth)
-                {
-                    result = orig.scaledToWidth(maxThumbWidth, Qt::SmoothTransformation);
-                }
-
-                resourceName = QUuid::createUuid().toString().mid(1,36).toUpper();
-
-                QByteArray thumbnailKeyAES = convertCFDataToByteArray( ::randomLocalKey(), false );
-                QString thumbnailFileNameAfterEncryption = WickrAppContext::getFilesDir() + resourceName;
-                QString thumbnailFileNameBeforeEncryption = thumbnailFileNameAfterEncryption + "_tmp" ;
-                //qDebug() << "guid:" << resourceName << "key:" << thumbnailKeyAES.toHex();
-
-                //qDebug () << "saving thumbnail image as " << thumbnailFileNameBeforeEncryption;
-                result.save(thumbnailFileNameBeforeEncryption, "PNG");
-
-                // ENCRYPT THUMBNAIL FILE HERE
-                // Disk encryption can overwrite the output of result.save
-                //  -or-
-                // Memory encryption can get the file contents of result, encrypt it, and save it
-                QString thumbHash = cloudMgr->encryptFile( thumbnailKeyAES, thumbnailFileNameBeforeEncryption, thumbnailFileNameAfterEncryption );
-                if (thumbHash.isEmpty()) {
-                    qDebug() << "WickrIOActionHdlr::sendFile: encryptFile failed, copying encrypted file!!";
-                    QFile::copy( thumbnailFileNameBeforeEncryption, thumbnailFileNameAfterEncryption );
-                } else {
-                    qDebug () << "encrypted thumbnail image to " << thumbnailFileNameAfterEncryption;
-                }
-
-                QFile::remove( thumbnailFileNameBeforeEncryption );
-
-                qint64 thumbnailFileSize = 0;
-                QFileInfo thumbnailFileInfo(thumbnailFileNameAfterEncryption);
-                if(thumbnailFileInfo.exists())
-                {
-                    thumbnailFileSize = thumbnailFileInfo.size();
-                }
-
-                WickrCore::FetchInformation thumbfetchinfo;
-
-                thumbfetchinfo.guid = resourceName;
-                thumbfetchinfo.segment = 1;
-                thumbfetchinfo.key = thumbnailKeyAES;
-                QList <WickrCore::FetchInformation> thumbfetchList;
-                thumbfetchList.append(thumbfetchinfo);
-
-                WickrCore::Dimension thumbDim;
-                thumbDim.height = result.height();
-                thumbDim.width = result.width();
-
-                WickrCore::FileMetaData thumbMeta("image/png", thumbnailFileSize, thumbfetchList, thumbHash, thumbDim);
-//                    imageServer->addImage(resourceName, result);
-
-                WickrCore::FileMetaData imageFileMetaData(metaDataMimeType, fileSize, fetchInfoList, imageHash, comments);
-
-                // TODO: Need to upload specifi files
+//                imageServer->addImage(resourceName, orig);
+                WickrCore::FileMetaData imageFileMetaData(metaDataMimeType, fileSize, fetchInfoList, hashResult, comments);
                 WickrCore::FileInfo fileToUpload(name, imageFileMetaData);
-
                 cloudMgr->uploadFile(targetConvo, fileNameAfterEncryption, fileToUpload);
             }
             else
             {
                 qDebug() << "can't seem to read image";
+                WickrCore::FileMetaData fileMetaData(metaDataMimeType, fileSize, fetchInfoList, hashResult, comments);
                 WickrCore::FileInfo fileToUpload(name, fileMetaData);
 
                 cloudMgr->uploadFile(targetConvo, fileNameAfterEncryption, fileToUpload);
@@ -548,8 +428,8 @@ bool WickrIOActionHdlr::sendFile(WickrCore::WickrConvo *targetConvo, const QList
         }
         else
         {
+            WickrCore::FileMetaData fileMetaData(metaDataMimeType, fileSize, fetchInfoList, hashResult, comments);
             WickrCore::FileInfo fileToUpload(name, fileMetaData);
-
             cloudMgr->uploadFile(targetConvo, fileNameAfterEncryption, fileToUpload);
         }
         encryptionWatcher->deleteLater();
