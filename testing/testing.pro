@@ -8,7 +8,7 @@ CONFIG -= app_bundle
 
 CONFIG(release,release|debug) {
     BUILD_TYPE=release
-    DEFINES += WICKR_PROD
+    DEFINES += WICKR_PRODUCTION
 }
 else {
     BUILD_TYPE=debug

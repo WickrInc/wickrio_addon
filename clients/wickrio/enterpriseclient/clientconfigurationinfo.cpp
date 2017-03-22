@@ -4,7 +4,7 @@ const QString ClientConfigurationInfo::DefaultNPLUserSuffix = "@wickr.co";
 
 // BugsnagURL && BugsnagAPI
 
-#if defined(WICKR_PROD) && !defined(WICKR_BLACKOUT)
+#if defined(WICKR_PRODUCTION) && !defined(WICKR_BLACKOUT)
 const QString ClientConfigurationInfo::BugsnagURL = "https://bugs.wickrtech.co:444";
 const QString ClientConfigurationInfo::BugsnagAPI = "88a7d58f9b7de601f09fca32038277c3";
 #else

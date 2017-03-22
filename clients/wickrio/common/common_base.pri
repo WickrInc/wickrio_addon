@@ -1,5 +1,5 @@
 CONFIG(release,release|debug) {
-    DEFINES += WICKR_PROD
+    DEFINES += WICKR_PRODUCTION
 }
 else {
     wickr_beta:DEFINES += WICKR_BETA

@@ -38,7 +38,7 @@ WickrIOClientServerService::WickrIOClientServerService(int argc, char **argv) :
     m_appNm = WBIO_CLIENTSERVER_TARGET;
 
 #if defined(Q_OS_LINUX)
-#if defined(WICKR_PROD)
+#if defined(WICKR_PRODUCTION)
     QCoreApplication::addLibraryPath("/usr/lib/wickrio/plugins");
 #elif defined(WICKR_QA)
     QCoreApplication::addLibraryPath("/usr/lib/wickrio-qa/plugins");

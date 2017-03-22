@@ -43,7 +43,7 @@
 #define WBIO_CONSOLESERVER_TARGET   "WickrIOCSvrAlpha"
 #define WBIO_GENERAL_TARGET         "WickrIOAlpha"
 
-#elif defined(WICKR_PROD)
+#elif defined(WICKR_PRODUCTION)
 #define WBIO_CLIENT_PROCESS         "WickrIOClient"
 #define WBIO_ECLIENT_TARGET         "WickrIOEClient"
 #define WBIO_CLIENTSERVER_TARGET    "WickrIOSvr"
