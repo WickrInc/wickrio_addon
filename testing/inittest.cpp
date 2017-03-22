@@ -9,49 +9,101 @@
 #include "session/wickrAppClock.h"
 #include "wickrapplication.h"
 #include "common/wickrRuntime.h"
+#include "common/wbio_common.h"
 
-#ifdef Q_OS_MAC
-#include "platforms/mac/extras/WickrAppDelegate-C-Interface.h"
-#endif
-
-InitTest::InitTest(QObject *parent) :
-      QObject(parent)
+InitTest::InitTest(int argc, char **argv, QObject *parent) :
+    QObject(parent),
+    m_argc(argc),
+    m_argv(argv),
+    m_operation(nullptr)
 {
 }
 
+Q_IMPORT_PLUGIN(QSQLCipherDriverPlugin)
+
 void InitTest::initTestCase()
 {
-    WickrApplication *app = NULL;
+    QCoreApplication *app = NULL;
 
+    // Setup appropriate library values based on Beta or Production client
     QByteArray secureJson;
     bool isDebug;
     if (isVERSIONDEBUG()) {
-        isDebug = true;
         secureJson = "secex_json2:Fq3&M1[d^,2P";
+        isDebug = true;
     } else {
-        isDebug = false;
         secureJson = "secex_json:8q$&M4[d^;2R";
+        isDebug = false;
     }
 
+    QString username;
+    QString appname = WBIO_ECLIENT_TARGET;
+    QString orgname = WBIO_ORGANIZATION;
+
     wickrProductSetProductType(ClientVersionInfo::getProductType());
+    WickrURLs::setDefaultBaseURL(ClientConfigurationInfo::DefaultBaseURL);
 
-    QString username, appname = ClientVersionInfo::getAppName(), orgname = "Wickr, LLC";
-    QString bootTime = WickrUtil::formatTimestamp(WickrAppClock::getBootTime());
-    qDebug() <<  appname << "System was booted" << bootTime;
+    qDebug() <<  appname << "System was booted" << WickrUtil::formatTimestamp(WickrAppClock::getBootTime());
 
-#ifdef Q_OS_MAC
-    WickrAppDelegateInitialize();
-    //wickrAppDelegateRegisterNotifications();
-    //QString pushid = wickrAppDelegateGetNotificationID();
-#endif
+    bool dbEncrypt = true;
 
-    int argc=1;
-    char **argv=NULL;
-    app = new WickrApplication(argc, argv, true);
+    m_operation = new OperationData();
+    m_operation->processName = WBIO_ECLIENT_TARGET;
+
+    QString clientDbPath("");
+    QString suffix;
+    QString wbConfigFile("");
+    bool setProcessName = false;
+
+    for( int argidx = 1; argidx < m_argc; argidx++ ) {
+        QString cmd(m_argv[argidx]);
+
+        if( cmd.startsWith("-dbdir=") ) {
+            m_operation->databaseDir = cmd.remove("-dbdir=");
+        } else if (cmd.startsWith("-log=") ) {
+            QString logFile = cmd.remove("-log=");
+            m_operation->setupLog(logFile);
+        } else if (cmd.startsWith("-clientdbdir=")) {
+            clientDbPath = cmd.remove("-clientdbdir=");
+        } else if (cmd.startsWith("-config=")) {
+            wbConfigFile = cmd.remove("-config=");
+        } else if (cmd.startsWith("-suffix")) {
+            suffix = cmd.remove("-suffix=");
+            WickrUtil::setTestAccountMode(suffix);
+        } else if (cmd.startsWith("-force") ) {
+            // Force the WickBot Client to run, regardless of the state in the database
+            m_operation->force = true;
+        } else if (cmd.startsWith("-rcv")) {
+            QString temp = cmd.remove("-rcv=");
+            if (temp.compare("on", Qt::CaseInsensitive) ||
+                temp.compare("true", Qt::CaseInsensitive)) {
+                m_operation->receiveOn =true;
+            }
+        } else if (cmd.startsWith("-processname")) {
+            m_operation->processName = cmd.remove("-processname=");
+            setProcessName = true;
+        }
+    }
+
+    app = new QCoreApplication(m_argc, m_argv);
+
+    qDebug() << QApplication::libraryPaths();
+    qDebug() << "QLibraryInfo::location(QLibraryInfo::TranslationsPath)" << QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+    qDebug() << "QLocale::system().name()" << QLocale::system().name();
+
+    qDebug() << "app " << appname << " for " << orgname;
+    QCoreApplication::setApplicationName(appname);
+    QCoreApplication::setOrganizationName(orgname);
 
     // Wickr Runtime Environment (all applications include this line)
+    WickrAppContext::initialize(clientDbPath);
     WickrCore::WickrRuntime::init(secureJson, isDebug);
 
+    WickrDBAdapter::setDatabaseEncryptedStatus(dbEncrypt);
+
+    if( !username.isEmpty() ) {
+        WickrDBAdapter::setDBName( WickrDBAdapter::getDBName() + "." + username );
+    }
 }
 
 void InitTest::testArea()

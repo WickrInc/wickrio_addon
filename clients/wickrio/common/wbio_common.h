@@ -27,7 +27,7 @@
  * definitions of the TARGET values. Make sure these are consistent with
  * the TARGET definitions within the .pro files.
  */
-#if defined(WICKR_TARGET_BETA)
+#if defined(WICKR_BETA)
 #define WBIO_CLIENT_PROCESS         "WickrIOClientBeta"
 #define WBIO_ECLIENT_TARGET         "WickrIOEClientBeta"
 #define WBIO_CLIENTSERVER_TARGET    "WickrIOSvrBeta"
@@ -35,7 +35,7 @@
 #define WBIO_CONSOLESERVER_TARGET   "WickrIOCSvrBeta"
 #define WBIO_GENERAL_TARGET         "WickrIOBeta"
 
-#elif defined(WICKR_TARGET_ALPHA)
+#elif defined(WICKR_ALPHA)
 #define WBIO_CLIENT_PROCESS         "WickrIOClientAlpha"
 #define WBIO_ECLIENT_TARGET         "WickrIOEClientAlpha"
 #define WBIO_CLIENTSERVER_TARGET    "WickrIOSvrAlpha"
@@ -43,7 +43,7 @@
 #define WBIO_CONSOLESERVER_TARGET   "WickrIOCSvrAlpha"
 #define WBIO_GENERAL_TARGET         "WickrIOAlpha"
 
-#elif defined(WICKR_TARGET_PROD)
+#elif defined(WICKR_PROD)
 #define WBIO_CLIENT_PROCESS         "WickrIOClient"
 #define WBIO_ECLIENT_TARGET         "WickrIOEClient"
 #define WBIO_CLIENTSERVER_TARGET    "WickrIOSvr"
@@ -51,7 +51,7 @@
 #define WBIO_CONSOLESERVER_TARGET   "WickrIOCSvr"
 #define WBIO_GENERAL_TARGET         "WickrIO"
 
-#elif defined(WICKR_TARGET_QA)
+#elif defined(WICKR_QA)
 #define WBIO_CLIENT_PROCESS         "WickrIOClientQA"
 #define WBIO_ECLIENT_TARGET         "WickrIOEClientQA"
 #define WBIO_CLIENTSERVER_TARGET    "WickrIOSvrQA"

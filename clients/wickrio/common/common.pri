@@ -1,10 +1,10 @@
 CONFIG(release,release|debug) {
-    DEFINES += WICKR_TARGET_PROD
+    DEFINES += WICKR_PROD
 }
 else {
-    wickr_beta:DEFINES += WICKR_TARGET_BETA
-    else:wickr_qa:DEFINES += WICKR_TARGET_QA
-    else:DEFINES += WICKR_TARGET_ALPHA
+    wickr_beta:DEFINES += WICKR_BETA
+    else:wickr_qa:DEFINES += WICKR_QA
+    else:DEFINES += WICKR_ALPHA
 }
 
 HEADERS += \

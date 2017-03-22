@@ -1,8 +1,8 @@
 TEMPLATE = subdirs
 SUBDIRS += \
     wickr-sdk \
-    testing \
-    clients
+    clients \
+    testing
 
 CONFIG += ordered
 

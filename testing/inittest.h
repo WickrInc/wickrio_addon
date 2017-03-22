@@ -4,13 +4,19 @@
 #include <QObject>
 #include <QtTest/QtTest>
 
+#include "operationdata.h"
+
 class InitTest : public QObject
 {
     Q_OBJECT
     public:
-        explicit InitTest(QObject *parent = 0);
+        explicit InitTest(int argc, char *argv[], QObject *parent = 0);
 
     private:
+        int     m_argc;
+        char    **m_argv;
+        OperationData *m_operation;
+
         bool isVERSIONDEBUG() { return true; }
 
     private slots:

@@ -2,6 +2,22 @@ message(*** Wickr Base QT Unit Testing)
 
 DEPTH=..
 
+CONFIG += c++11
+CONFIG += console
+CONFIG -= app_bundle
+
+CONFIG(release,release|debug) {
+    BUILD_TYPE=release
+    DEFINES += WICKR_PROD
+}
+else {
+    BUILD_TYPE=debug
+
+    wickr_beta:DEFINES += WICKR_BETA
+    else:wickr_qa:DEFINES += WICKR_QA
+    else:DEFINES += WICKR_ALPHA
+}
+
 QT += testlib
 QT -= gui
 QT += sql
@@ -11,10 +27,12 @@ QT += xml
 QT += websockets
 
 TARGET = maintest
-CONFIG += console
-CONFIG -= app_bundle
-
 TEMPLATE = app
+
+#
+# Include the Wickr IO library
+#
+include(../clients/wickrio/libs/WickrIOLib/WickrIOLib.pri)
 
 SOURCES += \
     maintest.cpp \
@@ -29,17 +47,25 @@ HEADERS += \
     clientconfigurationinfo.h \
     wickrapplication.h
 
+# qsqlcipher_wickr
+
+win32 {
+    CONFIG(debug, debug|release):LIBPATH += $$DEPTH/wickr-sdk/libs/qsqlcipher_wickr/debug
+    else:LIBPATH += $$DEPTH/wickr-sdk/libs/qsqlcipher_wickr/release
+} else {
+    LIBPATH += $$DEPTH/wickr-sdk/libs/qsqlcipher_wickr/
+}
+LIBS += -lqsqlcipher_wickr
+
+# sqlcipher
+
+LIBS += -lsqlcipher
+
 INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/src
 INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/export
-
-CONFIG(release,release|debug) {
-    BUILD_TYPE=release
-}
-else {
-    BUILD_TYPE=debug
-}
-
 INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/platforms/common/include
+INCLUDEPATH += $$PWD/$${DEPTH}/clients/wickrio
+INCLUDEPATH += $$PWD/$${DEPTH}/clients/wickrio/libs/WickrIOLib
 
 mac {
     QMAKE_LFLAGS += -F$$PWD/$${DEPTH}/platforms/mac/lib64

@@ -38,13 +38,13 @@ WickrIOClientServerService::WickrIOClientServerService(int argc, char **argv) :
     m_appNm = WBIO_CLIENTSERVER_TARGET;
 
 #if defined(Q_OS_LINUX)
-#if defined(WICKR_TARGET_PROD)
+#if defined(WICKR_PROD)
     QCoreApplication::addLibraryPath("/usr/lib/wickrio/plugins");
-#elif defined(WICKR_TARGET_QA)
+#elif defined(WICKR_QA)
     QCoreApplication::addLibraryPath("/usr/lib/wickrio-qa/plugins");
-#elif defined(WICKR_TARGET_BETA)
+#elif defined(WICKR_BETA)
     QCoreApplication::addLibraryPath("/usr/lib/wickrio-beta/plugins");
-#elif defined(WICKR_TARGET_ALPHA)
+#elif defined(WICKR_ALPHA)
     QCoreApplication::addLibraryPath("/usr/lib/wickrio-alpha/plugins");
 #else
     This is an issue, cannot set the library!
