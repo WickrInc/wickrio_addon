@@ -340,6 +340,7 @@ void WickrIOReceiveThread::startReceiving()
         m_convoList = WickrCore::WickrConvo::getConvoList();
         attachConvos();
     }
+    emit signalReceivingStarted();
 }
 
 void WickrIOReceiveThread::stopReceiving()
@@ -351,6 +352,7 @@ void WickrIOReceiveThread::stopReceiving()
         }
         m_receiving = false;
     }
+    emit signalReceivingEnded();
 }
 
 void WickrIOReceiveThread::attachConvos()

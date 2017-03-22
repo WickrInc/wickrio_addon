@@ -102,6 +102,8 @@ private slots:
 
 signals:
     void signalProcessStarted();
+    void signalReceivingStarted();
+    void signalReceivingEnded();
 
     void signalMessageCheck(WickrApplicationState appContext);
 

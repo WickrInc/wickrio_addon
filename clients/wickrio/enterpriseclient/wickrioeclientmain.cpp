@@ -233,7 +233,16 @@ void WickrIOEClientMain::slotDatabaseLoadDone(WickrDatabaseLoadContext *context)
     // Start the receive thread
     connect(m_rxThread, &WickrIOReceiveThread::signalProcessStarted, this, &WickrIOEClientMain::slotRxProcessStarted, Qt::QueuedConnection);
     m_rxThread->start();
+}
 
+void WickrIOEClientMain::slotRxProcessStarted()
+{
+    connect(m_rxThread, &WickrIOReceiveThread::signalReceivingStarted, this, &WickrIOEClientMain::slotRxProcessReceiving, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(m_rxThread, "startReceiving", Qt::QueuedConnection);
+}
+
+void WickrIOEClientMain::slotRxProcessReceiving()
+{
     // ONLINE: Login successful, so login to message service
     WickrCore::WickrRuntime::msgSvcLogin();
 
@@ -246,6 +255,8 @@ void WickrIOEClientMain::slotDatabaseLoadDone(WickrDatabaseLoadContext *context)
     processUserSetup();
 #endif
 }
+
+
 
 /**
  * @brief slotAdminUserSuspend (SWITCHBOARD SIGNAL)
@@ -302,11 +313,6 @@ void WickrIOEClientMain::slotMessageDownloadStatusUpdate(int msgsDownloaded)
 }
 
 
-
-void WickrIOEClientMain::slotRxProcessStarted()
-{
-    QMetaObject::invokeMethod(m_rxThread, "startReceiving", Qt::QueuedConnection);
-}
 
 /**
  * @brief WickrIOEClientMain::pauseAndExitSlot

@@ -80,6 +80,7 @@ private slots:
     void slotDoTimerWork();
     void slotLoginSuccess();
     void slotRxProcessStarted();
+    void slotRxProcessReceiving();
 
     void processStarted();
     void stopAndExitSlot();
