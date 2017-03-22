@@ -34,6 +34,9 @@ TEMPLATE = app
 #
 include(../clients/wickrio/libs/WickrIOLib/WickrIOLib.pri)
 
+RESOURCES += \
+    testing.qrc
+
 SOURCES += \
     maintest.cpp \
     inittest.cpp \

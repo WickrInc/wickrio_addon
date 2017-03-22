@@ -120,4 +120,5 @@ void InitTest::testRadius()
 
 void InitTest::cleanupTestCase()
 {
+    WickrCore::WickrRuntime::shutdown();
 }
