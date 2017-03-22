@@ -11,10 +11,10 @@ QTVER="5_7"
 #
 # Setup the version number(s)
 #
-maj=`cat ../../../OFFICIAL_BUILD_VERSION | cut -c1-1`
-min=`cat ../../../OFFICIAL_BUILD_VERSION | cut -c2-2`
-pat=`cat ../../../OFFICIAL_BUILD_VERSION | cut -c3-3`
-bld=`cat ../../../OFFICIAL_BUILD_NUMBER | cut -c4-6`
+maj=`cat ../../../BUILD_VERSION | cut -c1-1`
+min=`cat ../../../BUILD_VERSION | cut -c2-2`
+pat=`cat ../../../BUILD_VERSION | cut -c3-3`
+bld=`cat ../../../BUILD_NUMBER | cut -c4-6`
 
 BLDTYPE="Debug"
 bldtype=alpha

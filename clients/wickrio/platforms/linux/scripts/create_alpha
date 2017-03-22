@@ -9,6 +9,6 @@ cd $current
 QTVER="5_7_1"
 
 BUILDDIR=build-wickr-wickrio-Desktop_Qt_${QTVER}_GCC_64bit_BUILT-Alpha
-build_number=`cat ../../../OFFICIAL_BUILD_NUMBER`
+build_number=`cat ../../../BUILD_NUMBER`
 
 $current/deploy64 $BUILDDIR $build_number alpha Alpha false
