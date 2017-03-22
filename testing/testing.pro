@@ -6,16 +6,19 @@ CONFIG += c++11
 CONFIG += console
 CONFIG -= app_bundle
 
+wickr_blackout:DEFINES += WICKR_BLACKOUT
+
 CONFIG(release,release|debug) {
-    BUILD_TYPE=release
     DEFINES += WICKR_PRODUCTION
+    BUILD_TYPE=release
 }
 else {
-    BUILD_TYPE=debug
-
     wickr_beta:DEFINES += WICKR_BETA
     else:wickr_qa:DEFINES += WICKR_QA
     else:DEFINES += WICKR_ALPHA
+
+    DEFINES += WICKR_DEBUG
+    BUILD_TYPE=debug
 }
 
 QT += testlib

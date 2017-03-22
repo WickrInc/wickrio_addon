@@ -7,8 +7,7 @@ CONFIG -= console
 
 CONFIG(release,release|debug) {
     message(*** WickrIO Callback Listener Release Build)
-    wickr_prod:TARGET = WickrIOCallbackListener
-    else:TARGET = WickrIOCallbackListenerPreview
+    TARGET = WickrIOCallbackListener
 
     macx {
         ICON = $$COMMON/Wickr_prod.icns
@@ -21,8 +20,11 @@ CONFIG(release,release|debug) {
 }
 else {
     message(*** WickrIO Callback Listener Beta Build)
-    wickr_beta:TARGET = WickrIOCallbackListenerBeta
+    wickr_blackout:TARGET = WickrIOCallbackListenerOnPrm
+    else:wickr_beta:TARGET = WickrIOCallbackListenerBeta
+    else:wickr_qa:TARGET = WickrIOCallbackListenerQA
     else:TARGET = WickrIOCallbackListenerAlpha
+
     DEFINES += VERSIONDEBUG
 
     macx {

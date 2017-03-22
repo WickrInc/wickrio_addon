@@ -1,3 +1,5 @@
+wickr_blackout:DEFINES += WICKR_BLACKOUT
+
 CONFIG(release,release|debug) {
     DEFINES += WICKR_PRODUCTION
 }
@@ -5,6 +7,8 @@ else {
     wickr_beta:DEFINES += WICKR_BETA
     else:wickr_qa:DEFINES += WICKR_QA
     else:DEFINES += WICKR_ALPHA
+
+    DEFINES += WICKR_DEBUG
 }
 
 HEADERS += \

@@ -209,7 +209,9 @@ int main(int argc, char *argv[])
     }
 
 #ifdef Q_OS_LINUX
-#if defined(WICKR_PRODUCTION)
+#if defined(WICKR_BLACKOUT) && defined(WICKR_DEBUG)
+    QCoreApplication::addLibraryPath("/usr/lib/wickrio-onprem/plugins");
+#elif defined(WICKR_PRODUCTION)
     QCoreApplication::addLibraryPath("/usr/lib/wickrio/plugins");
 #elif defined(WICKR_QA)
     QCoreApplication::addLibraryPath("/usr/lib/wickrio-qa/plugins");

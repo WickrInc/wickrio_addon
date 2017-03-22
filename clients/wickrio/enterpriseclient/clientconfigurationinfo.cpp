@@ -18,7 +18,7 @@ const QString ClientConfigurationInfo::BugsnagAPI = "";
 #if defined(WICKR_BLACKOUT) && defined(WICKR_PRODUCTION)
     const QString ClientConfigurationInfo::DefaultBaseURL = "https://localhost/112/src";
 #elif defined(WICKR_BLACKOUT) && defined(WICKR_DEBUG)
-    const QString ClientConfigurationInfo::DefaultBaseURL = "https://messaging.secmv.net/114/src";
+    const QString ClientConfigurationInfo::DefaultBaseURL = "https://messaging.secmv.net/116/src";
 #elif defined(WICKR_PRODUCTION)
     const QString ClientConfigurationInfo::DefaultBaseURL = "https://messaging-prod.wickr.com/116/src";
 #elif defined(WICKR_BETA)

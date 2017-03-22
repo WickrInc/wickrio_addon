@@ -10,8 +10,7 @@ CONFIG += c++11
 
 CONFIG(release,release|debug) {
     message(*** WickrIO Console Release Build)
-    wickr_prod:TARGET = WickrIOConsole
-    else:TARGET = WickrIOConsolePreview
+    TARGET = WickrIOConsole
     SOURCES += ../common/versiondebugNO.cpp
 
     macx {
@@ -25,8 +24,11 @@ CONFIG(release,release|debug) {
 }
 else {
     message(*** WickrIO Console Beta Build)
-    wickr_beta:TARGET = WickrIOConsoleBeta
+    wickr_blackout:TARGET = WickrIOConsoleOnPrm
+    else:wickr_beta:TARGET = WickrIOConsoleBeta
+    else:wickr_qa:TARGET = WickrIOConsoleQA
     else:TARGET = WickrIOConsoleAlpha
+
     SOURCES += ../common/versiondebugYES.cpp
     DEFINES += VERSIONDEBUG
 

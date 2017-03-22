@@ -27,7 +27,15 @@
  * definitions of the TARGET values. Make sure these are consistent with
  * the TARGET definitions within the .pro files.
  */
-#if defined(WICKR_BETA)
+#if defined(WICKR_BLACKOUT) && defined(WICKR_DEBUG)
+#define WBIO_CLIENT_PROCESS         "WickrIOClientOnPrem"
+#define WBIO_ECLIENT_TARGET         "WickrIOEClientOnPrem"
+#define WBIO_CLIENTSERVER_TARGET    "WickrIOSvrOnPrem"
+#define WBIO_CONSOLE_TARGET         "WickrIOConsoleOnPrem"
+#define WBIO_CONSOLESERVER_TARGET   "WickrIOCSvrOnPrem"
+#define WBIO_GENERAL_TARGET         "WickrIOOnPrem"
+
+#elif defined(WICKR_BETA)
 #define WBIO_CLIENT_PROCESS         "WickrIOClientBeta"
 #define WBIO_ECLIENT_TARGET         "WickrIOEClientBeta"
 #define WBIO_CLIENTSERVER_TARGET    "WickrIOSvrBeta"

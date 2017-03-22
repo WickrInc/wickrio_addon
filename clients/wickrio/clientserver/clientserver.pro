@@ -7,8 +7,7 @@ CONFIG -= console
 
 CONFIG(release,release|debug) {
     message(*** WickrIO ClientServer Release Build)
-    wickr_prod:TARGET = WickrIOSvr
-    else:TARGET = WickrIOSvrPreview
+    TARGET = WickrIOSvr
 
     macx {
         ICON = $$COMMON/Wickr_prod.icns
@@ -21,8 +20,11 @@ CONFIG(release,release|debug) {
 }
 else {
     message(*** WickrIO ClientServer Beta Build)
-    wickr_beta:TARGET = WickrIOSvrBeta
+    wickr_blackout:TARGET = WickrIOSvrOnPrm
+    else:wickr_beta:TARGET = WickrIOSvrBeta
+    else:wickr_qa:TARGET = WickrIOSvrQA
     else:TARGET = WickrIOSvrAlpha
+
     DEFINES += VERSIONDEBUG
 
     macx {

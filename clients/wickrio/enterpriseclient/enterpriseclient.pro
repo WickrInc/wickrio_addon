@@ -58,14 +58,10 @@ include(../libs/QtWebApp/QtWebApp.pri)
 
 TEMPLATE = app
 
-wickr_blackout:DEFINES += WICKR_BLACKOUT
-
 CONFIG(release,release|debug) {
-    wickr_prod:TARGET = WickrIOEClient
-    else:TARGET = WickrIOEClientPreview
-    SOURCES += ../common/versiondebugNO.cpp
+    TARGET = WickrIOEClient
 
-    DEFINES += WICKR_PRODUCTION
+    SOURCES += ../common/versiondebugNO.cpp
 
     macx {
         ICON = $$COMMON/Wickr_prod.icns
@@ -77,15 +73,12 @@ CONFIG(release,release|debug) {
     }
 }
 else {
-    wickr_beta:TARGET = WickrIOEClientBeta
+    wickr_blackout:TARGET = WickrIOEClientOnPrm
+    else:wickr_beta:TARGET = WickrIOEClientBeta
+    else:wickr_qa:TARGET = WickrIOEClientQA
     else:TARGET = WickrIOEClientAlpha
+
     SOURCES += ../common/versiondebugYES.cpp
-
-    DEFINES += WICKR_DEBUG
-
-    wickr_beta:DEFINES += WICKR_BETA
-    else:wickr_qa:DEFINES += WICKR_QA
-    else:DEFINES+= WICKR_ALPHA
 
     APPICON = $$COMMON/Wickr_beta.icns
     INSTICON = $$COMMON/Wickr_beta_installer.icns

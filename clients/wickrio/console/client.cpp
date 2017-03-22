@@ -35,7 +35,11 @@ Client::Client(QWidget *parent) :
 
     ui->setupUi(this);
 
-#if defined(WICKR_BETA)
+#if defined(WICKR_BLACKOUT) && defined(WICKR_DEBUG)
+    this->setWindowTitle("WickrIO Server Console (OnPrem)");
+#elif defined(WICKR_PRODUCTION)
+    this->setWindowTitle("WickrIO Server Console");
+#elif defined(WICKR_BETA)
     this->setWindowTitle("WickrIO Server Console (Beta)");
 #elif defined(WICKR_ALPHA)
     this->setWindowTitle("WickrIO Server Console (Alpha)");
