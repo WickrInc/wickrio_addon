@@ -17,6 +17,11 @@
 #include <QSqlQuery>
 #include <QSqlError>
 
+#ifdef Q_OS_LINUX
+#include <signal.h>
+#include <unistd.h>
+#endif
+
 #include "operationdata.h"
 #include "wbio_common.h"
 #include "wickrbotutils.h"
@@ -24,6 +29,10 @@
 #include "consoleserverservice.h"
 
 extern bool isVERSIONDEBUG();
+
+#ifdef Q_OS_LINUX
+WickrIOConsoleServerService *curService;
+#endif
 
 void redirectedOutput(QtMsgType type, const QMessageLogContext &, const QString & str)
 {
@@ -55,6 +64,28 @@ void redirectedOutput(QtMsgType type, const QMessageLogContext &, const QString 
     }
 }
 
+#ifdef Q_OS_LINUX
+void catchUnixSignals(const std::vector<int>& quitSignals,
+                      const std::vector<int>& ignoreSignals = std::vector<int>()) {
+
+    auto handler = [](int sig) ->void {
+        if (curService != nullptr) {
+            curService->stop();
+        }
+        qDebug() << "\nquit the application (user request signal = %d)" << sig;
+        QCoreApplication::quit();
+    };
+
+    // all these signals will be ignored.
+    for ( int sig : ignoreSignals )
+        signal(sig, SIG_IGN);
+
+    // each of these signals calls the handler (quits the QCoreApplication).
+    for ( int sig : quitSignals )
+        signal(sig, handler);
+}
+#endif
+
 Q_IMPORT_PLUGIN(QSQLCipherDriverPlugin)
 
 /**
@@ -66,15 +97,35 @@ Q_IMPORT_PLUGIN(QSQLCipherDriverPlugin)
 int main(int argc, char *argv[])
 {
     qInstallMessageHandler(redirectedOutput);
+    bool systemd = false;
+    int svcret;
 
     WickrIOConsoleServerService service(argc, argv);
 
 #ifdef Q_OS_LINUX
-    QCoreApplication *app = new QCoreApplication(argc, argv);
-    service.start();
-    int svcret = app->exec();
+    for (int i=0; i<argc; i++) {
+        qDebug() << "ARG[" << i+1 << "] =" << argv[i];
+        QString cmd(argv[i]);
+
+        if( cmd.startsWith("-systemd") ) {
+            systemd = true;
+        }
+    }
+
+    if (systemd) {
+        qDebug() << "Starting in systemd mode!";
+        curService = &service;
+        catchUnixSignals({SIGTSTP, SIGQUIT, SIGTERM});
+
+        QCoreApplication *app = new QCoreApplication(argc, argv);
+        service.start();
+        svcret = app->exec();
+        curService = nullptr;
+    } else {
+        svcret = service.exec();
+    }
 #else
-    int svcret = service.exec();
+    svcret = service.exec();
 #endif
 
     qDebug() << "Leaving Service exec";
