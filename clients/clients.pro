@@ -1,7 +1,6 @@
 TEMPLATE = subdirs
 SUBDIRS += \
-    wickrio
+    test_bot
 
 CONFIG += ordered
-
 

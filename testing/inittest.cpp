@@ -9,7 +9,7 @@
 #include "session/wickrAppClock.h"
 #include "wickrapplication.h"
 #include "common/wickrRuntime.h"
-#include "common/wbio_common.h"
+#include "wbio_common.h"
 
 InitTest::InitTest(int argc, char **argv, QObject *parent) :
     QObject(parent),

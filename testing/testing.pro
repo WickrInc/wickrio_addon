@@ -35,7 +35,7 @@ TEMPLATE = app
 #
 # Include the Wickr IO library
 #
-include(../clients/wickrio/libs/WickrIOLib/WickrIOLib.pri)
+include($${DEPTH}/libs/WickrIOLib/WickrIOLib.pri)
 
 RESOURCES += \
     testing.qrc
@@ -70,8 +70,8 @@ LIBS += -lsqlcipher
 INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/src
 INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/export
 INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/platforms/common/include
-INCLUDEPATH += $$PWD/$${DEPTH}/clients/wickrio
-INCLUDEPATH += $$PWD/$${DEPTH}/clients/wickrio/libs/WickrIOLib
+INCLUDEPATH += $$PWD/$${DEPTH}/shared/common
+INCLUDEPATH += $$PWD/$${DEPTH}/libs/WickrIOLib
 
 mac {
     QMAKE_LFLAGS += -F$$PWD/$${DEPTH}/platforms/mac/lib64
