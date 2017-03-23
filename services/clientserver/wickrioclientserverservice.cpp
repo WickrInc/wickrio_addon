@@ -89,8 +89,8 @@ bool WickrIOClientServerService::configureService()
     qDebug() << "Entering configureService";
 #endif
 
-    QSettings* settings = WBIOCommon::getSettings();
-    m_operation->databaseDir = WBIOCommon::getDBLocation();
+    QSettings* settings = WBIOServerCommon::getSettings();
+    m_operation->databaseDir = WBIOServerCommon::getDBLocation();
 
     QString logFileName("");
 
@@ -276,11 +276,13 @@ void WickrIOClientServerService::processCommand(int code)
  * @param name the name of the client found in the process_state table
  * @return
  */
-bool WickrIOClientServerService::clientNeedsStart(QString name)
+bool WickrIOClientServerService::clientNeedsStart(WickrBotClients *client)
 {
 #ifdef DEBUG_TRACE
     qDebug() << "Entering clientNeedsStart";
 #endif
+    QString name = client->name;
+
     WickrBotProcessState procState;
     if (m_operation->m_botDB == NULL) {
 #ifdef DEBUG_TRACE
@@ -319,8 +321,7 @@ bool WickrIOClientServerService::clientNeedsStart(QString name)
             }
 
             // Else it has been longer than 10 minutes, kill the old process and continue
-            QString appName = WBIO_ECLIENT_TARGET;
-            if (WickrBotUtils::isRunning(appName, procState.process_id)) {
+            if (WickrBotUtils::isRunning(client->binary, procState.process_id)) {
                 m_operation->log(QString("Killing old process, id=%1").arg(procState.process_id));
                 WickrBotUtils::killProcess(procState.process_id);
             }
@@ -408,7 +409,7 @@ bool WickrIOClientServerService::startClient(WickrBotClients *client)
     QString workingDir;
 
     // Check if the client process is still active
-    if (! clientNeedsStart(WBIOCommon::getClientProcessName(client->name))) {
+    if (! clientNeedsStart(client)) {
         m_operation->log(QString("Note: Process does not need to start for %1").arg(client->name));
 #ifdef DEBUG_TRACE
         qDebug() << "Leaving startClient: proc not need to start!";
@@ -483,11 +484,11 @@ bool WickrIOClientServerService::startClient(WickrBotClients *client)
     QStringList arguments;
     QString command;
 
-    command = WBIO_ECLIENT_TARGET;
+    command = client->binary;
 
     arguments.append(QString("-config=%1").arg(configFileName));
     arguments.append(QString("-clientdbdir=%1").arg(clientDbDir));
-    arguments.append(QString("-processname=%1").arg(WBIOCommon::getClientProcessName(client->name)));
+    arguments.append(QString("-processname=%1").arg(WBIOServerCommon::getClientProcessName(client)));
 
     QProcess exec;
     exec.setStandardOutputFile(outputFile);
@@ -522,7 +523,7 @@ void WickrIOClientServerService::getClients(bool start)
 //        m_operation->log("List of clients:");
         foreach (WickrBotClients *client, clients) {
             WickrBotProcessState state;
-            QString processName = WBIOCommon::getClientProcessName(client->name);
+            QString processName = WBIOServerCommon::getClientProcessName(client);
 
             if (m_operation->m_botDB->getProcessState(processName, &state)) {
 //                m_operation->log(QString("process=%1, id=%2, process=%3, state=%4").arg(state.process).arg(state.id).arg(state.process_id).arg(state.state));

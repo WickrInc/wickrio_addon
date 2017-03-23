@@ -32,6 +32,7 @@ linux-g++* {
             QMAKE_RPATHDIR += /usr/local/wickr/Qt-5.8/lib
         }
     }
+
     CONFIG(release,release|debug) {
         QMAKE_RPATHDIR += /usr/lib/wickrio
     }

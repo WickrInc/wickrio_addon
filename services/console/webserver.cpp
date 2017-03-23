@@ -4,7 +4,7 @@
 
 #include "wickrbotutils.h"
 #include "wickrbotsettings.h"
-#include "wbio_common.h"
+#include "server_common.h"
 
 #include "webserver.h"
 

@@ -8,6 +8,12 @@ CONFIG(release,release|debug) {
 }
 
 #
+# Include the Wickr IO common console files
+#
+SERVER_COMMON=../common
+INCLUDEPATH += $${SERVER_COMMON}
+
+#
 # Include the Wickr IO common files
 #
 include($${DEPTH}/shared/common/common_base.pri)
@@ -25,6 +31,7 @@ CONFIG += c++11
 
 HEADERS = \
     webserver.h
+
 SOURCES = \
     main.cpp \
     webserver.cpp

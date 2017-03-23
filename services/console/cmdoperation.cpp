@@ -14,8 +14,8 @@
 CmdOperation::CmdOperation(QObject *parent) : QObject(parent)
 {
     m_appNm = WBIO_CLIENTSERVER_TARGET;
-    m_settings = WBIOCommon::getSettings();
-    m_dbLocation = WBIOCommon::getDBLocation();
+    m_settings = WBIOServerCommon::getSettings();
+    m_dbLocation = WBIOServerCommon::getDBLocation();
     m_ipc = new WickrBotIPC();
     m_ioDB = NULL;
 }

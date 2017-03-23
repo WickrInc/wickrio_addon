@@ -384,7 +384,7 @@ CmdHandler::deleteClient(WickrIOConsoleUser *pCUser, const QString& clientID, st
         sendFailure(403, "You do not have permission to delete that client", response);
     } else {
         WickrBotProcessState state;
-        QString processName = WBIOCommon::getClientProcessName(client->name);
+        QString processName = WBIOServerCommon::getClientProcessName(client);
         if (m_ioDB->getProcessState(processName, &state)) {
             if (state.state == PROCSTATE_RUNNING) {
                 sendFailure(409, "Client is currently running. Client must be in paused state!", response);
@@ -455,7 +455,7 @@ CmdHandler::getClients(WickrIOConsoleUser *pCUser, stefanfrings::HttpResponse& r
 
         // Get the process state for this client
         WickrBotProcessState state;
-        QString processName = WBIOCommon::getClientProcessName(client->name);
+        QString processName = WBIOServerCommon::getClientProcessName(client);
 
         if (m_operation->m_botDB->getProcessState(processName, &state)) {
             if (state.state == PROCSTATE_RUNNING) {
@@ -518,7 +518,7 @@ CmdHandler::getClient(WickrIOConsoleUser *pCUser, const QString& clientID, stefa
 
     // Get the process state for this client
     WickrBotProcessState state;
-    QString processName = WBIOCommon::getClientProcessName(client->name);
+    QString processName = WBIOServerCommon::getClientProcessName(client);
 
     if (m_ioDB->getProcessState(processName, &state)) {
         if (state.state == PROCSTATE_RUNNING) {
@@ -806,7 +806,7 @@ CmdHandler::addClientData(WickrBotClients *newClient)
 
     // Insert a client record into the database
     if (m_operation->m_botDB->insertClientsRecord(newClient)) {
-        QString processName = WBIOCommon::getClientProcessName(newClient->name);
+        QString processName = WBIOServerCommon::getClientProcessName(newClient);
 
         // Set the state of the client process to paused
         if (! m_operation->m_botDB->updateProcessState(processName, 0, PROCSTATE_PAUSED))
@@ -828,7 +828,7 @@ bool
 CmdHandler::pauseClient(WickrBotClients *client)
 {
     WickrBotProcessState state;
-    QString processName = WBIOCommon::getClientProcessName(client->name);
+    QString processName = WBIOServerCommon::getClientProcessName(client);
 
     if (m_operation->m_botDB->getProcessState(processName, &state)) {
         if (state.ipc_port == 0) {
@@ -859,7 +859,7 @@ bool
 CmdHandler::startClient(WickrBotClients *client)
 {
     WickrBotProcessState state;
-    QString processName = WBIOCommon::getClientProcessName(client->name);
+    QString processName = WBIOServerCommon::getClientProcessName(client);
 
     if (m_operation->m_botDB->getProcessState(processName, &state)) {
         if (state.state == PROCSTATE_PAUSED) {

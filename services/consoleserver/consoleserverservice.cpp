@@ -9,6 +9,7 @@
 #include <wickrbotutils.h>
 #include "wickrbotsettings.h"
 #include "consoleserverservice.h"
+#include "server_common.h"
 #include "wbio_common.h"
 #include "wickriodatabase.h"
 
@@ -70,7 +71,7 @@ WickrIOConsoleServerService::~WickrIOConsoleServerService()
  */
 bool WickrIOConsoleServerService::configureService()
 {
-    m_settings = WBIOCommon::getSettings();
+    m_settings = WBIOServerCommon::getSettings();
 
     QString logFileName("");
     m_operation->databaseDir = "";

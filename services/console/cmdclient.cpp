@@ -7,6 +7,7 @@
 #include "cmdclient.h"
 
 #include "wbio_common.h"
+#include "server_common.h"
 #include "wickrbotsettings.h"
 #include "consoleserver.h"
 #include "wickrioconsoleclienthandler.h"
@@ -136,7 +137,7 @@ void CmdClient::listClients()
 
     int cnt=0;
     for (WickrIOClients *client : m_clients) {
-        QString processName = WBIOCommon::getClientProcessName(client->name);
+        QString processName = WBIOServerCommon::getClientProcessName(client);
         QString clientState = WickrIOConsoleClientHandler::getActualProcessState(processName, m_operation->m_ioDB);
         WickrIOConsoleUser cUser;
         QString consoleUser;
@@ -481,7 +482,7 @@ void CmdClient::deleteClient(int clientIndex)
         }
 
         WickrBotProcessState state;
-        QString processName = WBIOCommon::getClientProcessName(client->name);
+        QString processName = WBIOServerCommon::getClientProcessName(client);
         if (m_operation->m_ioDB->getProcessState(processName, &state)) {
             if (state.ipc_port == 0) {
                 qDebug() << "CONSOLE:Client does not have an IPC port defined, will not be able to stop WickrIO Client process!";
@@ -526,7 +527,7 @@ void CmdClient::modifyClient(int clientIndex)
         WickrBotProcessState state;
         client = m_clients.at(clientIndex);
 
-        QString processName = WBIOCommon::getClientProcessName(client->name);
+        QString processName = WBIOServerCommon::getClientProcessName(client);
         if (m_operation->m_ioDB->getProcessState(processName, &state)) {
             if (state.state == PROCSTATE_RUNNING) {
                 qDebug() << "CONSOLE:Cannot modify a running client!";
@@ -607,7 +608,7 @@ void CmdClient::pauseClient(int clientIndex)
     if (validateIndex(clientIndex)) {
         WickrIOClients *client = m_clients.at(clientIndex);
         WickrBotProcessState state;
-        QString processName = WBIOCommon::getClientProcessName(client->name);
+        QString processName = WBIOServerCommon::getClientProcessName(client);
 
         if (m_operation->m_ioDB->getProcessState(processName, &state)) {
             if (state.ipc_port == 0) {
@@ -639,7 +640,7 @@ void CmdClient::startClient(int clientIndex)
     if (validateIndex(clientIndex)) {
         WickrIOClients *client = m_clients.at(clientIndex);
         WickrBotProcessState state;
-        QString processName = WBIOCommon::getClientProcessName(client->name);
+        QString processName = WBIOServerCommon::getClientProcessName(client);
 
         if (m_operation->m_ioDB->getProcessState(processName, &state)) {
             if (state.state == PROCSTATE_PAUSED) {

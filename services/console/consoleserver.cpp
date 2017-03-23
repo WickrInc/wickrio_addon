@@ -12,7 +12,7 @@
 ConsoleServer::ConsoleServer(WickrIOClientDatabase *ioDB) :
     m_ioDB(ioDB)
 {
-    m_settings = WBIOCommon::getSettings();
+    m_settings = WBIOServerCommon::getSettings();
 }
 
 bool

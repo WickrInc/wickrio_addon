@@ -3,7 +3,7 @@
 #include <QCoreApplication>
 #include "client.h"
 #include "cmdmain.h"
-#include "wbio_common.h"
+#include "server_common.h"
 
 extern bool isVERSIONDEBUG();
 

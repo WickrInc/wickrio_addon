@@ -125,7 +125,7 @@ WickrBotDatabase::createRelationalTables()
     // Check if the clients table exists already, if not create it
     if (! m_db.tables().contains(QLatin1String(DB_CLIENTS_TABLE))) {
         QSqlQuery query(m_db);
-        if (!query.exec("CREATE TABLE clients (id int primary key, name text NOT NULL UNIQUE, port int, interface text, api_key text NOT NULL, user text NOT NULL UNIQUE, password text NOT NULL, isHttps int, sslKeyFile text, sslCertFile text)")) {
+        if (!query.exec("CREATE TABLE clients (id int primary key, name text NOT NULL UNIQUE, port int, interface text, api_key text NOT NULL, user text NOT NULL UNIQUE, password text NOT NULL, isHttps int, sslKeyFile text, sslCertFile text, binary text NOT NULL)")) {
             qDebug() << "create clients table failed, query error=" << query.lastError();
             query.finish();
             return false;
@@ -165,18 +165,6 @@ WickrBotDatabase::createRelationalTables()
             qDebug() << "create process_state table failed, query error=" << query.lastError();
             query.finish();
             return false;
-        }
-        query.finish();
-    } else {
-        QSqlQuery query(m_db);
-        // Check if the ipc_port exists, if not create it
-        if (!query.exec("SELECT ipc_port from process_state")) {
-            if (!query.exec("ALTER TABLE process_state ADD ipc_port int")) {
-                qDebug() << "Adding ipc_port column to process_state failed, query error=" << query.lastError();
-                query.finish();
-                return false;
-            }
-            query.finish();
         }
         query.finish();
     }
@@ -716,7 +704,7 @@ WickrBotClients *WickrBotDatabase::getClient(int id)
     if (!initialized)
         return client;
 
-    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile FROM clients WHERE id=?";
+    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile,binary FROM clients WHERE id=?";
     QSqlQuery query(m_db);
     query.prepare(queryString);
     query.bindValue(0, id);
@@ -738,6 +726,7 @@ WickrBotClients *WickrBotDatabase::getClient(int id)
             client->isHttps = (isHttps == 1) ? true : false;
             client->sslKeyFile = query.value(8).toString();
             client->sslCertFile = query.value(9).toString();
+            client->binary = query.value(10).toString();
         }
     }
     query.finish();
@@ -752,7 +741,7 @@ WickrBotDatabase::getClientUsingApiKey(QString apiKey)
     if (!initialized)
         return client;
 
-    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile FROM clients WHERE api_key=?";
+    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile,binary FROM clients WHERE api_key=?";
     QSqlQuery query(m_db);
     query.prepare(queryString);
     query.bindValue(0, apiKey);
@@ -774,6 +763,7 @@ WickrBotDatabase::getClientUsingApiKey(QString apiKey)
             client->isHttps = (isHttps == 1) ? true : false;
             client->sslKeyFile = query.value(8).toString();
             client->sslCertFile = query.value(9).toString();
+            client->binary = query.value(10).toString();
         }
     }
     query.finish();
@@ -788,7 +778,7 @@ WickrBotDatabase::getClientUsingName(QString name)
     if (!initialized)
         return client;
 
-    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile FROM clients WHERE name=?";
+    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile,binary FROM clients WHERE name=?";
     QSqlQuery query(m_db);
     query.prepare(queryString);
     query.bindValue(0, name);
@@ -813,7 +803,7 @@ WickrBotDatabase::getClientUsingUserName(QString userName)
     if (!initialized)
         return client;
 
-    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile FROM clients WHERE user=?";
+    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile,binary FROM clients WHERE user=?";
     QSqlQuery query(m_db);
     query.prepare(queryString);
     query.bindValue(0, userName);
@@ -855,6 +845,7 @@ WickrBotDatabase::getClient(QSqlQuery *query, WickrBotClients *client)
     client->isHttps = (isHttps == 1) ? true : false;
     client->sslKeyFile = query->value(rec.indexOf("sslKeyFile")).toString();
     client->sslCertFile = query->value(rec.indexOf("sslCertFile")).toString();
+    client->binary = query->value(rec.indexOf("binary")).toString();
 }
 
 QList<WickrBotClients *>
@@ -864,7 +855,7 @@ WickrBotDatabase::getClients()
     if (!initialized)
         return clients;
 
-    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile FROM clients";
+    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile,binary FROM clients";
     QSqlQuery *query = new QSqlQuery(m_db);
     query->prepare(queryString);
 
@@ -888,7 +879,7 @@ WickrBotDatabase::getClientsModel() {
     if (!initialized)
         return model;
 
-    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile FROM clients";
+    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile,binary FROM clients";
 
     model->setQuery(queryString);
     return model;
@@ -917,7 +908,7 @@ WickrBotDatabase::insertClientsRecord(WickrBotClients *client) {
     query.bindValue(9, client->sslCertFile);
 #else
     QSqlQuery query(m_db);
-    QString queryString = QString("INSERT INTO clients (id, name, port, interface, api_key, user, password, isHttps, sslKeyFile, sslCertFile) VALUES (%1, '%2', %3, '%4', '%5', '%6', '%7', %8, '%9', '%10')")
+    QString queryString = QString("INSERT INTO clients (id, name, port, interface, api_key, user, password, isHttps, sslKeyFile, sslCertFile, binary) VALUES (%1, '%2', %3, '%4', '%5', '%6', '%7', %8, '%9', '%10', '%11%)")
             .arg(id)
             .arg(client->name)
             .arg(client->port)
@@ -927,7 +918,8 @@ WickrBotDatabase::insertClientsRecord(WickrBotClients *client) {
             .arg(client->password)
             .arg(client->isHttps ? 1 : 0)
             .arg(client->sslKeyFile)
-            .arg(client->sslCertFile);
+            .arg(client->sslCertFile)
+            .arg(client->binary);
 #endif
     if (!query.exec(queryString)) {
         qDebug() << query.lastQuery();
@@ -978,7 +970,7 @@ WickrBotDatabase::updateClientsRecord(WickrBotClients *client, bool insertIfNotE
 #else
 
     QSqlQuery query(m_db);
-    QString queryString = QString("UPDATE clients SET name='%1', port=%2, interface='%3', api_key='%4', user='%5', password='%6', isHttps=%7, sslKeyFile='%8', sslCertFile='%9' WHERE id='%10'")
+    QString queryString = QString("UPDATE clients SET name='%1', port=%2, interface='%3', api_key='%4', user='%5', password='%6', isHttps=%7, sslKeyFile='%8', sslCertFile='%9', binary='%11' WHERE id='%10'")
             .arg(client->name)
             .arg(client->port)
             .arg(client->iface)
@@ -988,7 +980,8 @@ WickrBotDatabase::updateClientsRecord(WickrBotClients *client, bool insertIfNotE
             .arg(client->isHttps ? 1 : 0)
             .arg(client->sslKeyFile)
             .arg(client->sslCertFile)
-            .arg(client->id);
+            .arg(client->id)
+            .arg(client->binary);
 #endif
     if (!query.exec(queryString)) {
         QSqlError error = query.lastError();

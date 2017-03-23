@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
     }
 
     QString username;
-    QString appname = WBIO_ECLIENT_TARGET;
+    QString appname = WBIO_CLIENT_TARGET;
     QString orgname = WBIO_ORGANIZATION;
 
     wickrProductSetProductType(ClientVersionInfo::getProductType());
@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
     bool dbEncrypt = true;
 
     operation = new OperationData();
-    operation->processName = WBIO_ECLIENT_TARGET;
+    operation->processName = WBIO_CLIENT_TARGET;
 
     QString clientDbPath("");
     QString suffix;
@@ -338,7 +338,8 @@ int main(int argc, char *argv[])
             exit(1);
         }
 
-        operation->processName = WBIOCommon::getClientProcessName(username);
+        QString processName(argv[0]);
+        operation->processName = QString("%1.%2").arg(processName).arg(username);
     }
 
     /*

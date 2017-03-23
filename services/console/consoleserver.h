@@ -4,6 +4,7 @@
 #include <QObject>
 #include "wickriodatabase.h"
 #include "wbio_common.h"
+#include "server_common.h"
 #include "wickrioappsettings.h"
 
 class ConsoleServer

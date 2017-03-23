@@ -19,6 +19,7 @@ public:
     QString user;
     QString password;
     QString status;
+    QString binary;
 
     bool isHttps;
     int port;

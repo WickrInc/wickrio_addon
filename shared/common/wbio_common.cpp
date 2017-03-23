@@ -20,15 +20,3 @@ bool WBIOCommon::makeDirectory(QString dirname)
     }
     return true;
 }
-
-QString
-WBIOCommon::getClientProcessName(QString name)
-{
-    QString processName;
-    if (name.isEmpty()) {
-        processName = WBIO_CLIENT_PROCESS;
-    } else {
-        processName = QString("%1.%2").arg(WBIO_CLIENT_PROCESS).arg(name);
-    }
-    return processName;
-}

@@ -29,38 +29,18 @@
  */
 #if defined(WICKR_BLACKOUT) && defined(WICKR_DEBUG)
 #define WBIO_CLIENT_PROCESS         "WickrIOClientOnPrem"
-#define WBIO_ECLIENT_TARGET         "WickrIOEClientOnPrem"
-#define WBIO_CLIENTSERVER_TARGET    "WickrIOSvrOnPrem"
-#define WBIO_CONSOLE_TARGET         "WickrIOConsoleOnPrem"
-#define WBIO_CONSOLESERVER_TARGET   "WickrIOCSvrOnPrem"
 
 #elif defined(WICKR_BETA)
 #define WBIO_CLIENT_PROCESS         "WickrIOClientBeta"
-#define WBIO_ECLIENT_TARGET         "WickrIOEClientBeta"
-#define WBIO_CLIENTSERVER_TARGET    "WickrIOSvrBeta"
-#define WBIO_CONSOLE_TARGET         "WickrIOConsoleBeta"
-#define WBIO_CONSOLESERVER_TARGET   "WickrIOCSvrBeta"
 
 #elif defined(WICKR_ALPHA)
 #define WBIO_CLIENT_PROCESS         "WickrIOClientAlpha"
-#define WBIO_ECLIENT_TARGET         "WickrIOEClientAlpha"
-#define WBIO_CLIENTSERVER_TARGET    "WickrIOSvrAlpha"
-#define WBIO_CONSOLE_TARGET         "WickrIOConsoleAlpha"
-#define WBIO_CONSOLESERVER_TARGET   "WickrIOCSvrAlpha"
 
 #elif defined(WICKR_PRODUCTION)
 #define WBIO_CLIENT_PROCESS         "WickrIOClient"
-#define WBIO_ECLIENT_TARGET         "WickrIOEClient"
-#define WBIO_CLIENTSERVER_TARGET    "WickrIOSvr"
-#define WBIO_CONSOLE_TARGET         "WickrIOConsole"
-#define WBIO_CONSOLESERVER_TARGET   "WickrIOCSvr"
 
 #elif defined(WICKR_QA)
 #define WBIO_CLIENT_PROCESS         "WickrIOClientQA"
-#define WBIO_ECLIENT_TARGET         "WickrIOEClientQA"
-#define WBIO_CLIENTSERVER_TARGET    "WickrIOSvrQA"
-#define WBIO_CONSOLE_TARGET         "WickrIOConsoleQA"
-#define WBIO_CONSOLESERVER_TARGET   "WickrIOCSvrQA"
 
 #else
 "No WICKR_TARGET defined!!!"
@@ -78,9 +58,6 @@ public:
     WBIOCommon() {}
 
     static bool makeDirectory(QString dirname);
-    static QSettings *getSettings();
-    static QString getDBLocation();
-    static QString getClientProcessName(QString name);
 };
 
 

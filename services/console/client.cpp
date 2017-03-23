@@ -29,8 +29,8 @@ Client::Client(QWidget *parent) :
     m_updateTimer(NULL)
 {
     m_appNm = WBIO_CLIENTSERVER_TARGET;
-    m_settings = WBIOCommon::getSettings();
-    dbLocation = WBIOCommon::getDBLocation();
+    m_settings = WBIOServerCommon::getSettings();
+    dbLocation = WBIOServerCommon::getDBLocation();
 
     m_webServer = new WebServer(dbLocation, m_settings, this);
 
@@ -105,8 +105,10 @@ Client::Client(QWidget *parent) :
                     msg->exec();
                 }
 
+                WickrIOClients *updateClient = m_ioDB->getClientUsingName(name);
+
                 // Delete the process_state entry
-                QString processName = WBIOCommon::getClientProcessName(name);
+                QString processName = WBIOServerCommon::getClientProcessName(updateClient);
                 if (! m_ioDB->deleteProcessState(processName)) {
                     WickrBotMessageBox *msg = new WickrBotMessageBox(this);
                     msg->addButton(tr("OK"), 0);
@@ -155,14 +157,14 @@ Client::Client(QWidget *parent) :
 
         QString name = mycell.data().toString();
 
+        // Start up the AddClientDialog to allow user to change the values of this client
+        updateClient = m_ioDB->getClientUsingName(name);
+
         // send the stop command to the client
         WickrBotProcessState state;
-        QString processName = WBIOCommon::getClientProcessName(name);
+        QString processName = WBIOServerCommon::getClientProcessName(updateClient);
         if (m_ioDB->getProcessState(processName, &state)) {
             if (state.state != PROCSTATE_RUNNING) {
-                // Start up the AddClientDialog to allow user to change the values of this client
-                updateClient = m_ioDB->getClientUsingName(name);
-
                 if (!getClientSettings(updateClient)) {
                     qDebug() << "COuld not get the .ini/registr information for" << name;
                 }
@@ -186,9 +188,11 @@ Client::Client(QWidget *parent) :
             QModelIndex mycell = model->index(m_clientsSelectedRow, CLIENT_MODEL_NAME_IDX);
             QString name = mycell.data().toString();
 
+            WickrIOClients *updateClient = m_ioDB->getClientUsingName(name);
+
             // send the stop command to the client
             WickrBotProcessState state;
-            QString processName = WBIOCommon::getClientProcessName(name);
+            QString processName = WBIOServerCommon::getClientProcessName(updateClient);
             if (m_ioDB->getProcessState(processName, &state)) {
                 // If the process is running then stop it
                 if (state.state == PROCSTATE_RUNNING) {
@@ -747,7 +751,7 @@ Client::updateClientsList()
                 WickrIOClients *client = clients.at(i);
 
                 // Get the process state for the client
-                QString processName = WBIOCommon::getClientProcessName(client->name);
+                QString processName = WBIOServerCommon::getClientProcessName(client);
                 client->status = WickrIOConsoleClientHandler::getActualProcessState(processName, m_ioDB);
 
                 QString cUserName;

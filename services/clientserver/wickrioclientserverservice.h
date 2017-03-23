@@ -29,7 +29,7 @@ public:
 private:
     void usage();
     void getClients(bool start);
-    bool clientNeedsStart(QString name);
+    bool clientNeedsStart(WickrBotClients *client);
     bool startClient(WickrBotClients *client);
     bool stopClient(const WickrBotProcessState& state);
 

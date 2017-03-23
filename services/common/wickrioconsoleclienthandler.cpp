@@ -134,7 +134,7 @@ WickrIOConsoleClientHandler::addClient(WickrIOClientDatabase *ioDB, WickrIOClien
         }
     }
 
-    QString processName = WBIOCommon::getClientProcessName(newClient->name);
+    QString processName = WBIOServerCommon::getClientProcessName(newClient);
 
     // Set the state of the client process to paused
     if (! ioDB->updateProcessState(processName, 0, PROCSTATE_PAUSED)) {
