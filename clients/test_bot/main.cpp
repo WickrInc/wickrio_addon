@@ -6,6 +6,7 @@
 #include <QLocale>
 #include <QTranslator>
 #include <QDir>
+#include <QFileInfo>
 #include <QStandardPaths>
 #include <QCoreApplication>
 
@@ -338,8 +339,10 @@ int main(int argc, char *argv[])
             exit(1);
         }
 
-        QString processName(argv[0]);
-        operation->processName = QString("%1.%2").arg(processName).arg(username);
+        QFile appname(argv[0]);
+        QFileInfo fi(appname);
+
+        operation->processName = QString("%1.%2").arg(fi.fileName() ).arg(username);
     }
 
     /*
