@@ -35,21 +35,6 @@ int main(int argc, char *argv[])
         qInstallMessageHandler(redirectedOutput);
         QCoreApplication coreapp(argc, argv);
 
-#if defined(Q_OS_LINUX)
-#if defined(WICKR_BLACKOUT) && defined(WICKR_DEBUG)
-    QCoreApplication::addLibraryPath("/usr/lib/wickrio-onprem/plugins");
-#elif defined(WICKR_PRODUCTION)
-    QCoreApplication::addLibraryPath("/usr/lib/wickrio/plugins");
-#elif defined(WICKR_QA)
-    QCoreApplication::addLibraryPath("/usr/lib/wickrio-qa/plugins");
-#elif defined(WICKR_BETA)
-    QCoreApplication::addLibraryPath("/usr/lib/wickrio-beta/plugins");
-#elif defined(WICKR_ALPHA)
-    QCoreApplication::addLibraryPath("/usr/lib/wickrio-alpha/plugins");
-#else
-    This is an issue, cannot set the library!
-#endif
-#endif
         coreapp.setOrganizationName(WBIO_ORGANIZATION);
         coreapp.setApplicationName(WBIO_CONSOLE_TARGET);
 
@@ -57,13 +42,6 @@ int main(int argc, char *argv[])
         cmdmain.runCommands();
     } else {
         QApplication app(argc, argv);
-#if defined(Q_OS_LINUX)
-#ifdef VERSIONDEBUG
-        QApplication::addLibraryPath("/usr/lib/wickrio-beta/plugins");
-#else
-        QApplication::addLibraryPath("/usr/lib/wickrio/plugins");
-#endif
-#endif
         app.setOrganizationName(WBIO_ORGANIZATION);
         app.setApplicationName(WBIO_CONSOLE_TARGET);
 

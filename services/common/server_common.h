@@ -7,12 +7,12 @@
 #include "wickrbotclients.h"
 
 #if defined(WICKR_DEBUG)
-#define WBIO_GENERAL_TARGET         "WickrIOAlphaDebug"
+#define WBIO_GENERAL_TARGET         "WickrIODebug"
 #define WBIO_CLIENTSERVER_TARGET    "WickrIOSvrDebug"
 #define WBIO_CONSOLE_TARGET         "WickrIOConsoleDebug"
 #define WBIO_CONSOLESERVER_TARGET   "WickrIOCSvrDebug"
 #else
-#define WBIO_GENERAL_TARGET         "WickrIOAlpha"
+#define WBIO_GENERAL_TARGET         "WickrIO"
 #define WBIO_CLIENTSERVER_TARGET    "WickrIOSvr"
 #define WBIO_CONSOLE_TARGET         "WickrIOConsole"
 #define WBIO_CONSOLESERVER_TARGET   "WickrIOCSvr"

@@ -36,20 +36,10 @@ Client::Client(QWidget *parent) :
 
     ui->setupUi(this);
 
-#if defined(WICKR_BLACKOUT) && defined(WICKR_DEBUG)
-    this->setWindowTitle("WickrIO Server Console (OnPrem)");
-#elif defined(WICKR_PRODUCTION)
-    this->setWindowTitle("WickrIO Server Console");
-#elif defined(WICKR_BETA)
-    this->setWindowTitle("WickrIO Server Console (Beta)");
-#elif defined(WICKR_ALPHA)
-    this->setWindowTitle("WickrIO Server Console (Alpha)");
-#elif defined(WICKR_PRODUCTION)
-    this->setWindowTitle("WickrIO Server Console");
+#if defined(WICKR_DEBUG)
+    this->setWindowTitle("WickrIO Server Console (Debug)");
 #elif defined(WICKR_QA)
-    this->setWindowTitle("WickrIO Server Console (QA)");
-#else
-"No WICKR_TARGET defined!!!"
+    this->setWindowTitle("WickrIO Server Console");
 #endif
 
     ipc = new WickrBotIPC();

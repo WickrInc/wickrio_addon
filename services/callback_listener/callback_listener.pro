@@ -1,6 +1,11 @@
 DEPTH = ../..
 COMMON = $${DEPTH}/shared/common
 
+#
+# Include the Wickr IO services base
+#
+include(../services.pri)
+
 CONFIG += c++11
 
 CONFIG -= console

@@ -24,11 +24,11 @@ INCLUDEPATH += $${PWD}
 linux-g++* {
     equals(QT_MAJOR_VERSION, 5) {
         equals(QT_MINOR_VERSION, 7) {
-            QMAKE_RPATHDIR = /usr/local/wickr/Qt-5.7
+            QMAKE_RPATHDIR += /usr/local/wickr/Qt-5.7
             QMAKE_RPATHDIR += /usr/local/wickr/Qt-5.7/lib
         }
         equals(QT_MINOR_VERSION, 8) {
-            QMAKE_RPATHDIR = /usr/local/wickr/Qt-5.8
+            QMAKE_RPATHDIR += /usr/local/wickr/Qt-5.8
             QMAKE_RPATHDIR += /usr/local/wickr/Qt-5.8/lib
         }
     }

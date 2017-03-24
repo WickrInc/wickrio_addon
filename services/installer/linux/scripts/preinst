@@ -1,0 +1,51 @@
+#!/bin/bash
+
+set -e
+
+case "$1" in
+    upgrade)
+        echo "Pre-install upgrade for old version of WickrIO:"
+
+        #
+        # Setup values
+        #
+        tempdir=/opt/WickrIOINSTALLEXT/temp
+        database="/opt/WickrIOINSTALLEXT/wickrbot.database.sqlite"
+
+        #
+        # Make the temporary directory
+        #
+        mkdir -p $tempdir
+
+        #
+        # Save the configuration and INIT files
+        #
+        set +e
+        cp /opt/WickrIOINSTALLEXT/*.ini $tempdir > /dev/null 2>&1 
+        set -e
+
+        #
+        # Stop the WickrIO service
+        #
+        set +e
+        systemctl stop WickrIOSvrINSTALLEXT
+        systemctl disable WickrIOSvrINSTALLEXT
+        # Remove the startup entry for the service(s)
+        update-rc.d -f WickrIOSvrINSTALLEXT remove
+        set -e
+
+        #
+        # Stop the WickrIO Console service
+        #
+        set +e
+        systemctl stop WickrIOCSvrINSTALLEXT
+        systemctl disable WickrIOCSvrINSTALLEXT
+        # Remove the startup entry for the service(s)
+        update-rc.d -f WickrIOCSvrINSTALLEXT remove
+        set -e
+
+    ;;
+esac    
+
+
+exit 0

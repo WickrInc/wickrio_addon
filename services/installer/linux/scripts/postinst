@@ -1,0 +1,47 @@
+#!/bin/bash
+
+set -e
+
+case "$1" in
+    configure)
+        echo "Post-install configure for new version of WickrIO:"
+
+        # Definitions of the .INI files
+        inifile="/opt/WickrIOINSTALLEXT/WickrIOSvrINSTALLEXT.ini"
+        tempinifile="/opt/WickrIOINSTALLEXT/temp/WickrIOSvrINSTALLEXT.ini"
+
+        # if there is a saved INI file then use it
+        if [ -f $tempinifile ]
+        then
+          mv $tempinifile $inifile
+        fi
+
+        #
+        # Do any pre-execution setup
+        #
+        wickrio_settings_initEXTENSION /opt/WickrIOINSTALLEXT
+
+        #
+        # Start the service(s)
+        #
+        systemctl enable WickrIOSvrINSTALLEXT
+        systemctl start WickrIOSvrINSTALLEXT
+
+        # Add the service(s) to the list of startup services
+        update-rc.d WickrIOSvrINSTALLEXT defaults
+
+        #
+        # Stop the WickrIO Console service
+        #
+        set +e
+        systemctl enable WickrIOCSvrINSTALLEXT
+        systemctl start WickrIOCSvrINSTALLEXT
+
+        # Remove the startup entry for the service(s)
+        update-rc.d -f WickrIOCSvrINSTALLEXT defaults
+        set -e
+
+    ;;
+esac
+
+exit 0

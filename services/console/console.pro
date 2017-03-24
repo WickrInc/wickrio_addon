@@ -2,6 +2,11 @@ DEPTH = ../..
 COMMON = $${DEPTH}/shared/common
 
 #
+# Include the Wickr IO services base
+#
+include(../services.pri)
+
+#
 # Include the WickrIO common files
 #
 include($${COMMON}/common.pri)

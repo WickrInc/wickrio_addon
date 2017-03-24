@@ -2,6 +2,11 @@ DEPTH = ../..
 
 message(*** WickrIO Service Control build)
 
+#
+# Include the Wickr IO services base
+#
+include(../services.pri)
+
 CONFIG(release,release|debug) {
 } else {
   DEFINES += VERSIONDEBUG
