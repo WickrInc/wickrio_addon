@@ -1,0 +1,32 @@
+#!/bin/bash
+
+set -e
+
+case "$1" in
+    configure)
+        echo "Post-install configure for new version of WickrIO Test Bot:"
+
+        # TODO: Should only have to restart if the service was already running!
+
+        #
+        # Start the service(s)
+        #
+        systemctl start WickrIOSvrINSTALLEXT
+
+        # Add the service(s) to the list of startup services
+        update-rc.d WickrIOSvrINSTALLEXT defaults
+
+        #
+        # Start the WickrIO Console service
+        #
+        set +e
+        systemctl start WickrIOCSvrINSTALLEXT
+
+        # Remove the startup entry for the service(s)
+        update-rc.d -f WickrIOCSvrINSTALLEXT defaults
+        set -e
+
+    ;;
+esac
+
+exit 0

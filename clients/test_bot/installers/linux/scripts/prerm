@@ -1,0 +1,36 @@
+#!/bin/bash
+
+set -e
+
+case "$1" in
+    upgrade)
+        echo "Pre-remove for upgrade of WickrIO:"
+
+        #
+        # Stop the WickrIO service
+        #
+        systemctl stop WickrIOSvrINSTALLEXT
+        # Remove the startup entry for the service(s)
+        update-rc.d -f WickrIOSvrINSTALLEXT remove
+
+        #
+        # Stop the WickrIO Console service
+        #
+        set +e
+        systemctl stop WickrIOCSvrINSTALLEXT
+
+        # Remove the startup entry for the service(s)
+        update-rc.d -f WickrIOCSvrINSTALLEXT remove
+        set -e
+
+
+    ;;
+
+    remove)
+        echo "Removing current installation of WickrIO:"
+
+    ;;
+esac    
+
+
+exit 0
