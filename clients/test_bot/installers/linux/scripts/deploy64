@@ -49,7 +49,7 @@ else
     bldtype="-${build_extension}"
     BldType=$install_extension
     version="${maj}.${min}.${pat}-${bld}~${build_extension}"
-    svcbldtype="debug"
+    svcbldtype="-debug"
     svcBldType="Debug"
 fi
 
@@ -127,7 +127,7 @@ cp -a $current/../../../../../../${build_dir}/libs/SMTPEmail/libSMTPEmail.* $lib
 #
 # Change the contents appropriately for Beta version Release versions
 #
-sed -e "s/EXTENSION/${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" -e "s/VERSION/$version/" <$current/control64 > $debian/control
+sed -e "s/EXTENSION/${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" -e "s/SVCEXTEN/${svcbldtype}/g" -e "s/VERSION/$version/" <$current/control64 > $debian/control
 
 # Installer pre and post installation scripts
 sed -e "s/EXTENSION/${svcbldtype}/g" -e "s/INSTALLEXT/${SvcBldType}/g" <$current/preinst > $debian/preinst

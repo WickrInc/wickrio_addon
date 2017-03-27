@@ -4,6 +4,7 @@
 #include "ui_addclientdialog.h"
 #include "wickrbotmessagebox.h"
 #include "wickrioconsoleclienthandler.h"
+#include "server_common.h"
 
 AddClientDialog::AddClientDialog(WickrIOClientDatabase *ioDB, WickrIOSSLSettings *sslSettings, WickrIOClients *client, QWidget *parent) :
     QDialog(parent),
@@ -17,6 +18,12 @@ AddClientDialog::AddClientDialog(WickrIOClientDatabase *ioDB, WickrIOSSLSettings
     // Setup the supported network types
     ui->networkTypeComboBox->addItem("HTTP");
     ui->networkTypeComboBox->addItem("HTTPS");
+
+    // Setup the list of possible binaries
+    QStringList binaries = WBIOServerCommon::getAvailableClientApps();
+    for (QString binary : binaries) {
+        ui->botBinaryComboBox->addItem(binary);
+    }
 
     // Setup the possible network interfaces
     QStringList ifaces = WickrIOConsoleClientHandler::getNetworkInterfaceList();
@@ -79,6 +86,7 @@ AddClientDialog::AddClientDialog(WickrIOClientDatabase *ioDB, WickrIOSSLSettings
     connect(ui->passwordLineEdit, &QLineEdit::textChanged, [=]() { updateButtons(); });
     connect(ui->networkTypeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(slotComboChanged(int)));
     connect(ui->consoleUserComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(slotComboChanged(int)));
+    connect(ui->botBinaryComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(slotComboChanged(int)));
 
     updateButtons();
 }
@@ -149,6 +157,7 @@ AddClientDialog::addClient()
         client.sslCertFile = m_sslSettings->sslCertFile;
     }
     client.console_id = consoleUserMap.value(ui->consoleUserComboBox->currentIndex(), 0);
+    client.binary = ui->botBinaryComboBox->currentText();
 
     WickrBotClients *test;
 

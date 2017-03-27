@@ -38,22 +38,6 @@ WickrIOClientServerService::WickrIOClientServerService(int argc, char **argv) :
 
     m_appNm = WBIO_CLIENTSERVER_TARGET;
 
-#if defined(Q_OS_LINUX)
-#if defined(WICKR_BLACKOUT) && defined(WICKR_DEBUG)
-    QCoreApplication::addLibraryPath("/usr/lib/wickrio-onprem/plugins");
-#elif defined(WICKR_PRODUCTION)
-    QCoreApplication::addLibraryPath("/usr/lib/wickrio/plugins");
-#elif defined(WICKR_QA)
-    QCoreApplication::addLibraryPath("/usr/lib/wickrio-qa/plugins");
-#elif defined(WICKR_BETA)
-    QCoreApplication::addLibraryPath("/usr/lib/wickrio-beta/plugins");
-#elif defined(WICKR_ALPHA)
-    QCoreApplication::addLibraryPath("/usr/lib/wickrio-alpha/plugins");
-#else
-    This is an issue, cannot set the library!
-#endif
-#endif
-
     m_operation = new OperationData();
     m_operation->processName = WBIO_CLIENTSERVER_TARGET;
 
@@ -281,8 +265,6 @@ bool WickrIOClientServerService::clientNeedsStart(WickrBotClients *client)
 #ifdef DEBUG_TRACE
     qDebug() << "Entering clientNeedsStart";
 #endif
-    QString name = client->name;
-
     WickrBotProcessState procState;
     if (m_operation->m_botDB == NULL) {
 #ifdef DEBUG_TRACE
@@ -292,13 +274,7 @@ bool WickrIOClientServerService::clientNeedsStart(WickrBotClients *client)
     }
 
     // Get the process name to check against, in the process state table
-    QString processName;
-    if (name.isEmpty()) {
-        processName = m_operation->processName;
-    } else {
-        processName = name;
-    }
-
+    QString processName = WBIOServerCommon::getClientProcessName(client);
     if (m_operation->m_botDB->getProcessState(processName, &procState)) {
         /*
          * If the previous run is still in the running state then evaluate whether

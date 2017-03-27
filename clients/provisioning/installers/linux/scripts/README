@@ -1,0 +1,27 @@
+This folder contains Linux installers for the conformance_bot client:
+
+Linux installers for WickrIO clients support all the WickrPro product types (alpha, beta, qa, production). The following scripts are associated with each of the WickrPro product types:
+
+  - Alpha  ======> create_alpha
+  - Beta  =======> create_beta
+  - QA  =========> create_qa
+  - Production  => create_prod
+
+The product type script will setup the appropriate file names that will be used to create the linux installer for the selected product type. The "deploy64" script will be called with this product specific information to actually generate the installation package.
+
+There are several files that are included in the installation and are found in this directory. The following files are part of the installation:
+
+  - control64
+  - postinst
+  - preinst
+  - prerm
+  - WickrIOCSvr.script
+  - WickrIOSvr.ini
+  - WickrIOSvr.script
+
+Each of these files will be modified based on values associated with the product type. There are several key words found in these files that will be replaced with the specific values.  Here is a list of the keywords found in those files:
+
+  - EXTENSION
+  - INSTALLEXT
+
+The "deploy64" script will make the appropriate changes to the files listed above and rename the files to appropriate names based on the product type being installed.

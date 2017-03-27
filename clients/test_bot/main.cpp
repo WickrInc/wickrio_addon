@@ -7,12 +7,12 @@
 #include <QTranslator>
 #include <QDir>
 #include <QFileInfo>
-#include <QStandardPaths>
 #include <QCoreApplication>
 
 #include "session/wickrSession.h"
 #include "user/wickrApp.h"
 #include "common/wickrRuntime.h"
+#include "wickrIOClientMain.h"
 
 #include "clientconfigurationinfo.h"
 #include "clientversioninfo.h"
@@ -58,64 +58,6 @@ usage()
     qDebug() << "If you specify -noexclusive, the db will not be locked for exclusive open";
     qDebug() << "By default, in debug mode, the database will not be encrypted (-nocrypt)";
     exit(0);
-}
-
-void noDebugMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
-{
-    Q_UNUSED(type);
-    Q_UNUSED(context);
-    Q_UNUSED(msg);
-}
-
-/** Search the configuration file */
-QString searchConfigFile() {
-#ifdef Q_OS_WIN
-    return QString(WBIO_SERVER_SETTINGS_FORMAT)
-            .arg(QCoreApplication::organizationName())
-            .arg(QCoreApplication::applicationName());
-#else
-    // Setup the list of locations to search for the ini file
-    QString filesdir = QStandardPaths::writableLocation( QStandardPaths::DataLocation );
-
-    QStringList searchList;
-    searchList.append(filesdir);
-
-    // Look for the ini file with the application name
-    QString appName=QCoreApplication::applicationName();
-    QString fileName(appName+".ini");
-
-    QString retFile = WickrBotUtils::fileInList(fileName, searchList);
-
-    if (retFile.isEmpty()) {
-        if (isVERSIONDEBUG()) {
-            fileName = "WickrBotClientBeta.ini";
-        } else {
-            fileName = "WickrBotClient.ini";
-        }
-
-        retFile = WickrBotUtils::fileInList(fileName, searchList);
-
-        if (retFile.isEmpty()) {
-            qFatal("Cannot find config file %s",qPrintable(fileName));
-        }
-    }
-    return retFile;
-#endif
-}
-
-void redirectedOutput(QtMsgType type, const QMessageLogContext &, const QString & str)
-{
-    //in this function, you can write the message to any stream!
-    switch (type) {
-    case QtDebugMsg:
-    case QtWarningMsg:
-    case QtCriticalMsg:
-        operation->output(str);
-        break;
-    case QtFatalMsg:
-        operation->output(str);
-        abort();
-    }
 }
 
 Q_IMPORT_PLUGIN(QSQLCipherDriverPlugin)
@@ -209,22 +151,6 @@ int main(int argc, char *argv[])
         }
     }
 
-#ifdef Q_OS_LINUX
-#if defined(WICKR_BLACKOUT) && defined(WICKR_DEBUG)
-    QCoreApplication::addLibraryPath("/usr/lib/wickrio-onprem/plugins");
-#elif defined(WICKR_PRODUCTION)
-    QCoreApplication::addLibraryPath("/usr/lib/wickrio/plugins");
-#elif defined(WICKR_QA)
-    QCoreApplication::addLibraryPath("/usr/lib/wickrio-qa/plugins");
-#elif defined(WICKR_BETA)
-    QCoreApplication::addLibraryPath("/usr/lib/wickrio-beta/plugins");
-#elif defined(WICKR_ALPHA)
-    QCoreApplication::addLibraryPath("/usr/lib/wickrio-alpha/plugins");
-#else
-    This is an issue, cannot set the library!
-#endif
-#endif
-
 #ifdef Q_OS_MAC
     WickrAppDelegateInitialize();
     //wickrAppDelegateRegisterNotifications();
@@ -253,7 +179,7 @@ int main(int argc, char *argv[])
 
     // If the user did not set the config file then lets try a default location
     if (wbConfigFile.isEmpty()) {
-        wbConfigFile = searchConfigFile();
+        wbConfigFile = WickrIOClientMain::searchConfigFile();
         if (wbConfigFile.isEmpty()) {
             qDebug() << "Cannot determine settings file!";
             exit(1);
@@ -318,10 +244,6 @@ int main(int argc, char *argv[])
     QString curOutputFilename = settings->value(WBSETTINGS_LOGGING_OUTPUT_FILENAME, "").toString();
     if (! curOutputFilename.isEmpty()) {
         operation->logSetOutput(curOutputFilename);
-        operation->log(QString("Redirecting output to %1").arg(curOutputFilename));
-        qInstallMessageHandler(redirectedOutput);
-    } else {
-        operation->log("Output will go to normal output!");
     }
     settings->endGroup();
 
@@ -395,7 +317,6 @@ int main(int argc, char *argv[])
     QCoreApplication::processEvents();
 
     operation->deleteLater();
-//    delete operation;
 
     return retval;
 }

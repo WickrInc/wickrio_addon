@@ -23,6 +23,7 @@ public:
     QDateTime lastLogTime();
 
     void setOutputFilename(const QString& outFilename) { m_outFileName = outFilename; }
+    QString getOutputFilename() { return m_outFileName; }
 
 private:
     QString toString(WickrBotLogType type) {

@@ -702,7 +702,8 @@ Client::updateClientButtons()
                 showStart = true;
             }
         }
-        showAdd = true;
+
+        showAdd = WBIOServerCommon::getAvailableClientApps().length() > 0;
     }
 
     ui->clientDeletePushButton->setEnabled(showDelete);
@@ -749,18 +750,20 @@ Client::updateClientsList()
 
                 index = model->index(i, CLIENT_MODEL_NAME_IDX, QModelIndex());
                 model->setData(index, client->name);
+                index = model->index(i, CLIENT_MODEL_STATUS_IDX, QModelIndex());
+                model->setData(index, client->status);
                 index = model->index(i, CLIENT_MODEL_USER_IDX, QModelIndex());
                 model->setData(index, client->user);
                 index = model->index(i, CLIENT_MODEL_APIKEY_IDX, QModelIndex());
                 model->setData(index, client->apiKey);
+                index = model->index(i, CLIENT_MODEL_BINARY_IDX, QModelIndex());
+                model->setData(index, client->binary);
                 index = model->index(i, CLIENT_MODEL_IFACE_IDX, QModelIndex());
                 model->setData(index, client->iface);
                 index = model->index(i, CLIENT_MODEL_PORT_IDX, QModelIndex());
                 model->setData(index, client->port);
                 index = model->index(i, CLIENT_MODEL_TYPE_IDX, QModelIndex());
                 model->setData(index, client->getIfaceTypeStr());
-                index = model->index(i, CLIENT_MODEL_STATUS_IDX, QModelIndex());
-                model->setData(index, client->status);
                 index = model->index(i, CLIENT_MODEL_CONSOLEUSER_IDX, QModelIndex());
                 model->setData(index, cUserName);
                 index = model->index(i, CLIENT_MODEL_MSGS_IDX, QModelIndex());

@@ -8,6 +8,7 @@ case "$1" in
 
         # Definitions of the .INI files
         inifile="/opt/WickrIOINSTALLEXT/WickrIOSvrINSTALLEXT.ini"
+        tempdir=/opt/WickrIOINSTALLEXT/temp
         tempinifile="/opt/WickrIOINSTALLEXT/temp/WickrIOSvrINSTALLEXT.ini"
 
         # if there is a saved INI file then use it
@@ -22,23 +23,42 @@ case "$1" in
         wickrio_settings_initEXTENSION /opt/WickrIOINSTALLEXT
 
         #
-        # Start the service(s)
-        #
-        systemctl enable WickrIOSvrINSTALLEXT
-        systemctl start WickrIOSvrINSTALLEXT
-
-        # Add the service(s) to the list of startup services
-        update-rc.d WickrIOSvrINSTALLEXT defaults
-
-        #
-        # Stop the WickrIO Console service
+        # Start the WickrIO Client service
         #
         set +e
+        # Enable the service
+        # TODO: Need to make sure the service needs to be enabled
+        systemctl enable WickrIOSvrINSTALLEXT
+
+        if [ -f $tempdir/svrstate ]; then
+            svrstate=`cat $tempdir/svrstate`
+            if [ $svrstate -eq 0 ]; then
+                systemctl start WickrIOSvrINSTALLEXT
+            fi
+            rm $tempdir/svrstate
+        fi
+
+        # Add the service(s) to the list of startup services
+#        update-rc.d WickrIOSvrINSTALLEXT defaults
+
+        #
+        # Start the WickrIO Console service
+        #
+        set +e
+        # Enable the service
+        # TODO: Need to make sure the service needs to be enabled
         systemctl enable WickrIOCSvrINSTALLEXT
-        systemctl start WickrIOCSvrINSTALLEXT
+
+        if [ -f $tempdir/consvrstate ]; then
+            consvrstate=`cat $tempdir/consvrstate`
+            if [ $consvrstate -eq 0 ]; then
+                systemctl start WickrIOCSvrINSTALLEXT
+            fi
+            rm $tempdir/consvrstate
+        fi
 
         # Remove the startup entry for the service(s)
-        update-rc.d -f WickrIOCSvrINSTALLEXT defaults
+#        update-rc.d -f WickrIOCSvrINSTALLEXT defaults
         set -e
 
     ;;

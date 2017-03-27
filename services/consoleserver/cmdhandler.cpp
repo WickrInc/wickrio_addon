@@ -288,10 +288,12 @@ CmdHandler::addClient(WickrIOConsoleUser *pCUser, stefanfrings::HttpRequest& req
     QByteArray paramInterface = request.getParameter(APIPARAM_IFACE);
     QByteArray paramPort = request.getParameter(APIPARAM_PORT);
     QByteArray paramIfaceType = request.getParameter(APIPARAM_IFACETYPE);
+    QByteArray paramBinary = request.getParameter(APIPARAM_BOTTYPE);
 
     // Make sure the appropriate parameters exist
     if (paramName.length() == 0 || paramUser.length() == 0 || paramPassword.length() == 0 ||
-        paramAPIKey.length() == 0 || paramInterface.length() == 0 || paramPort.length() == 0) {
+        paramAPIKey.length() == 0 || paramInterface.length() == 0 || paramPort.length() == 0 ||
+        paramBinary.length() == 0) {
         sendFailure(400, "Missing parameters", response);
         return;
     }
@@ -301,6 +303,7 @@ CmdHandler::addClient(WickrIOConsoleUser *pCUser, stefanfrings::HttpRequest& req
     client.user = QString(paramUser);
     client.password = QString(paramPassword);
     client.apiKey = QString(paramAPIKey);
+    client.binary = QString(paramBinary);
     client.iface = QString(paramInterface);
     client.port = paramPort.toInt();
     if (!paramIfaceType.isEmpty() || QString(paramIfaceType).toLower() == APIPARAM_IFACET_HTTPS) {
@@ -312,6 +315,12 @@ CmdHandler::addClient(WickrIOConsoleUser *pCUser, stefanfrings::HttpRequest& req
         client.isHttps = false;
     }
     client.console_id = pCUser->id;
+
+    // Check that the Binary identifies a values binary type
+    if (!WBIOServerCommon::isValidClientApp(client.binary)) {
+        sendFailure(400, "Invalid client binary", response);
+        return;
+    }
 
     // Get all of the clients so that we can verify names and such are not duplicated
     {
@@ -450,6 +459,7 @@ CmdHandler::getClients(WickrIOConsoleUser *pCUser, stefanfrings::HttpResponse& r
         clientValue.insert(APIJSON_IFACE, client->iface);
         clientValue.insert(APIJSON_PORT, client->port);
         clientValue.insert(APIJSON_IFACETYPE, client->getIfaceTypeStr());
+        clientValue.insert(APIJSON_BOTTYPE, client->binary);
         int actionCnt = m_operation->m_botDB->getClientsActionCount(client->id);
         clientValue.insert(APIJSON_PENDINGMSGS, actionCnt);
 
@@ -515,6 +525,7 @@ CmdHandler::getClient(WickrIOConsoleUser *pCUser, const QString& clientID, stefa
     clientValue.insert(APIJSON_USER, client->user);
     clientValue.insert(APIJSON_IFACE, client->iface);
     clientValue.insert(APIJSON_PORT, client->port);
+    clientValue.insert(APIJSON_BOTTYPE, client->binary);
 
     // Get the process state for this client
     WickrBotProcessState state;

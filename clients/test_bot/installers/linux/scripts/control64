@@ -3,7 +3,7 @@ Architecture: amd64
 Section: net
 Priority: optional
 Version: VERSION
-Depends: wio-services, libc6, libssl1.0.0, libicu55, libpcre16-3
+Depends: wio-servicesSVCEXTEN, libc6, libssl1.0.0, libicu55, libpcre16-3
 Recommends: wickr-qt-5.7
 Maintainer: Wickr Inc. <linux-support@wickr.com>
 Installed-Size: 200000

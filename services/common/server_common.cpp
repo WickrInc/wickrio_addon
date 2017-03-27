@@ -66,3 +66,33 @@ WBIOServerCommon::getClientProcessName(WickrBotClients * client)
     return processName;
 }
 
+QStringList
+WBIOServerCommon::getAvailableClientApps()
+{
+    // TODO: Need a way to register possible WickrIO Bots. for now they are hardcoded
+    QString possibleBinaries[] = { "test_botAlpha", "test_botBeta", "test_botOnPrem", "test_botQA", "test_bot",
+                                   "conformance_botAlpha", "conformance_botOnPrem" };
+    QStringList availableBinaries;
+
+    for (QString binary : possibleBinaries) {
+        QString filePath = QString("/usr/bin/%1").arg(binary);
+        QFileInfo fi(filePath);
+        if (fi.exists()) {
+            availableBinaries.append(binary);
+        }
+    }
+    return availableBinaries;
+}
+
+bool
+WBIOServerCommon::isValidClientApp(const QString& binaryName)
+{
+    QStringList binaries = getAvailableClientApps();
+
+    for (QString binary : binaries) {
+        if (binary == binaryName) {
+            return true;
+        }
+    }
+    return false;
+}

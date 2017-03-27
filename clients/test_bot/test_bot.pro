@@ -10,10 +10,10 @@ CONFIG += c++11
 CONFIG += console
 
 CONFIG(release,release|debug) {
-    message(*** WickrIO Enterprise Client Release Build)
+    message(*** WickrIO Test Bot Client Release Build)
     BUILD_TYPE=release
 } else {
-    message(*** WickrIO Enterprise Client Beta build)
+    message(*** WickrIO Test Bot Client Beta build)
     DEFINES += VERSIONDEBUG
     BUILD_TYPE=debug
 }
@@ -111,6 +111,7 @@ SOURCES += \
     wickrioeclientmain.cpp \
     requesthandler.cpp \
     wickrioconvohdlr.cpp \
+    wickrioreceivethread.cpp \
     wickrIOLoginHdlr.cpp \
     wickrIOActionHdlr.cpp \
     clientconfigurationinfo.cpp \
@@ -119,10 +120,11 @@ SOURCES += \
     wickrIOCallbackService.cpp
 
 HEADERS += \
-    $${COMMON}/common/wickrbotactiondatabase.h \
+    $${COMMON}/wickrbotactiondatabase.h \
     wickrioeclientmain.h \
     requesthandler.h \
     wickrioconvohdlr.h \
+    wickrioreceivethread.h \
     wickrIOLoginHdlr.h \
     wickrIOActionHdlr.h \
     wickrbuildnumbers.h \
@@ -167,6 +169,16 @@ macx {
 }
 
 linux-g++* {
+    CONFIG(release,release|debug) {
+        QMAKE_RPATHDIR += /usr/lib/wio_test_bot
+    }
+    else {
+        wickr_blackout:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-onprem
+        else:wickr_beta:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-beta
+        else:wickr_qa:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-qa
+        else:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-alpha
+    }
+
     QMAKE_CXXFLAGS += -Wunused-parameter
 
     INCLUDEPATH += $$DEPTH/wickr-sdk/platforms/linux/include

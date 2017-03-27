@@ -93,6 +93,7 @@ public:
     }
 
     void logSetOutput(const QString& outputFilename) { if (m_wbLog) m_wbLog->setOutputFilename(outputFilename); }
+    QString logGetOutput() { return m_wbLog ? m_wbLog->getOutputFilename() : QString(); }
 
     QDateTime lastLogTime();
 

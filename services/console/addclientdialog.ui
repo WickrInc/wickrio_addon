@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>438</width>
-    <height>353</height>
+    <height>381</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -51,36 +51,6 @@
           <property name="verticalSpacing">
            <number>6</number>
           </property>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="userNameLineEdit">
-            <property name="toolTip">
-             <string>Enter the user name to login to the server with.</string>
-            </property>
-            <property name="placeholderText">
-             <string>Enter user login name</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="apiKeyLineEdit">
-            <property name="toolTip">
-             <string>Enter the Application ID value to be used by the Web APIs when accessing a specific client user.</string>
-            </property>
-            <property name="whatsThis">
-             <string/>
-            </property>
-            <property name="placeholderText">
-             <string>Enter API application ID</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="userNameLabel">
-            <property name="text">
-             <string>Username:</string>
-            </property>
-           </widget>
-          </item>
           <item row="3" column="1">
            <widget class="QLineEdit" name="passwordLineEdit">
             <property name="toolTip">
@@ -114,6 +84,20 @@
             </property>
            </widget>
           </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="consoleLabel">
+            <property name="text">
+             <string>Console:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QComboBox" name="consoleUserComboBox">
+            <property name="currentText">
+             <string extracomment="Select console"/>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="1">
            <widget class="QLineEdit" name="nameLineEdit">
             <property name="toolTip">
@@ -131,17 +115,47 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="consoleLabel">
-            <property name="text">
-             <string>Console:</string>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="apiKeyLineEdit">
+            <property name="toolTip">
+             <string>Enter the Application ID value to be used by the Web APIs when accessing a specific client user.</string>
+            </property>
+            <property name="whatsThis">
+             <string/>
+            </property>
+            <property name="placeholderText">
+             <string>Enter API application ID</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
-           <widget class="QComboBox" name="consoleUserComboBox">
+          <item row="2" column="0">
+           <widget class="QLabel" name="userNameLabel">
+            <property name="text">
+             <string>Username:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="userNameLineEdit">
+            <property name="toolTip">
+             <string>Enter the user name to login to the server with.</string>
+            </property>
+            <property name="placeholderText">
+             <string>Enter user login name</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="botBinaryLabel">
+            <property name="text">
+             <string>Bot:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QComboBox" name="botBinaryComboBox">
             <property name="currentText">
-             <string extracomment="Select console"/>
+             <string extracomment="Select Bot binary"/>
             </property>
            </widget>
           </item>
@@ -296,7 +310,10 @@
   <tabstop>apiKeyLineEdit</tabstop>
   <tabstop>userNameLineEdit</tabstop>
   <tabstop>passwordLineEdit</tabstop>
+  <tabstop>consoleUserComboBox</tabstop>
+  <tabstop>botBinaryComboBox</tabstop>
   <tabstop>networkTypeComboBox</tabstop>
+  <tabstop>interfaceComboBox</tabstop>
   <tabstop>portLineEdit</tabstop>
   <tabstop>cancelButton</tabstop>
   <tabstop>addButton</tabstop>

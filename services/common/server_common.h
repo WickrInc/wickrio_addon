@@ -2,6 +2,7 @@
 #define SERVER_COMMON_H
 
 #include <QString>
+#include <QStringList>
 #include <QSettings>
 
 #include "wickrbotclients.h"
@@ -27,6 +28,9 @@ public:
     static QString getDBLocation();
 
     static QString getClientProcessName(WickrBotClients *client);
+    static QStringList getAvailableClientApps();
+    static bool isValidClientApp(const QString& binaryName);
+
 };
 
 

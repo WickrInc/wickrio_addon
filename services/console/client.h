@@ -96,16 +96,17 @@ private:
 #define CONSOLEUSER_MODEL_PERMISSION_IDX  1
 #define CONSOLEUSER_MODEL_MAXCLIENTS_IDX  2
 
-#define CLIENT_MODEL_HDR "Name,App ID,User,Iface,Port,Type,Status,Console,Msgs"
-#define CLIENT_MODEL_NUMCOLUMNS      9
+#define CLIENT_MODEL_HDR "Name,Status,App ID,User,Bot Type,Iface,Port,Type,Console,Msgs"
+#define CLIENT_MODEL_NUMCOLUMNS      10
 #define CLIENT_MODEL_NAME_IDX        0
-#define CLIENT_MODEL_APIKEY_IDX      1
-#define CLIENT_MODEL_USER_IDX        2
-#define CLIENT_MODEL_IFACE_IDX       3
-#define CLIENT_MODEL_PORT_IDX        4
-#define CLIENT_MODEL_TYPE_IDX        5
-#define CLIENT_MODEL_STATUS_IDX      6
-#define CLIENT_MODEL_CONSOLEUSER_IDX 7
-#define CLIENT_MODEL_MSGS_IDX        8
+#define CLIENT_MODEL_STATUS_IDX      1
+#define CLIENT_MODEL_APIKEY_IDX      2
+#define CLIENT_MODEL_USER_IDX        3
+#define CLIENT_MODEL_BINARY_IDX      4
+#define CLIENT_MODEL_IFACE_IDX       5
+#define CLIENT_MODEL_PORT_IDX        6
+#define CLIENT_MODEL_TYPE_IDX        7
+#define CLIENT_MODEL_CONSOLEUSER_IDX 8
+#define CLIENT_MODEL_MSGS_IDX        9
 
 #endif

@@ -1,0 +1,610 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_title">Wickr</string>
+    <string name="menu_title">Utilities</string>
+
+    <!-- Registration -->
+    <string-array name="device_desc">
+        <item>Home</item>
+        <item>Work</item>
+        <item>Personal</item>
+        <item>Other</item>
+    </string-array>
+
+    <!-- Menu Items -->
+
+    <string name="drawer_open">Open Menu</string>
+    <string name="drawer_close">Close Menu</string>
+
+    <!-- Login screen -->
+    <string name="app_name">WickrTest</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="button_login">Login</string>
+    <string name="title_activity_compose">ComposeActivity</string>
+    <string name="compose">Compose</string>
+
+    <!-- Securing your device -->
+    <string name="message_securing_top">This will take a few moments</string>
+    <string name="button_CheckNewMessage">Check</string>
+    <string name="title_activity_message_download">MessageDownloadActivity</string>
+    <string name="title_activity_display_message">DisplayMessageActivity</string>
+    <string name="title_activity_main_drawer"></string>
+    <string name="title_activity_delete">DELETE</string>
+    <string name="title_activity_new_audio_message">NewAudioMessage</string>
+    <string name="title_activity_invite_friends">Invite Friends</string>
+    <string name="title_activity_loading_activity_fullscreen">LoadingActivityFullscreen</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="title_activity_full_screen_loading">FullScreenLoadingActivity</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_wickr_secure_camera">WickrSecureCamera</string>
+
+    <!-- From iOS strings file -->
+    <string name="is_currently_not_an_active_wickr_user">%s is currently not an active Wickr user</string>
+    <string name="is_not_a_valid_wickrid">is not a valid wickrID</string>
+    
+    <!-- couldn't find this one -->
+    <string name="is_not_connected_to_a_wickr_id">%s is not connected to a Wickr ID.</string>
+    
+    <string name="is_not_currently_accepting_messages_from_you">%s is not currently accepting messages from you.</string>
+    
+    <!-- couldn't find this one -->
+    <string name="members">%s members</string>
+    
+    <string name="check_connection_56b3748c84ee7ab610d8be80ee62c3d6">%s\n(Check Connection)</string>
+    
+     <!-- couldn't find these -->
+    <string name="i_new_messages">%d New Messages!</string>
+    <string name="id_ih_im_02is">*%1$id %2$ih %3$im %4$is</string>
+    
+    <string name="one">&lt; 1</string>
+    <string name="ten">&lt; 10</string>
+    <string name="sixty">&lt; 60</string>
+    
+    <!-- couldn't find these -->
+    <string name="a_maximum_amount_of_attempts_has_been_reached_whil">A maximum amount of attempts has been reached while attempting to add this device to your account within the last 24 hours. Please try again after waiting 24 hours. If you believe this is an error, please contact support@mywickr.com</string>
+    <string name="a_message_failed_to_send_in_wickr">A message failed to send in Wickr</string>
+    <string name="a_message_that_had_previously_failed_to_download_h">A message that had previously failed to download has timed out. To prevent this from happening in the future, please make sure to check for messages as quickly as possible after a network error.</string>
+    <string name="a_new_device_has_been_added_to_your_wickr_account_">A new device has been added to your Wickr account since your last login. To manage devices please tap the \"My Account\" option in the main menu.</string>
+    
+    <string name="a_unique_tag_for_this_device">A unique tag for this device.</string>
+    <string name="About">About</string>
+    <string name="Account">Account</string>
+    <string name="add_user">Add User</string>
+    <string name="add_remove_participants">Add/Remove Participants</string>
+    
+    <!-- couldn't find these -->
+    <string name="adding_user">Adding User</string>
+    <string name="all_fields_are_required">All fields are required.</string>
+    
+    <string name="allow_list">Allow List</string>
+    
+    <!--  added this one -->
+    <string name="block">Block</string>
+    
+    <!-- couldn't find this -->
+    <string name="almost_done_just_a_few_more_moments">Almost Done. Just a few more moments</string>
+    
+    <string name="an_unknown_error_has_occurred_while_if_you_continu">An unknown error has occurred while %s. If you continue to see this message please contact Wickr support.</string>
+    
+    <!-- added these -->
+    <string name ="updating_your_privacy_list">updating your privacy list</string>
+    <string name ="modifying_your_privacy_list">modifying your privacy list</string>
+    
+    <!-- couldn't find these -->
+    <string name="an_update_is_required_to_continue_using_wickr_plea">An update is required to continue using Wickr. Please update to the latest version available on the App Store.</string>
+    <string name="are_you_sure_you_want_to_cancel">Are you sure you want to cancel?</string>
+    
+    <string name="are_you_sure_you_want_to_delete_this_attachment">Are you sure you want to delete this attachment?</string>
+    <string name="are_you_sure_question">Are you sure?</string>
+    
+    <!--  added these -->
+    <string name="do_you_want_to_enable_multiple_devices">Do you want to enable multiple devices?</string>
+    <string name="changing_sync_option">Changing Sync Option&#8230;</string>
+    <string name="removing_device">Removing device&#8230;</string>
+    <string name="you_cannot_delete_current_device">You cannot delete current device!</string>
+   
+    
+    <!-- couldn't find these -->
+    <string name="audio_error">Audio Error</string>
+    <string name="audio_playback">Audio Playback</string>
+    
+    <string name="auto_lock">Auto Lock</string>
+    <string name="Auto_Login">Auto-Login</string>
+    
+    <!-- couldn't find these -->
+    <string name="automatic_message_integrity_check_failed_if_the_pr">Automatic message integrity check failed. If the problem persists, please contact support</string>
+    <string name="automatic_sender_verification_failed_if_the_proble">Automatic sender verification failed. If the problem persists, please contact support</string>
+    <string name="automatic_verification_of_s_key_has_failed_if_this">Automatic verification of %s\'s key has failed. If this error persists, please contact support@mywickr.com</string>
+    
+    <string name="background_mode">Background Mode</string>
+    <string name="block_list">Block List</string>
+    
+    <!-- couldn't find this -->
+    <string name="blocking">blocking</string>
+    <string name="camera_not_available">Camera not available</string>
+    
+    <string name="Cancel">Cancel</string>
+    <string name="cancel_scan">Cancel Scan</string>
+    
+    <!-- couldn't find this one -->
+    <string name="Canceled">Canceled</string>
+    
+    <string name="check_connection">Check Connection</string>
+    <string name="check_network_connection">Check Network Connection</string>
+    
+     <!-- couldn't find these-->
+    <string name="checking_for_new_messages">Checking for new messages</string>
+    <string name="cleaning_complete">Cleaning Complete!</string>
+    <string name="cleaning_up">Cleaning Up</string>
+    
+    <string name="Close">Close</string>
+    
+    <!-- couldn't find these-->
+    <string name="compressing_video">Compressing Video</string>
+    <string name="connect_email">Connect Email</string>
+    <string name="connect_phone">Connect Phone #</string>
+    <string name="connecting_email">Connecting Email</string>
+    <string name="connecting_phone">Connecting Phone</string>
+    <string name="connecting_your_device">Connecting Your Device</string>
+    
+    <string name="Contacts">Friends</string>
+    
+     <!-- couldn't find this-->
+    <string name="create_account">Create Account</string>
+    
+    <string name="currently_wickr_only_allows_for_groups_up_to_9_peo">Currently Wickr only allows for groups up to 9 people</string>
+    <string name="customize_message_notifications_for_this_device">Customize message notifications for this device.</string>
+    <string name="day">day</string>
+    <string name="days">days</string>
+    
+    <!-- couldn't find this one -->
+    <string name="decoding_info">Decoding Info</string>
+    
+    <string name="default_destruction">Default Destruction</string>
+    <string name="Delete">Delete</string>
+    <string name="desired_wickr_id">Desired Wickr ID</string>
+    <string name="destruction_time_of_messages_in_a_new_conversation">Destruction time of messages in a new conversation</string>
+    <string name="destructs_in">Destructs in %s</string>
+    
+    <!-- couldn't find this one -->
+    <string name="device_id">Device ID</string>
+
+    <string name="devices_that_are_active_on_your_account">Devices that are active on your account.</string>
+    
+    <!-- couldn't find these -->
+    <string name="Disabled">Disabled</string>
+    <string name="disabling_multiple_devices">Disabling Multiple Devices</string>
+    <string name="disabling_sync">Disabling Sync</string>
+    
+    <string name="do_you_want_to_remove_from_the_conversation">Do you want to remove %s from the conversation?</string> 
+    <string name="dont_forget_there_are_no_password_resets">Don\'t forget. There are no password resets!</string>
+    <string name="Done">Done</string>
+    <string name="due_to_repeated_invalid_login_attempts_you_can_not">Due to repeated invalid login attempts you can not attempt to log in for %d more seconds.</string>
+    <string name="either_the_username_or_password_you_entered_was_in">Either the username or password you entered was invalid.</string>
+    <string name="email">Email:</string>
+    <string name="enable_multiple_devices">Enable Multiple Devices</string>
+    <string name="enable_multiple_devices_reset_app_remove_devices">Enable multiple devices, Reset app, Remove devices.</string>
+    
+    <!-- couldn't find these-->
+    <string name="Enabled">Enabled</string>
+    <string name="enabling_multiple_devices">Enabling Multiple Devices</string>
+    <string name="enabling_sync">Enabling Sync</string>
+    
+    <string name="Encoding">Encoding</string>
+    <string name="enter_name">Enter Name</string>
+    
+    <!-- couldn't find this one -->
+    <string name="erasing_metadata">Erasing Metadata</string>
+    
+    <string name="Error">Error</string>    
+    <string name="everyone_can_message_you_tap_plus_to_block_a_user_">Everyone can message you\nTap + to block a user</string>
+    <string name="existing_account">Existing Account</string>
+    <string name="existing_password">Existing Password</string>
+    <string name="existing_wickr_id">Existing Wickr ID</string>
+    
+    <!-- couldn't find these -->
+    <string name="files_too_large">Files Too Large</string>
+    <string name="find_and_invite_friends">Find &amp; Invite Friends</string>
+    
+    <string name="find_friends">Find Friends</string>
+    <string name="find_now">Find Now</string>
+    
+    <!-- couldn't find this one -->
+    <string name="for_your_protection_we_do_not_allow_wickr_accounts">For your protection, we do not allow Wickr accounts to be recovered with iCloud. Disabling multiple devices will require you to choose a new username if you replace your device or reinstall your app.</string>
+    
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="Group">Group</string>
+    <string name="group_name">Group Name</string>   
+    <string name="High">High</string>
+    <string name="hour">hour</string>
+    <string name="hours">hours</string>
+    <string name="how_long_until_a_password_is_required">How long until a password is required</string>
+    <string name="id_like_to_communicate_privately_with_you_download">I\'d like to communicate privately with you. Download Wickr for free at mywickr.com/app.  My Wickr ID is</string>
+   
+    <!-- couldn't find this one -->
+    <string name="id_like_to_text_privately_with_you_mywickr_com_app">I\'d like to text privately with you _ mywickr.com/app.  My Wickr ID is </string>
+    
+    <string name="id_connections">ID Connections</string>
+    
+    <!-- couldn't find this one -->
+    <string name="if_you_enjoy_using_would_you_mind_taking_a_moment_">If you enjoy using %s, would you mind taking a moment to rate it? It won\'t take more than a minute. Thanks for your support!</string>
+    
+    <string name="if_you_suspend_this_device_it_will_no_longer_be_ab">If you suspend this device, it will no longer be able to log into this account.</string>
+    
+    <!-- couldn't find this one -->
+    <string name="import_from_contact_book">Import From Contact Book</string>
+    
+    <string name="in_app_notifications">In-App Notifications</string>
+    <string name="Inbox">Messages</string>
+    
+    <!-- couldn't find this one -->
+    <string name="invalid_number">Invalid Number</string>
+    
+    <string name="invalid_password">Invalid password</string>
+    <string name="Invite">Invite</string>
+    <string name="invite_friends">Invite Friends</string>
+    <string name="invite_method">Invite Method</string>
+    <string name="last_login">Last Login: %s</string>
+    
+    <!-- couldn't find these -->
+    <string name="link_options">Link Options</string>
+    <string name="linking">Linking %s</string>
+    <string name="linking_your_account">linking your %s account</string>
+    
+    <string name="Loading">Loading</string>
+    
+    <!-- couldn't find these -->
+    <string name="loading_connections">Loading Connections</string>
+    <string name="loading_drive">Loading Drive</string>
+    <string name="loading_dropbox">Loading Dropbox</string>
+    <string name="loading_file">Loading File</string>
+    <string name="loading_please_wait">Loading Please Wait</string>
+    <string name="lock_screen">Lock Screen</string>
+    <string name="logging_in">Logging In</string>
+    <string name="login_error">Login Error</string>
+    <string name="lost_dropbox_link">Lost Dropbox Link</string>
+    
+    <string name="Low">Low</string>
+    <string name="make_it_easy_for_your_friends_to_find_you">Make it easy for your friends to find you.</string>
+    <string name="manual_lock_only">Manual Lock Only</string>
+    <string name="manual_shredder">Manual Shredder</string>
+    <string name="many_of_your_friends_may_already_be_on_wickr_find_">Many of your friends may already be on Wickr. Find and connect with them.</string>
+    
+    <!-- couldn't find this -->
+    <string name="max_attachment_size_reached">Max Attachment Size Reached</string>
+    
+    <string name="max_attachments_reached">Max Attachments Reached</string>
+    
+    <!-- couldn't find this -->
+    <string name="max_group_size_reached">Max Group Size Reached</string>
+    
+    <string name="message_notifications_inside_wickr">Message notifications inside Wickr</string>
+    
+    <!-- couldn't find this -->
+    <string name="message_notifications_outside_wickr">Message notifications outside Wickr</string>
+    
+    <string name="minute">minute</string>
+    <string name="minutes">minutes</string>
+    
+    <!-- couldn't find this one -->
+    <string name="multiple_users_connected_to">Multiple Users connected to %s</string>
+    
+    <string name="my_devices">My Devices</string>
+    <string name="never_lock">Never Lock?</string>
+    <string name="new_account">New Account</string>
+    <string name="new_conversation">New Conversation</string>
+    <string name="Next">Next</string>
+    <string name="No">No</string>
+    
+    <!-- couldn't find these -->
+    <string name="no_entries">No Entries</string>
+    <string name="no_files">No Files</string>
+    <string name="no_messages">No Messages</string>
+    
+    <string name="no_one_can_message_you_tap_plus_to_allow_a_user_7a">No one can message you\nTap + to allow a user</string>
+    
+    <!-- couldn't find these -->
+    <string name="no_thanks">No, Thanks</string>
+    <string name="not_named">Not Named</string>
+    
+    <string name="note_a_confirmation_email_will_be_sent_to_this_add">Note: A confirmation email will be sent to this address. You must tap the link inside it to verify your account.</string>
+    <string name="note_a_confirmation_link_will_be_sent_to_this_numb">Note: A confirmation link will be sent to this number. You must tap the link to activate your connection.</string>
+   
+    <!-- couldn't find this one -->
+    <string name="Notice">Notice</string>
+    
+    <string name="Notifications">Notifications</string>
+    
+    <!--  couldn't find this one -->
+    <string name="notifications_can_be_enabled_under_your_devices_se">Notifications can be enabled under your device\'s Settings_&gt;Notification Center</string>
+    
+    <string name="OK">OK</string>
+    
+    <!-- couldn't find this one -->
+    <string name="online_services">Online Services</string>
+    
+    <string name="Password">Password</string>
+    <string name="phone">Phone:</string>
+    
+    <!-- couldn't find this one -->
+    <string name="playback_error">Playback Error</string>
+    
+    <string name="please_enter_your_password_to_confirm">Please enter your password to confirm</string>
+    
+    <!-- couldn't find this one -->
+    <string name="please_note">Please Note</string>
+    
+    <string name="please_note_this_will_completely_sanitize_your_dev">Please Note: This will completely sanitize your device to protect against forensic recovery of deleted data. Your phone may display a notice that you are low on hard drive space. That error is normal, and part of the cleaning process. Press \"Done\" to dismiss the error. Once complete this process will not consume any space on your hard drive.</string>
+    <string name="please_note_we_respect_your_friends_privacy_a_cryp">Please Note: We respect your friends\' privacy. A cryptographical representation of their email and phone number will be used to search our servers.</string>
+    <string name="please_note_you_may_customize_destruction_time_in_">Please Note: You may customize destruction time in each message separately.</string>
+    
+    <!-- couldn't find this one -->
+    <string name="please_wait_i_seconds">Please wait %d seconds</string>
+    
+    <string name="prevents_deleted_files_from_being_recovered">Prevents deleted files from being recovered.</string>
+    
+    <!-- couldn't find these-->
+    <string name="privacy_list_syncing">Privacy List Syncing ...</string>
+    <string name="processing_a_message">processing a message</string>
+    
+    <string name="push_notifications">Push Notifications</string>
+    
+    <!-- couldn't find these -->
+    <string name="rate">Rate %s</string>
+    <string name="Recipient">Recipient</string>
+    
+    <string name="registering_your_account">registering your account</string>
+    
+    <!-- couldn't find these -->
+    <string name="registering_your_device">Registering Your Device</string>
+    <string name="registration_error">Registration Error</string>
+    
+    <string name="Remember">Remember</string>
+    
+    <!-- couldn't find this one -->
+    <string name="remind_me_later">Remind me later</string>
+    
+    <string name="Remove">Remove</string>
+    
+    <!-- couldn't find these -->
+    <string name="remove_attachment">Remove Attachment</string>
+    <string name="remove_member">Remove Member?</string>
+    
+    <string name="removing_user">Removing User</string>
+    <string name="repeat_password">Repeat Password</string>
+    <string name="reset_app">Reset App</string>
+    <string name="reset_app_to_original_state">Reset App to original state</string>
+    <string name="reset_device">Reset Device</string>
+    <string name="reset_now">Reset Now</string>
+    <string name="resetting_wickr_will_put_your_app_back_into_its_or">Resetting Wickr will put your app back into its original state. You will lose all data, and will not receive any messages sent to you unless you re-activate your account on this device.</string>
+    <string name="restoring_your_account">Restoring Your Account</string>
+    
+    <!-- couldn't find these-->
+    <string name="retrieving_your_account_information">retrieving your account information</string>
+    <string name="retrieving_your_privacy_settings">retrieving your privacy settings</string>
+    
+    <string name="runs_a_complete_secure_shred_on_your_device">Runs a complete secure shred on your device</string>
+    <string name="scan_completed">Scan Completed</string>
+    
+    <!-- couldn't find these -->
+    <string name="search_for_wickrid">Search For WickrID:</string>
+    <string name="searching_for">searching for %s</string>
+    
+    <string name="sec">sec</string>
+    <string name="second">second</string>
+    <string name="seconds">seconds</string>
+    <string name="secure_shredder">Secure Shredder</string>
+    <string name="securing_your_device">Securing Your Device</string>
+    
+    <!-- couldn't find these -->
+    <string name="select_image_or_pdf">Select Image or PDF</string>
+    <string name="select_number">Select Number</string>
+    <string name="select_photo">Select Photo</string>
+    <string name="select_video">Select Video</string>
+    
+    <string name="Send">Send</string>
+    
+    <!-- couldn't find these -->
+    <string name="send_invitation">Send Invitation</string>
+    <string name="sending">Sending ...</string>
+    
+    <string name="sending_your_message">sending your message</string>
+    
+    <!-- couldn't find these-->
+    <string name="Sent">Sent</string>
+    <string name="server_message">Server Message</string>
+    
+    <string name="session_locked">Session Locked</string>
+    <string name="Settings">Settings</string>
+    
+    <!-- couldn't find this one -->
+    <string name="standard_sms_rates_may_apply">Standard SMS rates may apply</string>
+    
+    <string name="Start">Start</string>
+    <string name="storing_your_password_for_this_app_may_increase_th">Storing your password for this app may increase the risk of someone accessing your account without permission</string>
+    <string name="Submit">Submit</string>
+    
+    <!-- couldn't find these -->
+    <string name="suspend_old_app">Suspend old app?</string>
+    <string name="suspending_device">Suspending Device</string>    
+    <string name="suspending_the_selected_device">suspending the selected device</string>
+    <string name="switching_mode">Switching Mode</string>
+    <string name="switching_privacy_modes">switching privacy modes</string>
+    <string name="tap_mic_to_start_recording">Tap mic to start recording</string>
+    <string name="tap_mic_to_stop_recording">Tap mic to stop recording</string>
+    
+    <string name="tap_to_add">Tap to add</string>
+    
+    <!-- couldn't find these -->
+    <string name="the_attachment_you_picked_is_not_a_valid_format">The attachment you picked is not a valid format</string>
+    <string name="the_contact_you_selected_does_not_have_an_email_ad">The contact you selected does not have an email address or phone number</string>
+    <string name="the_country_code_you_have_entered_is_invalid_in_th">The country code you have entered is invalid. In the US, the Country Code field should be 1 followed by a 10 digit phone number entered in the number field.</string>
+   
+    <string name="the_maximum_message_length_allowed_is_1500_charact">The maximum message length allowed is 1500 characters. Your current message is %d characters over.</string>
+    
+    <!-- there is another string in a toast popup saying to please remove the attachment since it's over the limit which is hardcoded now before clicking send, but this one is used when clicking the send button -->
+    <string name="the_maximum_message_size_is_5mb_your_current_messa">The maximum message size is 5mb. Your current message is %.1fmb over the limit.</string>
+    
+    <!-- couldn't find this one -->
+    <string name="the_number_you_entered_is_invalid_in_the_us_the_co">The number you entered is invalid. In the US, the Country Code field should be 1 followed by a 10 digit phone number entered in the number field. Outside of the US, your international country code should be entered in the CC field followed by your local phone number (max 15 digits) in the number field.</string>
+    
+    <string name="the_passwords_you_entered_did_not_match">The passwords you entered did not match.</string>
+    
+
+    <!-- couldn't find these -->
+    <string name="the_video_you_have_chosen_is_either_not_compatible">The video you have chosen is either not compatible with Wickr or has encountered an error while compressing.</string>
+    <string name="there_are_no_phone_numbers_available_for_this_cont">There are no phone numbers available for this contact</string>
+    <string name="there_is_a_30_second_time_limit_for_voice_messages">There is a 30 second time limit for voice messages. Longer recording time coming soon!</string>
+    
+    <string name="there_is_currently_a_limit_of_3_attachments_per_me">There is currently a limit of 3 attachments per message</string>
+    <string name="there_is_currently_a_limit_of_5mb_of_attachments_p">There is currently a limit of 5MB of attachments per message. Please consider sending this attachment in a separate message.</string>
+    
+    <!-- couldn't find this -->
+    <string name="there_is_something_wrong_with_the_audio_sent">There is something wrong with the audio sent</string>
+   
+    <string name="there_was_a_network_error_while_please_check_your_">There was a network error while %s. Please check your internet connectivity and try again.</string>
+    
+    <!-- couldn't find this -->
+    <string name="there_was_an_error_decrypting_your_message_please_">There was an error decrypting your message. Please contact Wickr Support.\nsupport@mywickr.com</string>
+    
+    <string name="there_was_an_error_playing_back_audio">There was an error playing back audio</string>
+   
+    <!-- couldn't find these -->
+    <string name="there_was_an_error_sending_your_invite_message_ple">There was an error sending your invite message, please try again</string>
+    <string name="there_was_an_error_please_logout_and_terminate_the">There was an error. Please logout, and terminate the application</string>
+    <string name="there_was_an_issue_that_will_cause_the_securing_of">There was an issue that will cause the securing of your device to take a bit longer. Please be patient</string>    
+    <string name="this_app_is_no_longer_connected_to_your_dropbox_ac">This app is no longer connected to your Dropbox account. Would you like to relink?</string>
+    <string name="this_conversation_is_currently_loading_and_will_be">This conversation is currently loading and will be available for viewing when loading is complete</string>
+    <string name="this_device_has_been_suspended_by_another_device_o">This device has been suspended by another device on your account. At this time you are not allowed to send or receive messages. If you wish to disable device Sync or remove other devices, you may do so by selecting \"My Account\" in the main menu.</string>
+   
+    <string name="this_install">This Install</string>
+    
+    <!-- couldn't find these -->
+    <string name="this_may_take_a_few_moments">This may take a few moments.</string>
+    <string name="this_message_has_encountered_an_unknown_error_whil">This message has encountered an unknown error while sending. Please manually resend it if necessary.</string>
+    <string name="this_message_has_expired">This message has expired</string>
+    <string name="this_will_perform_a_complete_high_priority_secure_">This will perform a complete, high priority secure erase of all deleted files on your device. Closing Wickr will cause this process to stop. All progress will be lost.</string>
+    <string name="time_limit">Time Limit</string>
+    
+    <string name="Today">Today</string>
+    
+    <!-- couldn't find -->
+    <string name="too_large">Too Large</string>
+    <string name="turning_off_wickr_sync">turning off Wickr Sync</string>
+    <string name="turning_on_wickr_sync">turning on Wickr Sync</string>
+    
+    <string name="type_a_wickrid_email_number_or_name">Type a WickrID, email, number or name</string>
+    
+    <!-- couldn't find this one -->
+    <string name="type_a_wickrid_email_or_name">Type a WickrID, email, or name</string>
+    
+    <string name="type_above_to_search_or_select_a_friend_below">Type above to search or select a friend below</string>
+    <string name="type_the_wickr_id_of_the_user_you_want_to_add">Type the Wickr ID of the user you want to add</string>
+    
+    <!-- couldn't find this one -->
+    <string name="unblocking">unblocking</string>
+    
+    <string name="Unknown">Unknown</string>
+    
+    <!-- couldn't find these -->
+    <string name="unknown_attachment">Unknown Attachment</string>
+    <string name="unlinking">Unlinking %s</string>
+    <string name="unlinking_your_account">unlinking your %s account</string>
+    
+    <string name="unlocking_account">Unlocking Account</string>
+    
+    <!-- couldn't find these -->
+    <string name="Update">Update</string>
+    <string name="updating_info">Updating Info</string>
+    <string name="updating_list">Updating List</string>
+    <string name="upgrading_account">Upgrading Account</string>
+    <string name="upgrading_database">Upgrading Database</string>
+    
+    <string name="uploading_your_message">uploading your message</string>
+    <string name="users_age_13_or_under_may_not_use_id_connect_witho">Users age 13 or under may not use ID Connect without the consent of a parent or guardian.</string>    
+    <string name="Verifying">Verifying</string>
+    <string name="verifying_please_wait_9598027141fc96d4e2d1c16cb4ae">Verifying\nPlease Wait</string>
+    
+    <!-- couldn't find this one -->
+    <string name="version">Version %s</string>
+    
+    <string name="vibrate_on_new_message">Vibrate On New Message</string>
+    <string name="Waiting">Waiting</string>
+    
+    <!-- couldn't find this one -->
+    <string name="which_method_of_audio_playback_would_you_prefer">Which method of audio playback would you prefer?</string>
+   
+    <string name="wickr_could_not_find_would_you_like_to_send_them_a">Wickr could not find %s. Would you like to send them an insecure text/email to tell them your Wickr id?</string>
+    
+    <!-- couldn't find this one -->
+    <string name="wickr_does_not_have_access_to_your_contacts_to_ena">Wickr does not have access to your contacts. To enable access please go to your device\'s Settings_&gt;Privacy_&gt;Contacts menu and enable Wickr</string>
+    
+    <string name="wickr_does_not_know_your_username_or_password_for_">Wickr does not know your username or password for security reasons.  If you don\'t remember your password please tap \"Erase Data\" and create a new account.</string>
+   
+    <!-- couldn't find these -->
+    <string name="wickr_has_encountered_an_unknown_error_please_try_">Wickr has encountered an unknown error. Please try your search again</string>
+    <string name="wickr_is_unable_to_locate">Wickr is unable to locate %s</string>
+    <string name="wickr_messages_are_limited_to_a_filesize_of">Wickr messages are limited to a filesize of</string>
+    
+    <string name="Yes">Yes</string>
+    <string name="Yesterday">Yesterday</string>
+    
+    <!-- couldn't find -->
+    <string name="you_are_not_running_the_latest_version_of_wickr_pl">You are not running the latest version of Wickr. Please download the latest version from the app store</string>
+   
+    <string name="you_cant_add_yourself_to_the_privacy_list">You can\'t add yourself to the privacy list</string>
+    <string name="you_cant_perform_a_search_for_your_own_username">You can\'t perform a search for your own username</string>
+    
+    <!-- couldn't find -->
+    <string name="you_current_session_was_corrupt_please_enter_your_">You current session was corrupt. Please enter your password and log in again</string>
+    <string name="you_did_not_enter_a_valid_wickr_id">You did not enter a valid Wickr ID</string>
+    <string name="you_do_not_have_the_ability_to_send_email_to_the_s">You do not have the ability to send email to the selected contact because you currently do not have a properly configured iOS email app</string>
+   
+    <string name="you_have_already_added_to_the_conversation">You have already added %s to the conversation</string>
+    
+    <!-- couldn't find -->
+    <string name="you_have_chosen_to_not_enable_push_notifications_b">You have chosen to not enable push notifications. By doing this, you will not be automatically alerted when you receive a Wickr message. To change your preference, go to your Settings_&gt;Notifications from your device\'s home screen.</string>
+    
+    <string name="you_have_entered_an_invalid_password">You have entered an invalid password</string>
+    
+    <!-- couldn't find -->
+    <string name="you_have_hit_the_rate_limit_for_messages_sent_in_1">You have hit the rate limit for messages sent in 1 minute. Please try to refrain from rapidly sending messages. You will be able to send messages again in a few minutes.</string>
+    <string name="you_have_previously_logged_in_to_wickr_using_an_wi">You have previously logged in to Wickr using an %1$@ with the tag \"%2$@\". Tap YES to suspend your old app and continue or tap NO and change the tag you have selected.</string>
+    
+    <string name="you_have_successfully_forensically_erased_data_fro">You have successfully forensically erased data from your device</string>
+    
+    <!-- couldn't find -->
+    <string name="you_must_enter_a_password_to_log_in">You must enter a password to log in</string>
+    <string name="your_settings_did_not_allow_you_to_message">Your %1$@ settings did not allow you to message %2$@</string>
+    
+    <string name="your_account_is_currently_suspended_if_you_feel_th">Your account is currently suspended. If you feel this is in error, please contact support@mywickr.com</string>
+    
+    <!-- couldn't find -->
+    <string name="your_app_has_downloaded_a_message_that_encountered">Your app has downloaded a message that encountered an error while processing.</string>
+    <string name="your_app_has_downloaded_a_message_that_is_not_comp">Your app has downloaded a message that is not compatible with this version of Wickr. Please update your app in the App Store.</string>
+    
+    <!-- changed to add privacy before settings -->
+    <string name="your_current_settings_do_not_allow_you_to_message">Your current privacy settings do not allow you to message %s.</string>
+    
+    <!-- couldn't find -->
+    <string name="your_current_version_of_wickr_cant_open_this_attac">Your current version of Wickr can\'t open this attachment. Please upgrade via the App Store</string>
+    <string name="your_device_cant_send_imessages_at_this_time_pleas">Your device can\'t send iMessages at this time. Please check your cell or wifi reception</string>
+    <string name="your_device_does_not_currently_have_access_to_a_wo">Your device does not currently have access to a working camera</string>
+    
+    <string name="your_email_address_will_not_be_associated_with_you">Your email address will not be associated with your account until you tap the confirmation link we have sent to this email address. If you do not see it, please check your spam folder.</string>
+    
+    <!-- couldn't find -->
+    <string name="your_invite_has_been_sent">Your invite has been sent!</string>
+    
+    <string name="your_password_must_be_at_least_8_characters_in_len">Your password must be at least 8 characters in length.</string>
+    <string name="your_phone_number_will_not_be_associated_with_your">Your phone number will not be associated with your account until you tap the confirmation link we have sent to your phone number via Text Message.</string>
+    <string name="your_username_must_be_4_15_characters_in_length_st">Your username must be 4-15 characters in length, start with a letter, and not contain any spaces or special characters.</string>
+    <string name="your_wickr_id_has_been_suspended_if_you_feel_this_">Your Wickr ID has been suspended. If you feel this is in error please contact us by email at support@mywickr.com</string>
+    
+    <!-- couldn't find this -->
+    <string name="connection_not_confirmed_please_note_we_respect_yo">⚠️ = Connection Not Confirmed\n\n\n\nPlease Note: We respect your privacy. A cryptographical representation of your email and phone number will be stored on our servers.</string>
+    
+</resources>

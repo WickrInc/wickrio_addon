@@ -148,12 +148,13 @@ void CmdClient::listClients()
             consoleUser = "Not set";
         }
 
-        QString data = QString("CONSOLE: client[%1] %2, APIKey=%3, User=%4, Port=%5, State=%6, ConsoleUser=%7")
+        QString data = QString("CONSOLE: client[%1] %2, APIKey=%3, User=%4, Port=%5, Binary=%6, State=%7, ConsoleUser=%8")
             .arg(cnt++)
             .arg(client->name)
             .arg(client->apiKey)
             .arg(client->user)
             .arg(client->port)
+            .arg(client->binary)
             .arg(clientState)
             .arg(consoleUser);
         qDebug() << qPrintable(data);
@@ -406,6 +407,38 @@ bool CmdClient::getClientValues(WickrIOClients *client)
         // Cleanup the allocated memory
         for (WickrIOConsoleUser *cuser : cusers) {
             delete cuser;
+        }
+    }
+
+    // Get the binary to use
+    QStringList binaries = WBIOServerCommon::getAvailableClientApps();
+    if (binaries.length() == 1) {
+        client->binary = binaries.at(0);
+    } else {
+        while (true) {
+            QString selected;
+            selected = getNewValue(client->binary, tr("Enter the binary"));
+            // Check if the user wants to quit the action
+            if (handleQuit(selected, &quit) && quit) {
+                return false;
+            }
+
+            if (selected.toLower() == "list" || selected == "?") {
+                foreach (QString binary, binaries) {
+                    qDebug() << "CONSOLE:" << binary;
+                }
+                continue;
+            }
+
+            for (QString binary : binaries) {
+                if (selected == binary) {
+                    client->binary = binary;
+                    break;
+                }
+            }
+
+            qDebug() << "CONSOLE:Invalid binary, enter one of" << binaries;
+            continue;
         }
     }
 

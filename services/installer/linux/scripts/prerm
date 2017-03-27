@@ -26,8 +26,15 @@ case "$1" in
         #
         # Stop the WickrIO service
         #
-        systemctl stop WickrIOSvrINSTALLEXT
+        set +e
+        systemctl is-active WickrIOSvrINSTALLEXT
+        svrstate=$?
+        echo $svrstate > $tempdir/svrstate
+        if [[ $svrstate -eq 0 ]]; then
+            systemctl stop WickrIOSvrINSTALLEXT
+        fi
         systemctl disable WickrIOSvrINSTALLEXT
+
         # Remove the startup entry for the service(s)
         update-rc.d -f WickrIOSvrINSTALLEXT remove
 
@@ -35,7 +42,12 @@ case "$1" in
         # Stop the WickrIO Console service
         #
         set +e
-        systemctl stop WickrIOCSvrINSTALLEXT
+        systemctl is-active WickrIOCSvrINSTALLEXT
+        consvrstate=$?
+        echo $consvrstate > $tempdir/consvrstate
+        if [[ $consvrstate -eq 0 ]]; then
+            systemctl stop WickrIOCSvrINSTALLEXT
+        fi
         systemctl disable WickrIOCSvrINSTALLEXT
 
         # Remove the startup entry for the service(s)
