@@ -254,6 +254,7 @@ public:
 
     const QString& email() const { return m_email; }
     const QString& username() const { return m_username; }
+    const QString& transactionID() const { return m_transID; }
 
     bool invalidEmailDomain() const { return m_invalidEmailDomain; }
     bool invalidSmsCode() const { return m_invalidSmsCode; }

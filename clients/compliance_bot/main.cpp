@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication *app = NULL;
 
-    Q_INIT_RESOURCE(conformance_bot);
+    Q_INIT_RESOURCE(compliance_bot);
 
     // Setup appropriate library values based on Beta or Production client
     QByteArray secureJson;

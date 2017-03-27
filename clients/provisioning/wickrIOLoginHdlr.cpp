@@ -6,8 +6,7 @@
 
 #include "clientversioninfo.h"
 
-WickrIOLoginHdlr::WickrIOLoginHdlr(OperationData *operation) :
-    m_operation(operation),
+WickrIOLoginHdlr::WickrIOLoginHdlr() :
     m_curLoginIndex(0),
     m_loginState(LoggedOut),
     m_consecutiveLoginFailures(0),
@@ -103,29 +102,25 @@ void WickrIOLoginHdlr::initiateLogin()
         m_loginState = InProcess;
         QString userid = m_logins.at(m_curLoginIndex)->m_name;
         QString password = m_logins.at(m_curLoginIndex)->m_pass;
+        QString transid = m_logins.at(m_curLoginIndex)->m_transactionID;
         bool creatingUser = m_logins.at(m_curLoginIndex)->m_creating;
-
-        if (m_operation->m_botDB->isOpen()) {
-            m_operation->m_client = m_operation->m_botDB->getClientUsingUserName(userid);
-        }
 
         WickrDBAdapter::setDBNameForUser( userid );
 
         if (creatingUser) {
             // If the database already exists then cannot do a Registration!
             if( WickrDBAdapter::doesDBExist() ) {
-                m_operation->log(QString("Creating user will fail because DB already exists!"));
+                qDebug() << "Creating user will fail because DB already exists!";
                 emit signalExit();
             } else {
-                m_operation->log(QString("Starting registration to create user " + userid));
+                qDebug() << "Starting registration to create user " << userid;
 
-                QString transID;
-                registerUser(userid, password, transID, true, false, false);
+                registerUser(userid, password, transid, true, false, false);
             }
         } else {
             // If the database exists then just login
             if (WickrDBAdapter::doesDBExist()) {
-                m_operation->log(QString("Starting login for user " + userid));
+                qDebug() << "Starting login for user " << userid;
 
                 slotLoginStart(userid, password);
             } else {
@@ -144,12 +139,12 @@ void WickrIOLoginHdlr::initiateLogin()
  */
 void WickrIOLoginHdlr::slotRegistrationDone(WickrRegisterUserContext *c)
 {
-    m_operation->log("Received registration");
+    qDebug() << "Received registration";
 
     if(!c->isSuccess()) {
         // If we failed because of something other than bad credentials then show the result
         if (c->apiCode().getValue() != BAD_SYNC_CREDENTIALS) {
-            m_operation->log(c->errorString());
+            qDebug() << c->errorString();
             emit signalOnlineFlag(false);
         }
     } else {
@@ -204,46 +199,8 @@ void WickrIOLoginHdlr::slotLoginStart(const QString& username, const QString& pa
 void WickrIOLoginHdlr::slotLoginDone(WickrLoginContext *ls)
 {
     if (ls->isSuccess()) {
-        m_operation->log("Login successful");
+        qDebug() << "Login successful";
         m_loginState = LoggedIn;
-        m_consecutiveLoginFailures = 0;
-
-        qDebug() << "Dumping Wickr database counts:";
-        qDebug() << WickrDBAdapter::dumpTableCounts();
-
-        WickrCore::WickrCloudTransferMgr *cloudTransferMgr = WickrCore::WickrRuntime::getCloudMgr();
-        if ( cloudTransferMgr ) {
-            QString s3_bucketId = ls->s3BucketId();
-            QString s3_secret = ls->s3Secret();
-            QString s3_key = ls->s3Key();
-            QString s3_url = ls->s3Url();
-            cloudTransferMgr->setAmazonS3Credentials( s3_bucketId, s3_secret, s3_key, s3_url );
-            qDebug() << "Amazon S3 info: " << s3_bucketId << s3_key << s3_secret << s3_url;
-        }
-
-        m_backupVersion = -1;
-
-#if 0 // TODO
-        connect(WickrCore::WickrSession::getActiveSession()->getContactManager(), &WickrCore::WickrContactMan::contactDownloadComplete, this, [=]() {
-            m_backupVersion = WickrCore::WickrSession::getActiveSession()->account->getBackupVersion();
-
-            // Download complete, now refresh directory
-            refreshDirectory();
-        });
-#endif
-
-        if (!WickrCore::WickrSession::getActiveSession()->getContactManager()->fetchOrPostBackupIfNeeded( m_backupVersion )) {
-            // No contact backup download needed, proceed
-            refreshDirectory();
-        }
-
-        // Store switchboard credentials from login receipt (in WickrSession)
-        WickrCore::WickrSession::getActiveSession()->setSwitchboardServer(ls->switchboardServer());
-        WickrCore::WickrSession::getActiveSession()->setSwitchboardToken(ls->switchboardToken());
-
-        // Store networkId (in WickrSession)
-        WickrCore::WickrSession::getActiveSession()->setNetworkIdFromLogin(ls->networkId());
-
         emit signalLoginSuccess();
 
     } else {
@@ -254,9 +211,9 @@ void WickrIOLoginHdlr::slotLoginDone(WickrLoginContext *ls)
 
             /* The login failed, should we reset the database?
              */
-            m_operation->error("Login failed!");
-            m_operation->error("Program exiting!");
-            m_operation->error(ls->errorString());
+            qDebug() << "Login failed!";
+            qDebug() << "Program exiting!";
+            qDebug() << ls->errorString();
 
 
             m_consecutiveLoginFailures++;
@@ -270,9 +227,9 @@ void WickrIOLoginHdlr::slotLoginDone(WickrLoginContext *ls)
              * password is correct.  So do NOT attempt to register which will fail.
              */
             if (ls->okToRunWithoutServer()) {
-                m_operation->error("Login failed to server, but local login was success!");
-                m_operation->error("Program exiting!");
-                m_operation->error(ls->errorString());
+                qDebug() << "Login failed to server, but local login was success!";
+                qDebug() << "Program exiting!";
+                qDebug() << ls->errorString();
 
                 m_consecutiveLoginFailures++;
                 m_logins.at(m_curLoginIndex)->m_failedLogin++;

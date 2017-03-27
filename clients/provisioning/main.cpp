@@ -32,15 +32,6 @@ extern void wickr_powersetup(void);
 #include "wickrioeclientmain.h"
 #include "wickrioipc.h"
 #include "wickrbotutils.h"
-#include "operationdata.h"
-
-extern int versionForLogin();
-extern QString getPlatform();
-extern QString getVersionString();
-extern QString getBuildString();
-extern QString getAppVersion();
-
-OperationData *operation = NULL;
 
 // TODO: UPDATE THIS
 static void
@@ -87,9 +78,6 @@ int main(int argc, char *argv[])
 
     bool dbEncrypt = true;
 
-    operation = new OperationData();
-    operation->processName = WBIO_CLIENT_TARGET;
-
     QString clientDbPath("");
     QString suffix;
     QString wbConfigFile("");
@@ -98,21 +86,13 @@ int main(int argc, char *argv[])
     for( int argidx = 1; argidx < argc; argidx++ ) {
         QString cmd(argv[argidx]);
 
-        if( cmd.startsWith("-dbdir=") ) {
-            operation->databaseDir = cmd.remove("-dbdir=");
-        } else if (cmd.startsWith("-log=") ) {
-            QString logFile = cmd.remove("-log=");
-            operation->setupLog(logFile);
-        } else if (cmd.startsWith("-clientdbdir=")) {
+        if (cmd.startsWith("-clientdbdir=")) {
             clientDbPath = cmd.remove("-clientdbdir=");
         } else if (cmd.startsWith("-config=")) {
             wbConfigFile = cmd.remove("-config=");
         } else if (cmd.startsWith("-suffix")) {
             suffix = cmd.remove("-suffix=");
             WickrUtil::setTestAccountMode(suffix);
-        } else if (cmd.startsWith("-processname")) {
-            operation->processName = cmd.remove("-processname=");
-            setProcessName = true;
         }
         else if( cmd.startsWith("-user=") ) {
             username = cmd.remove("-user=");
@@ -200,25 +180,23 @@ int main(int argc, char *argv[])
     QObject::connect(WICKRBOT, &WickrIOEClientMain::signalStarted, [=]() {
     });
 
-#if 0
-
     /*
      * When the login is successful create the HTTP listner to receive
      * the Web API requests.
      */
     QObject::connect(WICKRBOT, &WickrIOEClientMain::signalLoginSuccess, [=]() {
+        qDebug() << "Successfully logged in as new user!";
+        qDebug() << "Our work is done here, logging off!";
+        app->quit();
     });
-#endif
     WICKRBOT->start();
 
     int retval = app->exec();
 
-    QCoreApplication::processEvents();
+//    QCoreApplication::processEvents();
 
     WICKRBOT->deleteLater();
-    QCoreApplication::processEvents();
-
-    operation->deleteLater();
+//    QCoreApplication::processEvents();
 
     return retval;
 }

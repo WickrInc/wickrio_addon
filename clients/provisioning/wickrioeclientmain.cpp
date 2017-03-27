@@ -34,9 +34,7 @@ WickrIOEClientMain *WickrIOEClientMain::theBot;
 WickrIOEClientMain::WickrIOEClientMain(const QString& username, const QString& password, const QString& invite) :
     m_username(username),
     m_password(password),
-    m_invite(invite),
-    m_loginHdlr(nullptr),
-    m_wickrIPC(0)
+    m_invite(invite)
 {
     this->connect(this, &WickrIOEClientMain::started, this, &WickrIOEClientMain::processStarted);
     this->connect(this, &WickrIOEClientMain::signalExit, this, &WickrIOEClientMain::stopAndExitSlot);
@@ -181,6 +179,10 @@ void WickrIOEClientMain::slotProvisionPageChanged(WickrIOProvisionHdlr::Page pag
     case WickrIOProvisionHdlr::enterPassword:
         qDebug() << "enterPassword";
         provhdlr->setPassword(m_password);
+
+        // At this point login
+        m_loginHdlr.addLogin(m_username, m_password, provhdlr->transactionID(), true);
+        m_loginHdlr.initiateLogin();
         break;
     case WickrIOProvisionHdlr::askContactsPermission:
         qDebug() << "askContactsPermission";
@@ -217,33 +219,8 @@ void WickrIOEClientMain::slotRemoveFromRoom(const QString& vGroupID)
  */
 void WickrIOEClientMain::slotLoginSuccess()
 {
-    // Execute database load
-    WickrDatabaseLoadContext *c = new WickrDatabaseLoadContext(WickrUtil::dbDump);
-    connect(c, &WickrDatabaseLoadContext::signalRequestCompleted, this, &WickrIOEClientMain::slotDatabaseLoadDone, Qt::QueuedConnection);
-    WickrCore::WickrRuntime::taskSvcMakeRequest(c);
-
-}
-
-/**
- * @brief WickrIOEClientMain::slotDatabaseLoadDone
- * Complete database load.
- */
-void WickrIOEClientMain::slotDatabaseLoadDone(WickrDatabaseLoadContext *context)
-{
-    // Cleanup request
-    context->deleteLater();
-
     emit signalLoginSuccess();
-
-    // Update switchboard login credentials (login is performed only if not already logged in)
-    WickrCore::WickrRuntime::swbSvcLogin(WickrCore::WickrSession::getActiveSession()->getSwitchboardServer(),
-                                         WickrCore::WickrUser::getSelfUser()->getServerIDHash(),
-                                         WickrCore::WickrSession::getActiveSession()->getAppID(),
-                                         WickrCore::WickrSession::getActiveSession()->getSwitchboardToken(),
-                                         WickrCore::WickrSession::getActiveSession()->getNetworkIdFromLogin(),
-                                         true);
 }
-
 
 /**
  * @brief slotAdminUserSuspend (SWITCHBOARD SIGNAL)
@@ -481,39 +458,5 @@ void WickrIOEClientMain::slotOnLoginMsgSynchronizationComplete()
                                          WickrCore::WickrSession::getActiveSession()->getSwitchboardToken(),
                                          WickrCore::WickrSession::getActiveSession()->getNetworkIdFromLogin(),
                                          false);
-}
-
-
-bool WickrIOEClientMain::parseSettings(QSettings *settings)
-{
-    /*
-     * Parse out the settings associated with the User
-     */
-    settings->beginGroup(WBSETTINGS_USER_HEADER);
-
-    QString username = settings->value(WBSETTINGS_USER_USER, "").toString();
-    QString password = settings->value(WBSETTINGS_USER_PASSWORD, "").toString();
-
-    if (username.isEmpty() || password.isEmpty()) {
-        qDebug() << "User or password is not set";
-        return false;
-    }
-    m_loginHdlr.addLogin(username, password);
-
-    settings->endGroup();
-
-    /*
-     * Parse out the settings associated with general configuration
-     */
-    settings->beginGroup(WBSETTINGS_CONFIG_HEADER);
-
-    // Get the server name, if one is set
-    m_serverName = settings->value(WBSETTINGS_CONFIG_SERVER, ClientConfigurationInfo::DefaultBaseURL).toString();
-
-    // Set the Base URL for communications to the server
-    WickrURLs::setBaseURL(m_serverName);
-
-    settings->endGroup();
-    return true;
 }
 

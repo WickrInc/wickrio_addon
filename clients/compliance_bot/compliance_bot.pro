@@ -68,7 +68,7 @@ include($${DEPTH}/libs/SMTPEmail/SMTPEmail.pri)
 TEMPLATE = app
 
 CONFIG(release,release|debug) {
-    TARGET = conformance_bot
+    TARGET = compliance_bot
 
     SOURCES += $${COMMON}/versiondebugNO.cpp
 
@@ -82,10 +82,10 @@ CONFIG(release,release|debug) {
     }
 }
 else {
-    wickr_blackout:TARGET = conformance_botOnPrm
-    else:wickr_beta:TARGET = conformance_botBeta
-    else:wickr_qa:TARGET = conformance_botQA
-    else:TARGET = conformance_botAlpha
+    wickr_blackout:TARGET = compliance_botOnPrm
+    else:wickr_beta:TARGET = compliance_botBeta
+    else:wickr_qa:TARGET = compliance_botQA
+    else:TARGET = compliance_botAlpha
 
     SOURCES += $${COMMON}/versiondebugYES.cpp
 
@@ -103,7 +103,7 @@ else {
 }
 
 RESOURCES += \
-    conformance_bot.qrc
+    compliance_bot.qrc
 
 SOURCES += \
     $${COMMON}/wickrbotactiondatabase.cpp \
@@ -168,13 +168,13 @@ macx {
 
 linux-g++* {
     CONFIG(release,release|debug) {
-        QMAKE_RPATHDIR += /usr/lib/wio_conformance_bot
+        QMAKE_RPATHDIR += /usr/lib/wio_compliance_bot
     }
     else {
-        wickr_blackout:QMAKE_RPATHDIR = /usr/lib/wio_conformance_bot-onprem
-        else:wickr_beta:QMAKE_RPATHDIR = /usr/lib/wio_conformance_bot-beta
-        else:wickr_qa:QMAKE_RPATHDIR = /usr/lib/wio_conformance_bot-qa
-        else:QMAKE_RPATHDIR = /usr/lib/wio_conformance_bot-alpha
+        wickr_blackout:QMAKE_RPATHDIR = /usr/lib/wio_compliance_bot-onprem
+        else:wickr_beta:QMAKE_RPATHDIR = /usr/lib/wio_compliance_bot-beta
+        else:wickr_qa:QMAKE_RPATHDIR = /usr/lib/wio_compliance_bot-qa
+        else:QMAKE_RPATHDIR = /usr/lib/wio_compliance_bot-alpha
     }
 
     QMAKE_CXXFLAGS += -Wunused-parameter

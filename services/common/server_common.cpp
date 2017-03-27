@@ -70,8 +70,9 @@ QStringList
 WBIOServerCommon::getAvailableClientApps()
 {
     // TODO: Need a way to register possible WickrIO Bots. for now they are hardcoded
-    QString possibleBinaries[] = { "test_botAlpha", "test_botBeta", "test_botOnPrem", "test_botQA", "test_bot",
-                                   "conformance_botAlpha", "conformance_botOnPrem" };
+    QString possibleBinaries[] = { "test_botAlpha",       "test_botBeta",       "test_botQA",       "test_bot",
+                                   "compliance_botAlpha", "compliance_botBeta", "compliance_botQA", "compliance_bot"
+				 };
     QStringList availableBinaries;
 
     for (QString binary : possibleBinaries) {

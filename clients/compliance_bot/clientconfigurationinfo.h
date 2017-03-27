@@ -8,19 +8,19 @@
  * the TARGET definitions within the .pro files.
  */
 #if defined(WICKR_BLACKOUT) && defined(WICKR_DEBUG)
-#define WBIO_CLIENT_TARGET          "conformance_botOnPrem"
+#define WBIO_CLIENT_TARGET          "compliance_botOnPrem"
 
 #elif defined(WICKR_BETA)
-#define WBIO_CLIENT_TARGET          "conformance_botBeta"
+#define WBIO_CLIENT_TARGET          "compliance_botBeta"
 
 #elif defined(WICKR_ALPHA)
-#define WBIO_CLIENT_TARGET          "conformance_botAlpha"
+#define WBIO_CLIENT_TARGET          "compliance_botAlpha"
 
 #elif defined(WICKR_PRODUCTION)
-#define WBIO_CLIENT_TARGET          "conformance_bot"
+#define WBIO_CLIENT_TARGET          "compliance_bot"
 
 #elif defined(WICKR_QA)
-#define WBIO_CLIENT_TARGET          "conformance_botQA"
+#define WBIO_CLIENT_TARGET          "compliance_botQA"
 
 #else
 "No WICKR_TARGET defined!!!"

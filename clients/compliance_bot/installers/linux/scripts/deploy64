@@ -61,13 +61,13 @@ echo bldtype=$bldtype
 echo BldType=$BldType
 echo version=$version
 
-prefix=~/tmp/wio_conformance_bot${bldtype}-deb
-debian=~/tmp/wio_conformance_bot${bldtype}-deb/DEBIAN
+prefix=~/tmp/wio_compliance_bot${bldtype}-deb
+debian=~/tmp/wio_compliance_bot${bldtype}-deb/DEBIAN
 bindir=$prefix/usr/bin
 sbindir=$prefix/usr/sbin
-libdir=$prefix/usr/lib/wio_conformance_bot${bldtype}
-docdir=$prefix/usr/share/doc/wio_conformance_bot${bldtype}
-plugins=$prefix/usr/lib/wio_conformance_bot${bldtype}/plugins
+libdir=$prefix/usr/lib/wio_compliance_bot${bldtype}
+docdir=$prefix/usr/share/doc/wio_compliance_bot${bldtype}
+plugins=$prefix/usr/lib/wio_compliance_bot${bldtype}/plugins
 
 # Service related definitions
 svcinitdir=$prefix/etc/init.d
@@ -110,7 +110,7 @@ mkdir -p $appdata
 #
 # Copy the executables
 #
-cp -a $current/../../../../../../${build_dir}/clients/conformance_bot/conformance_bot$BldType $bindir
+cp -a $current/../../../../../../${build_dir}/clients/compliance_bot/compliance_bot$BldType $bindir
 
 #
 # TODO: Will need shared libraries
@@ -143,7 +143,7 @@ rm -f $plugins/sqldrivers/*
 #cp -a $current/../plugins-64/* $plugins/sqldrivers/
 #cp -Lp /usr/lib/x86_64-linux-gnu/libicu*.so.52 $libdir/
 mkdir -p $messages
-echo "/usr/share/applications/wio_conformance_bot${bldtype}.client" >$messages/wio_conformance_bot${bldtype}
+echo "/usr/share/applications/wio_compliance_bot${bldtype}.client" >$messages/wio_compliance_bot${bldtype}
 
 #
 # Generate the MD5 SUM value
@@ -165,8 +165,8 @@ chmod 755 $debian/prerm
 #
 # Create the actual package
 #
-rm -f wio_conformance_bot${bldtype}_*.deb
+rm -f wio_compliance_bot${bldtype}_*.deb
 fakeroot chown -R root:root $prefix
 
-fakeroot dpkg -b wio_conformance_bot${bldtype}-deb/ wio_conformance_bot${bldtype}_${version}_amd64.deb
-sha256sum wio_conformance_bot${bldtype}_${version}_amd64.deb >wio_conformance_bot${bldtype}_${version}_amd64.sha256
+fakeroot dpkg -b wio_compliance_bot${bldtype}-deb/ wio_compliance_bot${bldtype}_${version}_amd64.deb
+sha256sum wio_compliance_bot${bldtype}_${version}_amd64.deb >wio_compliance_bot${bldtype}_${version}_amd64.sha256

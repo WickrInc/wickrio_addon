@@ -13,14 +13,16 @@ class WickrBotLogin {
 public:
     QString m_name;
     QString m_pass;
+    QString m_transactionID;
     int m_sent;
     int m_failedLogin;
     bool m_creating;
 
-    WickrBotLogin(QString name, QString pass) :
+    WickrBotLogin(const QString& name, const QString& pass, const QString& transID, bool create) :
         m_name(name),
         m_pass(pass),
-        m_creating(false) {}
+        m_transactionID(transID),
+        m_creating(create) {}
 };
 
 typedef enum { LoggedOut, InProcess, LoggedIn, LoggingOut, LoginsFailed } WickrIOLoginState;
@@ -30,7 +32,7 @@ class WickrIOLoginHdlr : public QObject
 {
     Q_OBJECT
 public:
-    explicit WickrIOLoginHdlr(OperationData *operation);
+    explicit WickrIOLoginHdlr();
     ~WickrIOLoginHdlr();
 
     void initiateLogin();
@@ -43,8 +45,8 @@ public:
      * @param user The username of the new userSS
      * @param pass The password for the new user
      */
-    void addLogin(const QString& user, const QString& pass) {
-        m_logins.append(new WickrBotLogin(user, pass));
+    void addLogin(const QString& user, const QString& pass, const QString& transid=QString(), bool create=false) {
+        m_logins.append(new WickrBotLogin(user, pass, transid, create));
     }
 
 
@@ -52,8 +54,6 @@ public:
     QStringList preRegistrationGetKeyStrings();
 
 private:
-    OperationData *m_operation;
-
     int m_curLoginIndex;
     WickrIOLoginState m_loginState;
     QList<WickrBotLogin *> m_logins;

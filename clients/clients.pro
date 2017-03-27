@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 SUBDIRS += \
     provisioning \
-    conformance_bot \
+    compliance_bot \
     test_bot
 
 CONFIG += ordered

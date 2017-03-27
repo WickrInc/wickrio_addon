@@ -39,9 +39,6 @@ public:
 
     static WickrIOEClientMain *theBot;
 
-    // Parse the settings file (replaces the JSON config file)
-    bool parseSettings(QSettings *settings);
-
 private:
     QString m_username;
     QString m_password;
@@ -51,8 +48,6 @@ private:
 
     QTimer timer;
     QString m_serverName;
-
-    WickrBotMainIPC *m_wickrIPC;
 
     // Timer definitions
     void startTimer()
@@ -88,8 +83,6 @@ private slots:
     void slotTaskServiceState(WickrServiceState state);
 
     void slotOnLoginMsgSynchronizationComplete();
-
-    void slotDatabaseLoadDone(WickrDatabaseLoadContext *context);
 
     void slotAdminUserSuspend(const QString& reason);
     void slotAdminDeviceSuspend();

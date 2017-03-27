@@ -1,4 +1,4 @@
-Package: wio-conformance-botEXTENSION
+Package: wio-compliance-botEXTENSION
 Architecture: amd64
 Section: net
 Priority: optional
