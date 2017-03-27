@@ -109,6 +109,7 @@ SOURCES += \
     $${COMMON}/wickrbotactiondatabase.cpp \
     main.cpp \
     wickrioeclientmain.cpp \
+    wickrIOBootstrap.cpp \
     wickrIOLoginHdlr.cpp \
     wickrIOProvisionHdlr.cpp \
     clientconfigurationinfo.cpp \

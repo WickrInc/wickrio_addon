@@ -13,6 +13,7 @@ else {
 
 HEADERS += \
     $${PWD}/wbio_common.h \
+    $${PWD}/wickrIOBootstrap.h \
     $${PWD}/wickrioappsettings.h \
     $${PWD}/wickriodatabase.h \
     $$PWD/wickrioconsoleuser.h \
@@ -24,6 +25,7 @@ HEADERS += \
 
 SOURCES += \
     $${PWD}/wbio_common.cpp \
+    $${PWD}/wickrIOBootstrap.cpp \
     $${PWD}/wickrioappsettings.cpp \
     $${PWD}/wickriodatabase.cpp \
     $$PWD/wickrioconsoleuser.cpp \
