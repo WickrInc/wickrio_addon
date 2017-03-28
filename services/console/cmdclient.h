@@ -13,6 +13,8 @@
 #include "cmdoperation.h"
 #include "cmdconsole.h"
 
+#include <QProcess>
+
 class CmdClient : public CmdBase
 {
     Q_OBJECT
@@ -48,6 +50,14 @@ private:
     bool m_clientMsgInProcess;
 
     QList<WickrIOClients *> m_clients;
+
+    QProcess *m_exec;
+
+
+private slots:
+    void slotCmdFinished(int, QProcess::ExitStatus);
+    void slotCmdOutputRx();
+
 };
 
 #endif // CMDCLIENT_H

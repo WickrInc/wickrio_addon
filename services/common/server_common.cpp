@@ -5,6 +5,10 @@
 #include "server_common.h"
 #include "wickrbotsettings.h"
 
+bool WBIOServerCommon::m_initialized = false;
+QList<WBIOClientApps *>  WBIOServerCommon::m_botApps;
+QStringList              WBIOServerCommon::m_bots;
+
 /**
  * @brief WBIOCommon::getSettings
  * This function will return the QSettings object which is associated with the
@@ -66,16 +70,33 @@ WBIOServerCommon::getClientProcessName(WickrBotClients * client)
     return processName;
 }
 
+void
+WBIOServerCommon::initClientApps()
+{
+    if (!m_initialized) {
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botAlpha", nullptr));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botBeta", nullptr));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botQA", nullptr));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_bot", nullptr));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botAlpha", "compliance_provAlpha"));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botBeta", "compliance_provBeta"));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botQA", "compliance_provQA"));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_bot", "compliance_prov"));
+
+        for (WBIOClientApps *botapp : WBIOServerCommon::m_botApps) {
+            m_bots.append(botapp->bot());
+        }
+        m_initialized = true;
+    }
+}
+
 QStringList
 WBIOServerCommon::getAvailableClientApps()
 {
-    // TODO: Need a way to register possible WickrIO Bots. for now they are hardcoded
-    QString possibleBinaries[] = { "test_botAlpha",       "test_botBeta",       "test_botQA",       "test_bot",
-                                   "compliance_botAlpha", "compliance_botBeta", "compliance_botQA", "compliance_bot"
-				 };
+    initClientApps();
     QStringList availableBinaries;
 
-    for (QString binary : possibleBinaries) {
+    for (QString binary : WBIOServerCommon::m_bots) {
         QString filePath = QString("/usr/bin/%1").arg(binary);
         QFileInfo fi(filePath);
         if (fi.exists()) {
@@ -83,6 +104,19 @@ WBIOServerCommon::getAvailableClientApps()
         }
     }
     return availableBinaries;
+}
+
+QString
+WBIOServerCommon::getProvisionApp(const QString& clientApp)
+{
+    // Assuming that the apps are initialized
+
+    for (WBIOClientApps *botapp : WBIOServerCommon::m_botApps) {
+        if (botapp->bot() == clientApp) {
+            return botapp->provision();
+        }
+    }
+    return nullptr;
 }
 
 bool

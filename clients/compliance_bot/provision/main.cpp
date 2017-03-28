@@ -33,7 +33,8 @@ extern void wickr_powersetup(void);
 #include "wickrbotutils.h"
 #include "cmdProvisioning.h"
 
-CmdProvisioning provisioningInput;
+WickrIOClients  client;
+CmdProvisioning provisioningInput(&client);
 
 // TODO: UPDATE THIS
 static void
@@ -66,24 +67,17 @@ int main(int argc, char *argv[])
         isDebug = false;
     }
 
-    QString username;
-    QString password;
-    QString invitation;
-    QString regtoken;
     QString appname = WBIO_CLIENT_TARGET;
     QString orgname = WBIO_ORGANIZATION;
 
     wickrProductSetProductType(ClientVersionInfo::getProductType());
     WickrURLs::setDefaultBaseURL(ClientConfigurationInfo::DefaultBaseURL);
 
-    qDebug() <<  appname << "System was booted" << WickrUtil::formatTimestamp(WickrAppClock::getBootTime());
-
     bool dbEncrypt = true;
 
     QString clientDbPath("");
     QString suffix;
     QString wbConfigFile("");
-    bool setProcessName = false;
 
     for( int argidx = 1; argidx < argc; argidx++ ) {
         QString cmd(argv[argidx]);
@@ -96,19 +90,6 @@ int main(int argc, char *argv[])
             suffix = cmd.remove("-suffix=");
             WickrUtil::setTestAccountMode(suffix);
         }
-        else if( cmd.startsWith("-user=") ) {
-            username = cmd.remove("-user=");
-        }
-        else if( cmd.startsWith("-password=") ) {
-            password = cmd.remove("-password=");
-        }
-        else if( cmd.startsWith("-invitation=") ) {
-            invitation = cmd.remove("-invitation=");
-        }
-        else if( cmd.startsWith("-regtoken=") ) {
-            regtoken = cmd.remove("-regtoken=");
-        }
-
     }
 
     if( isVERSIONDEBUG() ) {
@@ -130,21 +111,20 @@ int main(int argc, char *argv[])
         }
     }
 
+    // Get input from the user
     if (!provisioningInput.runCommands()) {
         exit(1);
     }
 
+    // Load the bootstrap file
+    // TODO: Need to save an encrypted version of the file
     WickrIOEClientMain::loadBootstrapFile(provisioningInput.m_configFileName, provisioningInput.m_configPassword);
 
-
-#if defined(WICKR_BLACKOUT)
-    if (username.isEmpty() || password.isEmpty() || regtoken.isEmpty())
-#else
-    if (username.isEmpty() || password.isEmpty() || invitation.isEmpty())
-#endif
-    {
-        qDebug() << "Missing required parameter!";
-        exit(1);
+    if (clientDbPath.isEmpty()) {
+        clientDbPath = QString("%1/clients/%2/client").arg(WBIO_DEFAULT_DBLOCATION).arg(client.name);
+    }
+    if (wbConfigFile.isEmpty()) {
+        wbConfigFile = QString(WBIO_CLIENT_SETTINGS_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client.name);
     }
 
 #ifdef Q_OS_MAC
@@ -177,11 +157,14 @@ int main(int argc, char *argv[])
     /*
      * Start the WickrIO thread
      */
-#if defined(WICKR_BLACKOUT)
-    WICKRBOT = new WickrIOEClientMain(username, password, regtoken);
-#else
-    WICKRBOT = new WickrIOEClientMain(username, password, invitation);
-#endif
+    if (client.onPrem) {
+        QString networkToken = WickrCore::WickrRuntime::getEnvironmentMgr()->networkToken();
+
+        WICKRBOT = new WickrIOEClientMain(client.user, client.password, networkToken, true);
+    } else {
+        WICKRBOT = new WickrIOEClientMain(client.user, client.password, provisioningInput.m_invitation);
+    }
+
     /*
      * When the WickrIOEClientMain thread is started then create the IP
      * connection, so that other processes can stop this client.

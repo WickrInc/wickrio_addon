@@ -29,6 +29,8 @@ public:
     // Component accessors
     static OperationData *operationData();
 
+    static void redirectedOutput(QtMsgType type, const QMessageLogContext &, const QString & str);
+
 private:
     // Runtime resources
     bool                    m_initialized;

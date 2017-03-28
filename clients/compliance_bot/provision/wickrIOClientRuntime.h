@@ -1,9 +1,8 @@
 #ifndef WICKRIOCLIENTRUNTIME_H
 #define WICKRIOCLIENTRUNTIME_H
 
-#include "wickrIOCallbackService.h"
 #include "operationdata.h"
-
+#include "wickrIOProvisionHdlr.h"
 
 /**
  * @brief The WickrIOClientRuntime class
@@ -17,27 +16,20 @@ public:
     virtual ~WickrIOClientRuntime();
 
     // Runtime Init/Shutdown API
-    static void init(OperationData *operation);
+    static void init();
     static void shutdown();
 
     /**
-     * Message Callback Service API
+     * @brief provHdlr
+     * @return
      */
-    static WickrIOCallbackService* cbSvc();
-    static bool cbSvcMessagesPending();
-
-    // Component accessors
-    static OperationData *operationData();
-
-    static void redirectedOutput(QtMsgType type, const QMessageLogContext &, const QString & str);
+    static WickrIOProvisionHdlr* provHdlr();
+    static void provHdlrBeginOnPrem(const QString username, const QString password, const QString regToken);
+    static void provHdlrBeginCloud(const QString &email, const QString &inviteCode);
 
 private:
     // Runtime resources
     bool                    m_initialized;
-    OperationData           *m_operation;
-
-    WickrIOCallbackService  *m_callbackSvc;
-
 
     /**
      * @brief WickrIOClientRuntime (PRIVATE CONSTRUCTOR)
@@ -58,6 +50,11 @@ private:
      * @return
      */
     static WickrIOClientRuntime& get();
+
+    /**
+     * @brief m_provisionHdlr
+     */
+    WickrIOProvisionHdlr *m_provisionHdlr;
 
     Q_DISABLE_COPY(WickrIOClientRuntime)
 };

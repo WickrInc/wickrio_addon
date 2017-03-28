@@ -110,7 +110,8 @@ mkdir -p $appdata
 #
 # Copy the executables
 #
-cp -a $current/../../../../../../${build_dir}/clients/compliance_bot/compliance_bot$BldType $bindir
+cp -a $current/../../../../../../${build_dir}/clients/compliance_bot/client/compliance_bot$BldType $bindir
+cp -a $current/../../../../../../${build_dir}/clients/compliance_bot/provision/provision$BldType $bindir/compliance_prov$BldType
 
 #
 # TODO: Will need shared libraries

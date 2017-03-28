@@ -6,7 +6,7 @@
 #include <QString>
 #include <QSettings>
 
-typedef enum { CHECK_DIR, CHECK_FILE, CHECK_NONE, CHECK_INT, CHECK_BOOL } CheckType;
+typedef enum { CHECK_DIR, CHECK_FILE, CHECK_NONE, CHECK_INT, CHECK_BOOL, CHECK_LIST } CheckType;
 
 class CmdBase : public QObject
 {
@@ -20,7 +20,8 @@ public:
 protected:
 
     bool handleQuit(const QString& value, bool *quit);
-    QString getNewValue(const QString& oldValue, const QString& prompt, CheckType check = CHECK_NONE);
+    QString getNewValue(const QString& oldValue, const QString& prompt, CheckType check = CHECK_NONE,
+            QStringList choices = QStringList());
 
 };
 

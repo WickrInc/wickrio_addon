@@ -1,5 +1,4 @@
 #include "wickrIOClientRuntime.h"
-#include "wickrIOClientMain.h"
 
 /**
  * @brief WickrIOClientRuntime (PRIVATE CONSTRUCTOR)
@@ -22,6 +21,22 @@ WickrIOClientRuntime::~WickrIOClientRuntime() {
         cleanupResources();
 }
 
+void
+WickrIOClientRuntime::redirectedOutput(QtMsgType type, const QMessageLogContext &, const QString & str)
+{
+    //in this function, you can write the message to any stream!
+    switch (type) {
+    case QtDebugMsg:
+    case QtWarningMsg:
+    case QtCriticalMsg:
+        WickrIOClientRuntime::operationData()->output(str);
+        break;
+    case QtFatalMsg:
+        WickrIOClientRuntime::operationData()->output(str);
+        abort();
+    }
+}
+
 /**
  * @brief init
  * Will initialize runtime singleton via get(). Should be called in main.cpp.
@@ -34,7 +49,7 @@ void WickrIOClientRuntime::init(OperationData *operation) {
 
     if (!operation->logGetOutput().isEmpty()) {
         operation->log(QString("Redirecting output to %1").arg(operation->logGetOutput()));
-        qInstallMessageHandler(WickrIOClientMain::redirectedOutput);
+        qInstallMessageHandler(redirectedOutput);
     }
 }
 

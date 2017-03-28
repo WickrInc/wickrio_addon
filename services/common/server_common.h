@@ -4,6 +4,7 @@
 #include <QString>
 #include <QStringList>
 #include <QSettings>
+#include <QList>
 
 #include "wickrbotclients.h"
 
@@ -19,6 +20,28 @@
 #define WBIO_CONSOLESERVER_TARGET   "WickrIOCSvr"
 #endif
 
+/**
+ * @brief The WBIOClientApps class
+ * This class is used to identify the applications associated with the known client apps
+ */
+class WBIOClientApps
+{
+public:
+    WBIOClientApps(const QString& bot, const QString& provision) :
+        m_botApp(bot),
+        m_provisionApp(provision) {}
+
+    QString m_botApp;
+    QString m_provisionApp;
+
+    QString bot()       { return m_botApp; }
+    QString provision() { return m_provisionApp; }
+};
+
+/**
+ * @brief The WBIOServerCommon class
+ * This class identifies common WBIO server static functions
+ */
 class WBIOServerCommon
 {
 public:
@@ -27,10 +50,16 @@ public:
     static QSettings *getSettings();
     static QString getDBLocation();
 
+    static void initClientApps();
     static QString getClientProcessName(WickrBotClients *client);
     static QStringList getAvailableClientApps();
+    static QString getProvisionApp(const QString& clientApp);
     static bool isValidClientApp(const QString& binaryName);
 
+private:
+    static bool                     m_initialized;
+    static QList<WBIOClientApps *>  m_botApps;
+    static QStringList              m_bots;
 };
 
 

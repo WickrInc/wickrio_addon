@@ -31,17 +31,15 @@ SOURCES += \
     $$PWD/wickriomessage.cpp \
     $$PWD/wickrbotclientdatabase.cpp
 
-INCLUDEPATH += $${PWD}/$${DEPTH}/shared/common
-INCLUDEPATH += $${PWD}/$${DEPTH}/src
-INCLUDEPATH += $${PWD}/$${DEPTH}/export
-INCLUDEPATH += $${PWD}/$${DEPTH}/libs/WickrProto
+INCLUDEPATH += $${PWD}
+INCLUDEPATH += $${PWD}/../../libs/WickrProto
 
 linux-g++* {
-    INCLUDEPATH += $${PWD}/$${DEPTH}/platforms/linux/include
+    INCLUDEPATH += $${PWD}/../../platforms/linux/include
 }
 
 win32 {
-    INCLUDEPATH += $${PWD}/$${DEPTH}/platforms/win/include
+    INCLUDEPATH += $${PWD}/../../platforms/win/include
 }
 
 linux-g++* {

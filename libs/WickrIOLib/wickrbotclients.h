@@ -27,6 +27,8 @@ public:
     QString sslKeyFile;
     QString sslCertFile;
 
+    bool    onPrem;
+
 public:
     QString getIfaceTypeStr() { return isHttps ? QString("HTTPS") : QString("HTTP"); }
 };

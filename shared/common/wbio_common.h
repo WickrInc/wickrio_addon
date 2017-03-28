@@ -23,6 +23,21 @@
 #define WBIO_CLIENT_WORKINGDIR_FORMAT   "%1/clients/%2"
 #define WBIO_CLIENT_ATTACHDIR_FORMAT    "%1/clients/%2/attachments"
 
+#ifdef Q_OS_WIN
+#define WBIO_DEFAULT_DBLOCATION         TBD
+        dbLocation = QString("%1/%2/%3")
+                .arg(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation))
+                .arg(WBIO_ORGANIZATION)
+                .arg(WBIO_GENERAL_TARGET);
+#else
+#if defined(WICKR_DEBUG)
+#define WBIO_DEFAULT_DBLOCATION         "/opt/WickrIODebug"
+#else
+#define WBIO_DEFAULT_DBLOCATION         "/opt/WickrIO"
+#endif
+#endif
+
+
 /*
  * definitions of the TARGET values. Make sure these are consistent with
  * the TARGET definitions within the .pro files.

@@ -222,7 +222,7 @@ bool CmdClient::getClientValues(WickrIOClients *client)
 
     // Get a unique client name
     do {
-        temp = getNewValue(client->name, tr("Enter an identifying Name for this client"));
+        temp = getNewValue(client->name, tr("Enter an unique Name for this client (this is a local name, not the Wickr ID)"));
 
         // Check if the user wants to quit the action
         if (handleQuit(temp, &quit) && quit) {
@@ -236,35 +236,88 @@ bool CmdClient::getClientValues(WickrIOClients *client)
     } while (chkClientsNameExists(temp));
     client->name = temp;
 
-    // Get a unique user name
-    do {
-        temp = getNewValue(client->user, tr("Enter the user name"));
-
+    // Determine the client type
+    QStringList possibleClientTypes = WBIOServerCommon::getAvailableClientApps();
+    QString binary;
+    if (possibleClientTypes.length() > 1) {
+        temp = getNewValue(client->binary, tr("Enter the bot type"), CHECK_LIST, possibleClientTypes);
         // Check if the user wants to quit the action
         if (handleQuit(temp, &quit) && quit) {
             return false;
         }
+        binary = temp;
+    } else {
+        binary = possibleClientTypes.at(0);
+    }
+    client->binary = binary;
 
-        // Allow the user to re-use the same name if it was previously set
-        if (! client->user.isEmpty()  && client->user == temp) {
-            break;
-        }
-    } while (chkClientsUserExists(temp));
-    client->user = temp;
+    // Time to configure the BOT's username
 
-    // Get the password
-    while (true) {
-        client->password = getNewValue(client->password, tr("Enter the password"));
+    // Determine if the BOT has an executable that will create/provision the user
 
-        // Check if the user wants to quit the action
-        if (handleQuit(client->password, &quit) && quit) {
-            return false;
-        }
+    QString provisionApp = WBIOServerCommon::getProvisionApp(binary);
 
-        if (client->password.isEmpty() || client->password.length() < 4) {
-            qDebug() << "CONSOLE:Password should be at least 4 characters long!";
+    if (provisionApp != nullptr) {
+        QString clientDbDir;
+        QString command = client->binary;
+        QStringList arguments;
+
+        QString configFileName = QString(WBIO_CLIENT_SETTINGS_FORMAT).arg(m_operation->m_dbLocation).arg(client->name);
+        clientDbDir = QString("%1/clients/%2/client").arg(m_operation->m_dbLocation).arg(client->name);
+
+        arguments.append(QString("-config=%1").arg(configFileName));
+        arguments.append(QString("-clientdbdir=%1").arg(clientDbDir));
+        arguments.append(QString("-processname=%1").arg(WBIOServerCommon::getClientProcessName(client)));
+
+        m_exec = new QProcess();
+
+        connect(m_exec, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(slotCmdFinished));
+        connect(m_exec, SIGNAL(finished(int, QProcess::readyReadStandardOutput)), this, SLOT(slotCmdOutputRx));
+
+        m_exec->start(command, arguments);
+
+        if (m_exec->waitForStarted(-1)) {
+            m_exec->waitForFinished(-1);
         } else {
-            break;
+            QByteArray errorout = m_exec->readAllStandardError();
+            if (!errorout.isEmpty()) {
+                qDebug() << "ERRORS" << errorout;
+            }
+            qDebug() << "Exit code=" << m_exec->exitCode();
+        }
+        m_exec->close();
+
+    } else {
+        // Get a unique user name
+        do {
+            temp = getNewValue(client->user, tr("Enter the user name"));
+
+            // Check if the user wants to quit the action
+            if (handleQuit(temp, &quit) && quit) {
+                return false;
+            }
+
+            // Allow the user to re-use the same name if it was previously set
+            if (! client->user.isEmpty()  && client->user == temp) {
+                break;
+            }
+        } while (chkClientsUserExists(temp));
+        client->user = temp;
+
+        // Get the password
+        while (true) {
+            client->password = getNewValue(client->password, tr("Enter the password"));
+
+            // Check if the user wants to quit the action
+            if (handleQuit(client->password, &quit) && quit) {
+                return false;
+            }
+
+            if (client->password.isEmpty() || client->password.length() < 4) {
+                qDebug() << "CONSOLE:Password should be at least 4 characters long!";
+            } else {
+                break;
+            }
         }
     }
 
@@ -444,6 +497,26 @@ bool CmdClient::getClientValues(WickrIOClients *client)
 
     return !quit;
 }
+
+void CmdClient::slotCmdFinished(int, QProcess::ExitStatus)
+{
+    qDebug() << "process completed";
+    m_exec->deleteLater();
+    m_exec = nullptr;
+}
+
+void CmdClient::slotCmdOutputRx()
+{
+    QByteArray output = m_exec->readAll();
+
+    qDebug() << output;
+
+    QTextStream s(stdin);
+    QString lineInput = s.readLine();
+    QByteArray input(lineInput.toUtf8());
+    m_exec->write(input);
+}
+
 
 /**
  * @brief CmdClient::addClient

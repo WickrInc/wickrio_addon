@@ -45,7 +45,7 @@ bool CmdBase::handleQuit(const QString& value, bool *quit)
  * @param check
  * @return
  */
-QString CmdBase::getNewValue(const QString& oldValue, const QString& prompt, CheckType check)
+QString CmdBase::getNewValue(const QString& oldValue, const QString& prompt, CheckType check, QStringList choices)
 {
     QString newValue("");
 
@@ -93,6 +93,18 @@ QString CmdBase::getNewValue(const QString& oldValue, const QString& prompt, Che
             } else {
                 qDebug() << "CONSOLE:Please enter 'yes' or 'no'";
             }
+        } else if (check == CHECK_LIST) {
+            bool found = false;
+            for (QString entry : choices) {
+                if (entry.toLower() == lineInput.toLower()) {
+                    newValue = entry;
+                    found = true;
+                    break;
+                }
+            }
+            if (found)
+                break;
+            qDebug() << "CONSOLE:Please enter one of" << choices;
         } else {
             break;
         }
