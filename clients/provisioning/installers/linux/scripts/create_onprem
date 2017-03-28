@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# a second stage deploy script...
+
+set -e
+current=`dirname $0`
+cd $current
+
+QTVER="5_7_1"
+
+BUILDDIR=build-wickr-wickrio-Desktop_Qt_${QTVER}_GCC_64bit_BUILT-OnPrem
+build_number=`cat ../../../BUILD_NUMBER`
+
+$current/deploy64 $BUILDDIR $build_number onprm OnPrm false

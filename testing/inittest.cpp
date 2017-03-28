@@ -9,7 +9,7 @@
 #include "session/wickrAppClock.h"
 #include "wickrapplication.h"
 #include "common/wickrRuntime.h"
-#include "common/wbio_common.h"
+#include "wbio_common.h"
 
 InitTest::InitTest(int argc, char **argv, QObject *parent) :
     QObject(parent),
@@ -37,7 +37,7 @@ void InitTest::initTestCase()
     }
 
     QString username;
-    QString appname = WBIO_ECLIENT_TARGET;
+    QString appname = WBIO_CLIENT_TARGET;
     QString orgname = WBIO_ORGANIZATION;
 
     wickrProductSetProductType(ClientVersionInfo::getProductType());
@@ -48,7 +48,7 @@ void InitTest::initTestCase()
     bool dbEncrypt = true;
 
     m_operation = new OperationData();
-    m_operation->processName = WBIO_ECLIENT_TARGET;
+    m_operation->processName = WBIO_CLIENT_TARGET;
 
     QString clientDbPath("");
     QString suffix;

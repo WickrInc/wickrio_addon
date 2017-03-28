@@ -1,0 +1,73 @@
+#!/bin/bash
+
+set -e
+
+case "$1" in
+    upgrade)
+        echo "Pre-install upgrade for old version of WickrIO:"
+
+        #
+        # Setup values
+        #
+        tempdir=/opt/WickrIOINSTALLEXT/temp
+        database="/opt/WickrIOINSTALLEXT/wickrbot.database.sqlite"
+
+        #
+        # Make the temporary directory
+        #
+        mkdir -p $tempdir
+
+        #
+        # Save the configuration and INIT files
+        #
+        set +e
+        cp /opt/WickrIOINSTALLEXT/*.ini $tempdir > /dev/null 2>&1 
+        set -e
+
+        #
+        # Stop the WickrIO service
+        #
+        set +e
+        if [ -f $tempdir/svrstate ]; then
+            echo "svrstate already exists!"
+        else
+            systemctl is-active WickrIOSvrINSTALLEXT
+            svrstate=$?
+            echo svrstate=$svrstate
+            echo $svrstate > $tempdir/svrstate
+            if [[ $svrstate -eq 0 ]]; then
+                systemctl stop WickrIOSvrINSTALLEXT
+            fi
+        fi
+        systemctl disable WickrIOSvrINSTALLEXT
+
+        # Remove the startup entry for the service(s)
+#        update-rc.d -f WickrIOSvrINSTALLEXT remove
+        set -e
+
+        #
+        # Stop the WickrIO Console service
+        #
+        set +e
+        if [ -f $tempdir/consvrstate ]; then
+            echo "consvrstate already exists!"
+        else
+            systemctl is-active WickrIOCSvrINSTALLEXT
+            consvrstate=$?
+            echo consvrstate=$consvrstate
+            echo $consvrstate > $tempdir/consvrstate
+            if [[ $consvrstate -eq 0 ]]; then
+                systemctl stop WickrIOCSvrINSTALLEXT
+            fi
+        fi
+        systemctl disable WickrIOCSvrINSTALLEXT
+
+        # Remove the startup entry for the service(s)
+#        update-rc.d -f WickrIOCSvrINSTALLEXT remove
+        set -e
+
+    ;;
+esac    
+
+
+exit 0

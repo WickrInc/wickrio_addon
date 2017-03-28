@@ -1,0 +1,5 @@
+[Unit]
+Description=WickrIO Console server
+
+[Service]
+ExecStart=/usr/sbin/WickrIOCSvrINSTALLEXT -systemd

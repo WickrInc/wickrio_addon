@@ -1,0 +1,87 @@
+#!/bin/bash
+
+set -e
+
+case "$1" in
+    upgrade)
+        echo "Pre-remove for upgrade of WickrIO:"
+
+        #
+        # Setup values
+        #
+        tempdir=/opt/WickrIOINSTALLEXT/temp
+
+        #
+        # Make the temporary directory
+        #
+        mkdir -p $tempdir
+
+        #
+        # Save INI/settings file(s)
+        #
+        set +e
+        cp /opt/WickrIOINSTALLEXT/*.ini $tempdir > /dev/null 2>&1 
+        set -e
+
+        #
+        # Stop the WickrIO service
+        #
+        set +e
+        systemctl is-active WickrIOSvrINSTALLEXT
+        svrstate=$?
+        echo $svrstate > $tempdir/svrstate
+        if [[ $svrstate -eq 0 ]]; then
+            systemctl stop WickrIOSvrINSTALLEXT
+        fi
+        systemctl disable WickrIOSvrINSTALLEXT
+
+        # Remove the startup entry for the service(s)
+        update-rc.d -f WickrIOSvrINSTALLEXT remove
+
+        #
+        # Stop the WickrIO Console service
+        #
+        set +e
+        systemctl is-active WickrIOCSvrINSTALLEXT
+        consvrstate=$?
+        echo $consvrstate > $tempdir/consvrstate
+        if [[ $consvrstate -eq 0 ]]; then
+            systemctl stop WickrIOCSvrINSTALLEXT
+        fi
+        systemctl disable WickrIOCSvrINSTALLEXT
+
+        # Remove the startup entry for the service(s)
+        update-rc.d -f WickrIOCSvrINSTALLEXT remove
+        set -e
+
+
+    ;;
+
+    remove)
+        echo "Removing current installation of WickrIO:"
+
+        #
+        # Stop the WickrIO service
+        #
+        set +e
+        systemctl stop WickrIOSvrINSTALLEXT
+        systemctl disable WickrIOSvrINSTALLEXT
+        # Remove the startup entry for the service(s)
+        update-rc.d -f WickrIOSvrINSTALLEXT remove
+        set -e
+
+        #
+        # Stop the WickrIO Console service
+        #
+        set +e
+        systemctl stop WickrIOCSvrINSTALLEXT
+        systemctl disable WickrIOCSvrINSTALLEXT
+        # Remove the startup entry for the service(s)
+        update-rc.d -f WickrIOCSvrINSTALLEXT remove
+        set -e
+
+    ;;
+esac    
+
+
+exit 0
