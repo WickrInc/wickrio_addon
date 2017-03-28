@@ -460,3 +460,67 @@ void WickrIOEClientMain::slotOnLoginMsgSynchronizationComplete()
                                          false);
 }
 
+#include <QJsonDocument>
+#include "wickr-sdk/wickr-core-c/localRepo/wickr-crypto/unix/include/crypto_engine.h"
+
+QString
+WickrIOEClientMain::decryptData(const QByteArray& filedata, const QString& passphrase)
+{
+    wickr_buffer_t config_buffer = { (size_t)filedata.length(), (uint8_t *)filedata.data() };
+    wickr_buffer_t pass_buffer = { (size_t)passphrase.length(), (uint8_t *)passphrase.toLatin1().data() };
+
+    wickr_crypto_engine_t engine = wickr_crypto_engine_get_default();
+
+    wickr_buffer_t *decrypted = wickr_crypto_engine_kdf_decipher(&engine, &config_buffer, &pass_buffer);
+
+    QString returnString = QString::fromUtf8((char *)decrypted->bytes);
+    return returnString;
+}
+
+void
+WickrIOEClientMain::loadBootstrapFile(const QString& fileName, const QString& passphrase)
+{
+    qDebug() << "The bootstrap file " << fileName << " with the passphrase " << passphrase << " was loaded";
+
+    QFile bootstrap(fileName);
+
+    // Try to decrypt the configuration file
+    if (!bootstrap.open(QIODevice::ReadOnly))
+    {
+        qDebug() << "can't open bootstrap file";
+        return;
+    }
+    QByteArray bootstrapBlob(bootstrap.readAll());
+    bootstrap.close();
+    if (bootstrapBlob.size() == 0)
+        return;
+
+#if 0
+    QString bootstrapStr = cryptoDecryptConfiguration(passphrase, bootstrapBlob);
+#else
+    QString bootstrapStr = decryptData(bootstrapBlob, passphrase);
+#endif
+
+    if (bootstrapStr == NULL || bootstrapStr.isEmpty()) {
+        if (!bootstrap.open(QIODevice::ReadOnly | QIODevice::Text))
+        {
+            qDebug() << "can't open bootstrap file";
+            return;
+        }
+        // try reading the file as a text file
+        bootstrapStr = QString(bootstrap.readAll());
+        bootstrap.close();
+        if (bootstrapStr == NULL || bootstrapStr.isEmpty())
+            return;
+    }
+
+    QJsonDocument d;
+    d = d.fromJson(bootstrapStr.toUtf8());
+    if(WickrCore::WickrRuntime::getEnvironmentMgr()->loadBootStrapJson(d))
+    {
+//        WickrCore::WickrRuntime::getEnvironmentMgr()->storeNetworkConfig(controller->getNetworkSettings());
+    } else {
+        qDebug() << "Incorrect credentials - please try again. Configuration file error";
+    }
+}
+

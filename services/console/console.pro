@@ -65,13 +65,13 @@ QT += network
 QT += sql
 
 HEADERS += \
+    $${COMMON}/cmdbase.h \
     $${SERVER_COMMON}/server_common.h \
     $${SERVER_COMMON}/wickrioconsoleclienthandler.h \
     client.h \
     addclientdialog.h \
     webserver.h \
     cmdadvanced.h \
-    cmdbase.h \
     cmdclient.h \
     cmdconsole.h \
     cmdmain.h \
@@ -83,6 +83,7 @@ HEADERS += \
     configureconsoleserverdialog.h
 
 SOURCES += \
+    $${COMMON}/cmdbase.cpp \
     $${SERVER_COMMON}/server_common.cpp \
     $${SERVER_COMMON}/wickrioconsoleclienthandler.cpp \
     client.cpp \
@@ -90,7 +91,6 @@ SOURCES += \
     addclientdialog.cpp \
     webserver.cpp \
     cmdadvanced.cpp \
-    cmdbase.cpp \
     cmdclient.cpp \
     cmdconsole.cpp \
     cmdmain.cpp \

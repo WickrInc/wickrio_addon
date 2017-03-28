@@ -22,7 +22,7 @@ class CmdMain : public CmdBase
 public:
     explicit CmdMain();
 
-    void runCommands();
+    bool runCommands();
 
 private:
     CmdOperation m_operation;

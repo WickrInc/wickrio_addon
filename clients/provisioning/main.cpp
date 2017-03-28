@@ -18,7 +18,7 @@
 #include "clientversioninfo.h"
 
 #include "wickrIOClientRuntime.h"
-
+#include "cmdProvisioning.h"
 
 #ifdef WICKR_PLUGIN_SUPPORT
 Q_IMPORT_PLUGIN(WickrPlugin)
@@ -32,6 +32,9 @@ extern void wickr_powersetup(void);
 #include "wickrioeclientmain.h"
 #include "wickrioipc.h"
 #include "wickrbotutils.h"
+#include "cmdProvisioning.h"
+
+CmdProvisioning provisioningInput;
 
 // TODO: UPDATE THIS
 static void
@@ -127,6 +130,13 @@ int main(int argc, char *argv[])
             }
         }
     }
+
+    if (!provisioningInput.runCommands()) {
+        exit(1);
+    }
+
+    WickrIOEClientMain::loadBootstrapFile(provisioningInput.m_configFileName, provisioningInput.m_configPassword);
+
 
 #if defined(WICKR_BLACKOUT)
     if (username.isEmpty() || password.isEmpty() || regtoken.isEmpty())

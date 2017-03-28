@@ -24,14 +24,14 @@ CmdMain::CmdMain() :
  * This function handles the input commands for the top level comand input.
  * The user will have to select an area to traverse into or quit.
  */
-void CmdMain::runCommands()
+bool CmdMain::runCommands()
 {
     QTextStream input(stdin);
 
     // If the database location is not set then get it
     if (! m_operation.openDatabase()) {
         qDebug() << "CONSOLE:Cannot open database!";
-        return;
+        return false;
     }
 
     while (true) {
@@ -69,4 +69,5 @@ void CmdMain::runCommands()
             }
         }
     }
+    return true;
 }

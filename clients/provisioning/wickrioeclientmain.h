@@ -39,6 +39,10 @@ public:
 
     static WickrIOEClientMain *theBot;
 
+    static void loadBootstrapFile(const QString& fileName, const QString& passphrase);
+    static QString decryptData(const QByteArray& filedata, const QString& passphrase);
+
+
 private:
     QString m_username;
     QString m_password;

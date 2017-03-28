@@ -6,13 +6,6 @@
 
 #include "cmdbase.h"
 #include "wbio_common.h"
-#include "wickrbotsettings.h"
-#include "consoleserver.h"
-#include "wickrioconsoleclienthandler.h"
-
-CmdBase::CmdBase(QObject *parent) : QObject(parent)
-{
-}
 
 /**
  * @brief CmdBase::handleQuit

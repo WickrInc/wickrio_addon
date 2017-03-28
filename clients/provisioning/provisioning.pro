@@ -106,10 +106,12 @@ RESOURCES += \
     provisioning.qrc
 
 SOURCES += \
+    $${COMMON}/cmdbase.cpp \
     $${COMMON}/wickrbotactiondatabase.cpp \
+    ../common/wickrIOBootstrap.cpp \
+    cmdProvisioning.cpp \
     main.cpp \
     wickrioeclientmain.cpp \
-    wickrIOBootstrap.cpp \
     wickrIOLoginHdlr.cpp \
     wickrIOProvisionHdlr.cpp \
     clientconfigurationinfo.cpp \
@@ -117,7 +119,10 @@ SOURCES += \
     wickrIOClientRuntime.cpp
 
 HEADERS += \
+    $${COMMON}/cmdbase.h \
     $${COMMON}/wickrbotactiondatabase.h \
+    ../common/wickrIOBootstrap.h \
+    cmdProvisioning.h \
     wickrioeclientmain.h \
     wickrIOLoginHdlr.h \
     wickrIOProvisionHdlr.h \
