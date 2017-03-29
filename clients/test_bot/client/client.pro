@@ -12,10 +12,10 @@ CONFIG += console
 wickr_compliance:DEFINES += WICKR_COMPLIANCE=1
 
 CONFIG(release,release|debug) {
-    message(*** WickrIO Compliance Client Release Build)
+    message(*** WickrIO Test Bot Client Release Build)
     BUILD_TYPE=release
 } else {
-    message(*** WickrIO Compliance Client Debug build)
+    message(*** WickrIO Test Bot Client Beta build)
     DEFINES += VERSIONDEBUG
     BUILD_TYPE=debug
 }
@@ -71,7 +71,7 @@ include($${DEPTH}/libs/SMTPEmail/SMTPEmail.pri)
 TEMPLATE = app
 
 CONFIG(release,release|debug) {
-    TARGET = compliance_bot
+    TARGET = test_bot
 
     SOURCES += $${COMMON}/versiondebugNO.cpp
 
@@ -85,10 +85,10 @@ CONFIG(release,release|debug) {
     }
 }
 else {
-    wickr_blackout:TARGET = compliance_botOnPrm
-    else:wickr_beta:TARGET = compliance_botBeta
-    else:wickr_qa:TARGET = compliance_botQA
-    else:TARGET = compliance_botAlpha
+    wickr_blackout:TARGET = test_botOnPrm
+    else:wickr_beta:TARGET = test_botBeta
+    else:wickr_qa:TARGET = test_botQA
+    else:TARGET = test_botAlpha
 
     SOURCES += $${COMMON}/versiondebugYES.cpp
 
@@ -106,7 +106,7 @@ else {
 }
 
 RESOURCES += \
-    compliance_bot.qrc
+    test_bot.qrc
 
 SOURCES += \
     $${COMMON}/wickrbotactiondatabase.cpp \
@@ -116,6 +116,7 @@ SOURCES += \
     wickrioconvohdlr.cpp \
     wickrioreceivethread.cpp \
     wickrIOLoginHdlr.cpp \
+    wickrIOActionHdlr.cpp \
     clientconfigurationinfo.cpp \
     clientversioninfo.cpp \
     wickrIOClientRuntime.cpp \
@@ -128,6 +129,7 @@ HEADERS += \
     wickrioconvohdlr.h \
     wickrioreceivethread.h \
     wickrIOLoginHdlr.h \
+    wickrIOActionHdlr.h \
     wickrbuildnumbers.h \
     clientconfigurationinfo.h \
     clientversioninfo.h \
@@ -171,13 +173,13 @@ macx {
 
 linux-g++* {
     CONFIG(release,release|debug) {
-        QMAKE_RPATHDIR += /usr/lib/wio_compliance_bot
+        QMAKE_RPATHDIR += /usr/lib/wio_test_bot
     }
     else {
-        wickr_blackout:QMAKE_RPATHDIR = /usr/lib/wio_compliance_bot-onprem
-        else:wickr_beta:QMAKE_RPATHDIR = /usr/lib/wio_compliance_bot-beta
-        else:wickr_qa:QMAKE_RPATHDIR = /usr/lib/wio_compliance_bot-qa
-        else:QMAKE_RPATHDIR = /usr/lib/wio_compliance_bot-alpha
+        wickr_blackout:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-onprem
+        else:wickr_beta:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-beta
+        else:wickr_qa:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-qa
+        else:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-alpha
     }
 
     QMAKE_CXXFLAGS += -Wunused-parameter

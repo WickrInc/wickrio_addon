@@ -9,6 +9,8 @@ DEPTH = ../../..
 CONFIG += c++11
 CONFIG += console
 
+wickr_compliance:DEFINES += WICKR_COMPLIANCE=1
+
 CONFIG(release,release|debug) {
     message(*** WickrIO Conformance Provision Release Build)
     BUILD_TYPE=release

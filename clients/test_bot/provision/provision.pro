@@ -12,10 +12,10 @@ CONFIG += console
 wickr_compliance:DEFINES += WICKR_COMPLIANCE=1
 
 CONFIG(release,release|debug) {
-    message(*** WickrIO Compliance Client Release Build)
+    message(*** WickrIO Conformance Provision Release Build)
     BUILD_TYPE=release
 } else {
-    message(*** WickrIO Compliance Client Debug build)
+    message(*** WickrIO Conformance Provision Debug build)
     DEFINES += VERSIONDEBUG
     BUILD_TYPE=debug
 }
@@ -34,7 +34,7 @@ include($${COMMON}/common.pri)
 #
 # Include the Wickr IO common client files
 #
-include($${CLIENTCOMMON}/common.pri)
+#include($${CLIENTCOMMON}/common.pri)
 
 #
 # Include the Wickr IO common HTTP files
@@ -71,7 +71,7 @@ include($${DEPTH}/libs/SMTPEmail/SMTPEmail.pri)
 TEMPLATE = app
 
 CONFIG(release,release|debug) {
-    TARGET = compliance_bot
+    TARGET = provision
 
     SOURCES += $${COMMON}/versiondebugNO.cpp
 
@@ -85,10 +85,10 @@ CONFIG(release,release|debug) {
     }
 }
 else {
-    wickr_blackout:TARGET = compliance_botOnPrm
-    else:wickr_beta:TARGET = compliance_botBeta
-    else:wickr_qa:TARGET = compliance_botQA
-    else:TARGET = compliance_botAlpha
+    wickr_blackout:TARGET = provisionOnPrm
+    else:wickr_beta:TARGET = provisionBeta
+    else:wickr_qa:TARGET = provisionQA
+    else:TARGET = provisionAlpha
 
     SOURCES += $${COMMON}/versiondebugYES.cpp
 
@@ -106,33 +106,33 @@ else {
 }
 
 RESOURCES += \
-    compliance_bot.qrc
+    provisioning.qrc
 
 SOURCES += \
+    $${COMMON}/cmdbase.cpp \
     $${COMMON}/wickrbotactiondatabase.cpp \
+    $${CLIENTCOMMON}/wickrIOBootstrap.cpp \
+    cmdProvisioning.cpp \
     main.cpp \
     wickrioeclientmain.cpp \
-    requesthandler.cpp \
-    wickrioconvohdlr.cpp \
-    wickrioreceivethread.cpp \
     wickrIOLoginHdlr.cpp \
+    wickrIOProvisionHdlr.cpp \
     clientconfigurationinfo.cpp \
     clientversioninfo.cpp \
-    wickrIOClientRuntime.cpp \
-    wickrIOCallbackService.cpp
+    wickrIOClientRuntime.cpp
 
 HEADERS += \
+    $${COMMON}/cmdbase.h \
     $${COMMON}/wickrbotactiondatabase.h \
+    $${CLIENTCOMMON}/wickrIOBootstrap.h \
+    cmdProvisioning.h \
     wickrioeclientmain.h \
-    requesthandler.h \
-    wickrioconvohdlr.h \
-    wickrioreceivethread.h \
     wickrIOLoginHdlr.h \
+    wickrIOProvisionHdlr.h \
     wickrbuildnumbers.h \
     clientconfigurationinfo.h \
     clientversioninfo.h \
-    wickrIOClientRuntime.h \
-    wickrIOCallbackService.h
+    wickrIOClientRuntime.h
 
 # qsqlcipher_wickr
 
@@ -171,13 +171,13 @@ macx {
 
 linux-g++* {
     CONFIG(release,release|debug) {
-        QMAKE_RPATHDIR += /usr/lib/wio_compliance_bot
+        QMAKE_RPATHDIR += /usr/lib/wio_test_bot
     }
     else {
-        wickr_blackout:QMAKE_RPATHDIR = /usr/lib/wio_compliance_bot-onprem
-        else:wickr_beta:QMAKE_RPATHDIR = /usr/lib/wio_compliance_bot-beta
-        else:wickr_qa:QMAKE_RPATHDIR = /usr/lib/wio_compliance_bot-qa
-        else:QMAKE_RPATHDIR = /usr/lib/wio_compliance_bot-alpha
+        wickr_blackout:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-onprem
+        else:wickr_beta:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-beta
+        else:wickr_qa:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-qa
+        else:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-alpha
     }
 
     QMAKE_CXXFLAGS += -Wunused-parameter
