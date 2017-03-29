@@ -68,7 +68,7 @@ private:
 private slots:
     void slotProvisionPageChanged(WickrIOProvisionHdlr::Page page);
 
-    void slogInitiateLogin();
+    void slotInitiateLogin();
     void slotLoginSuccess();
 
     void processStarted();

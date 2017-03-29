@@ -52,6 +52,7 @@ public:
 
     void preRegistrationInit();
     QStringList preRegistrationGetKeyStrings();
+    QByteArray getSigningKey() { return m_userSigningKey; }
 
 private:
     int m_curLoginIndex;
@@ -60,6 +61,7 @@ private:
     int m_consecutiveLoginFailures;
     bool m_firstLogin;
     long m_backupVersion;
+    QByteArray m_userSigningKey;
 
     void loginNextUser();
     void refreshDirectory();

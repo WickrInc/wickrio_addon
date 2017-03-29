@@ -3,6 +3,7 @@
 #include "filetransfer/wickrCloudTransferMgr.h"
 #include "session/wickrRegistrationCtx.h"
 #include "common/wickrRuntime.h"
+#include "user/wickrUser.h"
 
 #include "clientversioninfo.h"
 
@@ -229,6 +230,11 @@ void WickrIOLoginHdlr::slotLoginDone(WickrLoginContext *ls)
     if (ls->isSuccess()) {
         qDebug() << "Login successful";
         m_loginState = LoggedIn;
+
+        // Need to display the Keys
+        WickrCore::WickrUser *selfUser = WickrCore::WickrUser::getSelfUser();
+        m_userSigningKey = selfUser->getUserSigningKey();
+
         emit signalLoginSuccess();
 
     } else {

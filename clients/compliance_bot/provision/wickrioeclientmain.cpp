@@ -240,6 +240,14 @@ void WickrIOEClientMain::slotRemoveFromRoom(const QString& vGroupID)
  */
 void WickrIOEClientMain::slotLoginSuccess()
 {
+    QByteArray userSKey = m_loginHdlr.getSigningKey();
+    qDebug() << "CONSOLE:********************************************************************";
+    qDebug() << "CONSOLE:**** USER SIGNING KEY";
+    qDebug() << "CONSOLE:**** You will need this to enter into the console for the Bot";
+    qDebug() << "CONSOLE:****";
+    qDebug() << "CONSOLE:" << QString(userSKey.toHex());
+    qDebug() << "CONSOLE:********************************************************************";
+
     emit signalLoginSuccess();
 }
 
@@ -348,7 +356,7 @@ void WickrIOEClientMain::stopAndExit(int procState)
 //    QCoreApplication::exit(1);
 }
 
-void WickrIOEClientMain::slogInitiateLogin()
+void WickrIOEClientMain::slotInitiateLogin()
 {
     m_loginHdlr.initiateLogin();
 }
