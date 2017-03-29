@@ -122,6 +122,12 @@ int main(int argc, char *argv[])
 
     if (clientDbPath.isEmpty()) {
         clientDbPath = QString("%1/clients/%2/client").arg(WBIO_DEFAULT_DBLOCATION).arg(client.name);
+
+        QDir clientDb(clientDbPath);
+        if (!clientDb.exists()) {
+            QDir dir = QDir::root();
+            dir.mkpath(clientDbPath);
+        }
     }
     if (wbConfigFile.isEmpty()) {
         wbConfigFile = QString(WBIO_CLIENT_SETTINGS_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client.name);

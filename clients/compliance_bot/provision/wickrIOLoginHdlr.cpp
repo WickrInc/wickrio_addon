@@ -61,6 +61,34 @@ QStringList WickrIOLoginHdlr::preRegistrationGetKeyStrings()
 }
 
 /**
+ * @brief WickrIOLoginHdlr::slotRegisterOnPrem
+ */
+void WickrIOLoginHdlr::slotRegisterOnPrem(const QString &username, const QString &password, const QString &newPassword, const QString &salt, const QString &transactionid, bool newUser, bool sync)
+{
+    QString hash = !salt.isEmpty() ? cryptoGetHash(password, salt) : QString();
+    qDebug() << "Password Hash=" << hash;
+
+    WickrEnterpriseRegistrationParameters regParams(username, transactionid, hash);
+    WickrPreRegistrationData *preRegData;
+    if (m_preRegDataIface != NULL) {
+        preRegData = m_preRegDataIface->getPreRegData();
+    } else {
+        preRegData = NULL;
+    }
+
+    WickrRegisterUserContext *c = new WickrRegisterUserContext(username, newPassword, QString(), WickrUtil::getDeviceIdentifier(), WickrUtil::getDeviceHost(), newUser, sync, false, regParams, preRegData);
+    c->putArg(arg_USERID,    username );
+    c->putArg(arg_PASSWORD,  newPassword );
+    if (!hash.isEmpty()) {
+        c->putArg(arg_CHALLENGE, hash);
+    }
+
+    connect(c, &WickrRegisterUserContext::signalRequestCompleted,
+            this, &WickrIOLoginHdlr::slotRegistrationDone, Qt::QueuedConnection);
+    WickrCore::WickrRuntime::taskSvcMakeRequest(c);
+}
+
+/**
  * @brief wickrMain::slotRegisterEnterprise
  * @param wickrid
  * @param password
@@ -68,7 +96,7 @@ QStringList WickrIOLoginHdlr::preRegistrationGetKeyStrings()
  * @param sync
  * @param isRekey
  */
-void WickrIOLoginHdlr::registerUser(const QString &wickrid, const QString &password, const QString &transactionid, bool newUser, bool sync, bool isRekey)
+void WickrIOLoginHdlr::slotRegisterUser(const QString &wickrid, const QString &password, const QString &transactionid, bool newUser, bool sync, bool isRekey)
 {
     WickrEnterpriseRegistrationParameters regParams(wickrid, transactionid, NULL);
     WickrPreRegistrationData *preRegData;
@@ -115,7 +143,7 @@ void WickrIOLoginHdlr::initiateLogin()
             } else {
                 qDebug() << "Starting registration to create user " << userid;
 
-                registerUser(userid, password, transid, true, false, false);
+                slotRegisterUser(userid, password, transid, true, false, false);
             }
         } else {
             // If the database exists then just login
@@ -125,7 +153,7 @@ void WickrIOLoginHdlr::initiateLogin()
                 slotLoginStart(userid, password);
             } else {
                 QString transID;
-                registerUser(userid, password, transID, false, true, false);
+                slotRegisterUser(userid, password, transID, false, true, false);
             }
         }
     }
@@ -176,7 +204,7 @@ void WickrIOLoginHdlr::slotLoginStart(const QString& username, const QString& pa
             QString unused = "UNUSED";
             QString user = username;
             QString pass = password;
-            registerUser(user, pass, unused, false, true, false);
+            slotRegisterUser(user, pass, unused, false, true, false);
         }
         return;
     }

@@ -143,6 +143,15 @@ void WickrIOEClientMain::processStarted()
                 &WickrIOProvisionHdlr::signalPageChanged,
                 this,
                 &WickrIOEClientMain::slotProvisionPageChanged);
+
+        connect(provhdlr,
+                &WickrIOProvisionHdlr::signalRegisterOnPrem,
+                &m_loginHdlr,
+                &WickrIOLoginHdlr::slotRegisterOnPrem);
+        connect(provhdlr,
+                &WickrIOProvisionHdlr::signalRegisterEnterprise,
+                &m_loginHdlr,
+                &WickrIOLoginHdlr::slotRegisterUser);
     }
 
     // Start the provisioning here
@@ -195,8 +204,6 @@ void WickrIOEClientMain::slotProvisionPageChanged(WickrIOProvisionHdlr::Page pag
         break;
     }
 }
-
-
 
 void WickrIOEClientMain::slotDeleteRoom(const QString& vGroupID, bool selfInitiated)
 {

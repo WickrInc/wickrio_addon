@@ -93,7 +93,8 @@ void WickrIOProvisionHdlr::startNextStep(WickrProvisionUserContext *ctx)
     case Step::finished:
         if (m_mode == OnPremMode) {
             if (m_changePassword) {
-                switchToPage(Page::enterPassword);
+                registerWithPassword(m_password);
+//                switchToPage(Page::enterPassword);
             } else {
                 registerWithPassword(m_password);
             }

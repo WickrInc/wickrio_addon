@@ -68,9 +68,6 @@ private:
 
     WickrCore::WickrPreRegistrationIface *m_preRegDataIface;
 
-
-    void registerUser(const QString &wickrid, const QString &password, const QString &transactionid, bool newUser, bool sync, bool isRekey);
-
 signals:
     void signalExit();
     void signalLoginFailed();
@@ -86,6 +83,10 @@ private slots:
     void slotRefreshDirectoryDone(WickrDirectoryGetContext* context);
 
     void slotLoginStart(const QString& username, const QString& password);
+
+public slots:
+    void slotRegisterOnPrem(const QString &username, const QString &password, const QString &newPassword, const QString &salt, const QString &transactionid, bool newUser, bool sync);
+    void slotRegisterUser(const QString &wickrid, const QString &password, const QString &transactionid, bool newUser, bool sync, bool isRekey);
 
 };
 
