@@ -133,19 +133,6 @@ WickrBotDatabase::createRelationalTables()
         query.finish();
     }
 
-    // Check if the HTTPS/SSL fields have been added, to this table.
-    QSqlQuery tstQuery(m_db);
-    tstQuery.prepare("SELECT isHttps from clients");
-    tstQuery.exec();
-    if (!tstQuery.isActive()) {
-        if (!runSimpleQuery("ALTER TABLE clients ADD COLUMN isHttps int DEFAULT 0") ||
-            !runSimpleQuery("ALTER TABLE clients ADD COLUMN sslKeyFile text DEFAULT ''") ||
-            !runSimpleQuery("ALTER TABLE clients ADD COLUMN sslCertFile text DEFAULT ''")) {
-            qDebug() << "Could not alter clients table!";
-        }
-    }
-    tstQuery.finish();
-
     // Check if the action cache table exists already, if not create it
     if (! m_db.tables().contains(QLatin1String(DB_ACTION_TABLE))) {
         QSqlQuery query(m_db);
@@ -986,6 +973,7 @@ WickrBotDatabase::updateClientsRecord(WickrBotClients *client, bool insertIfNotE
     if (!query.exec(queryString)) {
         QSqlError error = query.lastError();
         qDebug() << "updateClientsRecord: SQL error" << error;
+        qDebug() << "queryString:" << queryString;
         query.finish();
         return false;
     }

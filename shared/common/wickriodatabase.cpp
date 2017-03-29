@@ -700,21 +700,25 @@ WickrIOClientDatabase::insertClientsRecord(WickrIOClients *client) {
     bool retval = false;
     if (initialized) {
         if (WickrBotDatabase::insertClientsRecord(client)) {
-            // Update the wickrIO fields of the client record
-            QString queryString = "UPDATE clients SET console_id = ? WHERE id = ?";
-            QSqlQuery *query = new QSqlQuery(m_db);
-            query->prepare(queryString);
-            query->bindValue(0, client->console_id);
-            query->bindValue(1, client->id);
+            if (client->console_id > 0) {
+                // Update the wickrIO fields of the client record
+                QString queryString = "UPDATE clients SET console_id = ? WHERE id = ?";
+                QSqlQuery *query = new QSqlQuery(m_db);
+                query->prepare(queryString);
+                query->bindValue(0, client->console_id);
+                query->bindValue(1, client->id);
 
-            if ( !query->exec()) {
-                qDebug() << "updateClientsRecord: Could not update clients of console user, Error=" << query->lastError();
+                if ( !query->exec()) {
+                    qDebug() << "updateClientsRecord: Could not update clients of console user, Error=" << query->lastError();
+                } else {
+                    int numRows = query->numRowsAffected();
+                    retval = (numRows > 0);
+                }
+                query->finish();
+                delete query;
             } else {
-                int numRows = query->numRowsAffected();
-                retval = (numRows > 0);
+                retval = true;
             }
-            query->finish();
-            delete query;
         }
     }
 
