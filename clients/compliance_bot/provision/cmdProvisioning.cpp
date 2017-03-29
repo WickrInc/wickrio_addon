@@ -20,6 +20,9 @@ bool CmdProvisioning::runCommands()
 
     bool quitcheck;
 
+    // Need to have a valid compliance bot running
+
+
 #if 1
     // Force client type to onprem for now
     m_client->onPrem = true;

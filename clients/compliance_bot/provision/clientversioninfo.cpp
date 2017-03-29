@@ -51,5 +51,5 @@ QString ClientVersionInfo::getBuildString()
 
 QString ClientVersionInfo::getAppName()
 {
-    return QStringLiteral(WBIO_CLIENT_TARGET);
+    return QStringLiteral(WBIO_PROVISION_TARGET);
 }
