@@ -33,11 +33,9 @@ WickrIOEClientMain *WickrIOEClientMain::theBot;
  * the m_logins list is set with those logins. Logging is started, counts initialized and SLOTS
  * are setup to receive specific SIGNALs
  */
-WickrIOEClientMain::WickrIOEClientMain(const QString& username, const QString& password, const QString& invite, bool onprem) :
-    m_username(username),
-    m_password(password),
-    m_invite(invite),
-    m_onprem(onprem)
+WickrIOEClientMain::WickrIOEClientMain(WickrIOClients *client, const QString& invite) :
+    m_client(client),
+    m_invite(invite)
 {
     this->connect(this, &WickrIOEClientMain::started, this, &WickrIOEClientMain::processStarted);
     this->connect(this, &WickrIOEClientMain::signalExit, this, &WickrIOEClientMain::stopAndExitSlot);
@@ -155,10 +153,10 @@ void WickrIOEClientMain::processStarted()
     }
 
     // Start the provisioning here
-    if (m_onprem) {
-        WickrIOClientRuntime::provHdlrBeginOnPrem(m_username, m_password, m_invite);
+    if (m_client->onPrem) {
+        WickrIOClientRuntime::provHdlrBeginOnPrem(m_client->user, m_client->password, m_invite);
     } else {
-        WickrIOClientRuntime::provHdlrBeginCloud(m_username, m_invite);
+        WickrIOClientRuntime::provHdlrBeginCloud(m_client->user, m_invite);
     }
 }
 
@@ -190,11 +188,24 @@ void WickrIOEClientMain::slotProvisionPageChanged(WickrIOProvisionHdlr::Page pag
         break;
     case WickrIOProvisionHdlr::enterPassword:
         qDebug() << "enterPassword";
-        provhdlr->setPassword(m_password);
+        if (m_client->onPrem) {
+            // Generate the password
+            m_client->password = WickrIOTokens::getRandomString(24);
+            qDebug() << "CONSOLE:********************************************************************";
+            qDebug() << "CONSOLE:**** GENERATED PASSWORD";
+            qDebug() << "CONSOLE:**** DO NOT LOOSE THIS PASSWORD, YOU WILL NEED TO ENTER IT EVERY TIME";
+            qDebug() << "CONSOLE:**** TO START THE BOT";
+            qDebug() << "CONSOLE:****";
+            qDebug() << "CONSOLE:" << m_client->password;
+            qDebug() << "CONSOLE:********************************************************************";
+            provhdlr->registerWithPassword(m_client->password);
+        } else {
+            provhdlr->setPassword(m_client->password);
 
-        // At this point login
-        m_loginHdlr.addLogin(m_username, m_password, provhdlr->transactionID(), true);
-        m_loginHdlr.initiateLogin();
+            // At this point login
+            m_loginHdlr.addLogin(m_client->user, m_client->password, provhdlr->transactionID(), true);
+            m_loginHdlr.initiateLogin();
+        }
         break;
     case WickrIOProvisionHdlr::askContactsPermission:
         qDebug() << "askContactsPermission";

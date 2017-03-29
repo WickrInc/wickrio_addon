@@ -30,7 +30,7 @@ bool CmdProvisioning::runCommands()
     // Get the client type
     while (true) {
         QString clienttype;
-        clienttype = getNewValue(m_clientType, tr("Enter the client type"));
+        clienttype = getNewValue(m_clientType, tr("CONSOLE:Enter the client type"));
         if (clienttype.toLower() == "cloud") {
             m_clientType = clienttype;
             m_client->onPrem = false;
@@ -60,22 +60,25 @@ bool CmdProvisioning::runCommands()
                 m_configFileName = line;
                 break;
             }
-            qDebug() << "Config file does not exist!";
+            qDebug() << "CONSOLE:Config file does not exist!";
         }
 
         m_configPassword = CmdBase::getNewValue(m_configPassword, "Enter config password", CHECK_NONE);
 
         m_client->user = CmdBase::getNewValue(m_client->user, "Enter user name", CHECK_NONE);
+        m_client->password = CmdBase::getNewValue(m_client->password, "Enter initial password", CHECK_NONE);
 
+#if 0
         // Generate the password
-        qDebug() << "********************************************************************";
-        qDebug() << "**** GENERATED PASSWORD";
-        qDebug() << "**** DO NOT LOOSE THIS PASSWORD, YOU WILL NEED TO ENTER IT EVERY TIME";
-        qDebug() << "**** TO START THE BOT";
-        qDebug() << "****";
         m_client->password = WickrIOTokens::getRandomString(24);
-        qDebug() << m_client->password;
-        qDebug() << "********************************************************************";
+        qDebug() << "CONSOLE:********************************************************************";
+        qDebug() << "CONSOLE:**** GENERATED PASSWORD";
+        qDebug() << "CONSOLE:**** DO NOT LOOSE THIS PASSWORD, YOU WILL NEED TO ENTER IT EVERY TIME";
+        qDebug() << "CONSOLE:**** TO START THE BOT";
+        qDebug() << "CONSOLE:****";
+        qDebug() << "CONSOLE:" << m_client->password;
+        qDebug() << "CONSOLE:********************************************************************";
+#endif
 
         // For now use the user name as the local name
         m_client->name = m_client->user;

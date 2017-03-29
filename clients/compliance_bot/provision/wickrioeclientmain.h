@@ -32,7 +32,7 @@ class WickrIOEClientMain : public QThread
 
     friend class WickrIOConvoHdlr;
 public:
-    WickrIOEClientMain(const QString& username, const QString& password, const QString& invite, bool onprem=false);
+    WickrIOEClientMain(WickrIOClients* client, const QString& invite);
     ~WickrIOEClientMain();
 
     bool startTheClient();
@@ -42,10 +42,8 @@ public:
     static void loadBootstrapFile(const QString& fileName, const QString& passphrase);
 
 private:
-    QString m_username;
-    QString m_password;
+    WickrIOClients *m_client;
     QString m_invite;
-    bool    m_onprem;
 
     WickrIOLoginHdlr m_loginHdlr;
 

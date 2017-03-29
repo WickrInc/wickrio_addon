@@ -96,14 +96,15 @@ Client::Client(QWidget *parent) :
                 }
 
                 WickrIOClients *updateClient = m_ioDB->getClientUsingName(name);
-
-                // Delete the process_state entry
-                QString processName = WBIOServerCommon::getClientProcessName(updateClient);
-                if (! m_ioDB->deleteProcessState(processName)) {
-                    WickrBotMessageBox *msg = new WickrBotMessageBox(this);
-                    msg->addButton(tr("OK"), 0);
-                    msg->setText(tr("Failed to delete client's process state record for %1").arg(name));
-                    msg->exec();
+                if (updateClient) {
+                    // Delete the process_state entry
+                    QString processName = WBIOServerCommon::getClientProcessName(updateClient);
+                    if (! m_ioDB->deleteProcessState(processName)) {
+                        WickrBotMessageBox *msg = new WickrBotMessageBox(this);
+                        msg->addButton(tr("OK"), 0);
+                        msg->setText(tr("Failed to delete client's process state record for %1").arg(name));
+                        msg->exec();
+                    }
                 }
 
                 updateClientsList();

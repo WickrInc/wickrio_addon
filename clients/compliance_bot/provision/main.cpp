@@ -28,10 +28,13 @@ Q_IMPORT_PLUGIN(WickrPlugin)
 extern void wickr_powersetup(void);
 #endif
 
+#ifdef Q_OS_LINUX
+#include <unistd.h>
+#endif
+
 #include "wickrioeclientmain.h"
 #include "wickrioipc.h"
 #include "wickrbotutils.h"
-#include "cmdProvisioning.h"
 
 WickrIOClients  client;
 CmdProvisioning provisioningInput(&client);
@@ -48,10 +51,27 @@ usage()
     exit(0);
 }
 
+void redirectedOutput(QtMsgType type, const QMessageLogContext &, const QString & str)
+{
+    if (type == QtMsgType::QtDebugMsg) {
+        if (str.startsWith("CONSOLE:")) {
+            QString outstr = str.right(str.length()-8);
+            QTextStream(stdout) << outstr << endl;
+        }
+    }
+}
+
 Q_IMPORT_PLUGIN(QSQLCipherDriverPlugin)
 
 int main(int argc, char *argv[])
 {
+#ifdef Q_OS_LINUX
+    if (getuid()) {
+        qDebug() << "You must be root to run this program!";
+        exit(0);
+    }
+#endif
+
     QCoreApplication *app = NULL;
 
     Q_INIT_RESOURCE(provisioning);
@@ -74,6 +94,7 @@ int main(int argc, char *argv[])
     WickrURLs::setDefaultBaseURL(ClientConfigurationInfo::DefaultBaseURL);
 
     bool dbEncrypt = true;
+    bool debugOutput = false;
 
     QString clientDbPath("");
     QString suffix;
@@ -89,6 +110,8 @@ int main(int argc, char *argv[])
         } else if (cmd.startsWith("-suffix")) {
             suffix = cmd.remove("-suffix=");
             WickrUtil::setTestAccountMode(suffix);
+        } else if (cmd == "-debug") {
+            debugOutput = true;
         }
     }
 
@@ -111,7 +134,12 @@ int main(int argc, char *argv[])
         }
     }
 
-    // Get input from the user
+    if (!debugOutput)
+        qInstallMessageHandler(redirectedOutput);
+
+    /*
+     * Get input from the user
+     */
     if (!provisioningInput.runCommands()) {
         exit(1);
     }
@@ -217,9 +245,9 @@ int main(int argc, char *argv[])
     if (client.onPrem) {
         QString networkToken = WickrCore::WickrRuntime::getEnvironmentMgr()->networkToken();
 
-        WICKRBOT = new WickrIOEClientMain(client.user, client.password, networkToken, true);
+        WICKRBOT = new WickrIOEClientMain(&client, networkToken);
     } else {
-        WICKRBOT = new WickrIOEClientMain(client.user, client.password, provisioningInput.m_invitation);
+        WICKRBOT = new WickrIOEClientMain(&client, provisioningInput.m_invitation);
     }
 
     /*
@@ -234,8 +262,8 @@ int main(int argc, char *argv[])
      * the Web API requests.
      */
     QObject::connect(WICKRBOT, &WickrIOEClientMain::signalLoginSuccess, [=]() {
-        qDebug() << "Successfully logged in as new user!";
-        qDebug() << "Our work is done here, logging off!";
+        qDebug() << "CONSOLE:Successfully logged in as new user!";
+        qDebug() << "CONSOLE:Our work is done here, logging off!";
         app->quit();
     });
     WICKRBOT->start();
@@ -248,9 +276,24 @@ int main(int argc, char *argv[])
     // TODO: Need to add an entry into the client record table
     WickrIOClientDatabase *m_ioDB = new WickrIOClientDatabase(WBIO_DEFAULT_DBLOCATION);
     if (!m_ioDB->isOpen()) {
-        qDebug() << "cannot open database!";
-    } else {
-        m_ioDB->insertClientsRecord(&client);
+        qDebug() << "CONSOLE:cannot open database!";
+        return retval;
+    }
+    if (!m_ioDB->insertClientsRecord(&client)) {
+        qDebug() << "CONSOLE:cannot create client record!";
+        return retval;
+    }
+
+#if 0
+    QString processName = WBIOServerCommon::getClientProcessName(newClient);
+#else
+    QString processName = QString("%1.%2").arg(client.binary).arg(client.name);
+#endif
+
+    // Set the state of the client process to paused
+    if (! m_ioDB->updateProcessState(processName, 0, PROCSTATE_PAUSED)) {
+        qDebug() << "CONSOLE:Could not create process state record!";
+        return retval;
     }
 
     return retval;
