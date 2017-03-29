@@ -10,6 +10,10 @@ CONFIG += c++11
 CONFIG += console
 
 wickr_compliance:DEFINES += WICKR_COMPLIANCE=1
+wickr_compliance_bot {
+    DEFINES += WICKR_COMPLIANCE_BOT=1
+    DEFINES += WICKR_COMPLIANCE=1
+}
 
 CONFIG(release,release|debug) {
     message(*** WickrIO Conformance Provision Release Build)
