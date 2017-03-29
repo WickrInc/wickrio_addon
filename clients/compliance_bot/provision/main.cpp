@@ -270,31 +270,29 @@ int main(int argc, char *argv[])
 
     int retval = app->exec();
 
-    WICKRBOT->deleteLater();
-
 
     // TODO: Need to add an entry into the client record table
     WickrIOClientDatabase *m_ioDB = new WickrIOClientDatabase(WBIO_DEFAULT_DBLOCATION);
     if (!m_ioDB->isOpen()) {
         qDebug() << "CONSOLE:cannot open database!";
-        return retval;
-    }
-    if (!m_ioDB->insertClientsRecord(&client)) {
+    } else if (!m_ioDB->insertClientsRecord(&client)) {
         qDebug() << "CONSOLE:cannot create client record!";
         return retval;
-    }
+    } else {
 
 #if 0
-    QString processName = WBIOServerCommon::getClientProcessName(newClient);
+        QString processName = WBIOServerCommon::getClientProcessName(newClient);
 #else
-    QString processName = QString("%1.%2").arg(client.binary).arg(client.name);
+        QString processName = QString("%1.%2").arg(client.binary).arg(client.name);
 #endif
 
-    // Set the state of the client process to paused
-    if (! m_ioDB->updateProcessState(processName, 0, PROCSTATE_PAUSED)) {
-        qDebug() << "CONSOLE:Could not create process state record!";
-        return retval;
+        // Set the state of the client process to paused
+        if (! m_ioDB->updateProcessState(processName, 0, PROCSTATE_PAUSED)) {
+            qDebug() << "CONSOLE:Could not create process state record!";
+        }
     }
+
+    WICKRBOT->deleteLater();
 
     return retval;
 }
