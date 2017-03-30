@@ -32,6 +32,8 @@ abs=`pwd`
 pwd=`basename $abs`
 pwd="../$pwd"
 
+qtype="CONFIG+=wickr_compliance_bot"
+
 case "$platform" in
 Darwin)
     if test -z "$QTDIR" ; then
@@ -117,7 +119,7 @@ case "$platform" in
 osx)
     echo "DONE!"
 #    set -e
-#    (cd $build ; qmake ../wickr-wickrio.pro $qmake)
+#    (cd $build ; qmake ../wickr-wickrio.pro $qmake $qtype)
 #    (cd $build ; $BUILD_CMD)
     ;;
 linux)
@@ -126,7 +128,7 @@ linux)
     make update
     make linux.release
     make linux.release.install
-    (cd $build ; qmake ../wickr-wickrio.pro $qmake)
+    (cd $build ; qmake ../wickr-wickrio.pro $qmake $qtype)
     (cd $build ; $BUILD_CMD)
     ;;
 win32)
@@ -136,7 +138,7 @@ win32)
 #    make update
 #    make win32.release
 #    make win32.release.install
-#    (cd $build ; qmake ../wickr-wickrio.pro $qmake)
+#    (cd $build ; qmake ../wickr-wickrio.pro $qmake $qtype)
 #    (cd $build ; $BUILD_CMD)
     ;;
 esac
