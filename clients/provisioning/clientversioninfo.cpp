@@ -51,6 +51,11 @@ QString ClientVersionInfo::getBuildString()
     return (QStringLiteral("build ") + QString::number(BUILD_NUMBER%100));
 }
 
+QString ClientVersionInfo::getOrgName()
+{
+    return "Wickr, LLC";
+}
+
 QString ClientVersionInfo::getAppName()
 {
     return QStringLiteral(WBIO_CLIENT_TARGET);

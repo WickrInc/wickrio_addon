@@ -206,6 +206,8 @@ AddClientDialog::addClient()
             return;
         }
     } else {
+        client.id = m_client->id;
+
         // If the user has changed the name then check for uniqueness
         if (m_client->name.toLower() != client.name.toLower()) {
             test = m_ioDB->getClientUsingName(client.name);
@@ -259,7 +261,6 @@ AddClientDialog::addClient()
         }
 
         // Update the client record
-        client.id = m_client->id;
         if (! m_ioDB->updateClientsRecord(&client, false)) {
             WickrBotMessageBox *msg = new WickrBotMessageBox(this);
             msg->addButton(tr("OK"), 0);

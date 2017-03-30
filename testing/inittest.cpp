@@ -97,7 +97,12 @@ void InitTest::initTestCase()
 
     // Wickr Runtime Environment (all applications include this line)
     WickrAppContext::initialize(clientDbPath);
-    WickrCore::WickrRuntime::init(secureJson, isDebug);
+    WickrCore::WickrRuntime::init(m_argc, m_argv,
+                                  ClientVersionInfo::getProductType(),
+                                  ClientVersionInfo::getOrgName(),
+                                  ClientVersionInfo::getAppName(),
+                                  ClientConfigurationInfo::DefaultBaseURL,
+                                  isDebug);
 
     WickrDBAdapter::setDatabaseEncryptedStatus(dbEncrypt);
 

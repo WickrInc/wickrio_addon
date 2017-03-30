@@ -6,6 +6,7 @@
 class ClientVersionInfo {
 public:
     static QString getAppName();
+    static QString getOrgName();
     static QString getPlatform();
     static int getProductType();
 
