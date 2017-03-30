@@ -32,7 +32,8 @@ WickrIOEClientMain *WickrIOEClientMain::theBot;
 WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
     m_operation(operation),
     m_loginHdlr(operation),
-    m_wickrIPC(0)
+    m_wickrIPC(0),
+    m_timerStatsTicker(0)
 {
     if( isVERSIONDEBUG() ) {
         m_operation->cleanUpSecs = 20;
@@ -355,6 +356,14 @@ void WickrIOEClientMain::slotDoTimerWork()
 {
     if (m_wickrIPC != NULL && m_wickrIPC->isRunning()) {
         m_wickrIPC->check();
+    }
+
+    m_timerStatsTicker++;
+
+    // Update the Process status
+    if ((m_timerStatsTicker % WICKRBOT_UPDATE_PROCESS_SECS) == 0) {
+        m_operation->log("Updating process state");
+        m_operation->updateProcessState(PROCSTATE_RUNNING);
     }
 }
 

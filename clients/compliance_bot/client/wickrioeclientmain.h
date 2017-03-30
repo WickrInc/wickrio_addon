@@ -27,6 +27,7 @@
 #define WICKRBOT_CONFIG_DORECEIVE   "doreceive"
 #define WICKRBOT_CONFIG_SERVERNAME  "servername"
 
+#define WICKRBOT_UPDATE_PROCESS_SECS    60
 
 class WickrIOEClientMain : public QThread
 {
@@ -61,6 +62,7 @@ private:
     WickrIOLoginHdlr m_loginHdlr;
 
     QTimer timer;
+    int m_timerStatsTicker;
     QString m_serverName;
 
     WickrBotMainIPC *m_wickrIPC;
