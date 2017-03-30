@@ -18,6 +18,7 @@
 
 #include "wickrIOClientRuntime.h"
 #include "cmdProvisioning.h"
+#include "wickrIOBootstrap.h"
 
 #ifdef WICKR_PLUGIN_SUPPORT
 Q_IMPORT_PLUGIN(WickrPlugin)
@@ -147,8 +148,15 @@ int main(int argc, char *argv[])
     client.binary = WBIO_BOT_TARGET;
 
     // Load the bootstrap file
-    // TODO: Need to save an encrypted version of the file
-    WickrIOEClientMain::loadBootstrapFile(provisioningInput.m_configFileName, provisioningInput.m_configPassword);
+    QString bootstrapString = WickrIOBootstrap::readFile(provisioningInput.m_configFileName, provisioningInput.m_configPassword);
+
+    if (bootstrapString == nullptr) {
+        qDebug() << "CONSOLE:Cannot read the bootstrap file!";
+        exit(1);
+    }
+    // Will need to save the bootstrap file once we get the real password
+    WickrIOEClientMain::loadBootstrapString(bootstrapString);
+
 
     if (clientDbPath.isEmpty()) {
         clientDbPath = QString("%1/clients/%2/client").arg(WBIO_DEFAULT_DBLOCATION).arg(client.name);
@@ -192,48 +200,6 @@ int main(int argc, char *argv[])
     QString logname = QString(WBIO_CLIENT_LOGFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client.name);
     QString attachDir = QString(WBIO_CLIENT_ATTACHDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client.name);
 
-    // save setup information to the settings file
-    QSettings * settings = new QSettings(wbConfigFile, QSettings::NativeFormat, app);
-
-    settings->beginGroup(WBSETTINGS_USER_HEADER);
-    settings->setValue(WBSETTINGS_USER_USER, client.user);
-    settings->setValue(WBSETTINGS_USER_PASSWORD, client.password);      //TODO: THIS NEEDS TO BE REMOVED
-    settings->endGroup();
-
-    settings->beginGroup(WBSETTINGS_DATABASE_HEADER);
-    settings->setValue(WBSETTINGS_DATABASE_DIRNAME, clientDbPath);
-    settings->endGroup();
-
-    settings->beginGroup(WBSETTINGS_LOGGING_HEADER);
-    settings->setValue(WBSETTINGS_LOGGING_FILENAME, logname);
-    settings->endGroup();
-
-#if 0
-    settings->beginGroup(WBSETTINGS_LISTENER_HEADER);
-    settings->setValue(WBSETTINGS_LISTENER_PORT, newClient->port);
-    // If using localhost interface then do not need the host entry in the settings
-    if (newClient->iface == "localhost") {
-        settings->remove(WBSETTINGS_LISTENER_IF);
-    } else {
-        settings->setValue(WBSETTINGS_LISTENER_IF, newClient->iface);
-    }
-    // If is HTTPS then save the SSL settings, otherwise remove them
-    if (newClient->isHttps) {
-        settings->setValue(WBSETTINGS_LISTENER_SSLKEY, newClient->sslKeyFile);
-        settings->setValue(WBSETTINGS_LISTENER_SSLCERT, newClient->sslCertFile);
-    } else {
-        settings->remove(WBSETTINGS_LISTENER_SSLKEY);
-        settings->remove(WBSETTINGS_LISTENER_SSLCERT);
-    }
-    settings->endGroup();
-#endif
-    settings->beginGroup(WBSETTINGS_ATTACH_HEADER);
-    settings->setValue(WBSETTINGS_ATTACH_DIRNAME, attachDir);
-    settings->endGroup();
-
-
-    settings->sync();
-
     /*
      * Start the wickrIO Client Runtime
      */
@@ -270,6 +236,64 @@ int main(int argc, char *argv[])
 
     int retval = app->exec();
 
+    // save setup information to the settings file
+    QSettings * settings = new QSettings(wbConfigFile, QSettings::NativeFormat, app);
+
+    settings->beginGroup(WBSETTINGS_USER_HEADER);
+    settings->setValue(WBSETTINGS_USER_USER, client.user);
+    settings->setValue(WBSETTINGS_USER_PASSWORD, client.password);      //TODO: THIS NEEDS TO BE REMOVED
+    settings->endGroup();
+
+#ifdef Q_OS_WIN
+    QString dbLocation = QString("%1/%2/%3")
+            .arg(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation))
+            .arg(WBIO_ORGANIZATION)
+            .arg(WBIO_GENERAL_TARGET);
+#else
+    QString dbLocation = QString("%1").arg(WBIO_DEFAULT_DBLOCATION);
+#endif
+
+    settings->beginGroup(WBSETTINGS_DATABASE_HEADER);
+    settings->setValue(WBSETTINGS_DATABASE_DIRNAME, dbLocation);
+    settings->endGroup();
+
+    settings->beginGroup(WBSETTINGS_LOGGING_HEADER);
+    settings->setValue(WBSETTINGS_LOGGING_FILENAME, logname);
+    settings->endGroup();
+
+#if 0
+    settings->beginGroup(WBSETTINGS_LISTENER_HEADER);
+    settings->setValue(WBSETTINGS_LISTENER_PORT, newClient->port);
+    // If using localhost interface then do not need the host entry in the settings
+    if (newClient->iface == "localhost") {
+        settings->remove(WBSETTINGS_LISTENER_IF);
+    } else {
+        settings->setValue(WBSETTINGS_LISTENER_IF, newClient->iface);
+    }
+    // If is HTTPS then save the SSL settings, otherwise remove them
+    if (newClient->isHttps) {
+        settings->setValue(WBSETTINGS_LISTENER_SSLKEY, newClient->sslKeyFile);
+        settings->setValue(WBSETTINGS_LISTENER_SSLCERT, newClient->sslCertFile);
+    } else {
+        settings->remove(WBSETTINGS_LISTENER_SSLKEY);
+        settings->remove(WBSETTINGS_LISTENER_SSLCERT);
+    }
+    settings->endGroup();
+#endif
+    settings->beginGroup(WBSETTINGS_ATTACH_HEADER);
+    settings->setValue(WBSETTINGS_ATTACH_DIRNAME, attachDir);
+    settings->endGroup();
+
+
+    settings->sync();
+
+
+
+    // Need to save the bootstrap file
+    QString bootstrapFilename = clientDbPath + "/bootstrap";
+    if (!WickrIOBootstrap::encryptAndSave(bootstrapString, bootstrapFilename, client.password)) {
+        qDebug() << "CONSOLE:Problem encrypting config reil";
+    }
 
     // TODO: Need to add an entry into the client record table
     WickrIOClientDatabase *m_ioDB = new WickrIOClientDatabase(WBIO_DEFAULT_DBLOCATION);

@@ -15,7 +15,7 @@
 
 #include "clientconfigurationinfo.h"
 #include "clientversioninfo.h"
-
+#include "wickrIOBootstrap.h"
 #include "wickrIOClientRuntime.h"
 
 
@@ -305,6 +305,17 @@ int main(int argc, char *argv[])
     if (!WICKRBOT->parseSettings(settings)) {
         qDebug() << "Problem parsing Config file!";
         exit(1);
+    }
+
+    //  Read in the bootstrap file
+    QString bootstrapFilename = clientDbPath + "/bootstrap";
+    if (QFile::exists(bootstrapFilename)) {
+        QString bootstrapString = WickrIOBootstrap::readFile(bootstrapFilename, WICKRBOT->m_password);
+        if (bootstrapString == nullptr) {
+            qDebug() << "Cannot read the bootstrap file!";
+            exit(1);
+        }
+        WickrIOEClientMain::loadBootstrapString(bootstrapString);
     }
 
     /*

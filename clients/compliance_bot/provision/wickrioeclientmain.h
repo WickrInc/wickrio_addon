@@ -39,7 +39,7 @@ public:
 
     static WickrIOEClientMain *theBot;
 
-    static void loadBootstrapFile(const QString& fileName, const QString& passphrase);
+    static bool loadBootstrapString(const QString& bootstrapStr);
 
 private:
     WickrIOClients *m_client;

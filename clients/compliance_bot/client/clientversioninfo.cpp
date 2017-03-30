@@ -20,7 +20,9 @@ QString ClientVersionInfo::getPlatform()
 
 int ClientVersionInfo::getProductType()
 {
-#ifdef WICKR_SCIF
+#ifdef WICKR_COMPLIANCE_BOT
+    return PRODUCT_TYPE_BOT;
+#elif WICKR_SCIF
     return PRODUCT_TYPE_SKIF;
 #else
     return PRODUCT_TYPE_PRO;

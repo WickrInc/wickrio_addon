@@ -399,7 +399,6 @@ void WickrIOEClientMain::slotSwitchboardServiceState(WickrServiceState state, co
 /**
  * @brief WickrIOEClientMain::slotMessageServiceState
  * @param state
- * @param text
  */
 void WickrIOEClientMain::slotMessageServiceState(WickrServiceState state)
 {
@@ -489,45 +488,20 @@ void WickrIOEClientMain::slotOnLoginMsgSynchronizationComplete()
                                          false);
 }
 
-void
-WickrIOEClientMain::loadBootstrapFile(const QString& fileName, const QString& passphrase)
+/**
+ * @brief WickrIOEClientMain::loadBootstrapString
+ * Take the decrypted bootstrap string and call the environment manager to apply
+ * @param bootstrapStr
+ * @return
+ */
+bool
+WickrIOEClientMain::loadBootstrapString(const QString& bootstrapStr)
 {
-    qDebug() << "The bootstrap file " << fileName << " with the passphrase " << passphrase << " was loaded";
-
-    QFile bootstrap(fileName);
-
-    // Try to decrypt the configuration file
-    if (!bootstrap.open(QIODevice::ReadOnly))
-    {
-        qDebug() << "can't open bootstrap file";
-        return;
-    }
-    QByteArray bootstrapBlob(bootstrap.readAll());
-    bootstrap.close();
-    if (bootstrapBlob.size() == 0)
-        return;
-
-    QString bootstrapStr = cryptoDecryptConfiguration(passphrase, bootstrapBlob);
-    if (bootstrapStr == NULL || bootstrapStr.isEmpty()) {
-        if (!bootstrap.open(QIODevice::ReadOnly | QIODevice::Text))
-        {
-            qDebug() << "can't open bootstrap file";
-            return;
-        }
-        // try reading the file as a text file
-        bootstrapStr = QString(bootstrap.readAll());
-        bootstrap.close();
-        if (bootstrapStr == NULL || bootstrapStr.isEmpty())
-            return;
-    }
-
     QJsonDocument d;
     d = d.fromJson(bootstrapStr.toUtf8());
-    if(WickrCore::WickrRuntime::getEnvironmentMgr()->loadBootStrapJson(d))
+    if (!WickrCore::WickrRuntime::getEnvironmentMgr()->loadBootStrapJson(d))
     {
-//        WickrCore::WickrRuntime::getEnvironmentMgr()->storeNetworkConfig(controller->getNetworkSettings());
-    } else {
         qDebug() << "Incorrect credentials - please try again. Configuration file error";
     }
+    return false;
 }
-

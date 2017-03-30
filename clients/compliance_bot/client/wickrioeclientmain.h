@@ -44,10 +44,17 @@ public:
     // Parse the settings file (replaces the JSON config file)
     bool parseSettings(QSettings *settings);
 
+    QString getPassword();
+
     // Function to set connection to the IPC signals
     void setIPC(WickrBotMainIPC *ipc);
 
     WickrIOConvoHdlr m_convoHdlr;
+
+    QString m_username;
+    QString m_password;
+
+    static bool loadBootstrapString(const QString& bootstrapStr);
 
 private:
     OperationData *m_operation;

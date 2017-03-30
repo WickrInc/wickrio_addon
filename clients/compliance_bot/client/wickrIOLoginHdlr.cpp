@@ -175,7 +175,11 @@ void WickrIOLoginHdlr::slotLoginStart(const QString& username, const QString& pa
                 return;
             }
 
-            // TODO: Do we need to handle this?
+            // Should not hit this!  The user should be provisioned by the provision executable!
+#if 0
+            UserSelfProvisioningHelper *userprovision = wickrMain::get()->getQuickMain()->getUserSelfProvisioningHelper();
+            userprovision->onPremBegin(username, password, networkToken);
+#endif
         } else {
             // No DB or wrong DB so try existing user registration
             QString unused = "UNUSED";

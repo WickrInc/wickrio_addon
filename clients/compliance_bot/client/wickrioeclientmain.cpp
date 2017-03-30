@@ -607,6 +607,10 @@ bool WickrIOEClientMain::parseSettings(QSettings *settings)
     }
     m_loginHdlr.addLogin(username, password);
 
+    // Save for use in main
+    m_username = username;
+    m_password = password;
+
     settings->endGroup();
 
     /*
@@ -624,6 +628,26 @@ bool WickrIOEClientMain::parseSettings(QSettings *settings)
     WickrURLs::setBaseURL(m_serverName);
 
     settings->endGroup();
+
     return true;
 }
+
+/**
+ * @brief WickrIOEClientMain::loadBootstrapString
+ * Take the decrypted bootstrap string and call the environment manager to apply
+ * @param bootstrapStr
+ * @return
+ */
+bool
+WickrIOEClientMain::loadBootstrapString(const QString& bootstrapStr)
+{
+    QJsonDocument d;
+    d = d.fromJson(bootstrapStr.toUtf8());
+    if (!WickrCore::WickrRuntime::getEnvironmentMgr()->loadBootStrapJson(d))
+    {
+        qDebug() << "Incorrect credentials - please try again. Configuration file error";
+    }
+    return false;
+}
+
 

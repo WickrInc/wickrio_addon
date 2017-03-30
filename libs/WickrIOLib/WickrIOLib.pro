@@ -21,6 +21,7 @@ mac {
 
 linux-g++* {
     CONFIG += staticlib
+    INCLUDEPATH += $$DEPTH/wickr-sdk/platforms/linux/include
 }
 
 win32 {
@@ -35,11 +36,15 @@ CONFIG(debug, debug|release) {
     unix:!mac:  TARGET = $$join(TARGET,,,d)
 }
 
+INCLUDEPATH += $$DEPTH/wickr-sdk/export
+INCLUDEPATH += $$DEPTH/wickr-sdk/src
+INCLUDEPATH += $$DEPTH/wickr-sdk/export/Wickr
 
 INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
 
 HEADERS += \
+    wickrIOBootstrap.h \
     wickrbotactioncache.h \
     wickrbotattachmentcache.h \
     wickrbotclients.h \
@@ -58,6 +63,7 @@ HEADERS += \
     wickrbotstatistics.h
 
 SOURCES += \
+    wickrIOBootstrap.cpp \
     wickrbotdatabase.cpp \
     wickrbotprocessstate.cpp \
     wickrbotjsondata.cpp \

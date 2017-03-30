@@ -108,7 +108,6 @@ RESOURCES += \
 SOURCES += \
     $${COMMON}/cmdbase.cpp \
     $${COMMON}/wickrbotactiondatabase.cpp \
-    ../common/wickrIOBootstrap.cpp \
     cmdProvisioning.cpp \
     main.cpp \
     wickrioeclientmain.cpp \
@@ -121,7 +120,6 @@ SOURCES += \
 HEADERS += \
     $${COMMON}/cmdbase.h \
     $${COMMON}/wickrbotactiondatabase.h \
-    ../common/wickrIOBootstrap.h \
     cmdProvisioning.h \
     wickrioeclientmain.h \
     wickrIOLoginHdlr.h \
