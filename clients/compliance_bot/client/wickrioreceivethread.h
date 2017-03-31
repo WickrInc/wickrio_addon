@@ -14,6 +14,16 @@
 #include "messaging/wickrMessage.h"
 #include "filetransfer//wickrFileInfo.h"
 
+#include "common/wickrMessageMgr.h"
+
+class WickrIOReceiverMgr : public WickrMessageMgr
+{
+public:
+    WickrIOReceiverMgr() {}
+
+    bool dispatch(WickrCore::WickrInbox *msg);
+};
+
 class WickrIORxDownloadFile
 {
 public:
@@ -58,6 +68,8 @@ public:
     }
 
 private:
+    WickrIOReceiverMgr m_msgReceiver;
+
     OperationData *m_operation;
     bool m_enableSwitchboard;
     bool m_receiving;
@@ -74,6 +86,9 @@ private:
         m_messagesRecvFailed = 0;
     }
 
+    bool processKeyVerificationMsg(QJsonObject& jsonObject,  WickrCore::WickrMessage *msg);
+    bool processControlMsg(QJsonObject& jsonObject,  WickrCore::WickrMessage *msg);
+
     QString getAttachmentFile(const QByteArray &data, QString extension);
 
     // File Download definitions
@@ -82,11 +97,14 @@ private:
     void startSwitchboard();
     void stopSwitchboard();
     void initMessageServicesConnections();
+#if 0
     void attachConvos();
     void detachConvos();
 
     void attachConvosMessages(WickrNotifyList *msgList);
     void detachConvosMessages(WickrNotifyList *msgList);
+#endif
+
     bool processMessage(WickrDBObject *item);
 
 protected:
@@ -95,11 +113,11 @@ protected:
 
 private slots:
     void slotProcessMessage(WickrDBObject *item);
-
+#if 0
     void slotConvoAdded(WickrDBObject *item, bool existing = false);
     void slotConvoChanged(WickrDBObject *item);
     void slotConvoDeleted(WickrDBObject *inItem);
-
+#endif
 signals:
     void signalProcessStarted();
     void signalReceivingStarted();

@@ -44,6 +44,7 @@
 #define APIPARAM_ATYPE_BASIC    "basic"
 #define APIPARAM_ATYPE_EMAIL    "email"
 
+#define APIJSON_MSGTYPE         "msgtype"
 #define APIJSON_STATE           "state"
 #define APIJSON_CLIENT          "client"
 #define APIJSON_CLIENTS         "clients"
@@ -94,6 +95,15 @@
 #define APIJSON_STATID_ERRSRX   "recv_errors"
 #define APIJSON_STATID_PENDING  "pending_messages"
 #define APIJSON_STATID_MSGCNT   "message_count"
+
+#define APIJSON_KEYVER_TITLE    "keyverify"
+#define APIJSON_KEYVER_MSGTYPE  "msgtype"
+#define APIJSON_KEYVER_KEY      "key"
+#define APIJSON_KEYVER_HASH     "hash"
+#define APIJSON_KEYVER_REPLY    "reply"
+#define APIJSON_KEYVER_ACCEPT   "accept"
+#define APIJSON_KEYVER_REASON   "reason"
+#define APIJSON_KEYVER_VERKEY   "verifiedkey"
 
 #define APIJSON_UTYPE_ADMIN     "admin"
 #define APIJSON_UTYPE_USER      "user"

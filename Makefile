@@ -1,6 +1,6 @@
 WICKR_SDK = wickr-sdk
 LOCALREPO = localRepo/$(WICKR_SDK)
-SDK_BRANCH = wickr-wickrio
+SDK_BRANCH = kickass-publisher
 
 ifeq ($(OS),Windows_NT)
     DIR := $(subst C:,,${CURDIR})

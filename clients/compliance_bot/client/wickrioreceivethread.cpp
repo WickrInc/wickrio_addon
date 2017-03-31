@@ -10,11 +10,14 @@
 #include "filetransfer/wickrCloudTransferMgr.h"
 #include "common/wickrRuntime.h"
 #include "user/wickrKeyVerificationMgr.h"
+#include "user/wickrKeyVerificationMessage.h"
 
 #include "common/wickrNotifyList.h"
 
 #include "wickrIOMsgEmailService.h"
 #include "wickrIOClientRuntime.h"
+
+#include "common/wickrRuntime.h"
 
 #define WICKRBOT_UPDATE_STATS_SECS      600
 
@@ -35,6 +38,12 @@ WickrIOReceiveThread::~WickrIOReceiveThread()
     }
 }
 
+bool WickrIOReceiverMgr::dispatch(WickrCore::WickrInbox *msg)
+{
+    qDebug() << "GOT A MESSAGE";
+    return true;
+}
+
 
 void WickrIOReceiveThread::processStarted()
 {
@@ -45,6 +54,8 @@ void WickrIOReceiveThread::processStarted()
     startSwitchboard();
 
     emit signalProcessStarted();
+
+    WickrCore::WickrRuntime::registerMessageManager(&m_msgReceiver);
 }
 
 
@@ -144,6 +155,8 @@ WickrIOReceiveThread::processMessage(WickrDBObject *item)
             bool processMsg = true;
 
             WickrMsgClass mclass = msg->getMsgClass();
+            jsonObject.insert(APIJSON_MSGTYPE, msg->getMessageType());
+
             if( mclass == MsgClass_Text ) {
                 QString txt = msg->getCachedText();
                 jsonObject.insert(APIJSON_MESSAGE, txt);
@@ -151,6 +164,14 @@ WickrIOReceiveThread::processMessage(WickrDBObject *item)
             } else if (mclass == MsgClass_File) {
                 // File needs to be processed before it can be deleted
                 deleteMsg = false;
+            } else if (mclass == MsgClass_KeyVerification) {
+                if (!processKeyVerificationMsg(jsonObject,  msg)) {
+                    //TODO: what to do if this returns false
+                }
+            } else if (mclass == MsgClass_Control) {
+                if (!processControlMsg(jsonObject,  msg)) {
+                    //TODO: what to do if this returns false
+                }
             } else {
                 processMsg = false;
             }
@@ -302,6 +323,37 @@ WickrIOReceiveThread::processMessage(WickrDBObject *item)
     return deleteMsg;
 }
 
+bool
+WickrIOReceiveThread::processKeyVerificationMsg(QJsonObject& jsonObject,  WickrCore::WickrMessage *msg)
+{
+    WickrCore::WickrKeyVerificationMessage *kvMsg = WickrCore::WickrKeyVerificationMessage::constructKeyVerificationMessage(msg->getMsgBody());
+    QJsonObject verifyJsonObject;
+
+    verifyJsonObject.insert(APIJSON_KEYVER_MSGTYPE, kvMsg->getMsgType());
+
+    if (!kvMsg->getKey().isEmpty()) {
+        verifyJsonObject.insert(APIJSON_KEYVER_KEY, QString(kvMsg->getKey().toHex()));
+    }
+    if (!kvMsg->getHash().isEmpty()) {
+        verifyJsonObject.insert(APIJSON_KEYVER_HASH, kvMsg->getHash());
+    }
+    if (!kvMsg->getReason().isEmpty()) {
+        verifyJsonObject.insert(APIJSON_KEYVER_REASON, kvMsg->getReason());
+    }
+    if (!kvMsg->getVerifiedKey().isEmpty()) {
+        verifyJsonObject.insert(APIJSON_KEYVER_VERKEY, QString(kvMsg->getVerifiedKey().toHex()));
+    }
+
+    jsonObject.insert(APIJSON_KEYVER_TITLE, verifyJsonObject);
+    return true;
+}
+
+bool
+WickrIOReceiveThread::processControlMsg(QJsonObject& jsonObject,  WickrCore::WickrMessage *msg)
+{
+    return true;
+}
+
 QString
 WickrIOReceiveThread::getAttachmentFile(const QByteArray &data, QString extension)
 {
@@ -336,9 +388,10 @@ void WickrIOReceiveThread::startReceiving()
 {
     if (! m_receiving) {
         m_receiving = true;
-
+#if 0
         m_convoList = WickrCore::WickrConvo::getConvoList();
         attachConvos();
+#endif
     }
     emit signalReceivingStarted();
 }
@@ -346,15 +399,18 @@ void WickrIOReceiveThread::startReceiving()
 void WickrIOReceiveThread::stopReceiving()
 {
     if (m_receiving) {
+#if 0
         if (m_convoList != NULL) {
             detachConvos();
             m_convoList = NULL;
         }
+#endif
         m_receiving = false;
     }
     emit signalReceivingEnded();
 }
 
+#if 0
 void WickrIOReceiveThread::attachConvos()
 {
     if (m_convoList) {
@@ -449,6 +505,7 @@ void WickrIOReceiveThread::detachConvosMessages(WickrNotifyList *msgList)
 //    disconnect(msgList, SIGNAL(deletedItem(WickrDBObject*)), this, SLOT(slotConvoMessageDeleted(WickrDBObject*)));
 }
 
+#endif
 
 
 
