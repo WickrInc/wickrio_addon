@@ -16,14 +16,6 @@
 
 #include "common/wickrMessageMgr.h"
 
-class WickrIOReceiverMgr : public WickrMessageMgr
-{
-public:
-    WickrIOReceiverMgr() {}
-
-    bool dispatch(WickrCore::WickrInbox *msg);
-};
-
 class WickrIORxDownloadFile
 {
 public:
@@ -45,27 +37,60 @@ public:
 };
 
 
+/**
+ * @brief The WickrIOReceiverMgr class
+ * This class handles the messages received from the Message manager
+ */
+class WickrIOReceiverMgr : public WickrMessageMgr
+{
+public:
+    WickrIOReceiverMgr();
+
+    bool dispatch(WickrCore::WickrInbox *msg);
+
+    int messagesReceived() {
+        int msgs = m_messagesRecv;
+        m_messagesRecv = 0;
+        return msgs;
+    }
+    int messagesFailed() {
+        int failed = m_messagesRecvFailed;
+        m_messagesRecvFailed = 0;
+        return failed;
+    }
+
+private:
+    OperationData *m_operation;
+
+    // File Download definitions
+    QMap<QString, WickrIORxDownloadFile *> m_activeDownloads;
+
+    int m_messagesRecv;
+    int m_messagesDropped;
+    int m_messagesRecvFailed;
+
+    // Process inbound messages
+    bool processKeyVerificationMsg(QJsonObject& jsonObject,  WickrCore::WickrInbox *msg);
+    bool processControlMsg(QJsonObject& jsonObject,  WickrCore::WickrInbox *msg);
+    bool processFileMsg(QJsonObject& jsonObject,  WickrCore::WickrInbox *msg);
+
+};
+
+
+/**
+ * @brief The WickrIOReceiveThread class
+ * This class controls the receive thread, which controls the WickrIO Message
+ * Manager object.
+ */
 class WickrIOReceiveThread : public WickrIOThread
 {
     Q_OBJECT
 public:
-    WickrIOReceiveThread(OperationData *operation);
+    WickrIOReceiveThread();
     ~WickrIOReceiveThread();
 
-    Q_INVOKABLE void startReceiving();
-    Q_INVOKABLE void stopReceiving();
-
-    Q_INVOKABLE void logCounts()
-    {
-        if (m_messagesRecv > 0) {
-            m_operation->log("Messages received", m_messagesRecv);
-            m_messagesRecv = 0;
-        }
-        if (m_messagesRecvFailed > 0) {
-            m_operation->log("Messages received failed", m_messagesRecvFailed);
-            m_messagesRecvFailed = 0;
-        }
-    }
+    Q_INVOKABLE void slotStartReceiving();
+    Q_INVOKABLE void slotStopReceiving();
 
 private:
     WickrIOReceiverMgr m_msgReceiver;
@@ -75,49 +100,16 @@ private:
     bool m_receiving;
     int m_timerStatsTicker;
 
-    // Used to process incoming messages
-    WickrConvoList *m_convoList;
-
-    int m_messagesRecv;
-    int m_messagesRecvFailed;
-    void initCounts()
-    {
-        m_messagesRecv = 0;
-        m_messagesRecvFailed = 0;
-    }
-
-    bool processKeyVerificationMsg(QJsonObject& jsonObject,  WickrCore::WickrMessage *msg);
-    bool processControlMsg(QJsonObject& jsonObject,  WickrCore::WickrMessage *msg);
-
     QString getAttachmentFile(const QByteArray &data, QString extension);
-
-    // File Download definitions
-    QMap<QString, WickrIORxDownloadFile *> m_activeDownloads;
 
     void startSwitchboard();
     void stopSwitchboard();
-    void initMessageServicesConnections();
-#if 0
-    void attachConvos();
-    void detachConvos();
-
-    void attachConvosMessages(WickrNotifyList *msgList);
-    void detachConvosMessages(WickrNotifyList *msgList);
-#endif
-
-    bool processMessage(WickrDBObject *item);
 
 protected:
     void processStarted();
     void onTimerAction();
 
 private slots:
-    void slotProcessMessage(WickrDBObject *item);
-#if 0
-    void slotConvoAdded(WickrDBObject *item, bool existing = false);
-    void slotConvoChanged(WickrDBObject *item);
-    void slotConvoDeleted(WickrDBObject *inItem);
-#endif
 signals:
     void signalProcessStarted();
     void signalReceivingStarted();
