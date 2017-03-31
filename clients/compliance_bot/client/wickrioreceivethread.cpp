@@ -89,7 +89,7 @@ WickrIOReceiveThread::slotStartReceiving()
         m_receiving = true;
 
         // hook in to receive messages, let the show begin!
-//        WickrCore::WickrRuntime::registerMessageManager(&m_msgReceiver);
+        WickrCore::WickrRuntime::registerMessageManager(&m_msgReceiver);
     }
     emit signalReceivingStarted();
 }
@@ -127,7 +127,7 @@ WickrIOReceiverMgr::WickrIOReceiverMgr() :
     m_messagesDropped(0),
     m_messagesRecvFailed(0)
 {
-//    m_operation = WickrIOClientRuntime::operationData();
+    m_operation = WickrIOClientRuntime::operationData();
 }
 
 /**
