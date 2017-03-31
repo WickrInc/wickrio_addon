@@ -43,7 +43,7 @@ WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
         m_operation->startRcvSecs = 2;
     }
 
-    m_rxThread = new WickrIOReceiveThread(operation);
+    m_rxThread = new WickrIOReceiveThread();
 
     this->connect(this, &WickrIOEClientMain::started, this, &WickrIOEClientMain::processStarted);
     this->connect(this, &WickrIOEClientMain::signalExit, this, &WickrIOEClientMain::stopAndExitSlot);
@@ -234,7 +234,9 @@ void WickrIOEClientMain::slotDatabaseLoadDone(WickrDatabaseLoadContext *context)
 void WickrIOEClientMain::slotRxProcessStarted()
 {
     connect(m_rxThread, &WickrIOReceiveThread::signalReceivingStarted, this, &WickrIOEClientMain::slotRxProcessReceiving, Qt::QueuedConnection);
-    QMetaObject::invokeMethod(m_rxThread, "startReceiving", Qt::QueuedConnection);
+
+    //TODO: Change this to the clientruntime model
+    QMetaObject::invokeMethod(m_rxThread, "slotStartReceiving", Qt::QueuedConnection);
 }
 
 void WickrIOEClientMain::slotRxProcessReceiving()
@@ -385,7 +387,8 @@ void WickrIOEClientMain::stopAndExit(int procState)
 
 //    WickrService::requestLogoff();
 
-    QMetaObject::invokeMethod(m_rxThread, "stopReceiving", Qt::QueuedConnection);
+    // TODO: Change to the clientruntime model
+    QMetaObject::invokeMethod(m_rxThread, "slotStopReceiving", Qt::QueuedConnection);
 
     if (m_rxThread->m_threadState != Idle) {
         // TODO: Need to make sure the callbackservice is done

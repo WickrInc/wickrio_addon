@@ -126,7 +126,7 @@ void WickrIOLoginHdlr::initiateLogin()
 {
     if (m_consecutiveLoginFailures >= m_logins.size()) {
         m_loginState = LoginsFailed;
-        emit signalExit();
+        emit signalLoginFailed();
     } else {
         m_loginState = InProcess;
         QString userid = m_logins.at(m_curLoginIndex)->m_name;
@@ -140,7 +140,7 @@ void WickrIOLoginHdlr::initiateLogin()
             // If the database already exists then cannot do a Registration!
             if( WickrDBAdapter::doesDBExist() ) {
                 qDebug() << "Creating user will fail because DB already exists!";
-                emit signalExit();
+                emit signalLoginFailed();
             } else {
                 qDebug() << "Starting registration to create user " << userid;
 

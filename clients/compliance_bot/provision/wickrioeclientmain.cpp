@@ -35,13 +35,15 @@ WickrIOEClientMain *WickrIOEClientMain::theBot;
  */
 WickrIOEClientMain::WickrIOEClientMain(WickrIOClients *client, const QString& invite) :
     m_client(client),
-    m_invite(invite)
+    m_invite(invite),
+    m_loginSuccess(true)
 {
     this->connect(this, &WickrIOEClientMain::started, this, &WickrIOEClientMain::processStarted);
     this->connect(this, &WickrIOEClientMain::signalExit, this, &WickrIOEClientMain::stopAndExitSlot);
 
     this->connect(&m_loginHdlr, &WickrIOLoginHdlr::signalExit, this, &WickrIOEClientMain::stopAndExitSlot);
     this->connect(&m_loginHdlr, &WickrIOLoginHdlr::signalLoginSuccess, this, &WickrIOEClientMain::slotLoginSuccess);
+    this->connect(&m_loginHdlr, &WickrIOLoginHdlr::signalLoginFailed, this, &WickrIOEClientMain::slotLoginFailure);
 
     WickrSwitchboardService *swbsvc = WickrCore::WickrRuntime::swbSvc();
     WickrMessageService *msgsvc = WickrCore::WickrRuntime::msgSvc();
@@ -249,6 +251,12 @@ void WickrIOEClientMain::slotLoginSuccess()
     qDebug() << "CONSOLE:********************************************************************";
 
     emit signalLoginSuccess();
+}
+
+void WickrIOEClientMain::slotLoginFailure()
+{
+    m_loginSuccess = false;
+    emit signalLoginFailure();
 }
 
 /**

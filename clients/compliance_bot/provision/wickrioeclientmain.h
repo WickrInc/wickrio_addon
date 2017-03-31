@@ -41,6 +41,8 @@ public:
 
     static bool loadBootstrapString(const QString& bootstrapStr);
 
+    bool loginSuccess() { return m_loginSuccess; }
+
 private:
     WickrIOClients *m_client;
     QString m_invite;
@@ -49,6 +51,8 @@ private:
 
     QTimer timer;
     QString m_serverName;
+
+    bool m_loginSuccess;
 
     // Timer definitions
     void startTimer()
@@ -70,6 +74,7 @@ private slots:
 
     void slotInitiateLogin();
     void slotLoginSuccess();
+    void slotLoginFailure();
 
     void processStarted();
     void stopAndExitSlot();
@@ -95,6 +100,7 @@ signals:
     void signalStarted();
     void signalExit();
     void signalLoginSuccess();
+    void signalLoginFailure();
 
     void signalMessageCheck(WickrApplicationState appContext);
 };
