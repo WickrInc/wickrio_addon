@@ -242,15 +242,128 @@ WickrIOReceiverMgr::processKeyVerificationMsg(QJsonObject& jsonObject,  WickrCor
         verifyJsonObject.insert(APIJSON_KEYVER_VERKEY, QString(kvMsg->getVerifiedKey().toHex()));
     }
 
-    jsonObject.insert(APIJSON_KEYVER_TITLE, verifyJsonObject);
+    jsonObject.insert(APIJSON_KEYVER_HEADER, verifyJsonObject);
     return true;
 }
 
 bool
 WickrIOReceiverMgr::processControlMsg(QJsonObject& jsonObject,  WickrCore::WickrInbox *msg)
 {
+    WickrCore::WickrControlMessage *ctrlMsg = WickrCore::WickrControlMessage::constructControlMessage(msg->getMsgBody());
+    if (!ctrlMsg)
+        return false;
+
+    switch (ctrlMsg->getMsgType()) {
+    case WickrCore::WickrControlMessage::CREATEROOM:
+        return processCreateSecureRoomMsg(jsonObject, (WickrCore::WickrGroupControlCreateSecureRoom *)ctrlMsg);
+    case WickrCore::WickrControlMessage::CHANGEMEMBERS:
+        break;
+    case WickrCore::WickrControlMessage::LEAVE:
+        break;
+    case WickrCore::WickrControlMessage::CHANGEPARMS:
+        return processChangeRoomConfigMsg(jsonObject, (WickrCore::WickrGroupControlChangeRoomConfiguration *)ctrlMsg);
+    case WickrCore::WickrControlMessage::DELETEROOM:
+        break;
+    case WickrCore::WickrControlMessage::SYNC_RECOVERY_REQ:
+        break;
+    case WickrCore::WickrControlMessage::SYNC_RECOVERY_RSP:
+        break;
+    case WickrCore::WickrControlMessage::SYNC_HISTORY_REQ:
+        break;
+    case WickrCore::WickrControlMessage::SYNC_HISTORY_RSP:
+        break;
+    default:
+        return false;
+    }
+
     return true;
 }
+
+bool
+WickrIOReceiverMgr::processCreateRoomBase(QJsonObject& jsonObject,  WickrCore::WickrGroupControlCreateSecureRoom *ctrlMsg)
+{
+    QJsonArray members;
+    for (WickrCore::WickrMemberInfo *mbr : ctrlMsg->getMembers()) {
+#if 0
+        QJsonObject member;
+
+        member.insert(APIJSON_CTRL_MBRUID, mbr->getUid());
+        member.insert(APIJSON_CTRL_MBRUNAME, mbr->getUname());
+        member.insert(APIJSON_CTRL_MBRUKEY, QString(mbr->getUkey().toHex()));
+        members.append(member);
+#else
+        members.append(mbr->getUname());
+#endif
+    }
+    jsonObject.insert(APIJSON_CTRL_MEMBERS, members);
+
+    QJsonArray masters;
+    for (QString mstr: ctrlMsg->getMastersList()) {
+        // Find the member entry in the memberlist
+        for (WickrCore::WickrMemberInfo *mbr : ctrlMsg->getMembers()) {
+            if (mbr->getUid() == mstr) {
+                masters.append(mbr->getUname());
+                break;
+            }
+        }
+    }
+    jsonObject.insert(APIJSON_CTRL_MASTERS, masters);
+
+    jsonObject.insert(APIJSON_CTRL_TTL, ctrlMsg->getDestructionTime());
+    jsonObject.insert(APIJSON_CTRL_BOR, ctrlMsg->getBORTime());
+    jsonObject.insert(APIJSON_CTRL_TITLE, ctrlMsg->getRoomTitle());
+    jsonObject.insert(APIJSON_CTRL_DESC, ctrlMsg->getRoomDescription());
+    jsonObject.insert(APIJSON_CTRL_CHGMASK, (int)ctrlMsg->getChangeMask());
+
+    return true;
+}
+
+bool
+WickrIOReceiverMgr::processCreateSecureRoomMsg(QJsonObject& jsonObject, WickrCore::WickrGroupControlCreateSecureRoom *ctrlMsg)
+{
+    QJsonObject ctrlJsonObject;
+    ctrlJsonObject.insert(APIJSON_CTRL_MSGTYPE, MsgType_Ctrl_CreateRoom);
+
+    processCreateRoomBase(ctrlJsonObject, ctrlMsg);
+
+    jsonObject.insert(APIJSON_CTRL_HEADER, ctrlJsonObject);
+    return true;
+}
+
+bool
+WickrIOReceiverMgr::processChangeRoomConfigMsg(QJsonObject& jsonObject, WickrCore::WickrGroupControlChangeRoomConfiguration *ctrlMsg)
+{
+    QJsonObject ctrlJsonObject;
+    ctrlJsonObject.insert(APIJSON_CTRL_MSGTYPE, MsgType_Ctrl_ModifyRoomParams);
+
+    processCreateRoomBase(ctrlJsonObject, ctrlMsg);
+
+    jsonObject.insert(APIJSON_CTRL_HEADER, ctrlJsonObject);
+    return true;
+}
+
+bool
+WickrIOReceiverMgr::processChangeMembersMsg(QJsonObject& jsonObject,  WickrCore::WickrGroupControlChangeMembers *ctrlMsg)
+{
+    QJsonObject ctrlJsonObject;
+    ctrlJsonObject.insert(APIJSON_CTRL_MSGTYPE, MsgType_Ctrl_ModifyRoomMembers);
+
+    QJsonArray addedUsers;
+    for (QString entry: ctrlMsg->getAddedUsers()) {
+        addedUsers.append(QJsonValue(entry));
+    }
+    ctrlJsonObject.insert(APIJSON_CTRL_ADDUSERS, addedUsers);
+
+    QJsonArray deletedUsers;
+    for (QString entry: ctrlMsg->getDeletedUsers()) {
+        deletedUsers.append(QJsonValue(entry));
+    }
+    ctrlJsonObject.insert(APIJSON_CTRL_DELUSERS, deletedUsers);
+
+    jsonObject.insert(APIJSON_CTRL_HEADER, ctrlJsonObject);
+    return true;
+}
+
 
 bool
 WickrIOReceiverMgr::processFileMsg(QJsonObject& jsonObject,  WickrCore::WickrInbox *msg)

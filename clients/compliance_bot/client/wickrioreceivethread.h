@@ -12,9 +12,10 @@
 #include "services/wickrSwitchboardService.h"
 
 #include "messaging/wickrMessage.h"
-#include "filetransfer//wickrFileInfo.h"
+#include "filetransfer/wickrFileInfo.h"
 
 #include "common/wickrMessageMgr.h"
+#include "messaging/wickrGroupControl.h"
 
 class WickrIORxDownloadFile
 {
@@ -71,8 +72,13 @@ private:
 
     // Process inbound messages
     bool processKeyVerificationMsg(QJsonObject& jsonObject,  WickrCore::WickrInbox *msg);
-    bool processControlMsg(QJsonObject& jsonObject,  WickrCore::WickrInbox *msg);
     bool processFileMsg(QJsonObject& jsonObject,  WickrCore::WickrInbox *msg);
+
+    bool processControlMsg(QJsonObject& jsonObject,  WickrCore::WickrInbox *msg);
+    bool processCreateRoomBase(QJsonObject& jsonObject,  WickrCore::WickrGroupControlCreateSecureRoom *ctrlMsg);
+    bool processCreateSecureRoomMsg(QJsonObject& jsonObject,  WickrCore::WickrGroupControlCreateSecureRoom *creaatSecureRoom);
+    bool processChangeRoomConfigMsg(QJsonObject& jsonObject,  WickrCore::WickrGroupControlChangeRoomConfiguration *ctrlMsg);
+    bool processChangeMembersMsg(QJsonObject& jsonObject,  WickrCore::WickrGroupControlChangeMembers *ctrlMsg);
 
 };
 
