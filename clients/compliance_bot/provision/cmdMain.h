@@ -34,6 +34,7 @@ private:
     void startClient(int clientIndex);
     void pauseClient(int clientIndex);
     bool sendClientCmd(int port, const QString& cmd);
+    void configClient(int clientIndex);
 
 };
 

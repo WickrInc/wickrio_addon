@@ -40,7 +40,7 @@ CmdMain::runCommands()
     QTextStream input(stdin);
 
     while (true) {
-        qDebug() << "CONSOLE:Enter command [list, add, start, pause]:";
+        qDebug() << "CONSOLE:Enter command [list, add, config, start, stop]:";
         QString line = input.readLine();
 
         line = line.trimmed();
@@ -63,6 +63,12 @@ CmdMain::runCommands()
 
             if (cmd == "list") {
                 listBots();
+            } else if (cmd == "config") {
+                if (clientIndex == -1) {
+                    qDebug() << "CONSOLE:Usage: config <index>";
+                } else {
+                    configClient(clientIndex);
+                }
 #if 0
             } else if (cmd == "advanced") {
                 if (!m_cmdAdvanced.runCommands())
@@ -76,9 +82,9 @@ CmdMain::runCommands()
                 } else {
 
                 }
-            } else if (cmd == "pause") {
+            } else if (cmd == "stop") {
                 if (clientIndex == -1) {
-                    qDebug() << "CONSOLE:Usage: pause <index>";
+                    qDebug() << "CONSOLE:Usage: stop <index>";
                 } else {
                     pauseClient(clientIndex);
                 }
@@ -93,11 +99,12 @@ CmdMain::runCommands()
                 break;
             } else if (cmd == "?") {
                 qDebug() << "CONSOLE:Enter one of:";
-                qDebug() << "CONSOLE:  list   - to setup the clients";
-                qDebug() << "CONSOLE:  add    - to add a new client";
-                qDebug() << "CONSOLE:  start  - to start a specific client";
-                qDebug() << "CONSOLE:  pause  - to pause a running client";
-                qDebug() << "CONSOLE:  quit   - to exit the program";
+                qDebug() << "CONSOLE:  list           - show list of clients";
+                qDebug() << "CONSOLE:  add            - add a new client";
+                qDebug() << "CONSOLE:  config <index> - configure a client";
+                qDebug() << "CONSOLE:  start <index>  - start a specific client";
+                qDebug() << "CONSOLE:  stop <index>   - pause a running client";
+                qDebug() << "CONSOLE:  quit           - exit the program";
             } else {
                 qDebug() << "CONSOLE:" << cmd << "is not a known command!";
             }
@@ -284,4 +291,54 @@ CmdMain::sendClientCmd(int port, const QString& cmd)
     }
     return true;
 }
+
+/**
+ * @brief CmdClient::startClient
+ * This function is used to configure a specific client
+ * @param clientIndex
+ */
+void
+CmdMain::configClient(int clientIndex)
+{
+    if (validateIndex(clientIndex)) {
+        WickrIOClients *client = m_clients.at(clientIndex);
+        WickrIOAppSettings appSetting;
+        bool bCallbackExists;
+
+        if (!m_ioDB->getAppSetting(client->id, DB_APPSETTINGS_TYPE_MSGRECVCALLBACK, &appSetting)) {
+            appSetting.clientID = client->id;
+            bCallbackExists = false;
+            qDebug() << "CONSOLE:No message callback plugin setup";
+        } else {
+            bCallbackExists = true;
+            qDebug().noquote() << QString("CONSOLE:Callback plugin: %1").arg(appSetting.value);
+         }
+
+        QString temp = getNewValue("y", tr("Client has callback plugin (y or n)?"));
+
+        if (temp.toLower().startsWith("y")) {
+            QString newCBack = getNewValue(appSetting.value, tr("Enter message callback plugin"));
+            if (newCBack.toLower() == "back")
+                return;
+
+            if (m_ioDB->updateAppSetting(&appSetting)) {
+
+            } else {
+
+            }
+        } else {
+            // Double check that user wants to remove
+            if (bCallbackExists) {
+                QString temp = getNewValue("n", tr("Are you sure you want to remove the plugin (y or n)?"));
+                if (temp.toLower().startsWith("y")) {
+                    m_ioDB->deleteAppSetting(appSetting.id);
+                    appSetting.value.clear();
+                }
+            }
+        }
+
+        qDebug().noquote() << QString("CONSOLE:Callback plugin: %1").arg(appSetting.value);
+    }
+}
+
 
