@@ -201,8 +201,7 @@ int main(int argc, char *argv[])
                                   ClientVersionInfo::getAppName(),
                                   ClientConfigurationInfo::DefaultBaseURL,
                                   isDebug,
-                                  false,
-                                  WickrCore::WickrRuntime::DATA_MGMT_LAYER_1);
+                                  WickrCore::WickrRuntime::DATA_MGMT_LAYER_1);    
 
     WickrDBAdapter::setDatabaseEncryptedStatus(dbEncrypt);
 
