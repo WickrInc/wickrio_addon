@@ -12,6 +12,8 @@ public:
 
     ~WickrIOClients() {}
 
+    QString getProcessName() { return(QString("%1.%2").arg(binary).arg(name)); }
+
 public:
     int console_id;     // ID of the associated Console User or 0
 };

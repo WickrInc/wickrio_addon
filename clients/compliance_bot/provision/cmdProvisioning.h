@@ -19,7 +19,6 @@ public:
 
     QString m_configFileName;
     QString m_configPassword;
-
     QString m_invitation;
 
 private:

@@ -122,7 +122,9 @@ SOURCES += \
     wickrIOProvisionHdlr.cpp \
     clientconfigurationinfo.cpp \
     clientversioninfo.cpp \
-    wickrIOClientRuntime.cpp
+    wickrIOClientRuntime.cpp \
+    wickrIOBot.cpp \
+    cmdMain.cpp
 
 HEADERS += \
     $${COMMON}/cmdbase.h \
@@ -134,7 +136,9 @@ HEADERS += \
     wickrbuildnumbers.h \
     clientconfigurationinfo.h \
     clientversioninfo.h \
-    wickrIOClientRuntime.h
+    wickrIOClientRuntime.h \
+    wickrIOBot.h \
+    cmdMain.h
 
 # qsqlcipher_wickr
 

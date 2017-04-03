@@ -379,9 +379,6 @@ void WickrIOEClientMain::stopAndExit(int procState)
     // logout of switchboard service
     WickrCore::WickrRuntime::swbSvcLogout();
 
-    // logout to message service
-    WickrCore::WickrRuntime::msgSvcLogout();
-
     // logout to task service (NOTE: only if closing application)
     WickrCore::WickrRuntime::taskSvcLogout();
 

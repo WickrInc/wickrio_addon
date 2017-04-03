@@ -76,8 +76,6 @@ int main(int argc, char *argv[])
     wickrProductSetProductType(ClientVersionInfo::getProductType());
     WickrURLs::setDefaultBaseURL(ClientConfigurationInfo::DefaultBaseURL);
 
-    qDebug() <<  appname << "System was booted" << WickrUtil::formatTimestamp(WickrAppClock::getBootTime());
-
     bool dbEncrypt = true;
 
     QString clientDbPath("");
