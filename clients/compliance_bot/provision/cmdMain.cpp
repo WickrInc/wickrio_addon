@@ -197,6 +197,7 @@ CmdMain::startClient(int clientIndex)
         QString processName = client->getProcessName();
 
         if (m_ioDB->getProcessState(processName, &state)) {
+#if 0
             if (state.state == PROCSTATE_PAUSED) {
                 QString prompt = QString(tr("Do you really want to start the client with the name %1")).arg(client->name);
                 QString response = getNewValue("", prompt);
@@ -212,6 +213,54 @@ CmdMain::startClient(int clientIndex)
             } else {
                 qDebug() << "CONSOLE:Client must be in paused state to start it!";
             }
+#else
+            if (state.state == PROCSTATE_RUNNING) {
+                // TODO: CHeck if the client is actually running
+            } else {
+                // Going to force a start
+                // TODO: Check if the client is actually running
+
+
+#ifdef Q_OS_WIN
+                configFileName = QString(WBIO_CLIENT_SETTINGS_FORMAT).arg(WBIO_ORGANIZATION).arg(WBIO_GENERAL_TARGET).arg(client->name);
+                clientDbDir = QString("%1\\clients\\%2\\client").arg(m_operation->databaseDir).arg(client->name);
+                logname = QString("%1\\clients\\%2\\logs\\WickrIO%2.log").arg(m_operation->databaseDir).arg(client->name);
+                workingDir = QString("%1\\clients\\%2").arg(m_operation->databaseDir).arg(client->name);
+
+                QString outputFile = QString("%1\\clients\\%2\\logs\\WickrIO%2.output").arg(m_operation->databaseDir).arg(client->name);
+#else
+                QString configFileName = QString(WBIO_CLIENT_SETTINGS_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
+                QString clientDbDir = QString("%1/clients/%2/client").arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
+                QString workingDir = QString("%1/clients/%2").arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
+
+                QString outputFile = QString("%1/clients/%2/logs/WickrIO%2.output").arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
+#endif
+
+                // Start the client application for the specific client/user
+                QStringList arguments;
+                QString command;
+
+                command = client->binary;
+
+                arguments.append(QString("-config=%1").arg(configFileName));
+                arguments.append(QString("-clientdbdir=%1").arg(clientDbDir));
+                arguments.append(QString("-processname=%1").arg(client->getProcessName()));
+
+                QProcess exec;
+                exec.setStandardOutputFile(outputFile);
+                exec.setProcessChannelMode(QProcess::MergedChannels);
+                if (exec.startDetached(command, arguments, workingDir)) {
+                    qDebug().noquote() << QString("CONSOLE:Started client for %1").arg(client->name);
+                } else {
+                    qDebug().noquote() << QString("CONSOLE:Could NOT start client for %1").arg(client->name);
+                    qDebug().noquote() << QString("CONSOLE:command=%1").arg(command);
+            #ifdef DEBUG_TRACE
+                    qDebug() << "Leaving startClient: could not start!";
+            #endif
+                }
+
+            }
+#endif
         } else {
             qDebug() << "CONSOLE:Could not get the clients state!";
         }
