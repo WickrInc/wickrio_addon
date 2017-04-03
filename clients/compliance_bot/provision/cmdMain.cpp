@@ -40,7 +40,7 @@ CmdMain::runCommands()
     QTextStream input(stdin);
 
     while (true) {
-        qDebug() << "CONSOLE:Enter command [list, add, start, stop]:";
+        qDebug() << "CONSOLE:Enter command [list, add, start, pause]:";
         QString line = input.readLine();
 
         line = line.trimmed();
@@ -72,7 +72,7 @@ CmdMain::runCommands()
                 // FOR NOW lets add a new user
                 WickrIOBot *newbot = new WickrIOBot(m_app, m_argc, m_argv);
                 if (newbot->newBotCreate()) {
-
+                    updateBotList();
                 } else {
 
                 }
@@ -94,8 +94,10 @@ CmdMain::runCommands()
             } else if (cmd == "?") {
                 qDebug() << "CONSOLE:Enter one of:";
                 qDebug() << "CONSOLE:  list   - to setup the clients";
-                qDebug() << "CONSOLE:  add    - to setup the advanced settings";
-                qDebug() << "CONSOLE:  quit     - to exit the program";
+                qDebug() << "CONSOLE:  add    - to add a new client";
+                qDebug() << "CONSOLE:  start  - to start a specific client";
+                qDebug() << "CONSOLE:  pause  - to pause a running client";
+                qDebug() << "CONSOLE:  quit   - to exit the program";
             } else {
                 qDebug() << "CONSOLE:" << cmd << "is not a known command!";
             }
@@ -147,7 +149,7 @@ CmdMain::listBots()
                     clientState = "Paused";
                 }
             }
-            qDebug().noquote() << QString("CONSOLE:client[%1]").arg(++i);
+            qDebug().noquote() << QString("CONSOLE:client[%1]").arg(i++);
             qDebug().noquote() << QString("CONSOLE:  name=%1").arg(client->name);
             qDebug().noquote() << QString("CONSOLE:  user=%1").arg(client->user);
             qDebug().noquote() << QString("CONSOLE:  state=%1").arg(clientState);
