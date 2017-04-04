@@ -387,6 +387,9 @@ CmdMain::configClient(int clientIndex)
         WickrIOAppSettings appSetting;
         bool bCallbackExists;
 
+        appSetting.type = DB_APPSETTINGS_TYPE_MSGRECVCALLBACK;
+        appSetting.id = 0;
+
         if (!m_ioDB->getAppSetting(client->id, DB_APPSETTINGS_TYPE_MSGRECVCALLBACK, &appSetting)) {
             appSetting.clientID = client->id;
             bCallbackExists = false;
@@ -402,6 +405,8 @@ CmdMain::configClient(int clientIndex)
             QString newCBack = getNewValue(appSetting.value, tr("Enter message callback plugin"));
             if (newCBack.toLower() == "back")
                 return;
+
+            appSetting.value = newCBack;
 
             if (m_ioDB->updateAppSetting(&appSetting)) {
 
