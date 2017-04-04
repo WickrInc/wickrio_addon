@@ -136,9 +136,6 @@ int main(int argc, char *argv[])
             clientDbPath = cmd.remove("-clientdbdir=");
         } else if (cmd.startsWith("-config=")) {
             wbConfigFile = cmd.remove("-config=");
-        } else if (cmd.startsWith("-suffix")) {
-            suffix = cmd.remove("-suffix=");
-            WickrUtil::setTestAccountMode(suffix);
         } else if (cmd.startsWith("-force") ) {
             // Force the WickBot Client to run, regardless of the state in the database
             operation->force = true;
@@ -167,10 +164,6 @@ int main(int argc, char *argv[])
             else if( cmd == "-nocrypt" ) {
                 dbEncrypt = false;
             }
-            else if( cmd.startsWith("-user=") ) {
-                username = cmd.remove("-user=");
-                WickrUtil::setTestAccountMode(username);
-            }
             else if( cmd == "-noexclusive" ) {
                 WickrDBAdapter::setDatabaseExclusiveOpenStatus(false);
             }
@@ -193,21 +186,17 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName(appname);
     QCoreApplication::setOrganizationName(orgname);
 
+
+
     // Wickr Runtime Environment (all applications include this line)
-    WickrAppContext::initialize(clientDbPath);
     WickrCore::WickrRuntime::init(argc, argv,
                                   ClientVersionInfo::getProductType(),
                                   ClientVersionInfo::getOrgName(),
                                   ClientVersionInfo::getAppName(),
                                   ClientConfigurationInfo::DefaultBaseURL,
                                   isDebug,
+                                  clientDbPath,
                                   WickrCore::WickrRuntime::DATA_MGMT_LAYER_1);    
-
-    WickrDBAdapter::setDatabaseEncryptedStatus(dbEncrypt);
-
-    if( !username.isEmpty() ) {
-        WickrDBAdapter::setDBName( WickrDBAdapter::getDBName() + "." + username );
-    }
 
     // If the user did not set the config file then lets try a default location
     if (wbConfigFile.isEmpty()) {
@@ -220,6 +209,27 @@ int main(int argc, char *argv[])
 
     // get the settings file
     QSettings * settings = new QSettings(wbConfigFile, QSettings::NativeFormat, app);
+
+    if (username.isEmpty()) {
+        settings->beginGroup(WBSETTINGS_USER_HEADER);
+        username = settings->value(WBSETTINGS_USER_USER, "").toString();
+        settings->endGroup();
+
+        if (username.isEmpty()) {
+            qDebug() << "User or password is not set";
+            exit(1);
+        }
+    }
+
+    WickrUtil::setTestAccountMode(username);
+
+    WickrDBAdapter::setDBName( WickrDBAdapter::getDBName() + "." + username );
+
+
+
+
+
+
 
     // Get the appropriate database location
     if (operation->databaseDir.isEmpty()) {

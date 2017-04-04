@@ -19,6 +19,8 @@
 #include "user/wickrApp.h"
 #include "common/wickrRuntime.h"
 
+#include "WickrUtil.h"
+
 
 WickrIOBot::WickrIOBot(QCoreApplication *app, int argc, char **argv) :
     m_app(app),
@@ -73,6 +75,9 @@ WickrIOBot::newBotCreate()
         exit(1);
     }
 
+    // Set the test account name, which is appended to make the device ID specific to the client
+    WickrUtil::setTestAccountMode(m_client.name);
+
     if (m_clientDbPath.isEmpty()) {
         m_clientDbPath = QString("%1/clients/%2/client").arg(WBIO_DEFAULT_DBLOCATION).arg(m_client.name);
 
@@ -86,20 +91,17 @@ WickrIOBot::newBotCreate()
         m_wbConfigFile = QString(WBIO_CLIENT_SETTINGS_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(m_client.name);
     }
 
-
     // Wickr Runtime Environment (all applications include this line)
-    WickrAppContext::initialize(m_clientDbPath);
     WickrCore::WickrRuntime::init(m_argc, m_argv,
                                   ClientVersionInfo::getProductType(),
                                   ClientVersionInfo::getOrgName(),
                                   ClientVersionInfo::getAppName(),
                                   ClientConfigurationInfo::DefaultBaseURL,
-                                  isVERSIONDEBUG());
+                                  isVERSIONDEBUG(),
+                                  m_clientDbPath);
 
     // Will need to save the bootstrap file once we get the real password
     WickrIOEClientMain::loadBootstrapString(bootstrapString);
-
-    WickrDBAdapter::setDatabaseEncryptedStatus(m_dbEncrypt);
 
     if( !m_client.name.isEmpty() ) {
         WickrDBAdapter::setDBName( WickrDBAdapter::getDBName() + "." + m_client.name );

@@ -180,15 +180,13 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName(orgname);
 
     // Wickr Runtime Environment (all applications include this line)
-    WickrAppContext::initialize(clientDbPath);
     WickrCore::WickrRuntime::init(argc, argv,
                                   ClientVersionInfo::getProductType(),
                                   ClientVersionInfo::getOrgName(),
                                   ClientVersionInfo::getAppName(),
                                   ClientConfigurationInfo::DefaultBaseURL,
-                                  isDebug);
-
-    WickrDBAdapter::setDatabaseEncryptedStatus(dbEncrypt);
+                                  isDebug,
+                                  clientDbPath);
 
     if( !client.name.isEmpty() ) {
         WickrDBAdapter::setDBName( WickrDBAdapter::getDBName() + "." + client.name );

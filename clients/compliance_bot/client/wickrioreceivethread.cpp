@@ -184,6 +184,7 @@ bool WickrIOReceiverMgr::dispatch(WickrCore::WickrInbox *msg)
         WickrCore::WickrUser *sender = msg->getSenderUser();
         jsonObject.insert(APIJSON_MSGSENDER, sender->getUserID());
 
+#if 0
         WickrCore::WickrConvo* pConvo;
         if (pConvo) {
             // Setup the users array
@@ -199,6 +200,7 @@ bool WickrIOReceiverMgr::dispatch(WickrCore::WickrInbox *msg)
 
             jsonObject.insert(APIJSON_USERS, usersArray);
         }
+#endif
 
         // Message timestamp
         long timestamp = msg->getMsgTimestamp();
