@@ -133,12 +133,15 @@ WickrIOReceiverMgr::WickrIOReceiverMgr() :
 /**
  * @brief WickrIOReceiverMgr::dispatch
  * This is the callback to receive messages
+ * Returning true will mean this process is responsible to delete the message
  * @param msg
- * @return
+ * @return true if still using the msg, false if done with it
  */
 bool WickrIOReceiverMgr::dispatch(WickrCore::WickrInbox *msg)
 {
-    bool stillProcessing = true;
+    bool extendProcessing = false;
+    bool failedProcessing = false;
+
     /*
      * Check if there is a callback defined, for this current client.
      * If there is no callback then we do not need to process the messages.
@@ -146,6 +149,8 @@ bool WickrIOReceiverMgr::dispatch(WickrCore::WickrInbox *msg)
     WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
     if (db == NULL) {
         m_messagesDropped++;
+//        msg->doDelete();
+//        msg->release();
         return false;
     }
 
@@ -162,21 +167,21 @@ bool WickrIOReceiverMgr::dispatch(WickrCore::WickrInbox *msg)
     } else if (mclass == MsgClass_File) {
         if (!processFileMsg(jsonObject,  msg)) {
             //TODO: what to do if this returns false
-            stillProcessing = false;
+            failedProcessing = true;
         }
     } else if (mclass == MsgClass_KeyVerification) {
         if (!processKeyVerificationMsg(jsonObject,  msg)) {
             //TODO: what to do if this returns false
-            stillProcessing = false;
+            failedProcessing = true;
         }
     } else if (mclass == MsgClass_Control) {
         if (!processControlMsg(jsonObject,  msg)) {
             //TODO: what to do if this returns false
-            stillProcessing = false;
+            failedProcessing = true;
         }
     }
 
-    if (stillProcessing) {
+    if (! extendProcessing && ! failedProcessing) {
 
         jsonObject.insert(APIJSON_VGROUPID, msg->getvGroupID());
 
@@ -219,8 +224,12 @@ bool WickrIOReceiverMgr::dispatch(WickrCore::WickrInbox *msg)
 
         int msgID = db->insertMessage(msg->getMsgTimestamp(), m_operation->m_client->id, saveDoc.toJson(), (int)msg->getMsgClass(), 0);
         WickrIOClientRuntime::cbSvcMessagesPending();
+
+//        msg->doDelete();
+//        msg->release();
     }
-    return stillProcessing;
+
+    return extendProcessing;
 }
 
 bool
@@ -370,90 +379,93 @@ WickrIOReceiverMgr::processChangeMembersMsg(QJsonObject& jsonObject,  WickrCore:
 bool
 WickrIOReceiverMgr::processFileMsg(QJsonObject& jsonObject,  WickrCore::WickrInbox *msg)
 {
-    return true;
-#if 0
-            WickrIORxDownloadFile *rxDownload = NULL;
+    WickrIORxDownloadFile *rxDownload = NULL;
 
-            // Check if we are already downloading or decrypting this file
-            if (m_activeDownloads.contains(msg->getMsgIDSecure())) {
-                rxDownload = m_activeDownloads.value(msg->getMsgIDSecure(), NULL);
-            } else if (m_activeDownloads.size() == 0){
-                if (!msg->getFileInfo().isEmpty()) {
-                    WickrCore::FileInfo fileInfo = msg->getFileInfo().at(0);
+    if (msg->getFileInfo().count() == 0) {
+        return false;
+    }
 
-                    QString dLoadFileName = fileInfo.fileName();
-                    QString realFileName;
-                    QString extension;
-                    if (!dLoadFileName.isEmpty()) {
-                        extension = "_" + dLoadFileName;
-                        realFileName = dLoadFileName;
-                    } else {
-                        if(fileInfo.metaData().mimeType() == "image/png")
-                            extension = ".png";
-                        else if (fileInfo.metaData().mimeType() == "image/jpeg")
-                            extension = ".jpeg";
-                        else if (fileInfo.metaData().mimeType() == "image/bmp")
-                            extension = ".bmp";
-                        else if (fileInfo.metaData().mimeType() == "image/gif")
-                            extension = ".gif";
-                    }
+    WickrCore::FileInfo fileInfo = msg->getFileInfo().at(0);
+    QString file_guid = fileInfo.metaData().fetchInfo().at(0).guid;
 
-                    QDateTime dateTime = QDateTime::currentDateTime();
-                    QString dateTimeString = dateTime.toString("yyyyMMddhhmmsszzz");
+    if (file_guid.isEmpty()) {
+        return false;
+    }
 
-                    QString dirName = m_operation->attachmentsDir;
+    if (m_activeDownloads.size() == 0){
+        QString dLoadFileName = fileInfo.fileName();
+        QString realFileName;
+        QString extension;
+        if (!dLoadFileName.isEmpty()) {
+            extension = "_" + dLoadFileName;
+            realFileName = dLoadFileName;
+        } else {
+            if(fileInfo.metaData().mimeType() == "image/png")
+                extension = ".png";
+            else if (fileInfo.metaData().mimeType() == "image/jpeg")
+                extension = ".jpeg";
+            else if (fileInfo.metaData().mimeType() == "image/bmp")
+                extension = ".bmp";
+            else if (fileInfo.metaData().mimeType() == "image/gif")
+                extension = ".gif";
+        }
 
-                    if (dirName.isEmpty()) {
-                        // Save the attachment to the temp dir
-                        dirName = QDir::tempPath();
-                    }
+        QDateTime dateTime = QDateTime::currentDateTime();
+        QString dateTimeString = dateTime.toString("yyyyMMddhhmmsszzz");
 
-                    QString attachmentFileName(dirName +
-                #ifdef Q_OS_LINUX
-                            "/" +
-                #endif
-                     "attachment_" + dateTimeString + extension);
+        QString dirName = m_operation->attachmentsDir;
 
-                    if (realFileName.isEmpty())
-                        realFileName = attachmentFileName;
-                    rxDownload = new WickrIORxDownloadFile(msg, fileInfo, attachmentFileName, realFileName);
-                    m_activeDownloads.insert(msg->getMsgIDSecure(), rxDownload);
-                } else {
-                    qDebug() << "FileInfo is not set!";
-                    deleteMsg = true;
-                }
-            }
+        if (dirName.isEmpty()) {
+            // Save the attachment to the temp dir
+            dirName = QDir::tempPath();
+        }
 
-            if (rxDownload != NULL) {
-                WickrCore::WickrCloudTransferMgr *cloudMgr = WickrCore::WickrRuntime::getCloudMgr();
-                if (cloudMgr) {
-                    if (! rxDownload->m_downloaded) {
-                        if (rxDownload->m_downloading) {
-                            // Check if the download has completed
-                            QFileInfo f(rxDownload->m_attachmentFileName);
-                            if (f.exists()) {
-                                rxDownload->m_downloaded = true;
-                                rxDownload->m_downloading = false;
-                            }
-                        } else {
-                            rxDownload->m_downloading = true;
-                            cloudMgr->downloadFile(msg->getConvo(), rxDownload->m_attachmentFileName, rxDownload->m_fileInfo);
-                        }
-                    }
-                } else {
-
-                }
-
-                // If done downloading and decrypting then pass off
-                if (rxDownload != NULL && rxDownload->m_downloaded) {
-                    int msgID = db->insertMessage(msg->getMsgTimestamp(), m_operation->m_client->id, saveDoc.toJson(), (int)msg->getMsgClass(), 1);
-                    db->insertAttachment(msgID, rxDownload->m_attachmentFileName, rxDownload->m_realFileName);
-                    m_activeDownloads.remove(msg->getMsgIDSecure());
-                    deleteMsg = true;
-                }
-            }
+        QString attachmentFileName(dirName +
+#ifdef Q_OS_LINUX
+                "/" +
 #endif
+         "attachment_" + dateTimeString + extension);
 
+        if (realFileName.isEmpty())
+            realFileName = attachmentFileName;
+        rxDownload = new WickrIORxDownloadFile(msg, fileInfo, attachmentFileName, realFileName);
+        m_activeDownloads.insert(file_guid, rxDownload);
+    }
+
+    if (rxDownload != NULL) {
+        WickrCore::WickrCloudTransferMgr *cloudMgr = WickrCore::WickrRuntime::getCloudMgr();
+        if (cloudMgr) {
+            if (! rxDownload->m_downloaded) {
+                if (rxDownload->m_downloading) {
+                    // Check if the download has completed
+                    QFileInfo f(rxDownload->m_attachmentFileName);
+                    if (f.exists()) {
+                        rxDownload->m_downloaded = true;
+                        rxDownload->m_downloading = false;
+                    }
+                } else {
+                    rxDownload->m_downloading = true;
+                    cloudMgr->downloadFile(msg->getConvo(), rxDownload->m_attachmentFileName, rxDownload->m_fileInfo);
+                }
+            }
+        } else {
+            // Failed to get cloud manager so lets trash what we have
+            m_activeDownloads.remove(file_guid);
+        }
+
+        // If done downloading and decrypting then pass off
+        if (rxDownload != NULL && rxDownload->m_downloaded) {
+            WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
+
+            QJsonDocument saveDoc(jsonObject);
+
+            int msgID = db->insertMessage(msg->getMsgTimestamp(), m_operation->m_client->id, saveDoc.toJson(), (int)msg->getMsgClass(), 1);
+            db->insertAttachment(msgID, rxDownload->m_attachmentFileName, rxDownload->m_realFileName);
+            m_activeDownloads.remove(file_guid);
+        }
+    }
+
+    return true;
 }
 
 QString

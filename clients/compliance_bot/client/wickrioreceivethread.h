@@ -11,7 +11,7 @@
 #include "services/wickrMessageService.h"
 #include "services/wickrSwitchboardService.h"
 
-#include "messaging/wickrMessage.h"
+#include "messaging/wickrInbox.h"
 #include "filetransfer/wickrFileInfo.h"
 
 #include "common/wickrMessageMgr.h"
@@ -20,7 +20,7 @@
 class WickrIORxDownloadFile
 {
 public:
-    WickrIORxDownloadFile(WickrCore::WickrMessage *msg, WickrCore::FileInfo fileinfo, QString attachFilename, QString realFilename) :
+    WickrIORxDownloadFile(WickrCore::WickrInbox *msg, WickrCore::FileInfo fileinfo, QString attachFilename, QString realFilename) :
         m_msg(msg),
         m_fileInfo(fileinfo),
         m_attachmentFileName(attachFilename),

@@ -4,6 +4,7 @@
 #include "cmdMain.h"
 #include "wickrIOBot.h"
 #include "wbio_common.h"
+#include "wickrbotsettings.h"
 #include "clientconfigurationinfo.h"
 
 CmdMain::CmdMain(QCoreApplication *app, int argc, char **argv) :
@@ -48,6 +49,7 @@ CmdMain::runCommands()
             QStringList args = line.split(" ");
             QString cmd = args.at(0).toLower();
             int clientIndex;
+            bool bForce = false;
 
             // Convert the second argument to an integer, for the client index commands
             if (args.size() > 1) {
@@ -56,6 +58,12 @@ CmdMain::runCommands()
                 if (!ok) {
                     qDebug() << "CONSOLE:Client Index is not a number!";
                     continue;
+                }
+
+                if (args.size() == 3) {
+                    if (args.at(2) == "-force") {
+                        bForce = true;
+                    }
                 }
             } else {
                 clientIndex = -1;
@@ -82,6 +90,18 @@ CmdMain::runCommands()
                 } else {
 
                 }
+            } else if (cmd == "delete") {
+                if (clientIndex == -1) {
+                    qDebug() << "CONSOLE:Usage: delete <index>";
+                } else {
+                    deleteClient(clientIndex);
+                }
+            } else if (cmd == "reset") {
+                if (clientIndex == -1) {
+                    qDebug() << "CONSOLE:Usage: reset <index>";
+                } else {
+                    resetClient(clientIndex);
+                }
             } else if (cmd == "stop") {
                 if (clientIndex == -1) {
                     qDebug() << "CONSOLE:Usage: stop <index>";
@@ -92,7 +112,7 @@ CmdMain::runCommands()
                 if (clientIndex == -1) {
                     qDebug() << "CONSOLE:Usage: start <index>";
                 } else {
-                    startClient(clientIndex);
+                    startClient(clientIndex, bForce);
                 }
             } else if (cmd == "quit") {
                 qDebug() << "CONSOLE:Good bye!";
@@ -102,6 +122,8 @@ CmdMain::runCommands()
                 qDebug() << "CONSOLE:  list           - show list of clients";
                 qDebug() << "CONSOLE:  add            - add a new client";
                 qDebug() << "CONSOLE:  config <index> - configure a client";
+                qDebug() << "CONSOLE:  delete <index> - delete a client";
+                qDebug() << "CONSOLE:  reset <index>  - reset a client";
                 qDebug() << "CONSOLE:  start <index>  - start a specific client";
                 qDebug() << "CONSOLE:  stop <index>   - pause a running client";
                 qDebug() << "CONSOLE:  quit           - exit the program";
@@ -189,7 +211,7 @@ bool CmdMain::validateIndex(int clientIndex)
  * @param clientIndex
  */
 void
-CmdMain::startClient(int clientIndex)
+CmdMain::startClient(int clientIndex, bool force)
 {
     if (validateIndex(clientIndex)) {
         WickrIOClients *client = m_clients.at(clientIndex);
@@ -230,11 +252,20 @@ CmdMain::startClient(int clientIndex)
                 QString outputFile = QString("%1\\clients\\%2\\logs\\WickrIO%2.output").arg(m_operation->databaseDir).arg(client->name);
 #else
                 QString configFileName = QString(WBIO_CLIENT_SETTINGS_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
-                QString clientDbDir = QString("%1/clients/%2/client").arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
-                QString workingDir = QString("%1/clients/%2").arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
-
-                QString outputFile = QString("%1/clients/%2/logs/WickrIO%2.output").arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
+                QString clientDbDir = QString(WBIO_CLIENT_DBDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
+                QString workingDir = QString(WBIO_CLIENT_WORKINGDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
+                QString outputFile = QString(WBIO_CLIENT_OUTFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
 #endif
+
+                QSettings* settings=new QSettings(configFileName, QSettings::NativeFormat);
+
+                // Add an output file name so that output can be saved
+                settings->beginGroup(WBSETTINGS_LOGGING_HEADER);
+                QString curOutputFilename = settings->value(WBSETTINGS_LOGGING_OUTPUT_FILENAME, "").toString();
+                if (curOutputFilename.isEmpty())
+                    settings->setValue(WBSETTINGS_LOGGING_OUTPUT_FILENAME, outputFile);
+                settings->endGroup();
+
 
                 // Start the client application for the specific client/user
                 QStringList arguments;
@@ -245,6 +276,8 @@ CmdMain::startClient(int clientIndex)
                 arguments.append(QString("-config=%1").arg(configFileName));
                 arguments.append(QString("-clientdbdir=%1").arg(clientDbDir));
                 arguments.append(QString("-processname=%1").arg(client->getProcessName()));
+                if (force)
+                    arguments.append("-force");
 
                 QProcess exec;
                 exec.setStandardOutputFile(outputFile);
@@ -390,4 +423,50 @@ CmdMain::configClient(int clientIndex)
     }
 }
 
+
+/**
+ * @brief CmdClient::deleteClient
+ * This function is used to delete a client
+ * this function will delete all of the files and database entries for the client
+ * @param clientIndex
+ */
+void
+CmdMain::deleteClient(int clientIndex)
+{
+    if (validateIndex(clientIndex)) {
+        WickrIOClients *client = m_clients.at(clientIndex);
+        QString processName = client->getProcessName();
+
+        m_ioDB->deleteProcessState(processName);
+        m_ioDB->deleteClientUsingName(client->name);
+
+        // Remove the files associated with the client
+        QString clientDirName = QString("%1/clients/%2").arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
+        QDir clientDir(clientDirName);
+        if (clientDir.exists()) {
+            clientDir.removeRecursively();
+        }
+    }
+}
+
+/**
+ * @brief CmdClient::resetClient
+ * This function is used to reset a client.
+ * This will remove the client database files for the client.
+ * @param clientIndex
+ */
+void
+CmdMain::resetClient(int clientIndex)
+{
+    if (validateIndex(clientIndex)) {
+        WickrIOClients *client = m_clients.at(clientIndex);
+
+        // Remove the files associated with the client
+        QString clientDirName = QString("%1/clients/%2/client").arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
+        QDir clientDir(clientDirName);
+        if (clientDir.exists()) {
+            clientDir.removeRecursively();
+        }
+    }
+}
 

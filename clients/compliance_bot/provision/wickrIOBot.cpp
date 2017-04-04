@@ -109,6 +109,7 @@ WickrIOBot::newBotCreate()
 
     QString logname = QString(WBIO_CLIENT_LOGFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(m_client.name);
     QString attachDir = QString(WBIO_CLIENT_ATTACHDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(m_client.name);
+    QString outputFile = QString(WBIO_CLIENT_OUTFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(m_client.name);
 
     /*
      * Start the wickrIO Client Runtime
@@ -174,6 +175,7 @@ WickrIOBot::newBotCreate()
 
         settings->beginGroup(WBSETTINGS_LOGGING_HEADER);
         settings->setValue(WBSETTINGS_LOGGING_FILENAME, logname);
+        settings->setValue(WBSETTINGS_LOGGING_OUTPUT_FILENAME, outputFile);
         settings->endGroup();
 
     #if 0

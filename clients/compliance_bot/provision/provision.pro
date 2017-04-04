@@ -8,6 +8,7 @@ DEPTH = ../../..
 
 CONFIG += c++11
 CONFIG += console
+QT -= gui
 
 wickr_compliance:DEFINES += WICKR_COMPLIANCE=1
 wickr_compliance_bot {

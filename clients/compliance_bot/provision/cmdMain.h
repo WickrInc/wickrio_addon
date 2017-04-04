@@ -31,7 +31,9 @@ private:
     bool updateBotList();
     bool validateIndex(int clientIndex);
     bool listBots();
-    void startClient(int clientIndex);
+    void resetClient(int clientIndex);
+    void deleteClient(int clientIndex);
+    void startClient(int clientIndex, bool force);
     void pauseClient(int clientIndex);
     bool sendClientCmd(int port, const QString& cmd);
     void configClient(int clientIndex);
