@@ -446,7 +446,7 @@ CmdMain::deleteClient(int clientIndex)
         m_ioDB->deleteClientUsingName(client->name);
 
         // Remove the files associated with the client
-        QString clientDirName = QString("%1/clients/%2").arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
+        QString clientDirName = QString(WBIO_CLIENT_WORKINGDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
         QDir clientDir(clientDirName);
         if (clientDir.exists()) {
             clientDir.removeRecursively();
@@ -467,7 +467,7 @@ CmdMain::resetClient(int clientIndex)
         WickrIOClients *client = m_clients.at(clientIndex);
 
         // Remove the files associated with the client
-        QString clientDirName = QString("%1/clients/%2/client").arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
+        QString clientDirName = QString(WBIO_CLIENT_DBDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
 
         QDir dir(clientDirName);
         QStringList name_filters;
@@ -475,7 +475,7 @@ CmdMain::resetClient(int clientIndex)
         QFileInfoList fil = dir.entryInfoList(name_filters);
         for (QFileInfo finfo : fil) {
             if (finfo.isFile()) {
-                QFile file(finfo.fileName());
+                QFile file(finfo.filePath());
                 file.remove();
             }
         }

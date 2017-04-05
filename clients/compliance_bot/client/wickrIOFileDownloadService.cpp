@@ -142,7 +142,7 @@ WickrIOFileDownloadThread::slotDownloadFile(WickrIORxDownloadFile *dload)
                 }
             } else {
                 dload->m_downloading = true;
-                cloudMgr->downloadFile(nullptr, dload->m_attachmentFileName, dload->m_fileInfo);
+                cloudMgr->downloadFile(nullptr, dload->m_attachmentFileName, dload->m_fileInfo, false);
             }
         }
     } else {
