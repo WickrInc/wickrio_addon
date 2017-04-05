@@ -468,9 +468,16 @@ CmdMain::resetClient(int clientIndex)
 
         // Remove the files associated with the client
         QString clientDirName = QString("%1/clients/%2/client").arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
-        QDir clientDir(clientDirName);
-        if (clientDir.exists()) {
-            clientDir.removeRecursively();
+
+        QDir dir(clientDirName);
+        QStringList name_filters;
+        name_filters << "wickr_db.sqlite.*";
+        QFileInfoList fil = dir.entryInfoList(name_filters);
+        for (QFileInfo finfo : fil) {
+            if (finfo.isFile()) {
+                QFile file(finfo.fileName());
+                file.remove();
+            }
         }
     }
 }

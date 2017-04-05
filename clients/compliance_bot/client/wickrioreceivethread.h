@@ -16,27 +16,7 @@
 
 #include "common/wickrMessageMgr.h"
 #include "messaging/wickrGroupControl.h"
-
-class WickrIORxDownloadFile
-{
-public:
-    WickrIORxDownloadFile(WickrCore::WickrInbox *msg, WickrCore::FileInfo fileinfo, QString attachFilename, QString realFilename) :
-        m_msg(msg),
-        m_fileInfo(fileinfo),
-        m_attachmentFileName(attachFilename),
-        m_realFileName(realFilename),
-        m_downloaded(false),
-        m_downloading(false) {
-    }
-
-    WickrCore::WickrMessage *m_msg;
-    WickrCore::FileInfo m_fileInfo;
-    QString m_attachmentFileName;
-    QString m_realFileName;
-    bool m_downloaded;
-    bool m_downloading;
-};
-
+#include "wickrIOFileDownloadService.h"
 
 /**
  * @brief The WickrIOReceiverMgr class
@@ -62,9 +42,6 @@ public:
 
 private:
     OperationData *m_operation;
-
-    // File Download definitions
-    QMap<QString, WickrIORxDownloadFile *> m_activeDownloads;
 
     int m_messagesRecv;
     int m_messagesDropped;

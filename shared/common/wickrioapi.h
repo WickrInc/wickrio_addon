@@ -120,6 +120,10 @@
 #define APIJSON_CTRL_ADDUSERS   "addedusers"
 #define APIJSON_CTRL_DELUSERS   "deletedusers"
 
+#define APIJSON_FILE_FILENAME   "filename"
+#define APIJSON_FILE_LOCALFILE  "localfilename"
+#define APIJSON_FILE_GUID       "guid"
+
 #define APIJSON_UTYPE_ADMIN     "admin"
 #define APIJSON_UTYPE_USER      "user"
 

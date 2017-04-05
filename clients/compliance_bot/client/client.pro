@@ -124,7 +124,8 @@ SOURCES += \
     clientconfigurationinfo.cpp \
     clientversioninfo.cpp \
     wickrIOClientRuntime.cpp \
-    wickrIOCallbackService.cpp
+    wickrIOCallbackService.cpp \
+    wickrIOFileDownloadService.cpp
 
 HEADERS += \
     $${COMMON}/wickrbotactiondatabase.h \
@@ -137,7 +138,8 @@ HEADERS += \
     clientconfigurationinfo.h \
     clientversioninfo.h \
     wickrIOClientRuntime.h \
-    wickrIOCallbackService.h
+    wickrIOCallbackService.h \
+    wickrIOFileDownloadService.h
 
 # qsqlcipher_wickr
 

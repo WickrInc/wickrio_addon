@@ -2,6 +2,8 @@
 #define WICKRIOCLIENTRUNTIME_H
 
 #include "wickrIOCallbackService.h"
+#include "wickrIOFileDownloadService.h"
+
 #include "operationdata.h"
 
 
@@ -26,6 +28,12 @@ public:
     static WickrIOCallbackService* cbSvc();
     static bool cbSvcMessagesPending();
 
+    /**
+     * File Download Service API
+     */
+    static WickrIOFileDownloadService *fdSvc();
+    static bool fdSvcDownloadFile(WickrIORxDownloadFile *dload);
+
     // Component accessors
     static OperationData *operationData();
 
@@ -36,7 +44,8 @@ private:
     bool                    m_initialized;
     OperationData           *m_operation;
 
-    WickrIOCallbackService  *m_callbackSvc;
+    WickrIOCallbackService      *m_callbackSvc;
+    WickrIOFileDownloadService  *m_fileDownloadSvc;
 
 
     /**

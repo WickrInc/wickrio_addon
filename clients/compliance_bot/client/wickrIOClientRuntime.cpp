@@ -8,6 +8,7 @@ WickrIOClientRuntime::WickrIOClientRuntime() {
 
     // Allocate resources
     m_callbackSvc = new WickrIOCallbackService();
+    m_fileDownloadSvc = new WickrIOFileDownloadService();
 
     m_initialized = true;
 }
@@ -76,6 +77,21 @@ WickrIOClientRuntime::cbSvcMessagesPending() {
 }
 
 /**
+ * @brief WickrIO File Download Service API
+ */
+WickrIOFileDownloadService*
+WickrIOClientRuntime::fdSvc() {
+    return WickrIOClientRuntime::get().m_fileDownloadSvc;
+}
+
+bool
+WickrIOClientRuntime::fdSvcDownloadFile(WickrIORxDownloadFile *dload) {
+    fdSvc()->downloadFile(dload);
+    return true;
+}
+
+
+/**
  * @brief get (PRIVATE STATIC)
  * Will return reference to singleton instance. Instantiated on first use (recommended from init() in main.cpp).
  * Guaranteed to be destroyed.
@@ -91,7 +107,8 @@ WickrIOClientRuntime& WickrIOClientRuntime::get() {
  * Cleanup all runtime resources
  */
 void WickrIOClientRuntime::cleanupResources() {
-    delete m_callbackSvc;   m_callbackSvc = nullptr;
+    delete m_callbackSvc;       m_callbackSvc = nullptr;
+    delete m_fileDownloadSvc;   m_fileDownloadSvc = nullptr;
     m_initialized = false;
 }
 
