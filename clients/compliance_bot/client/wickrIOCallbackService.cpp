@@ -124,6 +124,11 @@ WickrIOCallbackThread::~WickrIOCallbackThread() {
 void
 WickrIOCallbackThread::slotProcessMessages()
 {
+    // Don't want to start multiple processing to be initiated
+    if (m_state == CBThreadState::CB_PROCESSING) {
+        return;
+    }
+
     m_state = CBThreadState::CB_PROCESSING;
 
     if (m_operation == nullptr) {
@@ -151,6 +156,8 @@ WickrIOCallbackThread::slotProcessMessages()
             delete email;
             m_state = CBThreadState::CB_STARTED;
         } else {
+            // TODO: Nowhere to send the message, so for now we shall dump it
+
             m_state = CBThreadState::CB_STARTED;
         }
     }
@@ -335,7 +342,7 @@ WickrIOCallbackThread::sendMessage()
     } else {
         WickrIOMessage rxMsg;
         if (db->getMessage(msgIDs.at(0), &rxMsg)) {
-            postedMsgID = rxMsg.id;
+            m_postedMsgID = rxMsg.id;
 
             QByteArray postDataSize = QByteArray::number(rxMsg.json.length());
             QUrl serviceURL(m_url);
@@ -367,21 +374,21 @@ WickrIOCallbackThread::msgSendCallbackResponse(QNetworkReply *thereply, QByteArr
 {
     if( thereply != this->reply ) return;
 
-    if (postedMsgID > 0) {
+    if (m_postedMsgID > 0) {
         WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
         if (db == NULL) {
             CLEANUP_SERVER_REQ(msgSendCallbackResponse,msgSendCallbackError);
         } else {
-            db->deleteMessage(postedMsgID);
-            postedMsgID = 0;
+            db->deleteMessage(m_postedMsgID);
+            m_postedMsgID = 0;
         }
     }
 
     // If there are no more messages to send then we are done
     if (! sendMessage()) {
         CLEANUP_SERVER_REQ(msgSendCallbackResponse,msgSendCallbackError);
+        m_state = CBThreadState::CB_STARTED;
     }
-    m_state = CBThreadState::CB_STARTED;
 }
 
 void

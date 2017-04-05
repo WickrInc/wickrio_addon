@@ -91,7 +91,8 @@ private:
     SmtpClient              *m_smtp;
     QNetworkReply           *reply;
     QNetworkAccessManager   *mgr;
-    int                     postedMsgID;
+
+    int                     m_postedMsgID;
     QString                 m_url;
 
     void startEmailCallback(WickrIOEmailSettings *email);

@@ -128,26 +128,15 @@ WickrIOFileDownloadThread::slotDownloadFile(WickrIORxDownloadFile *dload)
 
     QString file_guid = dload->m_fileInfo.metaData().fetchInfo().at(0).guid;
 
-    m_activeDownloads.insert(file_guid, dload);
-
     WickrCore::WickrCloudTransferMgr *cloudMgr = WickrCore::WickrRuntime::getCloudMgr();
     if (cloudMgr) {
-        if (! dload->m_downloaded) {
-            if (dload->m_downloading) {
-                // Check if the download has completed
-                QFileInfo f(dload->m_attachmentFileName);
-                if (f.exists()) {
-                    dload->m_downloaded = true;
-                    dload->m_downloading = false;
-                }
-            } else {
-                dload->m_downloading = true;
-                cloudMgr->downloadFile(nullptr, dload->m_attachmentFileName, dload->m_fileInfo, false);
-            }
-        }
+        m_activeDownloads.insert(file_guid, dload);
+        cloudMgr->downloadFile(nullptr, dload->m_attachmentFileName, dload->m_fileInfo, false);
     } else {
-        // Failed to get cloud manager so lets trash what we have
-        m_activeDownloads.remove(file_guid);
+        // Release the message
+        dload->m_msg->doDelete();
+        dload->m_msg->release();
+        delete dload;
     }
 
 #if 0

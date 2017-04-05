@@ -16,8 +16,6 @@ public:
         m_fileInfo(fileinfo),
         m_attachmentFileName(attachFilename),
         m_realFileName(realFilename),
-        m_downloaded(false),
-        m_downloading(false),
         m_json(json){
     }
 
@@ -25,8 +23,6 @@ public:
     WickrCore::FileInfo     m_fileInfo;
     QString                 m_attachmentFileName;
     QString                 m_realFileName;
-    bool                    m_downloaded;
-    bool                    m_downloading;
     QJsonObject             m_json;
 };
 
