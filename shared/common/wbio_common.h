@@ -67,6 +67,10 @@
 #define WBIO_IPCCMDS_PAUSE          "pause"
 #define WBIO_IPCCMDS_STOP           "stop"
 
+#define WBIO_IPCMSGS_PASSWORD       "password"
+#define WBIO_IPCMSGS_USERSIGNKEY    "usersignkey"
+#define WBIO_IPCMSGS_STATE          "state"
+
 class WBIOCommon
 {
 public:

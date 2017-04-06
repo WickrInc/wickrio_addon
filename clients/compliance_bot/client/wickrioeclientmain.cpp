@@ -20,6 +20,7 @@
 
 #include "clientconfigurationinfo.h"
 #include "clientversioninfo.h"
+#include "wbio_common.h"
 
 WickrIOEClientMain *WickrIOEClientMain::theBot;
 
@@ -32,8 +33,10 @@ WickrIOEClientMain *WickrIOEClientMain::theBot;
 WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
     m_operation(operation),
     m_loginHdlr(operation),
-    m_wickrIPC(0),
-    m_timerStatsTicker(0)
+    m_txIPC(this),
+    m_rxIPC(0),
+    m_timerStatsTicker(0),
+    m_waitingForPassword(false)
 {
     if( isVERSIONDEBUG() ) {
         m_operation->cleanUpSecs = 20;
@@ -198,13 +201,14 @@ void WickrIOEClientMain::slotRemoveFromRoom(const QString& vGroupID)
  * @brief WickrIOEClientMain::slotLoginSuccess
  * This slot is called when the login is successful
  */
-void WickrIOEClientMain::slotLoginSuccess()
+void WickrIOEClientMain::slotLoginSuccess(QString userSigningKey)
 {
+    sendConsoleMsg(WBIO_IPCMSGS_USERSIGNKEY, userSigningKey);
+
     // Execute database load
     WickrDatabaseLoadContext *c = new WickrDatabaseLoadContext(WickrUtil::dbDump);
     connect(c, &WickrDatabaseLoadContext::signalRequestCompleted, this, &WickrIOEClientMain::slotDatabaseLoadDone, Qt::QueuedConnection);
     WickrCore::WickrRuntime::taskSvcMakeRequest(c);
-
 }
 
 /**
@@ -217,6 +221,8 @@ void WickrIOEClientMain::slotDatabaseLoadDone(WickrDatabaseLoadContext *context)
     context->deleteLater();
 
     emit signalLoginSuccess();
+
+    sendConsoleMsg(WBIO_IPCMSGS_STATE, "loggedin");
 
     // Update switchboard login credentials (login is performed only if not already logged in)
     WickrCore::WickrRuntime::swbSvcLogin(WickrCore::WickrSession::getActiveSession()->getSwitchboardServer(),
@@ -319,6 +325,8 @@ void WickrIOEClientMain::slotMessageDownloadStatusUpdate(int msgsDownloaded)
  */
 void WickrIOEClientMain::stopAndExitSlot()
 {
+    sendConsoleMsg(WBIO_IPCMSGS_STATE, "stopping");
+
     stopAndExit(PROCSTATE_DOWN);
 }
 
@@ -327,11 +335,29 @@ void WickrIOEClientMain::stopAndExitSlot()
  * Call this slot to put the state of the client into the paused state,
  * and exit the client application.
  */
-void WickrIOEClientMain::pauseAndExitSlot()
+void WickrIOEClientMain::WickrIOEClientMain::pauseAndExitSlot()
 {
     stopAndExit(PROCSTATE_PAUSED);
 }
 
+/**
+ * @brief slotGotMessage
+ * @param type
+ * @param value
+ */
+void WickrIOEClientMain::slotReceivedMessage(QString type, QString value)
+{
+    if (type.toLower() == WBIO_IPCMSGS_PASSWORD) {
+        // Check if we are waiting for the password to proceed with the login
+        qDebug() << "Proceeding with the login";
+        if (m_waitingForPassword) {
+            m_waitingForPassword = false;
+            m_password = value;
+            m_loginHdlr.addLogin(m_username, m_password);
+            m_loginHdlr.initiateLogin();
+        }
+    }
+}
 
 void WickrIOEClientMain::processStarted()
 {
@@ -339,6 +365,42 @@ void WickrIOEClientMain::processStarted()
 
     if (! startTheClient())
         stopAndExit(PROCSTATE_DOWN);
+}
+
+bool
+WickrIOEClientMain::sendConsoleMsg(const QString& cmd, const QString& value)
+{
+    QString message = QString("%1=%2").arg(cmd).arg(value);
+
+    WickrBotProcessState state;
+    if (!m_operation->m_botDB->getProcessState(WBIO_PROVISION_TARGET, &state))
+        return false;
+
+    if (! m_txIPC.sendMessage(state.ipc_port, message)) {
+        return false;
+    }
+
+    QTimer timer;
+    QEventLoop loop;
+
+    loop.connect(&m_txIPC, SIGNAL(signalSentMessage()), SLOT(quit()));
+    loop.connect(&m_txIPC, SIGNAL(signalSendError()), SLOT(quit()));
+    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+
+    int loopCount = 6;
+
+    while (loopCount-- > 0) {
+        timer.start(10000);
+        loop.exec();
+
+        if (timer.isActive()) {
+            timer.stop();
+            break;
+        } else {
+            qDebug() << "Timed out waiting for stop client message to send!";
+        }
+    }
+    return true;
 }
 
 /**
@@ -349,15 +411,16 @@ void WickrIOEClientMain::processStarted()
  */
 void WickrIOEClientMain::setIPC(WickrBotMainIPC *ipc)
 {
-    m_wickrIPC = ipc;
+    m_rxIPC = ipc;
     connect(ipc, &WickrBotMainIPC::signalGotStopRequest, this, &WickrIOEClientMain::stopAndExitSlot);
     connect(ipc, &WickrBotMainIPC::signalGotPauseRequest, this, &WickrIOEClientMain::pauseAndExitSlot);
+    connect(ipc, &WickrBotMainIPC::signalReceivedMessage, this, &WickrIOEClientMain::slotReceivedMessage);
 }
 
 void WickrIOEClientMain::slotDoTimerWork()
 {
-    if (m_wickrIPC != NULL && m_wickrIPC->isRunning()) {
-        m_wickrIPC->check();
+    if (m_rxIPC != NULL && m_rxIPC->isRunning()) {
+        m_rxIPC->check();
     }
 
     m_timerStatsTicker++;
@@ -468,7 +531,9 @@ bool WickrIOEClientMain::startTheClient()
     // TASK SERVICE: Utility service login here (to ensure rest api available)
     WickrCore::WickrRuntime::taskSvcLogin();
 
-    m_loginHdlr.initiateLogin();
+    if (!m_waitingForPassword) {
+        m_loginHdlr.initiateLogin();
+    }
 
     emit signalStarted();
     return true;
@@ -609,37 +674,25 @@ bool WickrIOEClientMain::parseSettings(QSettings *settings)
      * Parse out the settings associated with the User
      */
     settings->beginGroup(WBSETTINGS_USER_HEADER);
-
     QString username = settings->value(WBSETTINGS_USER_USER, "").toString();
     QString password = settings->value(WBSETTINGS_USER_PASSWORD, "").toString();
+    settings->endGroup();
 
-    if (username.isEmpty() || password.isEmpty()) {
-        qDebug() << "User or password is not set";
+    if (username.isEmpty()) {
+        qDebug() << "User is not set";
         return false;
     }
-    m_loginHdlr.addLogin(username, password);
+
+    if (password.isEmpty()) {
+        m_waitingForPassword = true;
+    } else {
+        m_loginHdlr.addLogin(username, password);
+        m_waitingForPassword = false;
+    }
 
     // Save for use in main
     m_username = username;
     m_password = password;
-
-    settings->endGroup();
-
-    /*
-     * Parse out the settings associated with general configuration
-     */
-    settings->beginGroup(WBSETTINGS_CONFIG_HEADER);
-
-    // Check for the DoReceive config is set
-    m_operation->receiveOn = settings->value(WBSETTINGS_CONFIG_DORECEIVE, true).toBool();
-
-    // Get the server name, if one is set
-    m_serverName = settings->value(WBSETTINGS_CONFIG_SERVER, ClientConfigurationInfo::DefaultBaseURL).toString();
-
-    // Set the Base URL for communications to the server
-    WickrURLs::setBaseURL(m_serverName);
-
-    settings->endGroup();
 
     return true;
 }

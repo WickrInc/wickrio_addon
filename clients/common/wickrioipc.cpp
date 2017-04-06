@@ -62,13 +62,24 @@ void WickrBotMainIPC::processStarted()
     m_operation->log("WickrBotMainIPC: processStartedA");
     QObject::connect(m_ipc, &WickrBotIPC::signalGotMessage, [=](const QString &message, int peerPort) {
         Q_UNUSED(peerPort);
-        m_operation->log(QString("GOT MESSAGE: %1").arg(message));
         if (message == WBIO_IPCCMDS_STOP) {
+            m_operation->log(QString("GOT MESSAGE: %1").arg(WBIO_IPCCMDS_STOP));
             m_operation->log("WickrBotMainIPC::processStarted: QUITTING");
             emit signalGotStopRequest();
         } else if (message == WBIO_IPCCMDS_PAUSE) {
+            m_operation->log(QString("GOT MESSAGE: %1").arg(WBIO_IPCCMDS_PAUSE));
             m_operation->log("WickrBotMainIPC::processStarted: PAUSING");
             emit signalGotPauseRequest();
+        } else {
+            QStringList pieces = message.split("=");
+            if (pieces.size() == 2) {
+                QString type = pieces.at(0);
+                QString value = pieces.at(1);
+                m_operation->log(QString("GOT MESSAGE: %1").arg(type));
+                emit signalReceivedMessage(type, value);
+            } else {
+                m_operation->log("GOT MESSAGE: invalid message:" + message);
+            }
         }
     });
     m_operation->log("WickrBotMainIPC: processStartedB");

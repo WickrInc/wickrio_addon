@@ -11,6 +11,7 @@
 #include "wbio_common.h"
 
 #include "wickrIOBot.h"
+#include "wickrIOConsole.h"
 
 #ifdef WICKR_PLUGIN_SUPPORT
 Q_IMPORT_PLUGIN(WickrPlugin)
@@ -29,6 +30,11 @@ extern void wickr_powersetup(void);
 #include "wickrioipc.h"
 #include "wickrbotutils.h"
 #include "cmdMain.h"
+#include "operationdata.h"
+
+OperationData           *operation = NULL;
+WickrBotMainIPC         *rxIPC;
+WickrIOConsoleService   *consoleSvc;
 
 void redirectedOutput(QtMsgType type, const QMessageLogContext &, const QString & str)
 {
@@ -57,6 +63,15 @@ int main(int argc, char *argv[])
 
     QString appname = WBIO_PROVISION_TARGET;
     QString orgname = WBIO_ORGANIZATION;
+
+    operation = new OperationData();
+    operation->processName = WBIO_PROVISION_TARGET;
+    operation->databaseDir = WBIO_DEFAULT_DBLOCATION;
+    operation->m_botDB = new WickrIOClientDatabase(operation->databaseDir);
+
+    if (operation->m_botDB->isOpen()) {
+        operation->m_botDB->updateProcessState(WBIO_PROVISION_TARGET, QCoreApplication::applicationPid(), PROCSTATE_RUNNING);
+    }
 
     wickrProductSetProductType(ClientVersionInfo::getProductType());
     WickrURLs::setDefaultBaseURL(ClientConfigurationInfo::DefaultBaseURL);
@@ -91,8 +106,21 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName(orgname);
 
 
-    CmdMain mainCommands(app, argc, argv);
-    mainCommands.runCommands();
+    rxIPC = new WickrBotMainIPC(operation);
+    rxIPC->start();
+
+
+    consoleSvc = new WickrIOConsoleService(app, argc, argv, operation, rxIPC);
+    consoleSvc->startConsole();
+
+    app->exec();
+
+    if (operation->m_botDB->isOpen()) {
+        operation->m_botDB->updateProcessState(WBIO_PROVISION_TARGET, 0, PROCSTATE_DOWN);
+    }
+
+    delete rxIPC;
+    delete consoleSvc;
 
     return 0;
 }

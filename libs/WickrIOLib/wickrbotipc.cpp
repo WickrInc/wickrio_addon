@@ -89,7 +89,6 @@ void WickrBotIPC::slotErrorSend(QAbstractSocket::SocketError socketError)
 void WickrBotIPC::slotReadyToSend()
 {
     QByteArray data = m_sendMessage.toUtf8();
-    qDebug() << "Ready to send:" << m_sendMessage;
 
     m_socket->write(data);
     m_socket->flush();

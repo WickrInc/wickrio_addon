@@ -7,35 +7,49 @@
 #include "wickrbotsettings.h"
 #include "clientconfigurationinfo.h"
 
-CmdMain::CmdMain(QCoreApplication *app, int argc, char **argv) :
+CmdMain::CmdMain(QCoreApplication *app, int argc, char **argv, OperationData *operation) :
     m_app(app),
     m_argc(argc),
     m_argv(argv),
-    m_ipc(this)
+    m_txIPC(this),
+    m_operation(operation)
 {
 }
 
 CmdMain::~CmdMain()
 {
-    if (m_ioDB->isOpen()) {
-        m_ioDB->close();
-    }
-
     for (WickrIOClients *client : m_clients) {
         delete client;
     }
     m_clients.clear();
 }
 
+/**
+ * @brief slotGotMessage
+ * @param type
+ * @param value
+ */
+void CmdMain::signalReceivedMessage(QString type, QString value)
+{
+    if (type.toLower() == WBIO_IPCMSGS_USERSIGNKEY) {
+        qDebug() << "CONSOLE:********************************************************************";
+        qDebug() << "CONSOLE:**** USER SIGNING KEY";
+        qDebug() << "CONSOLE:**** You will need this to enter into the console for the Bot";
+        qDebug() << "CONSOLE:****";
+        qDebug() << "CONSOLE:" << value;
+        qDebug() << "CONSOLE:********************************************************************";
+    } else if (type.toLower() == WBIO_IPCMSGS_STATE) {
+        qDebug() << "Client changed state to" << value;
+        m_clientStateChanged = true;
+        m_clientState = value;
+    }
+}
+
 bool
 CmdMain::runCommands()
 {
-    // TODO: Need to add an entry into the client record table
-    m_ioDB = new WickrIOClientDatabase(WBIO_DEFAULT_DBLOCATION);
-    if (!m_ioDB->isOpen()) {
-        qDebug() << "CONSOLE:cannot open database!";
-        return false;
-    }
+    // Set a pointer to the WickrIO Database, in the parent class
+    m_ioDB = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
 
     updateBotList();
     QTextStream input(stdin);
@@ -132,6 +146,8 @@ CmdMain::runCommands()
             }
         }
     }
+
+    m_rxIPC->deleteLater();
     return true;
 }
 
@@ -236,7 +252,7 @@ CmdMain::startClient(int clientIndex, bool force)
                 qDebug() << "CONSOLE:Client must be in paused state to start it!";
             }
 #else
-            if (state.state == PROCSTATE_RUNNING) {
+            if (!force && state.state == PROCSTATE_RUNNING) {
                 // TODO: CHeck if the client is actually running
             } else {
                 // Going to force a start
@@ -279,11 +295,44 @@ CmdMain::startClient(int clientIndex, bool force)
                 if (force)
                     arguments.append("-force");
 
+                m_clientStateChanged = false;
+
                 QProcess exec;
                 exec.setStandardOutputFile(outputFile);
                 exec.setProcessChannelMode(QProcess::MergedChannels);
                 if (exec.startDetached(command, arguments, workingDir)) {
                     qDebug().noquote() << QString("CONSOLE:Started client for %1").arg(client->name);
+
+                    QString password = getNewValue("", "Enter password for conformance_bot");
+
+                    while ( true ) {
+                        if (!m_ioDB->getProcessState(processName, &state)) {
+                            // Can't get the process state, what to do
+                        }
+                        if (state.state != PROCSTATE_RUNNING) {
+                            qDebug() << "CONSOLE:Waiting for the comformance_bot to start";
+                            QThread::sleep(1);
+                            continue;
+                        }
+
+                        // It is running lets send the password to it now
+                        QString pwstring = QString("%1=%2").arg(WBIO_IPCMSGS_PASSWORD).arg(password);
+                        sendClientCmd(state.ipc_port, pwstring);
+
+                        // Need to check that the password worked
+                        while (true) {
+                            QCoreApplication::processEvents();
+                            if (m_clientStateChanged) {
+                                if (m_clientState == "loggedin") {
+                                    qDebug() << "CONSOLE:comformance_bot is logged in";
+                                } else if (m_clientState == "stopping") {
+                                    qDebug() << "CONSOLE:Failed to login!";
+                                }
+                                break;
+                            }
+                        }
+                        break;
+                    }
                 } else {
                     qDebug().noquote() << QString("CONSOLE:Could NOT start client for %1").arg(client->name);
                     qDebug().noquote() << QString("CONSOLE:command=%1").arg(command);
@@ -347,15 +396,15 @@ CmdMain::sendClientCmd(int port, const QString& cmd)
     m_clientMsgInProcess = true;
     m_clientMsgSuccess = false;
 
-    if (! m_ipc.sendMessage(port, cmd)) {
+    if (! m_txIPC.sendMessage(port, cmd)) {
         return false;
     }
 
     QTimer timer;
     QEventLoop loop;
 
-    loop.connect(&m_ipc, SIGNAL(signalSentMessage()), SLOT(quit()));
-    loop.connect(&m_ipc, SIGNAL(signalSendError()), SLOT(quit()));
+    loop.connect(&m_txIPC, SIGNAL(signalSentMessage()), SLOT(quit()));
+    loop.connect(&m_txIPC, SIGNAL(signalSendError()), SLOT(quit()));
     connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
 
     int loopCount = 6;

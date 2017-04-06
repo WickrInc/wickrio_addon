@@ -248,9 +248,6 @@ void WickrIOLoginHdlr::slotLoginDone(WickrLoginContext *ls)
         // Store networkId (in WickrSession)
         WickrCore::WickrSession::getActiveSession()->setNetworkIdFromLogin(ls->networkId());
 
-        emit signalLoginSuccess();
-
-
         // Need to display the Keys
         WickrCore::WickrUser *selfUser = WickrCore::WickrUser::getSelfUser();
         qDebug() << "********************************************************************";
@@ -259,6 +256,8 @@ void WickrIOLoginHdlr::slotLoginDone(WickrLoginContext *ls)
         qDebug() << "****";
         qDebug() << "" << QString(selfUser->getUserSigningKey().toHex());
         qDebug() << "********************************************************************";
+
+        emit signalLoginSuccess(QString(selfUser->getUserSigningKey().toHex()));
 
 
     } else {

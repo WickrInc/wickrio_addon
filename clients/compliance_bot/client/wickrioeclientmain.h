@@ -65,8 +65,11 @@ private:
     int m_timerStatsTicker;
     QString m_serverName;
 
-    WickrBotMainIPC *m_wickrIPC;
-    WickrIOReceiveThread *m_rxThread;
+    WickrBotIPC             m_txIPC;
+    WickrBotMainIPC         *m_rxIPC;
+    WickrIOReceiveThread    *m_rxThread;
+
+    bool    m_waitingForPassword;
 
     // Timer definitions
     void startTimer()
@@ -83,15 +86,18 @@ private:
 
     void stopAndExit(int procState);
 
+    bool sendConsoleMsg(const QString& cmd, const QString& value);
+
 private slots:
     void slotDoTimerWork();
-    void slotLoginSuccess();
+    void slotLoginSuccess(QString userSigningKey);
     void slotRxProcessStarted();
     void slotRxProcessReceiving();
 
     void processStarted();
     void stopAndExitSlot();
     void pauseAndExitSlot();
+    void slotReceivedMessage(QString type, QString value);
 
     void slotDeleteRoom(const QString& vGroupID, bool selfInitiated);
     void slotRemoveFromRoom(const QString& vGroupID);

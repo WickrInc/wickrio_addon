@@ -74,7 +74,7 @@ private:
 signals:
     void signalExit();
     void signalLoginFailed();
-    void signalLoginSuccess();
+    void signalLoginSuccess(QString userSigningKey);
     void signalOnlineFlag(bool);
 
     void signalNetworkStatus(bool);

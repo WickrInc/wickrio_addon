@@ -5,12 +5,14 @@
 #include "wickrioclients.h"
 #include "wickriodatabase.h"
 #include "wickrbotipc.h"
+#include "wickrioipc.h"
+#include "operationdata.h"
 
 class CmdMain : public CmdBase
 {
     Q_OBJECT
 public:
-    CmdMain(QCoreApplication *app, int argc, char **argv);
+    CmdMain(QCoreApplication *app, int argc, char **argv, OperationData *operation);
     ~CmdMain();
 
     bool runCommands();
@@ -20,9 +22,16 @@ private:
     int                 m_argc;
     char                **m_argv;
 
-    WickrIOClientDatabase   *m_ioDB;
     QList<WickrIOClients *> m_clients;
-    WickrBotIPC             m_ipc;
+    WickrBotIPC             m_txIPC;
+    WickrBotMainIPC         *m_rxIPC;
+
+    OperationData           *m_operation;
+
+    WickrIOClientDatabase   *m_ioDB;
+
+    QString                 m_clientState;
+    bool                    m_clientStateChanged;
 
     // Client Message handling values
     bool m_clientMsgSuccess;
@@ -37,6 +46,9 @@ private:
     void pauseClient(int clientIndex);
     bool sendClientCmd(int port, const QString& cmd);
     void configClient(int clientIndex);
+
+public slots:
+    void signalReceivedMessage(QString type, QString value);
 
 };
 

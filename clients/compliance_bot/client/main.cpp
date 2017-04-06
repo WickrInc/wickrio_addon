@@ -86,6 +86,10 @@ searchConfigFile() {
 #endif
 }
 
+void redirectedOutput(QtMsgType, const QMessageLogContext &, const QString &)
+{
+}
+
 Q_IMPORT_PLUGIN(QSQLCipherDriverPlugin)
 
 int main(int argc, char *argv[])
@@ -93,6 +97,9 @@ int main(int argc, char *argv[])
     QCoreApplication *app = NULL;
 
     Q_INIT_RESOURCE(compliance_bot);
+
+    // Hide messages until we redirect the output
+    qInstallMessageHandler(redirectedOutput);
 
     // Setup appropriate library values based on Beta or Production client
     QByteArray secureJson;
@@ -106,7 +113,7 @@ int main(int argc, char *argv[])
     }
 
     QString username;
-    QString appname = WBIO_CLIENT_TARGET;
+    QString appname = WBIO_BOT_TARGET;
     QString orgname = WBIO_ORGANIZATION;
 
     wickrProductSetProductType(ClientVersionInfo::getProductType());
@@ -117,7 +124,7 @@ int main(int argc, char *argv[])
     bool dbEncrypt = true;
 
     operation = new OperationData();
-    operation->processName = WBIO_CLIENT_TARGET;
+    operation->processName = WBIO_BOT_TARGET;
 
     QString clientDbPath("");
     QString suffix;

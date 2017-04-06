@@ -37,6 +37,8 @@ private slots:
 signals:
     void signalGotStopRequest();
     void signalGotPauseRequest();
+    void signalReceivedMessage(QString type, QString value);
+
 };
 
 

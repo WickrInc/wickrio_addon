@@ -39,7 +39,7 @@ include($${COMMON}/common.pri)
 #
 # Include the Wickr IO common client files
 #
-#include($${CLIENTCOMMON}/common.pri)
+include($${CLIENTCOMMON}/common.pri)
 
 #
 # Include the Wickr IO common HTTP files
@@ -125,7 +125,8 @@ SOURCES += \
     clientversioninfo.cpp \
     wickrIOClientRuntime.cpp \
     wickrIOBot.cpp \
-    cmdMain.cpp
+    cmdMain.cpp \
+    wickrIOConsole.cpp
 
 HEADERS += \
     $${COMMON}/cmdbase.h \
@@ -139,7 +140,8 @@ HEADERS += \
     clientversioninfo.h \
     wickrIOClientRuntime.h \
     wickrIOBot.h \
-    cmdMain.h
+    cmdMain.h \
+    wickrIOConsole.h
 
 # qsqlcipher_wickr
 
