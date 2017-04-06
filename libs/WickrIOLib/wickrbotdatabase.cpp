@@ -137,7 +137,7 @@ WickrBotDatabase::createRelationalTables()
     if (! m_db.tables().contains(QLatin1String(DB_ACTION_TABLE))) {
         QSqlQuery query(m_db);
         if (!query.exec("CREATE TABLE action_cache (id int primary key, json text, created timestamp, runtime timestamp, attempts int, \
-                client_id int, FOREIGN KEY (client_id) REFERENCES clients(id))")) {
+                client_id int, FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE)")) {
             qDebug() << "create table failed, query error=" << query.lastError();
             query.finish();
             return false;
@@ -984,18 +984,18 @@ WickrBotDatabase::updateClientsRecord(WickrBotClients *client, bool insertIfNotE
 
 bool
 WickrBotDatabase::deleteClientUsingName(QString name) {
-    if (!initialized)
+    if (!initialized){
         return false;
+    }
 
-    QString queryString = "DELETE FROM clients WHERE name = ?";
     QSqlQuery query(m_db);
     query.exec("PRAGMA foreign_keys = ON;");
-    query.prepare(queryString);
-    query.bindValue(0, name);
 
-    if ( !query.exec()) {
+    QString queryString = QString("DELETE FROM clients WHERE name = '%1'").arg(name);
+    if ( !query.exec(queryString)) {
         query.finish();
         qDebug() << "deleteClientUsingName: Could not delete record for" << name;
+        qDebug() << "deleteClientUsingName: error=" << query.lastError();
         return false;
     }
 

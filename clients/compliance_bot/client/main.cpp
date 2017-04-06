@@ -15,7 +15,6 @@
 
 #include "clientconfigurationinfo.h"
 #include "clientversioninfo.h"
-#include "wickrIOBootstrap.h"
 #include "wickrIOClientRuntime.h"
 
 
@@ -330,6 +329,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+#if 0
     //  Read in the bootstrap file
     QString bootstrapFilename = clientDbPath + "/bootstrap";
     if (QFile::exists(bootstrapFilename)) {
@@ -340,6 +340,7 @@ int main(int argc, char *argv[])
         }
         WickrIOEClientMain::loadBootstrapString(bootstrapString);
     }
+#endif
 
     /*
      * When the WickrIOEClientMain thread is started then create the IP

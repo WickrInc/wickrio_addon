@@ -51,10 +51,10 @@ CmdMain::runCommands()
     // Set a pointer to the WickrIO Database, in the parent class
     m_ioDB = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
 
-    updateBotList();
     QTextStream input(stdin);
 
     while (true) {
+        updateBotList();
         qDebug() << "CONSOLE:Enter command [list, add, config, start, stop]:";
         QString line = input.readLine();
 
@@ -98,12 +98,8 @@ CmdMain::runCommands()
 #endif
             } else if (cmd == "add") {
                 // FOR NOW lets add a new user
-                WickrIOBot *newbot = new WickrIOBot(m_app, m_argc, m_argv);
-                if (newbot->newBotCreate()) {
-                    updateBotList();
-                } else {
-
-                }
+                WickrIOBot *newbot = new WickrIOBot(m_app, m_argc, m_argv, m_ioDB);
+                newbot->newBotCreate();
             } else if (cmd == "delete") {
                 if (clientIndex == -1) {
                     qDebug() << "CONSOLE:Usage: delete <index>";
@@ -521,6 +517,7 @@ CmdMain::resetClient(int clientIndex)
         QDir dir(clientDirName);
         QStringList name_filters;
         name_filters << "wickr_db.sqlite.*";
+        name_filters << "*.wic";
         QFileInfoList fil = dir.entryInfoList(name_filters);
         for (QFileInfo finfo : fil) {
             if (finfo.isFile()) {

@@ -22,12 +22,13 @@
 #include "WickrUtil.h"
 
 
-WickrIOBot::WickrIOBot(QCoreApplication *app, int argc, char **argv) :
+WickrIOBot::WickrIOBot(QCoreApplication *app, int argc, char **argv, WickrIOClientDatabase *ioDB) :
     m_app(app),
     m_argc(argc),
     m_argv(argv),
     m_dbEncrypt(true),
-    m_provision(&m_client)
+    m_provision(&m_client),
+    m_ioDB(ioDB)
 {
     for( int argidx = 1; argidx < argc; argidx++ ) {
         QString cmd(argv[argidx]);
@@ -116,6 +117,8 @@ WickrIOBot::newBotCreate()
      */
     WickrIOClientRuntime::init();
 
+    m_loginDone = false;
+
     /*
      * Start the WickrIO thread
      */
@@ -141,15 +144,21 @@ WickrIOBot::newBotCreate()
     QObject::connect(WICKRBOT, &WickrIOEClientMain::signalLoginSuccess, [=]() {
         qDebug() << "CONSOLE:Successfully logged in as new user!";
         qDebug() << "CONSOLE:Our work is done here, logging off!";
-        m_app->quit();
+        m_loginDone = true;
     });
     QObject::connect(WICKRBOT, &WickrIOEClientMain::signalLoginFailure, [=]() {
         qDebug() << "CONSOLE:Failed to register/login!";
-        m_app->quit();
+        m_loginDone = true;
     });
     WICKRBOT->start();
 
-    int retval = m_app->exec();
+
+
+    // NEED TO WAIT HERE TILL THE LOGIN HAS BEEN PROCESSED
+    while (!m_loginDone) {
+        QThread::sleep(1);
+        m_app->processEvents();
+    }
 
     if (WICKRBOT->loginSuccess()) {
         // save setup information to the settings file
@@ -157,7 +166,7 @@ WickrIOBot::newBotCreate()
 
         settings->beginGroup(WBSETTINGS_USER_HEADER);
         settings->setValue(WBSETTINGS_USER_USER, m_client.user);
-        settings->setValue(WBSETTINGS_USER_PASSWORD, m_client.password);      //TODO: THIS NEEDS TO BE REMOVED
+//        settings->setValue(WBSETTINGS_USER_PASSWORD, m_client.password);      //TODO: THIS NEEDS TO BE REMOVED
         settings->endGroup();
 
     #ifdef Q_OS_WIN
@@ -213,26 +222,37 @@ WickrIOBot::newBotCreate()
         }
 
         // TODO: Need to add an entry into the client record table
-        WickrIOClientDatabase *m_ioDB = new WickrIOClientDatabase(WBIO_DEFAULT_DBLOCATION);
         if (!m_ioDB->isOpen()) {
             qDebug() << "CONSOLE:cannot open database!";
         } else {
+            QString savePassword = m_client.password;
+            m_client.password = "";
             if (!m_ioDB->insertClientsRecord(&m_client)) {
                 qDebug() << "CONSOLE:cannot create client record!";
             } else {
-
-#if 0
-                QString processName = WBIOServerCommon::getClientProcessName(newClient);
-#else
-                QString processName = QString("%1.%2").arg(m_client.binary).arg(m_client.name);
-#endif
+                QString processName = m_client.getProcessName();
 
                 // Set the state of the client process to paused
                 if (! m_ioDB->updateProcessState(processName, 0, PROCSTATE_PAUSED)) {
                     qDebug() << "CONSOLE:Could not create process state record!";
                 }
             }
-            m_ioDB->close();
+            m_client.password = savePassword;
+        }
+
+        // KLUDGE FOR NOW DO A RESET OF THE CLIENT DATABASE
+        // Remove the files associated with the client
+        QString clientDirName = QString(WBIO_CLIENT_DBDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(m_client.name);
+        QDir dir(clientDirName);
+        QStringList name_filters;
+        name_filters << "wickr_db.sqlite.*";
+        name_filters << "*.wic";
+        QFileInfoList fil = dir.entryInfoList(name_filters);
+        for (QFileInfo finfo : fil) {
+            if (finfo.isFile()) {
+                QFile file(finfo.filePath());
+                file.remove();
+            }
         }
     }
     WICKRBOT->deleteLater();

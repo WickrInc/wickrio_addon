@@ -28,7 +28,7 @@ WickrIOClientDatabase::createRelationalTables()
                         "client_id int NOT NULL, "
                         "type text, "
                         "value text NOT NULL, "
-                        "FOREIGN KEY (client_id) REFERENCES clients(id))")) {
+                        "FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE)")) {
             qDebug() << "create app_settings table failed, query error=" << query.lastError();
             query.finish();
             return false;
@@ -82,7 +82,7 @@ WickrIOClientDatabase::createRelationalTables()
                         "type int, "
                         "json text NOT NULL, "
                         "has_attachment int, "
-                        "FOREIGN KEY (client_id) REFERENCES clients(id))")) {
+                        "FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE)")) {
             qDebug() << "create messages table failed, query error=" << query.lastError();
             query.finish();
             return false;

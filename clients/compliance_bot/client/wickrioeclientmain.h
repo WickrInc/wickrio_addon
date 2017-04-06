@@ -55,7 +55,8 @@ public:
     QString m_username;
     QString m_password;
 
-    static bool loadBootstrapString(const QString& bootstrapStr);
+    bool loadBootstrapFile();
+    bool loadBootstrapString(const QString& bootstrapStr);
 
 private:
     OperationData *m_operation;

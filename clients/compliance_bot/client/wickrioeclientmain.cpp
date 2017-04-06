@@ -21,6 +21,8 @@
 #include "clientconfigurationinfo.h"
 #include "clientversioninfo.h"
 #include "wbio_common.h"
+#include "wickrIOBootstrap.h"
+
 
 WickrIOEClientMain *WickrIOEClientMain::theBot;
 
@@ -353,6 +355,7 @@ void WickrIOEClientMain::slotReceivedMessage(QString type, QString value)
         if (m_waitingForPassword) {
             m_waitingForPassword = false;
             m_password = value;
+            loadBootstrapFile();
             m_loginHdlr.addLogin(m_username, m_password);
             m_loginHdlr.initiateLogin();
         }
@@ -667,7 +670,6 @@ void WickrIOEClientMain::slotOnLoginMsgSynchronizationComplete()
                                          false);
 }
 
-
 bool WickrIOEClientMain::parseSettings(QSettings *settings)
 {
     /*
@@ -686,6 +688,7 @@ bool WickrIOEClientMain::parseSettings(QSettings *settings)
     if (password.isEmpty()) {
         m_waitingForPassword = true;
     } else {
+        loadBootstrapFile();
         m_loginHdlr.addLogin(username, password);
         m_waitingForPassword = false;
     }
@@ -695,6 +698,24 @@ bool WickrIOEClientMain::parseSettings(QSettings *settings)
     m_password = password;
 
     return true;
+}
+
+bool
+WickrIOEClientMain::loadBootstrapFile()
+{
+    QString clientDbDir = WickrAppContext::getFilesDir();
+
+    //  Read in the bootstrap file
+    QString bootstrapFilename = clientDbDir + "bootstrap";
+    if (QFile::exists(bootstrapFilename)) {
+        QString bootstrapString = WickrIOBootstrap::readFile(bootstrapFilename, m_password);
+        if (bootstrapString == nullptr) {
+            qDebug() << "Cannot read the bootstrap file!";
+            return false;
+        }
+        return loadBootstrapString(bootstrapString);
+    }
+    return false;
 }
 
 /**

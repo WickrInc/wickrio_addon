@@ -511,5 +511,5 @@ WickrIOEClientMain::loadBootstrapString(const QString& bootstrapStr)
     {
         qDebug() << "Incorrect credentials - please try again. Configuration file error";
     }
-    return false;
+    return true;
 }
