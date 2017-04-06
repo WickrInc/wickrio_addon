@@ -192,11 +192,14 @@ bool WickrIOReceiverMgr::dispatch(WickrCore::WickrInbox *msg)
     QString statusText = msgDate.toString( QLocale::system().dateTimeFormat(QLocale::ShortFormat));
     jsonObject.insert(APIJSON_MSGTIME, statusText);
 
+
+#if 0
+    // NOT SUPPORTED RIGHT NOW
     QString respondApiText = m_operation->getResponseURL();
     if (!respondApiText.isEmpty()) {
         jsonObject.insert(APIJSON_RESPOND_API, respondApiText);
     }
-
+#endif
 
     /*
      * Insert message specific stuff
@@ -444,7 +447,7 @@ WickrIOReceiverMgr::processFileMsg(QJsonObject& jsonObject,  WickrCore::WickrInb
     fileJsonObject.insert(APIJSON_FILE_LOCALFILE, attachmentFileName);
     fileJsonObject.insert(APIJSON_FILE_FILENAME, dLoadFileName);
     fileJsonObject.insert(APIJSON_FILE_GUID, file_guid);
-    jsonObject.insert(APIJSON_CTRL_HEADER, fileJsonObject);
+    jsonObject.insert(APIJSON_FILE_HEADER, fileJsonObject);
 
     rxDownload = new WickrIORxDownloadFile(msg, fileInfo, attachmentFileName, realFileName, jsonObject);
 
