@@ -116,9 +116,15 @@ cp -a $current/../../../../../../${build_dir}/clients/compliance_bot/provision/p
 #
 # TODO: Will need shared libraries
 #
-cp -a $current/../../../../../../${build_dir}/libs/QtWebApp/libQtWebAppd.* $libdir
-cp -a $current/../../../../../../${build_dir}/libs/WickrIOLib/libWickrIOLibd.* $libdir
-cp -a $current/../../../../../../${build_dir}/libs/WickrIOGUI/libWickrIOGUId.* $libdir
+if [ "$release_flag" = "true" ]; then
+  cp -a $current/../../../../../../${build_dir}/libs/QtWebApp/libQtWebApp.* $libdir
+  cp -a $current/../../../../../../${build_dir}/libs/WickrIOLib/libWickrIOLib.* $libdir
+  cp -a $current/../../../../../../${build_dir}/libs/WickrIOGUI/libWickrIOGUI.* $libdir
+else
+  cp -a $current/../../../../../../${build_dir}/libs/QtWebApp/libQtWebAppd.* $libdir
+  cp -a $current/../../../../../../${build_dir}/libs/WickrIOLib/libWickrIOLibd.* $libdir
+  cp -a $current/../../../../../../${build_dir}/libs/WickrIOGUI/libWickrIOGUId.* $libdir
+fi
 cp -a $current/../../../../../../${build_dir}/libs/SMTPEmail/libSMTPEmail.* $libdir
 
 #
