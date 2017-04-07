@@ -108,6 +108,8 @@ esac
 
 btype="release"
 build=autobuild-$btype
+deploy="$build/compliance.deploy"
+output="$abs/autobuild-output/compliance"
 
 export PATH QTDIR INCLUDE LIB LIBPATH BUILD_CMD
 echo "building $type for ${platform}..."
@@ -134,10 +136,13 @@ linux)
 
     # Deploy this thing
     rm -rf "$deploy"
-    rm -f "$output/${appname}*"
     mkdir -p "$deploy"
-    $abs/clients/compliance_bot/installers/linux/scripts/create_prod "$output"
-    $abs/services/installers/linux/scripts/create_prod "$output"
+    rm -rf "$output"
+    mkdir -p "$output"
+    $abs/clients/compliance_bot/installers/linux/scripts/create_prod "$deploy"
+    $abs/services/installers/linux/scripts/create_prod "$deploy"
+
+    (cd $deploy ; zip -r "$output/compliance-${version}.zip" *)
     ;;
 win32)
     echo "DONE!"
