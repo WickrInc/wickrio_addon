@@ -8,6 +8,7 @@
 # $3 = build extension string (i.e. alpha)
 # $4 = build installation string (i.e. Alpha)
 # $5 = release build flag (true for release)
+# $6 = Output directory
 
 set -e
 current=`dirname $0`
@@ -21,6 +22,9 @@ release_flag=$5
 
 if test -z "$release_flag" ; then
 	release_flag="false"; fi
+
+if test -z "$output_dif" ; then
+    output_dir="/dev/null" ; fi
 
 #
 # Debug display of input
@@ -192,3 +196,7 @@ chmod 4755 $bindir/WickrIOConsole$BldType
 
 fakeroot dpkg -b wio_services${bldtype}-deb/ wio_services${bldtype}_${version}_amd64.deb
 sha256sum wio_services${bldtype}_${version}_amd64.deb >wio_services${bldtype}_${version}_amd64.sha256
+
+if test -d "$output_dir" ; then
+    cp wio_services${bldtype}_${version}_amd64.* "$output_dir/" ; fi
+
