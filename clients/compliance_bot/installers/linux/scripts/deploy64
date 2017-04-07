@@ -115,22 +115,22 @@ mkdir -p $appdata
 #
 # Copy the executables
 #
-cp -a $current/../../../../../../${build_dir}/clients/compliance_bot/client/compliance_bot$BldType $bindir
-cp -a $current/../../../../../../${build_dir}/clients/compliance_bot/provision/provision$BldType $bindir/compliance_prov$BldType
+cp -a ${build_dir}/clients/compliance_bot/client/compliance_bot$BldType $bindir
+cp -a ${build_dir}/clients/compliance_bot/provision/provision$BldType $bindir/compliance_prov$BldType
 
 #
 # TODO: Will need shared libraries
 #
 if [ "$release_flag" = "true" ]; then
-  cp -a $current/../../../../../../${build_dir}/libs/QtWebApp/libQtWebApp.* $libdir
-  cp -a $current/../../../../../../${build_dir}/libs/WickrIOLib/libWickrIOLib.* $libdir
-  cp -a $current/../../../../../../${build_dir}/libs/WickrIOGUI/libWickrIOGUI.* $libdir
+  cp -a ${build_dir}/libs/QtWebApp/libQtWebApp.* $libdir
+  cp -a ${build_dir}/libs/WickrIOLib/libWickrIOLib.* $libdir
+  cp -a ${build_dir}/libs/WickrIOGUI/libWickrIOGUI.* $libdir
 else
-  cp -a $current/../../../../../../${build_dir}/libs/QtWebApp/libQtWebAppd.* $libdir
-  cp -a $current/../../../../../../${build_dir}/libs/WickrIOLib/libWickrIOLibd.* $libdir
-  cp -a $current/../../../../../../${build_dir}/libs/WickrIOGUI/libWickrIOGUId.* $libdir
+  cp -a ${build_dir}/libs/QtWebApp/libQtWebAppd.* $libdir
+  cp -a ${build_dir}/libs/WickrIOLib/libWickrIOLibd.* $libdir
+  cp -a ${build_dir}/libs/WickrIOGUI/libWickrIOGUId.* $libdir
 fi
-cp -a $current/../../../../../../${build_dir}/libs/SMTPEmail/libSMTPEmail.* $libdir
+cp -a ${build_dir}/libs/SMTPEmail/libSMTPEmail.* $libdir
 
 #
 # TODO: Are there any chrpath call needed to be done?
@@ -184,5 +184,9 @@ fakeroot dpkg -b wio_compliance_bot${bldtype}-deb/ wio_compliance_bot${bldtype}_
 sha256sum wio_compliance_bot${bldtype}_${version}_amd64.deb >wio_compliance_bot${bldtype}_${version}_amd64.sha256
 
 if test -d "$output_dir" ; then
-    cp wio_compliance_bot${bldtype}_${version}_amd64.* "$output_dir/" ; fi
+    cp wio_compliance_bot${bldtype}_${version}_amd64.* "$output_dir/" 
+    echo "copying wio_compliance_bot${bldtype}_${version}_amd64.* to $output_dir/" 
+else
+    echo "$output_dir does not exist!!!"
+fi
 

@@ -8,7 +8,7 @@ cd $current
 
 QTVER="5_7"
 
-BUILDDIR=build-wickr-wickrio-Desktop_Qt_${QTVER}_GCC_64bit_BUILT-QA
+BUILDDIR=../../../../../../build-wickr-wickrio-Desktop_Qt_${QTVER}_GCC_64bit_BUILT-QA
 build_number=`cat ../../../BUILD_NUMBER`
 
 $current/deploy64 $BUILDDIR $build_number qa QA false $1

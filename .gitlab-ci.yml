@@ -15,9 +15,6 @@ build_mac:
     - macos
 
 test_mac:
-  cache:
-    paths:
-    - build/
   stage: test
   script:
     - bash autobuild.sh
@@ -28,9 +25,6 @@ test_mac:
 ######################################################
 # Windows
 build_win:
-  cache:
-    paths:
-    - build/
   stage: build
   script:
     - bash autobuild.sh
@@ -38,9 +32,6 @@ build_win:
     - windows
 
 test_win:
-  cache:
-    paths:
-    - build/
   stage: test
   script:
     - bash autobuild.sh
@@ -58,11 +49,12 @@ build_linux:
     - tags
   tags:
     - linux
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - autobuild-release/compliance.deploy/*.zip
 
 test_linux:
-  cache:
-    paths:
-    - build/
   stage: test
   script:
     - bash autobuild.sh
