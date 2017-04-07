@@ -166,6 +166,13 @@ bool WickrIOReceiverMgr::dispatch(WickrCore::WickrInbox *msg)
     WickrCore::WickrUser *sender = msg->getSenderUser();
     jsonObject.insert(APIJSON_MSGSENDER, sender->getUserID());
 
+    if (msg->getMsgBody().targetusers_size()) {
+        const QString receiver = QString::fromStdString(msg->getMsgBody().targetusers(0));
+        if (!receiver.isEmpty())
+            jsonObject.insert(APIJSON_MSGRECEIVER, receiver);
+    }
+
+
 #if 0
     WickrCore::WickrConvo* pConvo;
     if (pConvo) {

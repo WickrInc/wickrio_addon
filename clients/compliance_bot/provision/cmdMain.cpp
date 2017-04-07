@@ -298,15 +298,15 @@ CmdMain::startClient(int clientIndex, bool force)
                 exec.setProcessChannelMode(QProcess::MergedChannels);
                 if (exec.startDetached(command, arguments, workingDir)) {
                     qDebug().noquote() << QString("CONSOLE:Started client for %1").arg(client->name);
-
-                    QString password = getNewValue("", "Enter password for conformance_bot");
+                    QString prompt = QString("Enter password for %1").arg(client->name);
+                    QString password = getNewValue("", prompt);
 
                     while ( true ) {
                         if (!m_ioDB->getProcessState(processName, &state)) {
                             // Can't get the process state, what to do
                         }
                         if (state.state != PROCSTATE_RUNNING) {
-                            qDebug() << "CONSOLE:Waiting for the comformance_bot to start";
+                            qDebug() << "CONSOLE:Waiting for the compliance_bot to start";
                             QThread::sleep(1);
                             continue;
                         }
