@@ -130,6 +130,14 @@ linux)
     make linux.release.install
     (cd $build ; qmake ../wickr-wickrio.pro $qmake $qtype)
     (cd $build ; $BUILD_CMD)
+
+
+    # Deploy this thing
+    rm -rf "$deploy"
+    rm -f "$output/${appname}*"
+    mkdir -p "$deploy"
+    $abs/clients/compliance_bot/installers/linux/scripts/create_prod "$output"
+    $abs/services/installers/linux/scripts/create_prod "$output"
     ;;
 win32)
     echo "DONE!"
