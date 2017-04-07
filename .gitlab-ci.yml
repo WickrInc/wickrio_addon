@@ -6,7 +6,7 @@ stages:
 ######################################################
 # Mac
 build_mac:
-  stage: clean
+  stage: build
   script:
     - bash autobuild.sh
   only:
@@ -31,7 +31,7 @@ build_win:
   cache:
     paths:
     - build/
-  stage: test
+  stage: build
   script:
     - bash autobuild.sh
   tags:
@@ -51,7 +51,7 @@ test_win:
 ######################################################
 # Linux
 build_linux:
-  stage: clean
+  stage: build
   script:
     - bash autobuild.sh
   only:
