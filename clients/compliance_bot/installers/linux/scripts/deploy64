@@ -19,7 +19,7 @@ build_number=$2
 build_extension=$3
 install_extension=$4
 release_flag=$5
-output_dir ="$6"
+output_dir="$6"
 
 if test -z "$release_flag" ; then
     release_flag="false"; fi
