@@ -32,6 +32,23 @@ abs=`pwd`
 pwd=`basename $abs`
 pwd="../$pwd"
 
+# future use get version...
+num=`cat $abs/BUILD_NUMBER`
+longver="$num"
+maj=`expr $num / 1000000`
+num=`expr $num - ${maj}000000`
+min=`expr $num / 10000`
+num=`expr $num - ${min}0000`
+pat=`expr $num / 100`
+bld=`expr $num % 100`
+if test "$bld" -lt "10" ; then
+    bld="00$bld"
+else
+    bld="0$bld"
+fi
+release=`expr $num - ${pat}00`
+version="${maj}.${min}.${pat}"
+
 qtype="CONFIG+=wickr_compliance_bot CONFIG+=use_wickr_npl"
 
 case "$platform" in
@@ -149,7 +166,7 @@ echo "going to create prod for services"
     build_number=`cat $abs/services/BUILD_NUMBER`
     $abs/services/installer/linux/scripts/deploy64 $binary_dir $build_number "" "" true "$deploy"
 
-    (cd $deploy ; zip -r "$output/compliance-${version}.zip" *.deb *.sha256)
+    (cd $deploy ; zip -r "$output/compliance-bot-${version}.zip" *.deb *.sha256)
     ;;
 win32)
     echo "DONE!"
