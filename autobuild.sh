@@ -32,7 +32,7 @@ abs=`pwd`
 pwd=`basename $abs`
 pwd="../$pwd"
 
-qtype="CONFIG+=wickr_compliance_bot"
+qtype="CONFIG+=wickr_compliance_bot CONFIG+=use_wickr_npl"
 
 case "$platform" in
 Darwin)
