@@ -52,7 +52,7 @@ build_linux:
   artifacts:
     expire_in: 1 week
     paths:
-      - autobuild-output/compliance.deploy/*.zip
+      - autobuild-output/compliance/*.zip
 
 test_linux:
   stage: test
