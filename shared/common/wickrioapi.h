@@ -106,6 +106,10 @@
 #define APIJSON_KEYVER_REASON   "reason"
 #define APIJSON_KEYVER_VERKEY   "verifiedkey"
 
+#define APIJSON_CALL_HEADER     "call"
+#define APIJSON_CALL_STATUS     "status"
+#define APIJSON_CALL_MEETINGID  "meetingid"
+
 #define APIJSON_CTRL_HEADER     "control"
 #define APIJSON_CTRL_MSGTYPE    "msgtype"
 #define APIJSON_CTRL_MEMBERS    "members"

@@ -50,6 +50,7 @@ private:
     // Process inbound messages
     bool processKeyVerificationMsg(QJsonObject& jsonObject,  WickrCore::WickrInbox *msg);
     bool processFileMsg(QJsonObject& jsonObject,  WickrCore::WickrInbox *msg);
+    bool processCallingMsg(QJsonObject& jsonObject,  WickrCore::WickrInbox *msg);
 
     bool processControlMsg(QJsonObject& jsonObject,  WickrCore::WickrInbox *msg);
     bool processCreateRoomBase(QJsonObject& jsonObject,  WickrCore::WickrGroupControlCreateSecureRoom *ctrlMsg);

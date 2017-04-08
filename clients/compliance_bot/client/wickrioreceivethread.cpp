@@ -10,6 +10,7 @@
 #include "common/wickrRuntime.h"
 #include "user/wickrKeyVerificationMgr.h"
 #include "user/wickrKeyVerificationMessage.h"
+#include "calling/wickraudiovideocontrolmessage.h"
 
 #include "common/wickrNotifyList.h"
 
@@ -236,7 +237,12 @@ bool WickrIOReceiverMgr::dispatch(WickrCore::WickrInbox *msg)
             //TODO: what to do if this returns false
             failedProcessing = true;
         }
+    } else if (mclass == MsgClass_Call) {
+        if (!processCallingMsg(jsonObject, msg)) {
+            failedProcessing = true;
+        }
     }
+
 
     if (! extendProcessing && ! failedProcessing) {
         QJsonDocument saveDoc(jsonObject);
@@ -491,6 +497,24 @@ WickrIOReceiveThread::getAttachmentFile(const QByteArray &data, QString extensio
     tempFile.write(data);
     tempFile.close();
     return attachmentFileName;
+}
+
+bool
+WickrIOReceiverMgr::processCallingMsg(QJsonObject& jsonObject,  WickrCore::WickrInbox *msg)
+{
+    WickrCore::WickrAudioVideoControlMessage *avMsg = WickrCore::WickrAudioVideoControlMessage::create( msg->getMsgBody() );
+    QJsonObject verifyJsonObject;
+
+    if (avMsg) {
+        verifyJsonObject.insert(APIJSON_CALL_STATUS, avMsg->status());
+
+        if (!avMsg->getMeetingId().isEmpty()) {
+            verifyJsonObject.insert(APIJSON_CALL_MEETINGID, avMsg->getMeetingId());
+        }
+    }
+
+    jsonObject.insert(APIJSON_CALL_HEADER, verifyJsonObject);
+    return true;
 }
 
 
