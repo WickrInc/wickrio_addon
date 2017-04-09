@@ -24,9 +24,6 @@ output_dir="$6"
 if test -z "$release_flag" ; then
     release_flag="false"; fi
 
-if test -z "$output_dir" ; then
-    output_dir="/dev/null" ; fi
-
 #
 # Debug display of input
 #
@@ -186,7 +183,5 @@ sha256sum wio_compliance_bot${bldtype}_${version}_amd64.deb >wio_compliance_bot$
 if test -d "$output_dir" ; then
     cp wio_compliance_bot${bldtype}_${version}_amd64.* "$output_dir/" 
     echo "copying wio_compliance_bot${bldtype}_${version}_amd64.* to $output_dir/" 
-else
-    echo "$output_dir does not exist!!!"
 fi
 

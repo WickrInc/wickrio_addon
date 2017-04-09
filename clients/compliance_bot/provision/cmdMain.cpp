@@ -297,7 +297,7 @@ CmdMain::startClient(int clientIndex, bool force)
                 exec.setStandardOutputFile(outputFile);
                 exec.setProcessChannelMode(QProcess::MergedChannels);
                 if (exec.startDetached(command, arguments, workingDir)) {
-                    qDebug().noquote() << QString("CONSOLE:Started client for %1").arg(client->name);
+                    qDebug().noquote() << QString("CONSOLE:Starting %1").arg(client->name);
                     QString prompt = QString("Enter password for %1").arg(client->name);
                     QString password = getNewValue("", prompt);
 
@@ -306,7 +306,7 @@ CmdMain::startClient(int clientIndex, bool force)
                             // Can't get the process state, what to do
                         }
                         if (state.state != PROCSTATE_RUNNING) {
-                            qDebug() << "CONSOLE:Waiting for the compliance_bot to start";
+                            qDebug().noquote() << QString("CONSOLE:Waiting for %1 to start").arg(client->name);
                             QThread::sleep(1);
                             continue;
                         }
@@ -320,9 +320,9 @@ CmdMain::startClient(int clientIndex, bool force)
                             QCoreApplication::processEvents();
                             if (m_clientStateChanged) {
                                 if (m_clientState == "loggedin") {
-                                    qDebug() << "CONSOLE:comformance_bot is logged in";
+                                    qDebug().noquote() << QString("CONSOLE:%1 is logged in").arg(client->name);
                                 } else if (m_clientState == "stopping") {
-                                    qDebug() << "CONSOLE:Failed to login!";
+                                    qDebug().noquote() << QString("CONSOLE:%1 to login!").arg(client->name);
                                 }
                                 break;
                             }
@@ -330,7 +330,7 @@ CmdMain::startClient(int clientIndex, bool force)
                         break;
                     }
                 } else {
-                    qDebug().noquote() << QString("CONSOLE:Could NOT start client for %1").arg(client->name);
+                    qDebug().noquote() << QString("CONSOLE:Could NOT start %1").arg(client->name);
                     qDebug().noquote() << QString("CONSOLE:command=%1").arg(command);
             #ifdef DEBUG_TRACE
                     qDebug() << "Leaving startClient: could not start!";
@@ -340,7 +340,7 @@ CmdMain::startClient(int clientIndex, bool force)
             }
 #endif
         } else {
-            qDebug() << "CONSOLE:Could not get the clients state!";
+            qDebug().noquote() << QString("CONSOLE:Could NOT get the state for %1").arg(client->name);
         }
     }
 }
