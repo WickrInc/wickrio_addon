@@ -6,6 +6,7 @@
 #include "wbio_common.h"
 #include "wickrbotsettings.h"
 #include "clientconfigurationinfo.h"
+#include "wickrbotutils.h"
 
 CmdMain::CmdMain(QCoreApplication *app, int argc, char **argv, OperationData *operation) :
     m_app(app),
@@ -181,19 +182,25 @@ CmdMain::listBots()
             WickrBotProcessState state;
             QString clientState = "UNKNOWN";
             QString processName = client->getProcessName();
+            QString procRunningString;
             if (m_ioDB->getProcessState(processName, &state)) {
                 if (state.state == PROCSTATE_DOWN) {
                     clientState = "Down";
                 } else if (state.state == PROCSTATE_RUNNING) {
                     clientState = "Running";
+                    // Check if the process is running
+                    if (!WickrBotUtils::isRunning(client->binary, state.process_id)) {
+                        procRunningString = "(appears to be stopped)";
+                    }
                 } else if (state.state == PROCSTATE_PAUSED) {
                     clientState = "Paused";
                 }
             }
+
             qDebug().noquote() << QString("CONSOLE:client[%1]").arg(i++);
             qDebug().noquote() << QString("CONSOLE:  name=%1").arg(client->name);
             qDebug().noquote() << QString("CONSOLE:  user=%1").arg(client->user);
-            qDebug().noquote() << QString("CONSOLE:  state=%1").arg(clientState);
+            qDebug().noquote() << QString("CONSOLE:  state=%1 %2").arg(clientState).arg(procRunningString);
         }
     }
     if (i==0) {
@@ -485,16 +492,21 @@ CmdMain::deleteClient(int clientIndex)
 {
     if (validateIndex(clientIndex)) {
         WickrIOClients *client = m_clients.at(clientIndex);
-        QString processName = client->getProcessName();
 
-        m_ioDB->deleteProcessState(processName);
-        m_ioDB->deleteClientUsingName(client->name);
+        QString prompt = QString(tr("Do you really want to delete the client with the name %1")).arg(client->name);
+        QString response = getNewValue("", prompt);
+        if (response.toLower() == "y" || response.toLower() == "yes") {
+            QString processName = client->getProcessName();
 
-        // Remove the files associated with the client
-        QString clientDirName = QString(WBIO_CLIENT_WORKINGDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
-        QDir clientDir(clientDirName);
-        if (clientDir.exists()) {
-            clientDir.removeRecursively();
+            m_ioDB->deleteProcessState(processName);
+            m_ioDB->deleteClientUsingName(client->name);
+
+            // Remove the files associated with the client
+            QString clientDirName = QString(WBIO_CLIENT_WORKINGDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
+            QDir clientDir(clientDirName);
+            if (clientDir.exists()) {
+                clientDir.removeRecursively();
+            }
         }
     }
 }
@@ -511,18 +523,22 @@ CmdMain::resetClient(int clientIndex)
     if (validateIndex(clientIndex)) {
         WickrIOClients *client = m_clients.at(clientIndex);
 
-        // Remove the files associated with the client
-        QString clientDirName = QString(WBIO_CLIENT_DBDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
+        QString prompt = QString(tr("Do you really want to reset the client with the name %1")).arg(client->name);
+        QString response = getNewValue("", prompt);
+        if (response.toLower() == "y" || response.toLower() == "yes") {
+            // Remove the files associated with the client
+            QString clientDirName = QString(WBIO_CLIENT_DBDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
 
-        QDir dir(clientDirName);
-        QStringList name_filters;
-        name_filters << "wickr_db.sqlite.*";
-        name_filters << "*.wic";
-        QFileInfoList fil = dir.entryInfoList(name_filters);
-        for (QFileInfo finfo : fil) {
-            if (finfo.isFile()) {
-                QFile file(finfo.filePath());
-                file.remove();
+            QDir dir(clientDirName);
+            QStringList name_filters;
+            name_filters << "wickr_db.sqlite.*";
+            name_filters << "*.wic";
+            QFileInfoList fil = dir.entryInfoList(name_filters);
+            for (QFileInfo finfo : fil) {
+                if (finfo.isFile()) {
+                    QFile file(finfo.filePath());
+                    file.remove();
+                }
             }
         }
     }

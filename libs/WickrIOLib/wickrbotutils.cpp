@@ -48,16 +48,18 @@ bool WickrBotUtils::isRunning(const QString &appName, int pid)
 #else
     // Else it has been longer than 10 minutes, kill the old process and continue
     QStringList arguments;
-    QString command = QString("ps -a -o pid,command | grep %1 | grep %2").arg(appName).arg(pid);
-    arguments << "-c" << command;
-    exec.start("/bin/sh", arguments);
+    QString pidString = QString::number(pid);
+    QString command = QString("ps -ae -o pid,command | grep %1").arg(appName);
+    exec.start("bash", QStringList() << "-c" << command);
     exec.waitForFinished(-1);
-    QString pstdout = exec.readAllStandardOutput();
 
-    // If the command returned a string then this should be the correct process to kill
-    if (pstdout.length()) {
-        return true;
+    exec.setReadChannel(QProcess::StandardOutput);
+    while (exec.canReadLine()) {
+       QString line = QString(exec.readLine());
+       if (line.contains(pidString))
+           return true;
     }
+
 #endif
     return false;
 }
