@@ -6,7 +6,7 @@ set -e
 current=`dirname $0`
 cd $current
 
-QTVER="5_7"
+QTVER="5_8"
 
 #
 # Setup the version number(s)

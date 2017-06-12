@@ -52,6 +52,10 @@ linux-g++* {
             QMAKE_RPATHDIR += /usr/local/wickr/Qt-5.8
             QMAKE_RPATHDIR += /usr/local/wickr/Qt-5.8/lib
         }
+        equals(QT_MINOR_VERSION, 9) {
+            QMAKE_RPATHDIR += /usr/local/wickr/Qt-5.9
+            QMAKE_RPATHDIR += /usr/local/wickr/Qt-5.9/lib
+        }
     }
 
 }

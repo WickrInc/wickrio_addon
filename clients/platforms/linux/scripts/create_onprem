@@ -6,7 +6,7 @@ set -e
 current=`dirname $0`
 cd $current
 
-QTVER="5_7_1"
+QTVER="5_8"
 
 BUILDDIR=build-wickr-wickrio-Desktop_Qt_${QTVER}_GCC_64bit_BUILT-OnPrem
 build_number=`cat ../../../BUILD_NUMBER`

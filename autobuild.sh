@@ -14,7 +14,7 @@
 # build directory is cleared by default on each run.
 
 
-QTVER="5.7"
+QTVER="5.8"
 
 if test -d /opt/local/bin ; then
 	PATH=$PATH:/opt/local/bin ; fi

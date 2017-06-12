@@ -8,9 +8,9 @@ cd $current
 current=$PWD
 
 target=wickr-qt
-baseversion=5.7
-version=5.7.1
-QTDIR=/usr/local/wickr/Qt-5.7
+baseversion=5.8
+version=5.8.0
+QTDIR=/usr/local/wickr/Qt-5.8
 
 output_dir="$1"
 if test -z "$output_dir" ; then
