@@ -18,6 +18,7 @@ class CmdServer : public CmdBase
     Q_OBJECT
 public:
     explicit CmdServer(CmdOperation *operation);
+    ~CmdServer() {}
 
     bool runCommands();
     void status();

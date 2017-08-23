@@ -8,7 +8,12 @@
 class DECLSPEC WickrBotClients
 {
 public:
-    WickrBotClients() : id(0) {};
+    WickrBotClients() :
+        id(0),
+        m_handleInbox(false),
+        onPrem(false)
+    {};
+
     ~WickrBotClients() {};
 
 public:
@@ -27,10 +32,12 @@ public:
     QString sslKeyFile;
     QString sslCertFile;
 
+    bool    m_handleInbox;      // true if client should handle inbox messages, depends on client
     bool    onPrem;
 
 public:
     QString getIfaceTypeStr() { return isHttps ? QString("HTTPS") : QString("HTTP"); }
+    QString getHandleInboxStr() { return m_handleInbox ? QString("true") : QString("false"); }
 };
 
 #endif

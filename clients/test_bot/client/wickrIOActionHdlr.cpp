@@ -169,11 +169,13 @@ bool WickrIOActionHdlr::processActionSendMessage(WickrBotJson *jsonHandler, int 
                                                    0,
                                                    false,
                                                    false,
+                                                   false,
                                                    kWickrUserVerificationStatusVerified,
                                                    false,
                                                    0,
                                                    false,
                                                    0,
+                                                   QString(),
                                                    false);
         if (!user) {
             m_operation->error("cannot find/create user with ID = " + userID);
@@ -262,13 +264,14 @@ void WickrIOActionHdlr::slotSendMessagePostGetUsers()
      * Create the Convo
      */
     WickrCore::WickrConvo          *convo;
+    WickrConvoInfoType      convoType = m_wickrUsers.size() > 0 ? CONVO_SECURE_ROOM : CONVO_ONE_TO_ONE;
 
     // get the gid for this set of users
-    QString vGid = WickrCore::WickrConvo::getVGroupIDWithUsers(m_wickrUsers);
+    QString vGid = WickrCore::WickrConvo::getVGroupIDWithUsers(m_wickrUsers, convoType );
 
     convo = WickrCore::WickrConvo::getConvoWithvGroupID(vGid);
     if ( convo == 0 ) {
-        convo = new WickrCore::WickrConvo(vGid, "", m_wickrUsers);
+        convo = new WickrCore::WickrConvo(vGid, nullptr, m_wickrUsers, convoType);
 
         if (m_wickrUsers.size() > 1) {
             convo->setVGroupTag("");

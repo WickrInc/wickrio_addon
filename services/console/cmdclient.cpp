@@ -186,6 +186,7 @@ bool CmdClient::chkClientsNameExists(const QString& name)
  */
 bool CmdClient::chkClientsUserExists(const QString& user)
 {
+#if 0
     for (WickrIOClients *client : m_clients) {
         if (client->user == user) {
             qDebug() << "CONSOLE:The input user name is NOT unique!";
@@ -193,6 +194,10 @@ bool CmdClient::chkClientsUserExists(const QString& user)
         }
     }
     return false;
+#else
+    // Allow duplicates for now
+    return false;
+#endif
 }
 
 /**
@@ -463,6 +468,27 @@ bool CmdClient::getClientValues(WickrIOClients *client)
         }
     }
 
+    // Get the Handle Inbox messages setting
+    while (true) {
+        QString handleInbox;
+        QStringList trueFalseChoices;
+        trueFalseChoices << "true" << "false";
+        handleInbox = getNewValue(client->getHandleInboxStr(), tr("Does client support inbox handling?"), CHECK_LIST, trueFalseChoices);
+        if (handleInbox.toLower() == "true") {
+            client->m_handleInbox = true;
+        } else if (handleInbox.toLower() == "false") {
+            client->m_handleInbox = false;
+        } else {
+            qDebug() << "CONSOLE:Invalid input, enter either true or false";
+            continue;
+
+        }
+        break;
+    }
+
+
+
+#if 0
     // Get the binary to use
     QStringList binaries = WBIOServerCommon::getAvailableClientApps();
     if (binaries.length() == 1) {
@@ -494,6 +520,7 @@ bool CmdClient::getClientValues(WickrIOClients *client)
             continue;
         }
     }
+#endif
 
     return !quit;
 }

@@ -305,7 +305,7 @@ void WickrIOLoginHdlr::slotRefreshDirectoryDone(WickrDirectoryGetContext* contex
 {
     if (context->isSuccess()) {
         if (context->usersToValidate().size()) {
-            WickrUserValidateUpdate *u = new WickrUserValidateUpdate(context->usersToValidate(),false,false,0);
+            WickrUserValidateUpdate *u = new WickrUserValidateUpdate(context->usersToValidate(),false,false,true,0);
             WickrCore::WickrRuntime::taskSvcMakeRequest(u);
         }
 

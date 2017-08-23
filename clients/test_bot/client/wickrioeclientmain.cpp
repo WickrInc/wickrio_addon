@@ -624,14 +624,15 @@ bool WickrIOEClientMain::parseSettings(QSettings *settings)
      */
     settings->beginGroup(WBSETTINGS_USER_HEADER);
 
-    QString username = settings->value(WBSETTINGS_USER_USER, "").toString();
+    QString user = settings->value(WBSETTINGS_USER_USER, "").toString();
     QString password = settings->value(WBSETTINGS_USER_PASSWORD, "").toString();
+    QString username = settings->value(WBSETTINGS_USER_USERNAME, "").toString();
 
-    if (username.isEmpty() || password.isEmpty()) {
+    if (user.isEmpty() || password.isEmpty()) {
         qDebug() << "User or password is not set";
         return false;
     }
-    m_loginHdlr.addLogin(username, password);
+    m_loginHdlr.addLogin(user, password);
 
     settings->endGroup();
 

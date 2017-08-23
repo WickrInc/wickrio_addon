@@ -61,6 +61,8 @@ private:
     bool m_firstLogin;
     long m_backupVersion;
 
+    QList<WickrCore::WickrMemberValidity *> m_convoMemberKeys;
+
     void loginNextUser();
     void refreshDirectory();
 

@@ -23,6 +23,8 @@
 #define WBIO_CLIENT_WORKINGDIR_FORMAT   "%1/clients/%2"
 #define WBIO_CLIENT_ATTACHDIR_FORMAT    "%1/clients/%2/attachments"
 
+#define WBIO_PARSER_SETTINGS_FORMAT     "%1/%2.ini"
+
 #ifdef Q_OS_WIN
 #define WBIO_DEFAULT_DBLOCATION         TBD
         dbLocation = QString("%1/%2/%3")

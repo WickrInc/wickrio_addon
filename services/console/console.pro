@@ -80,7 +80,8 @@ HEADERS += \
     consoleserver.h \
     advanceddialog.h \
     addconsoleuserdialog.h \
-    configureconsoleserverdialog.h
+    configureconsoleserverdialog.h \
+    cmdparser.h
 
 SOURCES += \
     $${COMMON}/cmdbase.cpp \
@@ -99,7 +100,8 @@ SOURCES += \
     consoleserver.cpp \
     advanceddialog.cpp \
     addconsoleuserdialog.cpp \
-    configureconsoleserverdialog.cpp
+    configureconsoleserverdialog.cpp \
+    cmdparser.cpp
 
 TEMPLATE = app
 

@@ -356,7 +356,7 @@ void WickrIOEClientMain::slotReceivedMessage(QString type, QString value)
             m_waitingForPassword = false;
             m_password = value;
             loadBootstrapFile();
-            m_loginHdlr.addLogin(m_username, m_password);
+            m_loginHdlr.addLogin(m_user, m_password);
             m_loginHdlr.initiateLogin();
         }
     }
@@ -676,11 +676,12 @@ bool WickrIOEClientMain::parseSettings(QSettings *settings)
      * Parse out the settings associated with the User
      */
     settings->beginGroup(WBSETTINGS_USER_HEADER);
-    QString username = settings->value(WBSETTINGS_USER_USER, "").toString();
+    QString user = settings->value(WBSETTINGS_USER_USER, "").toString();
     QString password = settings->value(WBSETTINGS_USER_PASSWORD, "").toString();
+    QString username = settings->value(WBSETTINGS_USER_USERNAME, "").toString();
     settings->endGroup();
 
-    if (username.isEmpty()) {
+    if (user.isEmpty()) {
         qDebug() << "User is not set";
         return false;
     }
@@ -689,13 +690,14 @@ bool WickrIOEClientMain::parseSettings(QSettings *settings)
         m_waitingForPassword = true;
     } else {
         loadBootstrapFile();
-        m_loginHdlr.addLogin(username, password);
+        m_loginHdlr.addLogin(user, password);
         m_waitingForPassword = false;
     }
 
     // Save for use in main
-    m_username = username;
+    m_user = user;
     m_password = password;
+    m_userName = username;
 
     return true;
 }

@@ -89,6 +89,7 @@ WickrIOConsoleClientHandler::addClient(WickrIOClientDatabase *ioDB, WickrIOClien
     settings->beginGroup(WBSETTINGS_USER_HEADER);
     settings->setValue(WBSETTINGS_USER_USER, newClient->user);
     settings->setValue(WBSETTINGS_USER_PASSWORD, newClient->password);
+    settings->setValue(WBSETTINGS_USER_USERNAME, newClient->name);
     settings->endGroup();
 
     settings->beginGroup(WBSETTINGS_DATABASE_HEADER);

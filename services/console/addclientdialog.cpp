@@ -175,6 +175,7 @@ AddClientDialog::addClient()
             return;
         }
 
+#if 0
         test = m_ioDB->getClientUsingUserName(client.user);
         // If a record is retrieved then show error and leave screen up
         if (test != NULL) {
@@ -186,6 +187,7 @@ AddClientDialog::addClient()
             delete test;
             return;
         }
+#endif
 
         if (chkClientsInterfaceExists(client.iface, client.port)) {
             qDebug() << "Interface and port combination are NOT unique!";
@@ -223,6 +225,7 @@ AddClientDialog::addClient()
             }
         }
 
+#if 0
         if (m_client->user.toLower() != client.user.toLower()) {
             test = m_ioDB->getClientUsingUserName(client.user);
             // If a record is retrieved then show error and leave screen up
@@ -236,6 +239,7 @@ AddClientDialog::addClient()
                 return;
             }
         }
+#endif
 
         if (((m_client->iface != client.iface) || (m_client->port != client.port)) &&
             chkClientsInterfaceExists(client.iface, client.port)) {

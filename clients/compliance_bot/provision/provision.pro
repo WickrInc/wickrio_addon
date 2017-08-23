@@ -209,6 +209,7 @@ linux-g++* {
     LIBS += -lstdc++
     LIBS += -lprotobuf
     LIBS += -lcrypto
+    LIBS += -lwmmigrator -lcjson
 
     LIBS += -L$$OUT_PWD/$${DEPTH}/wickr-sdk/libs/qbson -lqbson \
             -L$$OUT_PWD/$${DEPTH}/wickr-sdk/libs/libbson -lbson \

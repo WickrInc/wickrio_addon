@@ -115,6 +115,7 @@ mkdir -p $appdata
 cp -a ${build_dir}/services/settings_init/wickrio_settings_init $bindir/wickrio_settings_init${bldtype}
 cp -a ${build_dir}/services/service_control/wickrio_service_control $bindir/wickrio_service_control${bldtype}
 cp -a ${build_dir}/services/console/WickrIOConsole$BldType $bindir
+cp -a ${build_dir}/services/consolecmd/WickrIOConsoleCmd$BldType $bindir
 cp -a ${build_dir}/services/consoleserver/WickrIOCSvr$BldType $sbindir
 cp -a ${build_dir}/services/clientserver/WickrIOSvr$BldType $sbindir
 

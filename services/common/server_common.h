@@ -7,6 +7,7 @@
 #include <QList>
 
 #include "wickrbotclients.h"
+#include "wickrioparsers.h"
 
 #if defined(WICKR_DEBUG)
 #define WBIO_GENERAL_TARGET         "WickrIODebug"
@@ -27,15 +28,18 @@
 class WBIOClientApps
 {
 public:
-    WBIOClientApps(const QString& bot, const QString& provision) :
+    WBIOClientApps(const QString& bot, const QString& provision, const QString& parser) :
         m_botApp(bot),
-        m_provisionApp(provision) {}
+        m_provisionApp(provision),
+        m_parserApp(parser) {}
 
     QString m_botApp;
     QString m_provisionApp;
+    QString m_parserApp;
 
     QString bot()       { return m_botApp; }
     QString provision() { return m_provisionApp; }
+    QString parser()    { return m_parserApp; }
 };
 
 /**
@@ -54,12 +58,16 @@ public:
     static QString getClientProcessName(WickrBotClients *client);
     static QStringList getAvailableClientApps();
     static QString getProvisionApp(const QString& clientApp);
+    static QString getParserApp(const QString& clientApp);
     static bool isValidClientApp(const QString& binaryName);
 
+    static QString getParserProcessName(WickrIOParsers * parser);
+    static QStringList getAvailableParserApps();
 private:
     static bool                     m_initialized;
     static QList<WBIOClientApps *>  m_botApps;
     static QStringList              m_bots;
+    static QStringList              m_parsers;
 };
 
 

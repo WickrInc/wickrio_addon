@@ -100,7 +100,7 @@ WickrIOReceiveThread::processMessage(WickrDBObject *item)
 
         WickrCore::WickrOutbox *outbox = (WickrCore::WickrOutbox *)msg;
 
-        if (outbox->isBeingSent() || outbox->isDeleted()) {
+        if (outbox->isDeleted()) {
             return false;
         } else {
 #if 1

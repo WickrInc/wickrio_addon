@@ -232,7 +232,7 @@ void WickrIOLoginHdlr::slotLoginDone(WickrLoginContext *ls)
         });
 #endif
 
-        if (!WickrCore::WickrSession::getActiveSession()->getContactManager()->fetchOrPostBackupIfNeeded( m_backupVersion )) {
+        if (!WickrCore::WickrSession::getActiveSession()->getContactManager()->restoreContactsIfRequired( m_backupVersion )) {
             // No contact backup download needed, proceed
             refreshDirectory();
         }
@@ -314,7 +314,7 @@ void WickrIOLoginHdlr::slotRefreshDirectoryDone(WickrDirectoryGetContext* contex
 {
     if (context->isSuccess()) {
         if (context->usersToValidate().size()) {
-            WickrUserValidateUpdate *u = new WickrUserValidateUpdate(context->usersToValidate(),false,false,0);
+            WickrUserValidateUpdate *u = new WickrUserValidateUpdate(context->usersToValidate(),false,false,true,0);
             WickrCore::WickrRuntime::taskSvcMakeRequest(u);
         }
 

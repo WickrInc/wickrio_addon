@@ -60,7 +60,8 @@ HEADERS += \
     wickrbotsettings.h \
     wickrbotlib.h \
     perftest.h \
-    wickrbotstatistics.h
+    wickrbotstatistics.h \
+    clientactions.h
 
 SOURCES += \
     wickrIOBootstrap.cpp \
@@ -74,4 +75,5 @@ SOURCES += \
     wickrbotipc.cpp \
     wickrbotutils.cpp \
     perftest.cpp \
-    wickrbotstatistics.cpp
+    wickrbotstatistics.cpp \
+    clientactions.cpp

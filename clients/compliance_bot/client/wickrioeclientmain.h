@@ -52,8 +52,9 @@ public:
 
     WickrIOConvoHdlr m_convoHdlr;
 
-    QString m_username;
+    QString m_user;
     QString m_password;
+    QString m_userName;
 
     bool loadBootstrapFile();
     bool loadBootstrapString(const QString& bootstrapStr);

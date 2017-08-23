@@ -1,5 +1,6 @@
 #include <QStandardPaths>
 #include <QDir>
+#include <QDebug>
 
 #include "wbio_common.h"
 #include "server_common.h"
@@ -8,6 +9,7 @@
 bool WBIOServerCommon::m_initialized = false;
 QList<WBIOClientApps *>  WBIOServerCommon::m_botApps;
 QStringList              WBIOServerCommon::m_bots;
+QStringList              WBIOServerCommon::m_parsers;
 
 /**
  * @brief WBIOCommon::getSettings
@@ -70,21 +72,36 @@ WBIOServerCommon::getClientProcessName(WickrBotClients * client)
     return processName;
 }
 
+QString
+WBIOServerCommon::getParserProcessName(WickrIOParsers * parser)
+{
+    qDebug() << "TODO: Implement getParserProcessName()";
+    QString processName;
+    return processName;
+}
+
 void
 WBIOServerCommon::initClientApps()
 {
     if (!m_initialized) {
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botAlpha", nullptr));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botBeta", nullptr));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botQA", nullptr));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_bot", nullptr));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botAlpha", "compliance_provAlpha"));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botBeta", "compliance_provBeta"));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botQA", "compliance_provQA"));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_bot", "compliance_prov"));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botAlpha",       nullptr,                nullptr));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botBeta",        nullptr,                nullptr));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botQA",          nullptr,                nullptr));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_bot",            nullptr,                nullptr));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botAlpha", "compliance_provAlpha", nullptr));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botBeta",  "compliance_provBeta",  nullptr));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botQA",    "compliance_provQA",    nullptr));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_bot",      "compliance_prov",      nullptr));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_botAlpha",    nullptr,                "welcome_parserAlpha"));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_botBeta",     nullptr,                "welcome_parserBeta"));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_botQA",       nullptr,                "welcome_parserQA"));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_bot",         nullptr,                "welcome_parser"));
 
         for (WBIOClientApps *botapp : WBIOServerCommon::m_botApps) {
             m_bots.append(botapp->bot());
+            if (!botapp->m_parserApp.isEmpty()) {
+                WBIOServerCommon::m_parsers.append(botapp->m_parserApp);
+            }
         }
         m_initialized = true;
     }
@@ -106,6 +123,22 @@ WBIOServerCommon::getAvailableClientApps()
     return availableBinaries;
 }
 
+QStringList
+WBIOServerCommon::getAvailableParserApps()
+{
+    initClientApps();
+    QStringList availableBinaries;
+
+    for (QString binary : WBIOServerCommon::m_parsers) {
+        QString filePath = QString("/usr/bin/%1").arg(binary);
+        QFileInfo fi(filePath);
+        if (fi.exists()) {
+            availableBinaries.append(binary);
+        }
+    }
+    return availableBinaries;
+}
+
 QString
 WBIOServerCommon::getProvisionApp(const QString& clientApp)
 {
@@ -114,6 +147,19 @@ WBIOServerCommon::getProvisionApp(const QString& clientApp)
     for (WBIOClientApps *botapp : WBIOServerCommon::m_botApps) {
         if (botapp->bot() == clientApp) {
             return botapp->provision();
+        }
+    }
+    return nullptr;
+}
+
+QString
+WBIOServerCommon::getParserApp(const QString& clientApp)
+{
+    // Assuming that the apps are initialized
+
+    for (WBIOClientApps *botapp : WBIOServerCommon::m_botApps) {
+        if (botapp->bot() == clientApp) {
+            return botapp->parser();
         }
     }
     return nullptr;

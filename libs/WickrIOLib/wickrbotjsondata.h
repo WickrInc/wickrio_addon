@@ -5,15 +5,18 @@
 
 #include "wickrbotlib.h"
 #include "operationdata.h"
+#include "clientactions.h"
 
 class DECLSPEC WickrBotJsonData
 {
 public:
-    WickrBotJsonData();
+    WickrBotJsonData(OperationData *operation);
     ~WickrBotJsonData();
 
-    bool parse(OperationData *operation, QByteArray jsonString);
-    bool parseSendMessage(OperationData *operation, QByteArray jsonString);
+    bool parse(QByteArray jsonString);
+    bool parseSendMessage(QByteArray jsonString);
+
+    void setClientType(const QString &clientType);
 
 public:
     int m_ttl;
@@ -27,11 +30,15 @@ public:
     QDateTime m_runTime;
 
 private:
-    OperationData *m_operation;
+    OperationData   *m_operation;
+    ClientActions   *m_clientActions;
 
     bool processJsonDoc(QJsonDocument &jsonResponse);
     bool processSendMessageJsonDoc(const QJsonObject &operationObject);
+    bool processSendMessageJsonDocV3(const QJsonObject &operationObject);
     bool processLoginJsonDoc(const QJsonObject &operationObject);
+
+    bool processAttachments(const QJsonObject &operationObject);
 
     void processAttachment(QJsonObject *object);
     bool processAttachmentURL(QString filename, QString url);
@@ -45,6 +52,7 @@ private:
     int processOperationData();
     int processSendMessage();
     int processLoginRequest();
+    int getClientID();
 
 };
 
