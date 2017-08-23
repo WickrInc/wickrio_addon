@@ -11,6 +11,7 @@
 #include "wickrioclients.h"
 #include "wickriotokens.h"
 #include "wickriomessage.h"
+#include "wickrioparsers.h"
 
 class WickrIODBAttachment {
 public:
@@ -55,6 +56,8 @@ public:
     bool clearClientsOfConsoleUser(int cUserID);
     bool insertClientsRecord(WickrIOClients *client);
     bool updateClientsRecord(WickrIOClients *client, bool insertIfNotExist=true);
+
+    QList<WickrIOParsers *> getParsers();
 
     bool insertToken(WickrIOTokens *token);
     bool insertToken(const QString &token, int console_id, const QString &remote);

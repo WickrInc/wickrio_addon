@@ -282,7 +282,7 @@ WickrIOReceiverMgr::processKeyVerificationMsg(QJsonObject& jsonObject,  WickrCor
 bool
 WickrIOReceiverMgr::processControlMsg(QJsonObject& jsonObject,  WickrCore::WickrInbox *msg)
 {
-    WickrCore::WickrControlMessage *ctrlMsg = WickrCore::WickrControlMessage::constructControlMessage(msg->getMsgBody());
+    WickrCore::WickrControlMessage *ctrlMsg = WickrCore::WickrControlMessage::constructControlMessage(msg->getMsgBody(), msg->getvGroupID());
     if (!ctrlMsg)
         return false;
 

@@ -14,7 +14,8 @@ OperationData::OperationData() :
     receiveOn(false),
     m_appTimeOut(180),
     m_pid(QCoreApplication::applicationPid()),
-    m_wbLog(NULL)
+    m_wbLog(NULL),
+    m_handleInbox(false)
 {
     m_waiting4image = false;
 
@@ -157,7 +158,7 @@ QString OperationData::getResponseURL()
  * TODO: Need to add code to kill a hung application.
  * @return  True is returned if the application is already running.
  */
-bool OperationData::alreadyActive()
+bool OperationData::alreadyActive(bool closeDbOnExit)
 {
     QDateTime lastLogTime = this->lastLogTime();
     qDebug() << "LastLogTime=" << lastLogTime.toString(LOGS_DATETIME_FORMAT);
@@ -200,9 +201,11 @@ bool OperationData::alreadyActive()
     }
 
     m_botDB->updateProcessState(processName, m_pid, PROCSTATE_RUNNING);
-    m_botDB->close();
-    m_botDB->deleteLater();
-    m_botDB = NULL;
+    if (closeDbOnExit) {
+        m_botDB->close();
+        m_botDB->deleteLater();
+        m_botDB = NULL;
+    }
     return false;
 }
 

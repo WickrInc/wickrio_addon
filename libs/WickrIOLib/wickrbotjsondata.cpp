@@ -8,7 +8,9 @@
 #include "wickrbotjsondata.h"
 #include "createjson.h"
 
-WickrBotJsonData::WickrBotJsonData()
+WickrBotJsonData::WickrBotJsonData(OperationData *operation) :
+    m_operation(operation),
+    m_clientActions(nullptr)
 {
     m_ttl = 0;
     m_action = "";
@@ -21,7 +23,10 @@ WickrBotJsonData::WickrBotJsonData()
 
 WickrBotJsonData::~WickrBotJsonData()
 {
-
+    if (m_clientActions != nullptr) {
+        delete m_clientActions;
+        m_clientActions = nullptr;
+    }
 }
 
 int WickrBotJsonData::getJsonIntValue(QJsonObject feed, QString key)
@@ -207,6 +212,14 @@ bool WickrBotJsonData::processJsonDoc(QJsonDocument &jsonResponse)
     if (jsonObject.contains("operation")) {
         value = jsonObject["operation"];
         operationObject = value.toObject();
+    } else if (jsonObject.contains("command")) {
+        value = jsonObject["command"];
+        QString operation = value.toString("invalid");
+        if (operation == "push_bot_message") {
+            m_action = "sendmessage";
+            return processSendMessageJsonDocV3(jsonObject);
+        }
+        return false;
     } else {
         m_operation->error("processContactReply: does not contain operation!");
         return false;
@@ -220,6 +233,11 @@ bool WickrBotJsonData::processJsonDoc(QJsonDocument &jsonResponse)
             m_operation->error(QString("action is invalid, value is %1").arg(m_action));
             return false;
         }
+    }
+    // Assume it is a send message
+    else {
+        m_action = "sendmessage";
+
     }
 
     if (m_action == "sendmessage") {
@@ -235,6 +253,44 @@ bool WickrBotJsonData::processLoginJsonDoc(const QJsonObject &operationObject)
     Q_UNUSED(operationObject);
 
     QJsonValue value;
+    return true;
+}
+
+bool WickrBotJsonData::processSendMessageJsonDocV3(const QJsonObject &operationObject)
+{
+    QJsonValue value;
+
+    // Parse the contacts
+    if (operationObject.contains("uname")) {
+        value = operationObject["uname"];
+        m_userIDs.clear();
+        QString uname=value.toString();
+        m_userIDs.append(uname);
+        if (m_operation->debug)
+            qDebug() << "Uname:" << uname;
+    }
+
+    // Parse out any message
+    if (operationObject.contains("message")) {
+        value = operationObject["message"];
+        m_message = value.toString();
+        if (m_operation->debug)
+            qDebug() << "Message:" << m_message;
+    }
+
+    if (operationObject.contains("runtime")) {
+        value = operationObject["runtime"];
+
+        // Use the current date and time if the one is invalid
+        m_runTime = value.toVariant().toDateTime();
+    } else {
+        QDateTime dt = QDateTime::currentDateTime();
+        m_runTime = dt;
+    }
+
+    // Parse out any attachments that may be part of this message
+    processAttachments(operationObject);
+
     return true;
 }
 
@@ -292,6 +348,73 @@ bool WickrBotJsonData::processSendMessageJsonDoc(const QJsonObject &operationObj
         m_runTime = dt;
     }
 
+    processAttachments(operationObject);
+
+    // Parse out any message
+    if (operationObject.contains("message")) {
+        value = operationObject["message"];
+        m_message = value.toString();
+        if (m_operation->debug)
+            qDebug() << "Message:" << m_message;
+    }
+
+    // Parse out any TTL
+    if (operationObject.contains("ttl")) {
+        value = operationObject["ttl"];
+        m_ttl = value.toInt(0);
+        if (m_operation->debug)
+            qDebug() << "TTL:" << m_ttl;
+    }
+
+    return true;
+}
+
+int WickrBotJsonData::processOperationData() {
+    if (m_action == "login") {
+        return processLoginRequest();
+    } else if (m_action == "sendmessage") {
+        return processSendMessage();
+    }
+    return 0;
+}
+
+int WickrBotJsonData::processLoginRequest()
+{
+    QString response;
+
+    response = QString("{\"operation\" : {\"action\" : \"login\", \"status\" : 0 }}");
+    m_operation->addResponseMessage(response);
+    return 0;
+}
+
+void WickrBotJsonData::setClientType(const QString& clientType)
+{
+    if (m_clientActions == nullptr)
+        delete m_clientActions;
+    m_clientActions = new ClientActions(clientType, m_operation);
+}
+
+/**
+ * @brief WickrBotJsonData::getClientID
+ * This function will return the clientID that should be used for the next
+ * message to be placed in the action_cache
+ * @return
+ */
+int WickrBotJsonData::getClientID() {
+    if (m_clientActions != nullptr) {
+        int clientID = m_clientActions->nextClient();
+        if (clientID != 0)
+            return clientID;
+    }
+    if (m_operation->m_client != NULL) {
+        return m_operation->m_client->id;
+    }
+    return 0;
+}
+
+bool WickrBotJsonData::processAttachments(const QJsonObject &operationObject)
+{
+    QJsonValue value;
     // Parse out any attachment
     if (operationObject.contains("attachments")) {
         value = operationObject["attachments"];
@@ -373,42 +496,7 @@ bool WickrBotJsonData::processSendMessageJsonDoc(const QJsonObject &operationObj
             }
         }
     }
-
-    // Parse out any message
-    if (operationObject.contains("message")) {
-        value = operationObject["message"];
-        m_message = value.toString();
-        if (m_operation->debug)
-            qDebug() << "Message:" << m_message;
-    }
-
-    // Parse out any TTL
-    if (operationObject.contains("ttl")) {
-        value = operationObject["ttl"];
-        m_ttl = value.toInt(0);
-        if (m_operation->debug)
-            qDebug() << "TTL:" << m_ttl;
-    }
-
     return true;
-}
-
-int WickrBotJsonData::processOperationData() {
-    if (m_action == "login") {
-        return processLoginRequest();
-    } else if (m_action == "sendmessage") {
-        return processSendMessage();
-    }
-    return 0;
-}
-
-int WickrBotJsonData::processLoginRequest()
-{
-    QString response;
-
-    response = QString("{\"operation\" : {\"action\" : \"login\", \"status\" : 0 }}");
-    m_operation->addResponseMessage(response);
-    return 0;
 }
 
 int WickrBotJsonData::processSendMessage() {
@@ -434,15 +522,9 @@ int WickrBotJsonData::processSendMessage() {
             QByteArray json = action->toByteArray();
             delete action;
             messageCount++;
+            int clientID = getClientID();
 
-            int clientID;
-            if (m_operation->m_client == NULL) {
-                clientID = 0;
-            } else {
-                clientID = m_operation->m_client->id;
-            }
             m_operation->m_botDB->insertAction(json, m_runTime, clientID);
-
         } else {
 
         }
@@ -520,9 +602,7 @@ int WickrBotJsonData::processSendMessage() {
  * @param jsonString
  * @return
  */
-bool WickrBotJsonData::parse(OperationData *operation, QByteArray jsonString) {
-    m_operation = operation;
-
+bool WickrBotJsonData::parse(QByteArray jsonString) {
     QJsonParseError jsonError;
     QJsonDocument jsonResponse = QJsonDocument().fromJson(jsonString, &jsonError);
 
@@ -554,9 +634,7 @@ bool WickrBotJsonData::parse(OperationData *operation, QByteArray jsonString) {
  * @return
  */
 bool
-WickrBotJsonData::parseSendMessage(OperationData *operation, QByteArray jsonString) {
-    m_operation = operation;
-
+WickrBotJsonData::parseSendMessage(QByteArray jsonString) {
     QJsonParseError jsonError;
     QJsonDocument jsonResponse = QJsonDocument().fromJson(jsonString, &jsonError);
 

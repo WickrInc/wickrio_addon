@@ -53,6 +53,8 @@ public:
     int m_appTimeOut;   // number of seconds to wait for potentiall hung application
     int m_pid;          // The process ID of this application
 
+    bool m_handleInbox; // True if the client should handle inbox messaging
+
 private:
 #ifndef DO_WICKRBOT
     FileDownloader *m_pImgCtrl;
@@ -115,7 +117,7 @@ public:
 
     QString getResponseURL();
 
-    bool alreadyActive();
+    bool alreadyActive(bool closeDbOnExit=false);
     bool updateProcessState(int state, bool force=true);
 
 private slots:

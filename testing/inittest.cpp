@@ -95,6 +95,24 @@ void InitTest::initTestCase()
     QCoreApplication::setApplicationName(appname);
     QCoreApplication::setOrganizationName(orgname);
 
+    // Production mode
+    bool productionMode;
+#ifdef WICKR_PRODUCTION
+    productionMode = true;
+#else
+    productionMode = false;
+#endif
+
+    // Client type
+    WickrCore::WickrRuntime::WickrClientType clientType;
+#if defined(WICKR_MESSENGER)
+    clientType = WickrCore::WickrRuntime::MESSENGER;
+#elif defined(WICKR_ENTERPRISE)
+    clientType = WickrCore::WickrRuntime::ENTERPRISE;
+#else
+    clientType = WickrCore::WickrRuntime::PROFESSIONAL;
+#endif
+
     // Wickr Runtime Environment (all applications include this line)
     WickrAppContext::initialize(clientDbPath);
     WickrCore::WickrRuntime::init(m_argc, m_argv,
@@ -102,7 +120,8 @@ void InitTest::initTestCase()
                                   ClientVersionInfo::getOrgName(),
                                   ClientVersionInfo::getAppName(),
                                   ClientConfigurationInfo::DefaultBaseURL,
-                                  isDebug);
+                                  productionMode,
+                                  clientType);
 
     WickrDBAdapter::setDatabaseEncryptedStatus(dbEncrypt);
 

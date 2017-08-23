@@ -92,13 +92,32 @@ WickrIOBot::newBotCreate()
         m_wbConfigFile = QString(WBIO_CLIENT_SETTINGS_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(m_client.name);
     }
 
+    // Production mode
+    bool productionMode;
+#ifdef WICKR_PRODUCTION
+    productionMode = true;
+#else
+    productionMode = false;
+#endif
+
+    // Client type
+    WickrCore::WickrRuntime::WickrClientType clientType;
+#if defined(WICKR_MESSENGER)
+    clientType = WickrCore::WickrRuntime::MESSENGER;
+#elif defined(WICKR_ENTERPRISE)
+    clientType = WickrCore::WickrRuntime::ENTERPRISE;
+#else
+    clientType = WickrCore::WickrRuntime::PROFESSIONAL;
+#endif
+
     // Wickr Runtime Environment (all applications include this line)
     WickrCore::WickrRuntime::init(m_argc, m_argv,
                                   ClientVersionInfo::getProductType(),
                                   ClientVersionInfo::getOrgName(),
                                   ClientVersionInfo::getAppName(),
                                   ClientConfigurationInfo::DefaultBaseURL,
-                                  isVERSIONDEBUG(),
+                                  productionMode,
+                                  clientType,
                                   m_clientDbPath);
 
     // Will need to save the bootstrap file once we get the real password
@@ -167,6 +186,7 @@ WickrIOBot::newBotCreate()
         settings->beginGroup(WBSETTINGS_USER_HEADER);
         settings->setValue(WBSETTINGS_USER_USER, m_client.user);
 //        settings->setValue(WBSETTINGS_USER_PASSWORD, m_client.password);      //TODO: THIS NEEDS TO BE REMOVED
+        settings->setValue(WBSETTINGS_USER_USERNAME, m_client.name);
         settings->endGroup();
 
     #ifdef Q_OS_WIN

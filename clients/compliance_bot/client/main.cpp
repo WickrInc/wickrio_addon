@@ -192,6 +192,23 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName(appname);
     QCoreApplication::setOrganizationName(orgname);
 
+    // Production mode
+    bool productionMode;
+#ifdef WICKR_PRODUCTION
+    productionMode = true;
+#else
+    productionMode = false;
+#endif
+
+    // Client type
+    WickrCore::WickrRuntime::WickrClientType clientType;
+#if defined(WICKR_MESSENGER)
+    clientType = WickrCore::WickrRuntime::MESSENGER;
+#elif defined(WICKR_ENTERPRISE)
+    clientType = WickrCore::WickrRuntime::ENTERPRISE;
+#else
+    clientType = WickrCore::WickrRuntime::PROFESSIONAL;
+#endif
 
 
     // Wickr Runtime Environment (all applications include this line)
@@ -200,7 +217,8 @@ int main(int argc, char *argv[])
                                   ClientVersionInfo::getOrgName(),
                                   ClientVersionInfo::getAppName(),
                                   ClientConfigurationInfo::DefaultBaseURL,
-                                  isDebug,
+                                  productionMode,
+                                  clientType,
                                   clientDbPath,
                                   WickrCore::WickrRuntime::DATA_MGMT_LAYER_1);    
 
@@ -301,11 +319,11 @@ int main(int argc, char *argv[])
      */
     if (! setProcessName) {
         settings->beginGroup(WBSETTINGS_USER_HEADER);
-        QString username = settings->value(WBSETTINGS_USER_USER, "").toString();
+        QString username = settings->value(WBSETTINGS_USER_USERNAME, "").toString();
         settings->endGroup();
 
         if (username.isEmpty()) {
-            qDebug() << "User or password is not set";
+            qDebug() << "Username is not set";
             exit(1);
         }
 

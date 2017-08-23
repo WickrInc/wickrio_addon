@@ -20,6 +20,7 @@
 #define WBSETTINGS_USER_HEADER          "user"
 #define WBSETTINGS_USER_USER            "user"
 #define WBSETTINGS_USER_PASSWORD        "password"
+#define WBSETTINGS_USER_USERNAME        "username"
 
 #define WBSETTINGS_CONFIG_HEADER        "configuration"
 #define WBSETTINGS_CONFIG_DORECEIVE     "doreceive"
@@ -46,5 +47,7 @@
 #define WBSETTINGS_SSL_KEYFILE          "sslKeyFile"
 #define WBSETTINGS_SSL_CERTFILE         "sslCertFile"
 
+#define WBSETTINGS_SERVICES_HEADER      "services"              // Settings for bot services
+#define WBSETTINGS_SERVICES_HANDLEINBOX "handleinbox"           // True if handling inbox messages, otherwise drop
 
 #endif // WICKRBOTSETTINGS

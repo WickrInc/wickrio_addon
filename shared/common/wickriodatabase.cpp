@@ -758,6 +758,23 @@ WickrIOClientDatabase::updateClientsRecord(WickrIOClients *client, bool insertIf
 
 
 /****************************************************************************************************************
+ * Functions to handle the parsers
+ ***************************************************************************************************************/
+
+QList<WickrIOParsers *>
+WickrIOClientDatabase::getParsers()
+{
+    QList<WickrIOParsers *> parsers;
+    if (!initialized)
+        return parsers;
+
+    qDebug() << "TODO: implement getParsers()";
+    return parsers;
+}
+
+
+
+/****************************************************************************************************************
  * Tokens (tokens) handler functions
  ***************************************************************************************************************/
 

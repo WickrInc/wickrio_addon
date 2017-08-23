@@ -694,6 +694,7 @@ bool CmdHandler::chkClientsNameExists(const QList<WickrIOClients *> &clients, co
  */
 bool CmdHandler::chkClientsUserExists(const QList<WickrIOClients *> &clients,const QString& user)
 {
+#if 0
     for (WickrBotClients *client : clients) {
         if (client->user == user) {
             qDebug() << "The input user name is NOT unique!";
@@ -701,6 +702,9 @@ bool CmdHandler::chkClientsUserExists(const QList<WickrIOClients *> &clients,con
         }
     }
     return false;
+#else
+    return true;
+#endif
 }
 
 /**
@@ -790,6 +794,7 @@ CmdHandler::addClientData(WickrBotClients *newClient)
     settings->beginGroup(WBSETTINGS_USER_HEADER);
     settings->setValue(WBSETTINGS_USER_USER, newClient->user);
     settings->setValue(WBSETTINGS_USER_PASSWORD, newClient->password);
+    settings->setValue(WBSETTINGS_USER_USERNAME, newClient->name);
     settings->endGroup();
 
     settings->beginGroup(WBSETTINGS_DATABASE_HEADER);
@@ -811,6 +816,10 @@ CmdHandler::addClientData(WickrBotClients *newClient)
 
     settings->beginGroup(WBSETTINGS_ATTACH_HEADER);
     settings->setValue(WBSETTINGS_ATTACH_DIRNAME, attachDir);
+    settings->endGroup();
+
+    settings->beginGroup(WBSETTINGS_SERVICES_HEADER);
+    settings->setValue(WBSETTINGS_SERVICES_HANDLEINBOX, newClient->m_handleInbox);
     settings->endGroup();
 
     settings->sync();

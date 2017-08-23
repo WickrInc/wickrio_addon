@@ -4,7 +4,8 @@ SUBDIRS = \
     QtWebApp \
     WickrIOLib \
     WickrIOGUI \
-    SMTPEmail
+    SMTPEmail \
+    qamqpsrc
 
 
 CONFIG += ordered

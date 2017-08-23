@@ -49,6 +49,8 @@ public:
     QSqlQueryModel *getClientsModel();
     bool deleteClientUsingName(QString name);
     void getClient(QSqlQuery *query, WickrBotClients *client);
+    QList<int> getClientIDFromType(const QString& clientType);
+    int numberOfActionsForClient(int clientid);
 
     virtual bool updateLastUserMessage(const QString &) {return false;}
     virtual QDateTime getLastUserMessageTime(const QString &) {return QDateTime::currentDateTime();}

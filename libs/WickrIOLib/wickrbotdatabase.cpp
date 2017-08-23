@@ -125,7 +125,7 @@ WickrBotDatabase::createRelationalTables()
     // Check if the clients table exists already, if not create it
     if (! m_db.tables().contains(QLatin1String(DB_CLIENTS_TABLE))) {
         QSqlQuery query(m_db);
-        if (!query.exec("CREATE TABLE clients (id int primary key, name text NOT NULL UNIQUE, port int, interface text, api_key text NOT NULL, user text NOT NULL UNIQUE, password text NOT NULL, isHttps int, sslKeyFile text, sslCertFile text, binary text NOT NULL)")) {
+        if (!query.exec("CREATE TABLE clients (id int primary key, name text NOT NULL UNIQUE, port int, interface text, api_key text NOT NULL, user text NOT NULL, password text NOT NULL, isHttps int, sslKeyFile text, sslCertFile text, binary text NOT NULL)")) {
             qDebug() << "create clients table failed, query error=" << query.lastError();
             query.finish();
             return false;
@@ -281,6 +281,7 @@ WickrBotDatabase::insertAction(const QString &json, QDateTime runtime, int clien
     int id = getNextID(DB_ACTION_TABLE);
 
     QSqlQuery query(m_db);
+#if 0
     QString queryString = QString("INSERT INTO action_cache (id, json, created, runtime, attempts, client_id) VALUES (%1, '%2', '%3', '%4', %5, %6)")
             .arg(id)
             .arg(json)
@@ -289,6 +290,18 @@ WickrBotDatabase::insertAction(const QString &json, QDateTime runtime, int clien
             .arg(0)
             .arg(clientID);
     if (!query.exec(queryString)) {
+#else
+                query.prepare("INSERT INTO action_cache (id, json, created, runtime, attempts, client_id) "
+                              "VALUES (:id, :json, :created, :runtime, :attempts, :client_id)");
+                query.bindValue(":id", id);
+                query.bindValue(":json", json);
+                query.bindValue(":created", createTime);
+                query.bindValue(":runtime", runtime.toString(DB_DATETIME_FORMAT));
+                query.bindValue(":attempts", 0);
+                query.bindValue(":client_id", clientID);
+        if (!query.exec()) {
+#endif
+
         QSqlError error = query.lastError();
         qDebug() << "insertAction: SQL error" << error;
         query.finish();
@@ -833,6 +846,48 @@ WickrBotDatabase::getClient(QSqlQuery *query, WickrBotClients *client)
     client->sslKeyFile = query->value(rec.indexOf("sslKeyFile")).toString();
     client->sslCertFile = query->value(rec.indexOf("sslCertFile")).toString();
     client->binary = query->value(rec.indexOf("binary")).toString();
+}
+
+int
+WickrBotDatabase::numberOfActionsForClient(int clientid)
+{
+    int count = 0;
+    QString query = QString("SELECT COUNT(*) from action_cache where client_id=%1").arg(clientid);
+
+    QSqlQuery   doQuery;
+    doQuery.prepare(query);
+    doQuery.exec();
+    if ( doQuery.isActive() ) {
+        if (doQuery.next()) {
+            count = doQuery.value(0).toInt();
+        }
+    }
+    doQuery.finish();
+    return count;
+}
+
+QList<int>
+WickrBotDatabase::getClientIDFromType(const QString& clientType)
+{
+    QList<int> clientIDs;
+    if (!initialized)
+        return clientIDs;
+
+    QString queryString = QString("SELECT id FROM clients where binary='%1'").arg(clientType);
+    QSqlQuery *query = new QSqlQuery(m_db);
+    query->prepare(queryString);
+
+    if ( !query->exec()) {
+        qDebug() << "getClients: Could not retrieve, Error=" << query->lastError();
+    } else {
+        while (query->next()) {
+            int id = query->value(0).toInt();
+            clientIDs.append(id);
+        }
+    }
+    query->finish();
+    delete query;
+    return clientIDs;
 }
 
 QList<WickrBotClients *>
