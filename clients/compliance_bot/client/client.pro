@@ -45,7 +45,7 @@ CONFIG(release,release|debug) {
         DEFINES += WICKR_BETA
     } else {
         message(*** WickrIO Compliance Bot Production Build)
-        TARGET = compliance_botAlpha
+        TARGET = compliance_bot
         DEFINES += WICKR_PRODUCTION
     }
 } else {

@@ -43,7 +43,7 @@ CONFIG(release,release|debug) {
         DEFINES += WICKR_BETA
     } else {
         message(*** WickrIO Welcome Bot Production Build)
-        TARGET = welcome_botAlpha
+        TARGET = welcome_bot
         DEFINES += WICKR_PRODUCTION
     }
 } else {
