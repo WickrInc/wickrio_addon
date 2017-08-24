@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 echo This script will put a production release tag on the input tag.
 echo This tag is used for subsequent builds to generate cummulative release notes.
 
@@ -20,7 +20,6 @@ if test -z "$tagscommit" ; then
 fi
 
 echo "Commit for tag $reltag is $tagscommit"
-
 
 numbers=${reltag:1}
 
