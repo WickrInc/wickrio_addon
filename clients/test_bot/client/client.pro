@@ -113,7 +113,6 @@ RESOURCES += \
     test_bot.qrc
 
 SOURCES += \
-    $${COMMON}/wickrbotactiondatabase.cpp \
     main.cpp \
     wickrioeclientmain.cpp \
     requesthandler.cpp \
@@ -127,7 +126,6 @@ SOURCES += \
     wickrIOCallbackService.cpp
 
 HEADERS += \
-    $${COMMON}/wickrbotactiondatabase.h \
     wickrioeclientmain.h \
     requesthandler.h \
     wickrioconvohdlr.h \

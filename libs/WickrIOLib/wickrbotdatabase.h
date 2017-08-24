@@ -70,6 +70,9 @@ public:
 
     int size();
 
+    static bool getFirstAction(WickrBotDatabase *botDB, const QString& dateTime, WickrBotActionCache *action);
+    static bool getFirstAction(WickrBotDatabase *botDB, const QString& dateTime, WickrBotActionCache *action, int clientID);
+
     QSqlDatabase m_db;
     QString m_dbDir;
 

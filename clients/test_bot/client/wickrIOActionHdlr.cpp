@@ -671,10 +671,13 @@ void WickrIOActionHdlr::processDatabase(int deleteID)
     WickrBotActionCache *action = new WickrBotActionCache();
     bool gotAction;
 
+    QDateTime dt = QDateTime::currentDateTime();
+    QString dtString = dt.toString(DB_DATETIME_FORMAT);
+
     if (m_operation->m_client != NULL) {
-        gotAction = WickrBotActionDatabase::getFirstAction(m_operation->m_botDB, action, m_operation->m_client->id);
+        gotAction = WickrBotDatabase::getFirstAction(m_operation->m_botDB, dtString, action, m_operation->m_client->id);
     } else {
-        gotAction = WickrBotActionDatabase::getFirstAction(m_operation->m_botDB, action);
+        gotAction = WickrBotDatabase::getFirstAction(m_operation->m_botDB, dtString, action);
     }
     if (gotAction) {
         WickrBotJson *jsonHandler = new WickrBotJson();

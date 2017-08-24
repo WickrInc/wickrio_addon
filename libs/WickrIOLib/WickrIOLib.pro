@@ -7,6 +7,7 @@ CONFIG += c++11
 TARGET = WickrIOLib
 TEMPLATE = lib
 
+QT += multimediawidgets
 QT -= gui
 QT += sql
 QT += network

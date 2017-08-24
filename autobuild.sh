@@ -27,7 +27,6 @@ if test ! -z "$WICKR_QTDIR" ; then
 if test ! -z "$WICKR_QTVER" ; then
     QTVER="$WICKR_QTVER" ; fi
 
-platform=`uname`
 abs=`pwd`
 pwd=`basename $abs`
 pwd="../$pwd"
@@ -49,133 +48,116 @@ fi
 release=`expr $num - ${pat}00`
 version="${maj}.${min}.${pat}"
 
-qtype="CONFIG+=wickr_compliance_bot CONFIG+=use_wickr_npl"
+btype="$2"
+product="$1"
 
-case "$platform" in
-Darwin)
-    if test -z "$QTDIR" ; then
-	if test -d ${HOME}/QtEnterprise ; then
-	    QTDIR=`echo ${HOME}/QtEnterprise/$QTVER/clang_64`
-	else
-	    QTDIR=`echo ${HOME}/Qt/$QTVER/clang_64`
-	fi
+case "$btype" in
+    beta)
+        qtype="CONFIG+=debug CONFIG+=wickr_beta CONFIG+=wickr_compliance_bot CONFIG+=use_wickr_npl"
+        bldtype="linux"
+        isrelease=false
+        build_ext="beta"
+        install_ext="Beta"
+        svc_build_ext="debug"
+        svc_install_ext="Debug"
+        ;;
+    alpha)
+        qtype="CONFIG+=debug CONFIG+=wickr_compliance_bot CONFIG+=use_wickr_npl"
+        bldtype="linux"
+        isrelease=false
+        build_ext="alpha"
+        install_ext="Alpha"
+        svc_build_ext="debug"
+        svc_install_ext="Debug"
+        ;;
+    release)
+        qtype="CONFIG+=wickr_compliance_bot CONFIG+=use_wickr_npl"
+        bldtype="linux.release"
+        isrelease=true
+        build_ext=""
+        install_ext=""
+        svc_build_ext=""
+        svc_install_ext=""
+        ;;
+esac
+
+case "$product" in
+    messenger)
+        qtype="$qtype CONFIG+=wickr_messenger"
+        ;;
+    cloud)
+        ;;
+esac
+
+if test -z "$QTDIR" ; then
+    if test -d /usr/local/wickr/Qt-${QTVER} ; then
+        QTDIR=`echo /usr/local/wickr/Qt-${QTVER}`
+    else
+        QTDIR=`echo ${HOME}/Qt/$QTVER`
     fi
-    PATH="${QTDIR}/bin:$PATH"
-    platform="osx"
-    arch="x86_64"
-    nproc=`sysctl -n hw.ncpu`
-    qmake="-r -spec macx-clang CONFIG+=x86_64"
-    BUILD_CMD="make -j$nproc"
-    ;;
-Linux)
-    if test -z "$QTDIR" ; then
-	if test -d /usr/local/wickr/Qt-${QTVER} ; then
-	    QTDIR=`echo /usr/local/wickr/Qt-${QTVER}`
-	else
-	    QTDIR=`echo ${HOME}/Qt/$QTVER`
-	fi
-    fi
-    PATH="${QTDIR}/bin:$PATH"
-    platform="linux"
-    arch=`uname -m`
-    nproc=`nproc`
-    qmake="-r -spec linux-g++"
-    BUILD_CMD="make -j$nproc"
-    case "$arch" in
-    i386|i486|i568|i686)
-	arch="i386"
-	gcc="gcc"
-	scrarch=""
-	debarch="i386"
-	generic="generic-32"
-	;;
-    x86_64|amd64)
-	arch="x86_64"
-	gcc="gcc_64"
-	scrarch="64"
-	debarch="amd64"
-	generic="generic-64"
-	;;
-    esac
-    ;;
-# anything else, maybe windows...hardest to reliably identify
-*)
-    BUILD_CMD="jom"
-    LDFLAGS="-Lc/Qt/$QTVER/msvc2013/lib -L/usr/local/lib"
-    CPPFLAGS="-I/c/Qt/$QTVER/msvc2013/include -I/usr/local/include"
-    if test -z "$QTDIR" ; then
-	if test -d "/c/QtEnterprise" ; then
-	    QTDIR=`echo /c/QtEnterprise/$QTVER/msvc2013`
-	    TOOLS="/c/QtEnterprise/Tools"
-	else
-	    QTDIR=`echo /c/Qt/$QTVER/msvc2013`
-	    TOOLS="/c/Qt/Tools"
-	fi
-    fi
-    PATH="/c/Qt/$QTVER/msvc2013/bin:/c/Qt/Tools/QtCreator/bin:/c/Program Files (x86)/Microsoft Visual Studio 12.0/VC/bin:/c/Program Files (x86)/Microsoft Visual Studio 12.0/VC/bin:/c/Qt/$QTVER/msvc2013/bin:/c/Program Files (x86)/Windows Kits/8.1/bin/x64:${PATH}"
-    INCLUDE="/c/Program Files (x86)/Microsoft Visual Studio 12.0/VC/INCLUDE":"/c/Program Files (x86)/Microsoft Visual Studio 12.0/VC/ATLMFC/INCLUDE":"/c/Program Files (x86)/Windows Kits/8.1/include/shared":"/c/Program Files (x86)/Windows Kits/8.1/include/":"/c/Program Files (x86)/Windows Kits/8.1/include/um"
-    LIB="/c/Program Files (x86)/Microsoft Visual Studio 12.0/VC/LIB:/c/Program Files (x86)/Microsoft Visual Studio 12.0/VC/ATLMFC/LIB:/c/Program Files (x86)/Windows Kits/8.1/lib/winv6.3/um/x86"
-    LIBPATH="/c/WINDOWS/Microsoft.NET/Framework/v4.0.30319:/c/Program Files (x86)/Microsoft Visual Studio 12.0/VC/LIB:/c/Program Files (x86)/Microsoft Visual Studio 12.0/VC/ATLMFC/LIB:/c/Program Files (x86)/Windows Kits/8.1/References/CommonConfiguration/Neutral:/c/Program Files (x86)/Microsoft SDKs/Windows/v8.1/ExtensionSDKs/Microsoft.VCLibs/12.0/References/CommonConfiguration/neutral:"
-	
-    platform="win32"
+fi
+PATH="${QTDIR}/bin:$PATH"
+arch=`uname -m`
+nproc=`nproc`
+qmake="-r -spec linux-g++"
+BUILD_CMD="make -j$nproc"
+case "$arch" in
+i386|i486|i568|i686)
     arch="i386"
-    qmake=" -r -spec win32-msvc2013"
+    gcc="gcc"
+    scrarch=""
+    debarch="i386"
+    generic="generic-32"
+    ;;
+x86_64|amd64)
+    arch="x86_64"
+    gcc="gcc_64"
+    scrarch="64"
+    debarch="amd64"
+    generic="generic-64"
     ;;
 esac
 
-btype="release"
 build=autobuild-$btype
-deploy="$abs/$build/compliance.deploy"
-output="$abs/autobuild-output/compliance"
+deploy="$abs/$build/bots.deploy"
+output="$abs/autobuild-output/wickrio_$1_$2"
 
 export PATH QTDIR INCLUDE LIB LIBPATH BUILD_CMD
-echo "building $type for ${platform}..."
+echo "building $type"
 
 mkdir -p $build
 rm -rf "$build"/*
 
-case "$platform" in
-osx)
-    echo "DONE!"
-#    set -e
-#    (cd $build ; qmake ../wickr-wickrio.pro $qmake $qtype)
-#    (cd $build ; $BUILD_CMD)
-    ;;
-linux)
-    set -e
-    make
-    make update
-    make linux.release
-    make linux.release.install
-    (cd $build ; qmake ../wickr-wickrio.pro $qmake $qtype)
-    (cd $build ; $BUILD_CMD)
+set -e
+#make
+#make update
+make $bldtype
+make $bldtype.install
+(cd $build ; qmake ../wickr-wickrio.pro $qmake $qtype)
+(cd $build ; $BUILD_CMD)
 
+# Deploy this thing
+rm -rf "$deploy"
+mkdir -p "$deploy"
+rm -rf "$output"
+mkdir -p "$output"
 
-    # Deploy this thing
-    rm -rf "$deploy"
-    mkdir -p "$deploy"
-    rm -rf "$output"
-    mkdir -p "$output"
-echo "going to create prod for compliance_bot"
-echo "$deploy"
-    build_number=`cat $abs/clients/compliance_bot/BUILD_NUMBER`
-    binary_dir="$abs/$build"
-    $abs/clients/compliance_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "" "" true "$deploy"
+echo "Deploy directory: $deploy"
 
-echo "going to create prod for services"
-    build_number=`cat $abs/services/BUILD_NUMBER`
-    $abs/services/installer/linux/scripts/deploy64 $binary_dir $build_number "" "" true "$deploy"
+echo "Create compliance_bot for $product $btype"
+build_number=`cat $abs/clients/compliance_bot/BUILD_NUMBER`
+binary_dir="$abs/$build"
+$abs/clients/compliance_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
 
-    (cd $deploy ; zip -r "$output/compliance-bot-${version}.zip" *.deb *.sha256)
-    ;;
-win32)
-    echo "DONE!"
-#    set -e
-#    make
-#    make update
-#    make win32.release
-#    make win32.release.install
-#    (cd $build ; qmake ../wickr-wickrio.pro $qmake $qtype)
-#    (cd $build ; $BUILD_CMD)
-    ;;
-esac
+echo "Create welcome_bot for $product $btype"
+build_number=`cat $abs/clients/welcome_bot/BUILD_NUMBER`
+binary_dir="$abs/$build"
+$abs/clients/welcome_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
+
+echo "going to create $btype for services"
+build_number=`cat $abs/services/BUILD_NUMBER`
+$abs/services/installer/linux/scripts/deploy64 $binary_dir $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$deploy"
+
+(cd $deploy ; zip -r "$output/bots-${version}.zip" *.deb *.sha256)
+
+echo "ZIP File: $output/bots-${version}.zip"

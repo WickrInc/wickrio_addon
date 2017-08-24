@@ -8,6 +8,7 @@
 # $3 = build extension string (i.e. alpha)
 # $4 = build installation string (i.e. Alpha)
 # $5 = release build flag (true for release)
+# $6 = Output directory
 
 set -e
 current=`dirname $0`
@@ -18,6 +19,7 @@ build_number=$2
 build_extension=$3
 install_extension=$4
 release_flag=$5
+output_dir="$6"
 
 if test -z "$release_flag" ; then
 	release_flag="false"; fi
@@ -111,24 +113,24 @@ mkdir -p $appdata
 #
 # Copy the executables
 #
-cp -a $current/../../../../../../${build_dir}/clients/welcome_bot/client/welcome_bot$BldType $bindir
-cp -a $current/../../../../../../${build_dir}/clients/welcome_bot/parser/welcome_parser$BldType $bindir
+cp -a ${build_dir}/clients/welcome_bot/client/welcome_bot$BldType $bindir
+cp -a ${build_dir}/clients/welcome_bot/parser/welcome_parser$BldType $bindir
 
 #
 # TODO: Will need shared libraries
 #
 if [ "$release_flag" = "true" ]; then
-  cp -a $current/../../../../../../${build_dir}/libs/QtWebApp/libQtWebApp.* $libdir
-  cp -a $current/../../../../../../${build_dir}/libs/WickrIOLib/libWickrIOLib.* $libdir
-  cp -a $current/../../../../../../${build_dir}/libs/WickrIOGUI/libWickrIOGUI.* $libdir
+  cp -a ${build_dir}/libs/QtWebApp/libQtWebApp.* $libdir
+  cp -a ${build_dir}/libs/WickrIOLib/libWickrIOLib.* $libdir
+  cp -a ${build_dir}/libs/WickrIOGUI/libWickrIOGUI.* $libdir
 else
-  cp -a $current/../../../../../../${build_dir}/libs/QtWebApp/libQtWebAppd.* $libdir
-  cp -a $current/../../../../../../${build_dir}/libs/WickrIOLib/libWickrIOLibd.* $libdir
-  cp -a $current/../../../../../../${build_dir}/libs/WickrIOGUI/libWickrIOGUId.* $libdir
+  cp -a ${build_dir}/libs/QtWebApp/libQtWebAppd.* $libdir
+  cp -a ${build_dir}/libs/WickrIOLib/libWickrIOLibd.* $libdir
+  cp -a ${build_dir}/libs/WickrIOGUI/libWickrIOGUId.* $libdir
 fi
 
-cp -a $current/../../../../../../${build_dir}/libs/SMTPEmail/libSMTPEmail.* $libdir
-cp -a $current/../../../../../../${build_dir}/libs/qamqpsrc/libqamqp.* $libdir
+cp -a ${build_dir}/libs/SMTPEmail/libSMTPEmail.* $libdir
+cp -a ${build_dir}/libs/qamqpsrc/libqamqp.* $libdir
 
 #
 # TODO: Are there any chrpath call needed to be done?
@@ -186,3 +188,8 @@ fakeroot chown -R root:root $prefix
 
 fakeroot dpkg -b wio_welcome_bot${bldtype}-deb/ wio_welcome_bot${bldtype}_${version}_amd64.deb
 sha256sum wio_welcome_bot${bldtype}_${version}_amd64.deb >wio_welcome_bot${bldtype}_${version}_amd64.sha256
+
+if test -d "$output_dir" ; then
+    cp wio_welcome_bot${bldtype}_${version}_amd64.* "$output_dir/"
+    echo "copying wio_welcome_bot${bldtype}_${version}_amd64.* to $output_dir/"
+fi

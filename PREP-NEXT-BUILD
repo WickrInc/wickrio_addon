@@ -1,0 +1,70 @@
+#!/bin/sh
+echo This script should run to advance the build number
+echo Following this, clean everything and build everything!
+
+WICKRIOTOPBRANCH="master"
+WICKRSDKBRANCH="master"
+WICKRCOREBRANCH="master"
+
+# make sure we are in specified branch and up to date...
+set -e
+git checkout ${WICKRIOTOPBRANCH}
+git pull origin ${WICKRIOTOPBRANCH}
+set +e
+
+#
+# Update the BUILD_NUMBER file(s)
+#
+currentRelease=`expr \`cat BUILD_NUMBER\` + 1` 
+majorVersion=`expr $currentRelease / 1000000`
+minorVersion=`expr $currentRelease / 10000`
+minorVersion=`expr $minorVersion % 100`
+patchVersion=`expr $currentRelease / 100`
+patchVersion=`expr $patchVersion % 100`
+buildVersion=`expr $currentRelease % 100`
+nextTag="v${majorVersion}.${minorVersion}.${patchVersion}-${buildVersion}"
+baseTag="v${majorVersion}.${minorVersion}.${patchVersion}-1"
+libTag="WickrIO_${nextTag}"
+shortVersion="${majorVersion}.${minorVersion}.${patchVersion}"
+echo $currentRelease >BUILD_NUMBER
+
+cp BUILD_NUMBER ./services/BUILD_NUMBER
+cp BUILD_NUMBER ./clients/test_bot/BUILD_NUMBER
+cp BUILD_NUMBER ./clients/compliance_bot/BUILD_NUMBER
+cp BUILD_NUMBER ./clients/welcome_bot/BUILD_NUMBER
+cp BUILD_NUMBER ./clients/provisioning/BUILD_NUMBER
+
+#
+# Generate release notes
+#
+set -e
+relnotes=`./REL-NOTES-LIST`
+echo "${relnotes}"
+set +e
+echo "${relnotes}" > release.txt
+
+git commit -am "next build ${nextTag}" 
+git tag ${nextTag}
+
+#
+# Tag the wickr-sdk to have the same tag
+#
+cd wickr-sdk
+git checkout ${WICKRSDKBRANCH}
+git pull origin ${WICKRSDKBRANCH}
+git tag ${libTag} -m "[ci skip]"
+git push --tags
+
+#
+# Tag the wickr-core-c 
+#
+cd wickr-core-c
+git checkout ${WICKCOREBRANCH}
+git pull origin ${WICKCOREBRANCH}
+git tag ${libTag} -m "[ci skip]"
+git push --tags
+
+#
+# Back to wickr-wickrio
+#
+cd ../..

@@ -10,6 +10,26 @@ CONFIG += c++11
 CONFIG += console
 QT -= gui
 
+wickr_messenger {
+    message(*** WickrIO Welcome Bot Messenger Version)
+    DEFINES += WICKR_MESSENGER=1
+}
+else:wickr_blackout {
+    message(*** WickrIO Welcome Bot Blackout Version)
+    DEFINES += WICKR_BLACKOUT=1
+}
+else:wickr_enterprise {
+    message(*** WickrIO Welcome Bot Blackout Version)
+    DEFINES += WICKR_ENTERPRISE=1
+}
+else:wickr_scif {
+    message(*** WickrIO Welcome Bot Plus Version)
+    DEFINES += WICKR_SCIF=1
+}
+else {
+    message(*** WickrIO Welcome Bot Cloud Version)
+}
+
 wickr_compliance:DEFINES += WICKR_COMPLIANCE=1
 wickr_compliance_bot {
     DEFINES += WICKR_COMPLIANCE_BOT=1
@@ -17,12 +37,36 @@ wickr_compliance_bot {
 }
 
 CONFIG(release,release|debug) {
-    message(*** WickrIO Compliance Client Release Build)
     BUILD_TYPE=release
+
+    wickr_beta {
+        message(*** WickrIO Compliance Bot Beta.Release Build)
+        TARGET = compliance_botBeta
+        DEFINES += WICKR_BETA
+    } else {
+        message(*** WickrIO Compliance Bot Production Build)
+        TARGET = compliance_botAlpha
+        DEFINES += WICKR_PRODUCTION
+    }
 } else {
-    message(*** WickrIO Compliance Client Debug build)
     DEFINES += VERSIONDEBUG
     BUILD_TYPE=debug
+
+    wickr_beta {
+        message(*** WickrIO Compliance Bot Beta.Debug Build)
+        TARGET = compliance_botBeta
+        DEFINES += WICKR_BETA
+    }
+    else:wickr_qa {
+        message(*** WickrIO Compliance Bot QA Build)
+        TARGET = compliance_botQA
+        DEFINES += WICKR_QA
+    }
+    else {
+        message(*** WickrIO Compliance Bot Alpha Build)
+        TARGET = compliance_botAlpha
+        DEFINES += WICKR_ALPHA
+    }
 }
 
 QT += sql multimediawidgets xml
@@ -76,8 +120,6 @@ include($${DEPTH}/libs/SMTPEmail/SMTPEmail.pri)
 TEMPLATE = app
 
 CONFIG(release,release|debug) {
-    TARGET = compliance_bot
-
     SOURCES += $${COMMON}/versiondebugNO.cpp
 
     macx {
@@ -90,11 +132,6 @@ CONFIG(release,release|debug) {
     }
 }
 else {
-    wickr_blackout:TARGET = compliance_botOnPrm
-    else:wickr_beta:TARGET = compliance_botBeta
-    else:wickr_qa:TARGET = compliance_botQA
-    else:TARGET = compliance_botAlpha
-
     SOURCES += $${COMMON}/versiondebugYES.cpp
 
     APPICON = $$COMMON/Wickr_beta.icns
@@ -114,7 +151,6 @@ RESOURCES += \
     compliance_bot.qrc
 
 SOURCES += \
-    $${COMMON}/wickrbotactiondatabase.cpp \
     main.cpp \
     wickrioeclientmain.cpp \
     requesthandler.cpp \
@@ -128,7 +164,6 @@ SOURCES += \
     wickrIOFileDownloadService.cpp
 
 HEADERS += \
-    $${COMMON}/wickrbotactiondatabase.h \
     wickrioeclientmain.h \
     requesthandler.h \
     wickrioconvohdlr.h \

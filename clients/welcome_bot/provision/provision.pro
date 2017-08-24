@@ -9,12 +9,64 @@ DEPTH = ../../..
 CONFIG += c++11
 CONFIG += console
 
+wickr_messenger {
+    message(*** WickrIO WelcomeBot Provision Messenger Version)
+    DEFINES += WICKR_MESSENGER=1
+}
+else:wickr_blackout {
+    message(*** WickrIO WelcomeBot Provision Blackout Version)
+    DEFINES += WICKR_BLACKOUT=1
+}
+else:wickr_enterprise {
+    message(*** WickrIO WelcomeBot Provision Blackout Version)
+    DEFINES += WICKR_ENTERPRISE=1
+}
+else:wickr_scif {
+    message(*** WickrIO WelcomeBot Provision Plus Version)
+    DEFINES += WICKR_SCIF=1
+}
+else {
+    message(*** WickrIO WelcomeBot Provision Cloud Version)
+}
+
 wickr_compliance:DEFINES += WICKR_COMPLIANCE=1
 wickr_compliance_bot {
     DEFINES += WICKR_COMPLIANCE_BOT=1
     DEFINES += WICKR_COMPLIANCE=1
 }
 
+CONFIG(release,release|debug) {
+    BUILD_TYPE=release
+
+    wickr_beta {
+        message(*** WickrIO WelcomeBot Provision Beta.Release Build)
+        TARGET = provisionBeta
+        DEFINES += WICKR_BETA
+    } else {
+        message(*** WickrIO WelcomeBot Provision Production Build)
+        TARGET = provisionAlpha
+        DEFINES += WICKR_PRODUCTION
+    }
+} else {
+    DEFINES += VERSIONDEBUG
+    BUILD_TYPE=debug
+
+    wickr_beta {
+        message(*** WickrIO WelcomeBot Provision Beta.Debug Build)
+        TARGET = provisionBeta
+        DEFINES += WICKR_BETA
+    }
+    else:wickr_qa {
+        message(*** WickrIO WelcomeBot Provision QA Build)
+        TARGET = provisionQA
+        DEFINES += WICKR_QA
+    }
+    else {
+        message(*** WickrIO WelcomeBot Provision Alpha Build)
+        TARGET = provisionAlpha
+        DEFINES += WICKR_ALPHA
+    }
+}
 
 CONFIG(release,release|debug) {
     message(*** WickrIO Conformance Provision Release Build)
@@ -76,8 +128,6 @@ include($${DEPTH}/libs/SMTPEmail/SMTPEmail.pri)
 TEMPLATE = app
 
 CONFIG(release,release|debug) {
-    TARGET = provision
-
     SOURCES += $${COMMON}/versiondebugNO.cpp
 
     macx {
@@ -90,11 +140,6 @@ CONFIG(release,release|debug) {
     }
 }
 else {
-    wickr_blackout:TARGET = provisionOnPrm
-    else:wickr_beta:TARGET = provisionBeta
-    else:wickr_qa:TARGET = provisionQA
-    else:TARGET = provisionAlpha
-
     SOURCES += $${COMMON}/versiondebugYES.cpp
 
     APPICON = $$COMMON/Wickr_beta.icns
@@ -115,7 +160,6 @@ RESOURCES += \
 
 SOURCES += \
     $${COMMON}/cmdbase.cpp \
-    $${COMMON}/wickrbotactiondatabase.cpp \
     cmdProvisioning.cpp \
     main.cpp \
     wickrioeclientmain.cpp \
@@ -127,7 +171,6 @@ SOURCES += \
 
 HEADERS += \
     $${COMMON}/cmdbase.h \
-    $${COMMON}/wickrbotactiondatabase.h \
     cmdProvisioning.h \
     wickrioeclientmain.h \
     wickrIOLoginHdlr.h \

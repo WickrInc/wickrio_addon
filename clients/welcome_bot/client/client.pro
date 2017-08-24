@@ -9,19 +9,62 @@ DEPTH = ../../..
 CONFIG += c++11
 CONFIG += console
 
-DEFINES += WICKR_MESSENGER
+wickr_messenger {
+    message(*** WickrIO Welcome Bot Messenger Version)
+    DEFINES += WICKR_MESSENGER=1
+}
+else:wickr_blackout {
+    message(*** WickrIO Welcome Bot Blackout Version)
+    DEFINES += WICKR_BLACKOUT=1
+}
+else:wickr_enterprise {
+    message(*** WickrIO Welcome Bot Blackout Version)
+    DEFINES += WICKR_ENTERPRISE=1
+}
+else:wickr_scif {
+    message(*** WickrIO Welcome Bot Plus Version)
+    DEFINES += WICKR_SCIF=1
+}
+else {
+    message(*** WickrIO Welcome Bot Cloud Version)
+}
+
 wickr_compliance:DEFINES += WICKR_COMPLIANCE=1
 wickr_compliance_bot {
     DEFINES += WICKR_COMPLIANCE=1
 }
 
 CONFIG(release,release|debug) {
-    message(*** WickrIO Test Bot Client Release Build)
     BUILD_TYPE=release
+
+    wickr_beta {
+        message(*** WickrIO Welcome Bot Beta.Release Build)
+        TARGET = welcome_botBeta
+        DEFINES += WICKR_BETA
+    } else {
+        message(*** WickrIO Welcome Bot Production Build)
+        TARGET = welcome_botAlpha
+        DEFINES += WICKR_PRODUCTION
+    }
 } else {
-    message(*** WickrIO Test Bot Client Beta build)
     DEFINES += VERSIONDEBUG
     BUILD_TYPE=debug
+
+    wickr_beta {
+        message(*** WickrIO Welcome Bot Beta.Debug Build)
+        TARGET = welcome_botBeta
+        DEFINES += WICKR_BETA
+    }
+    else:wickr_qa {
+        message(*** WickrIO Welcome Bot QA Build)
+        TARGET = welcome_botQA
+        DEFINES += WICKR_QA
+    }
+    else {
+        message(*** WickrIO Welcome Bot Alpha Build)
+        TARGET = welcome_botAlpha
+        DEFINES += WICKR_ALPHA
+    }
 }
 
 QT += sql multimediawidgets xml
@@ -76,8 +119,6 @@ include($${DEPTH}/libs/SMTPEmail/SMTPEmail.pri)
 TEMPLATE = app
 
 CONFIG(release,release|debug) {
-    TARGET = welcome_bot
-
     SOURCES += $${COMMON}/versiondebugNO.cpp
 
     macx {
@@ -90,10 +131,6 @@ CONFIG(release,release|debug) {
     }
 }
 else {
-    wickr_beta:TARGET = welcome_botBeta
-    else:wickr_qa:TARGET = welcome_botQA
-    else:TARGET = welcome_botAlpha
-
     SOURCES += $${COMMON}/versiondebugYES.cpp
 
     APPICON = $$COMMON/Wickr_beta.icns
@@ -113,7 +150,6 @@ RESOURCES += \
     welcome_bot.qrc
 
 SOURCES += \
-    $${COMMON}/wickrbotactiondatabase.cpp \
     main.cpp \
     wickrioeclientmain.cpp \
     requesthandler.cpp \
@@ -126,7 +162,6 @@ SOURCES += \
     wickrIOClientRuntime.cpp
 
 HEADERS += \
-    $${COMMON}/wickrbotactiondatabase.h \
     wickrioeclientmain.h \
     requesthandler.h \
     wickrioconvohdlr.h \
