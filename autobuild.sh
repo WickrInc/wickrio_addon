@@ -123,8 +123,8 @@ mkdir -p $build
 rm -rf "$build"/*
 
 set -e
-make
-make update
+#make
+#make update
 make $bldtype
 make $bldtype.install
 (cd $build ; qmake ../wickr-wickrio.pro $qmake $qtype)
