@@ -9,7 +9,13 @@ DEPTH = ../../..
 CONFIG += c++11
 CONFIG += console
 
-DEFINES += WICKR_MESSENGER
+wickr_messenger {
+    DEFINES += WICKR_MESSENGER
+}
+else:wickr_blackout {
+    DEFINES += WICKR_BLACKOUT
+}
+
 wickr_compliance:DEFINES += WICKR_COMPLIANCE=1
 wickr_compliance_bot {
     DEFINES += WICKR_COMPLIANCE=1
@@ -18,10 +24,22 @@ wickr_compliance_bot {
 CONFIG(release,release|debug) {
     message(*** WickrIO Test Bot Client Release Build)
     BUILD_TYPE=release
+
+    wickr_beta {
+        DEFINES += WICKR_BETA
+    } else {
+        DEFINES += WICKR_PRODUCTION
+    }
 } else {
     message(*** WickrIO Test Bot Client Beta build)
     DEFINES += VERSIONDEBUG
     BUILD_TYPE=debug
+
+    wickr_beta {
+        DEFINES += WICKR_BETA
+    } else {
+        DEFINES += WICKR_ALPHA
+    }
 }
 
 QT += sql multimediawidgets xml
@@ -113,7 +131,6 @@ RESOURCES += \
     welcome_bot.qrc
 
 SOURCES += \
-    $${COMMON}/wickrbotactiondatabase.cpp \
     main.cpp \
     wickrioeclientmain.cpp \
     requesthandler.cpp \
@@ -126,7 +143,6 @@ SOURCES += \
     wickrIOClientRuntime.cpp
 
 HEADERS += \
-    $${COMMON}/wickrbotactiondatabase.h \
     wickrioeclientmain.h \
     requesthandler.h \
     wickrioconvohdlr.h \

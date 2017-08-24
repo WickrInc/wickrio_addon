@@ -4,60 +4,75 @@ stages:
   - build
 
 ######################################################
-# Mac
-build_mac:
-  stage: build
-  script:
-    - bash autobuild.sh
-  only:
-    - tags
-  tags:
-    - macos
-
-test_mac:
-  stage: test
-  script:
-    - bash autobuild.sh
-    - bash autotest.sh
-  tags:
-    - macos
-
+# Linux: WickrIO ONLY runs on Linux (Ubuntu)
 ######################################################
-# Windows
-build_win:
+build_cloud_alpha:
   stage: build
   script:
-    - bash autobuild.sh
-  tags:
-    - windows
-
-test_win:
-  stage: test
-  script:
-    - bash autobuild.sh
-    - bash autotest.sh
-  tags:
-    - windows
-
-######################################################
-# Linux
-build_linux:
-  stage: build
-  script:
-    - bash autobuild.sh
+    - bash autobuild.sh cloud alpha
   only:
+    - triggers
     - tags
   tags:
     - linux
+    - alpha
+    - cloud
   artifacts:
     expire_in: 1 week
     paths:
-      - autobuild-output/compliance/*.zip
+      - autobuild-output/wickrio_cloud_alpha/*.zip
 
-test_linux:
-  stage: test
+build_cloud_beta:
+  stage: build
   script:
-    - bash autobuild.sh
-    - bash autotest.sh
+    - bash autobuild.sh cloud beta
+  only:
+    - tags
   tags:
     - linux
+    - beta
+    - cloud
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - autobuild-output/wickrio_cloud_beta/*.zip
+
+build_cloud_release:
+  stage: build
+  script:
+    - bash autobuild.sh cloud release
+  only:
+    - tags
+  tags:
+    - linux
+    - release
+    - cloud
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - autobuild-output/wickrio_cloud_release/*.zip
+
+build_messenger_release:
+  stage: build
+  script:
+    - bash autobuild.sh messenger release
+  only:
+    - tags
+  tags:
+    - linux
+    - release
+    - messenger
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - autobuild-output/wickrio_messenger_release/*.zip
+
+test_messenger_beta:
+  stage: test
+  script:
+    - bash autobuild.sh messenger beta
+    - bash autotest.sh messenger beta
+  tags:
+    - linux
+    - release
+    - messenger

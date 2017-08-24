@@ -37,72 +37,6 @@ WickrBotDatabase::~WickrBotDatabase()
 }
 
 /**
- * @brief WickrBotDatabase::createConnection
- * This method will open the WickrBot database.
- * @return Returns true if the database is open, false if not
- */
-bool
-WickrBotDatabase::createConnection()
-{
-    m_db = QSqlDatabase::addDatabase("QSQLCIPHER_WICKR", "WickrBotDBConnection");
-    qDebug() << QSqlDatabase::drivers();
-
-    m_db.setDatabaseName(m_sDatabaseFileName);
-    if (!m_db.open()) {
-        qDebug() << qApp->tr("Cannot open database") << m_db.lastError();
-        qDebug() << qApp->tr("Unable to establish a database connection.\n"
-                     "This example needs SQLite support. Please read "
-                     "the Qt SQL driver documentation for information how "
-                     "to build it.\n\n"
-                     "Click Cancel to exit.");
-        return false;
-    }
-
-    return true;
-}
-
-/**
- * @brief WickrBotDatabase::close
- * Close the database if it is open. Set teh initialized flag to false so that no
- * other commands will be attempted.
- */
-void
-WickrBotDatabase::close()
-{
-    if (initialized) {
-        initialized = false;
-        if (m_db.isOpen()) {
-            QString conn = m_db.connectionName();
-            m_db.close();
-            m_db.removeDatabase(conn);
-        }
-    }
-}
-
-/**
- * @brief WickrBotDatabase::alterTable
- * Perform the input alter table query
- * @param qryString
- * @return
- */
-bool
-WickrBotDatabase::runSimpleQuery(QString qryString)
-{
-    bool success=false;
-    QSqlQuery alterQuery(m_db);
-
-    alterQuery.prepare(qryString);
-    if ( !alterQuery.exec()) {
-        QSqlError err = alterQuery.lastError();
-        qDebug() << "Could not perform simple SQL Query, Error=" << err;
-    } else {
-        success = true;
-    }
-    alterQuery.finish();
-    return success;
-}
-
-/**
  * @brief WickrBotDatabase::createRelationalTables
  * This method will create the tables for the WickrBot database.
  * @return True is returned if created successfully and fals if not
@@ -172,8 +106,74 @@ WickrBotDatabase::createRelationalTables()
         }
     }
 
+    return true;
+}
+
+
+/**
+ * @brief WickrBotDatabase::createConnection
+ * This method will open the WickrBot database.
+ * @return Returns true if the database is open, false if not
+ */
+bool
+WickrBotDatabase::createConnection()
+{
+    m_db = QSqlDatabase::addDatabase("QSQLCIPHER_WICKR", "WickrBotDBConnection");
+    qDebug() << QSqlDatabase::drivers();
+
+    m_db.setDatabaseName(m_sDatabaseFileName);
+    if (!m_db.open()) {
+        qDebug() << qApp->tr("Cannot open database") << m_db.lastError();
+        qDebug() << qApp->tr("Unable to establish a database connection.\n"
+                     "This example needs SQLite support. Please read "
+                     "the Qt SQL driver documentation for information how "
+                     "to build it.\n\n"
+                     "Click Cancel to exit.");
+        return false;
+    }
 
     return true;
+}
+
+/**
+ * @brief WickrBotDatabase::close
+ * Close the database if it is open. Set teh initialized flag to false so that no
+ * other commands will be attempted.
+ */
+void
+WickrBotDatabase::close()
+{
+    if (initialized) {
+        initialized = false;
+        if (m_db.isOpen()) {
+            QString conn = m_db.connectionName();
+            m_db.close();
+            m_db.removeDatabase(conn);
+        }
+    }
+}
+
+/**
+ * @brief WickrBotDatabase::alterTable
+ * Perform the input alter table query
+ * @param qryString
+ * @return
+ */
+bool
+WickrBotDatabase::runSimpleQuery(QString qryString)
+{
+    bool success=false;
+    QSqlQuery alterQuery(m_db);
+
+    alterQuery.prepare(qryString);
+    if ( !alterQuery.exec()) {
+        QSqlError err = alterQuery.lastError();
+        qDebug() << "Could not perform simple SQL Query, Error=" << err;
+    } else {
+        success = true;
+    }
+    alterQuery.finish();
+    return success;
 }
 
 /****************************************************************************************************************
@@ -1335,3 +1335,44 @@ WickrBotDatabase::dumpTableCounts()
     return retString;
 }
 
+/**
+ * @brief WickrBotActionDatabase::getFirstAction
+ * This method will retrieve the first action in the database that has a runtime value less than
+ * the current time. The input is a pointer to an WickrBotActionCache record to be populated with
+ * the contents of the retrieved record.
+ * @param action Pointer to the record to populate
+ * @return true if a record is found, false if not
+ */
+bool
+WickrBotDatabase::getFirstAction(WickrBotDatabase *botDB, const QString& dateTime, WickrBotActionCache *action) {
+    // Actions from the server are based on the server's time
+//    QString dateTime = getServerTime();
+
+    return botDB->getFirstAction(dateTime, action);
+}
+
+bool
+WickrBotDatabase::getFirstAction(WickrBotDatabase *botDB, const QString& dateTime, WickrBotActionCache *action, int clientID) {
+    // Actions from the server are based on the server's time
+//    QString dateTime = getServerTime();
+
+    return botDB->getFirstAction(dateTime, action, clientID);
+}
+
+        #if 0
+/**
+ * @brief getServerTime
+ * This function will return the string version of the Server's currently known date and time.
+ * The format is based on the DB_DATETIME_FORAMT defined in the header file
+ * @return Formatted string version of server's date and time
+ */
+QString WickrBotDatabase::getServerTime()
+{
+    long currentTime = WickrCore::WickrSession::getActiveSession()->getLocalAppClock()->getCurrentTime();
+    QDateTime dt = QDateTime::fromTime_t((uint)currentTime);
+    QDateTime dt2 = dt.toUTC();
+    QString dateTime = dt2.toString(DB_DATETIME_FORMAT);
+//    QString dateTime = dt.toString(DB_DATETIME_FORMAT);
+    return dateTime;
+}
+#endif
