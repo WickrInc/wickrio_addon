@@ -1,0 +1,36 @@
+#!/bin/sh
+echo This script will put a production release tag on the input tag.
+echo This tag is used for subsequent builds to generate cummulative release notes.
+
+reltag=$1
+if test -z "$reltag" ; then
+    echo "usage: $0 <tag>"
+    exit 1
+fi
+
+tagscommit=`git rev-parse $reltag 2>/dev/null`
+if [ $? -ne 0 ]; then
+    echo "Failed to get tag information!"
+    exit 1
+fi
+
+if test -z "$tagscommit" ; then
+    echo "Could not get tag commit number!"
+    exit 1
+fi
+
+echo "Commit for tag $reltag is $tagscommit"
+
+
+numbers=${reltag:1}
+
+majorVersion=$(echo $numbers| cut -d'.' -f 1)
+echo $majorVersion
+
+minorVersion=$(echo $numbers| cut -d'.' -f 2)
+echo $minorVersion
+
+prodtag="v${majorVersion}.${minorVersion}-release"
+echo "Product tag will be ${prodtag}"
+
+git tag ${prodtag} ${tagscommit}
