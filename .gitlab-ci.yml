@@ -6,6 +6,10 @@ stages:
 ######################################################
 # Linux: WickrIO ONLY runs on Linux (Ubuntu)
 ######################################################
+
+#
+# Cloud builds
+#
 build_cloud_alpha:
   stage: build
   script:
@@ -52,6 +56,58 @@ build_cloud_release:
     paths:
       - autobuild-output/wickrio_cloud_release/*.zip
 
+#
+# Enterprise builds
+#
+build_enterprise_alpha:
+  stage: build
+  script:
+    - bash autobuild.sh enterprise alpha
+  only:
+    - triggers
+    - tags
+  tags:
+    - linux
+    - alpha
+    - enterprise
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - autobuild-output/wickrio_enterprise_alpha/*.zip
+
+build_enterprise_release:
+  stage: build
+  script:
+    - bash autobuild.sh enterprise release
+  only:
+    - tags
+  tags:
+    - linux
+    - release
+    - enterprise
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - autobuild-output/wickrio_enterprise_release/*.zip
+
+#
+# Messenger builds
+#
+build_messenger_alpha:
+  stage: build
+  script:
+    - bash autobuild.sh messenger alpha
+  only:
+    - tags
+  tags:
+    - linux
+    - alpha
+    - messenger
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - autobuild-output/wickrio_messenger_alpha/*.zip
+
 build_messenger_release:
   stage: build
   script:
@@ -67,12 +123,15 @@ build_messenger_release:
     paths:
       - autobuild-output/wickrio_messenger_release/*.zip
 
-test_messenger_beta:
-  stage: test
-  script:
-    - bash autobuild.sh messenger beta
-    - bash autotest.sh messenger beta
-  tags:
-    - linux
-    - release
-    - messenger
+#
+# Tests
+#
+#test_messenger_beta:
+#  stage: test
+#  script:
+#    - bash autobuild.sh messenger beta
+#    - bash autotest.sh messenger beta
+#  tags:
+#    - linux
+#    - release
+#    - messenger

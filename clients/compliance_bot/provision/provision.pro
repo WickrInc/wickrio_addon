@@ -10,6 +10,26 @@ CONFIG += c++11
 CONFIG += console
 QT -= gui
 
+wickr_messenger {
+    message(*** WickrIO ComplianceBot Provision Messenger Version)
+    DEFINES += WICKR_MESSENGER=1
+}
+else:wickr_blackout {
+    message(*** WickrIO ComplianceBot Provision Blackout Version)
+    DEFINES += WICKR_BLACKOUT=1
+}
+else:wickr_enterprise {
+    message(*** WickrIO ComplianceBot Provision Blackout Version)
+    DEFINES += WICKR_ENTERPRISE=1
+}
+else:wickr_scif {
+    message(*** WickrIO ComplianceBot Provision Plus Version)
+    DEFINES += WICKR_SCIF=1
+}
+else {
+    message(*** WickrIO ComplianceBot Provision Cloud Version)
+}
+
 wickr_compliance:DEFINES += WICKR_COMPLIANCE=1
 wickr_compliance_bot {
     DEFINES += WICKR_COMPLIANCE_BOT=1
@@ -17,12 +37,36 @@ wickr_compliance_bot {
 }
 
 CONFIG(release,release|debug) {
-    message(*** WickrIO Conformance Provision Release Build)
     BUILD_TYPE=release
+
+    wickr_beta {
+        message(*** WickrIO ComplianceBot Provision Beta.Release Build)
+        TARGET = provisionBeta
+        DEFINES += WICKR_BETA
+    } else {
+        message(*** WickrIO ComplianceBot Provision Production Build)
+        TARGET = provisionAlpha
+        DEFINES += WICKR_PRODUCTION
+    }
 } else {
-    message(*** WickrIO Conformance Provision Debug build)
     DEFINES += VERSIONDEBUG
     BUILD_TYPE=debug
+
+    wickr_beta {
+        message(*** WickrIO ComplianceBot Provision Beta.Debug Build)
+        TARGET = provisionBeta
+        DEFINES += WICKR_BETA
+    }
+    else:wickr_qa {
+        message(*** WickrIO ComplianceBot Provision QA Build)
+        TARGET = provisionQA
+        DEFINES += WICKR_QA
+    }
+    else {
+        message(*** WickrIO ComplianceBot Provision Alpha Build)
+        TARGET = provisionAlpha
+        DEFINES += WICKR_ALPHA
+    }
 }
 
 QT += sql multimediawidgets xml
@@ -76,8 +120,6 @@ include($${DEPTH}/libs/SMTPEmail/SMTPEmail.pri)
 TEMPLATE = app
 
 CONFIG(release,release|debug) {
-    TARGET = provision
-
     SOURCES += $${COMMON}/versiondebugNO.cpp
 
     macx {
@@ -90,11 +132,6 @@ CONFIG(release,release|debug) {
     }
 }
 else {
-    wickr_blackout:TARGET = provisionOnPrm
-    else:wickr_beta:TARGET = provisionBeta
-    else:wickr_qa:TARGET = provisionQA
-    else:TARGET = provisionAlpha
-
     SOURCES += $${COMMON}/versiondebugYES.cpp
 
     APPICON = $$COMMON/Wickr_beta.icns

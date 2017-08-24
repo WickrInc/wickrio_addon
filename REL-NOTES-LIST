@@ -1,0 +1,41 @@
+#!/bin/sh
+
+currentRelease=`expr \`cat BUILD_NUMBER\` + 1` 
+majorVersion=`expr $currentRelease / 1000000`
+minorVersion=`expr $currentRelease / 10000`
+minorVersion=`expr $minorVersion % 100`
+
+patchVersion=`expr $currentRelease / 100`
+patchVersion=`expr $patchVersion % 100`
+buildVersion=`expr $currentRelease % 100`
+thisVersion="v${majorVersion}.${minorVersion}.${patchVersion}-${buildVersion}"
+
+#echo "Calculating the previous released production version..."
+while true; do
+    reltag="v${majorVersion}.${minorVersion}-release"
+#    echo "Current production release looking at: ${reltag}"
+    
+    tagscommit=`git rev-parse $reltag 2>/dev/null`
+    if [ $? -eq 0 ]; then
+        if test -n "$tagscommit" ; then
+            break
+        fi
+    fi
+
+    if test "${minorVersion}" = "0" ; then
+        majorVersion=`expr $majorVersion - 1`
+        minorVersion=100
+#        echo "Minor version has hit 0!"
+    fi
+    minorVersion=`expr $minorVersion - 1`
+done
+
+#echo "Found the previous released version: ${reltag}"
+
+#
+# Print out the release notes for the current build only
+#
+tag=$reltag
+
+relnotes=`git log --merges ${tag}.. | grep -v ^[A-Z,a-z] | grep -v -e '^[[:space:]]*$' | grep -v ^[[:space:]]*See | grep -v ^[[:space:]]*Merge | sed -e 's/^[[:space:]]*/  * /'`
+echo "Release Notes from ${reltag} to ${thisVersion}:\n${relnotes}"

@@ -53,18 +53,22 @@ product="$1"
 
 case "$btype" in
     beta)
-        qtype="CONFIG+=wickr_beta CONFIG+=wickr_compliance_bot CONFIG+=use_wickr_npl"
+        qtype="CONFIG+=debug CONFIG+=wickr_beta CONFIG+=wickr_compliance_bot CONFIG+=use_wickr_npl"
         bldtype="linux"
         isrelease=false
         build_ext="beta"
         install_ext="Beta"
+        svc_build_ext="debug"
+        svc_install_ext="Debug"
         ;;
     alpha)
-        qtype="CONFIG+=wickr_compliance_bot CONFIG+=use_wickr_npl"
+        qtype="CONFIG+=debug CONFIG+=wickr_compliance_bot CONFIG+=use_wickr_npl"
         bldtype="linux"
         isrelease=false
         build_ext="alpha"
         install_ext="Alpha"
+        svc_build_ext="debug"
+        svc_install_ext="Debug"
         ;;
     release)
         qtype="CONFIG+=wickr_compliance_bot CONFIG+=use_wickr_npl"
@@ -72,6 +76,8 @@ case "$btype" in
         isrelease=true
         build_ext=""
         install_ext=""
+        svc_build_ext=""
+        svc_install_ext=""
         ;;
 esac
 
@@ -150,6 +156,8 @@ $abs/clients/welcome_bot/installers/linux/scripts/deploy64 $binary_dir $build_nu
 
 echo "going to create $btype for services"
 build_number=`cat $abs/services/BUILD_NUMBER`
-$abs/services/installer/linux/scripts/deploy64 $binary_dir $build_number "" "" $isrelease "$deploy"
+$abs/services/installer/linux/scripts/deploy64 $binary_dir $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$deploy"
 
 (cd $deploy ; zip -r "$output/bots-${version}.zip" *.deb *.sha256)
+
+echo "ZIP File: $output/bots-${version}.zip"
