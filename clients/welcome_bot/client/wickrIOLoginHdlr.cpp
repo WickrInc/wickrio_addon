@@ -187,8 +187,8 @@ void WickrIOLoginHdlr::slotLoginStart(const QString& username, const QString& pa
         return;
     }
 
-
-    WickrLoginContext *c = new WickrLoginContext(username,password,ClientVersionInfo::versionForLogin());
+    QString otp="";
+    WickrLoginContext *c = new WickrLoginContext(username,password,otp,ClientVersionInfo::versionForLogin());
     connect(c, &WickrLoginContext::signalRequestCompleted, this, &WickrIOLoginHdlr::slotLoginDone, Qt::QueuedConnection);
     WickrCore::WickrRuntime::taskSvcMakeRequest(c);
 }
