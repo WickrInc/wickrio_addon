@@ -48,6 +48,10 @@ fi
 release=`expr $num - ${pat}00`
 version="${maj}.${min}.${pat}"
 
+echo "release=$release"
+echo "version=$version"
+exit
+
 btype="$2"
 product="$1"
 

@@ -23,6 +23,14 @@ if test -z "$release_flag" ; then
 	release_flag="false"; fi
 
 #
+# Make sure the version number is the correct length
+#
+check=${#build_number}
+if [ $check -lt 8 ]; then
+  build_number="0$build_number"
+fi
+
+#
 # Debug display of input
 #
 echo build_dir=$build_dir

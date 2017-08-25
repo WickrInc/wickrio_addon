@@ -285,7 +285,7 @@ bool WickrBotJsonData::processSendMessageJsonDocV3(const QJsonObject &operationO
         m_runTime = value.toVariant().toDateTime();
     } else {
         QDateTime dt = QDateTime::currentDateTime();
-        dt.addSecs(10);
+        dt.addSecs(20);
         m_runTime = dt;
     }
 
