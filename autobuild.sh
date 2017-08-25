@@ -50,7 +50,6 @@ version="${maj}.${min}.${pat}"
 
 echo "release=$release"
 echo "version=$version"
-exit
 
 btype="$2"
 product="$1"
