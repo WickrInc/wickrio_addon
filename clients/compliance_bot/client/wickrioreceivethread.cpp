@@ -508,8 +508,8 @@ WickrIOReceiverMgr::processCallingMsg(QJsonObject& jsonObject,  WickrCore::Wickr
     if (avMsg) {
         verifyJsonObject.insert(APIJSON_CALL_STATUS, avMsg->status());
 
-        if (!avMsg->getMeetingId().isEmpty()) {
-            verifyJsonObject.insert(APIJSON_CALL_MEETINGID, avMsg->getMeetingId());
+        if (!avMsg->getCallId().isEmpty()) {
+            verifyJsonObject.insert(APIJSON_CALL_MEETINGID, avMsg->getCallId());
         }
     }
 

@@ -190,6 +190,7 @@ bool WickrIOActionHdlr::processActionSendMessage(WickrBotJson *jsonHandler, int 
                                                    false,
                                                    kWickrUserVerificationStatusVerified,
                                                    false,
+                                                   false,
                                                    0,
                                                    false,
                                                    0,
