@@ -152,6 +152,11 @@ build_number=`cat $abs/clients/compliance_bot/BUILD_NUMBER`
 binary_dir="$abs/$build"
 $abs/clients/compliance_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
 
+echo "Create test_bot for $product $btype"
+build_number=`cat $abs/clients/test_bot/BUILD_NUMBER`
+binary_dir="$abs/$build"
+$abs/clients/test_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
+
 echo "Create welcome_bot for $product $btype"
 build_number=`cat $abs/clients/welcome_bot/BUILD_NUMBER`
 binary_dir="$abs/$build"
