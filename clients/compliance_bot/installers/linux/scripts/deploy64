@@ -88,6 +88,7 @@ scriptsdir=$optdir/scripts
 imagedir=$optdir/attachments/image
 
 platform=$current/../../../../../platforms/linux/generic-64
+sdkplatform=$current/../../../../../wickr-sdk/platforms/linux/generic-64
 
 # Client definitions
 menus=$prefix/usr/share/applications
@@ -155,6 +156,11 @@ sed -e "s/EXTENSION/${svcbldtype}/g" -e "s/INSTALLEXT/${SvcBldType}/g" <$current
 # Copy the library files
 #
 cp -a $platform/*.so $platform/*.so.* $libdir/
+if [ "$release_flag" = "true" ]; then
+  cp -a $sdkplatform/release/*.so $sdkplatform/release/*.so.* $libdir/
+else
+  cp -a $sdkplatform/debug/*.so $sdkplatform/debug/*.so.* $libdir/
+fi
 rm -f $plugins/sqldrivers/*
 #cp -a $current/../../../../../platforms/linux/plugins-64/* $plugins/sqldrivers/
 #cp -a $current/../plugins-64/* $plugins/sqldrivers/
