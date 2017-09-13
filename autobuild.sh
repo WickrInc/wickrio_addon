@@ -88,6 +88,9 @@ case "$product" in
     messenger)
         qtype="$qtype CONFIG+=wickr_messenger"
         ;;
+    enterprise)
+        qtype="$qtype CONFIG+=wickr_enterprise"
+        ;;
     cloud)
         ;;
 esac

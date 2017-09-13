@@ -119,8 +119,8 @@ int main(int argc, char *argv[])
         operation->m_botDB->updateProcessState(WBIO_PROVISION_TARGET, 0, PROCSTATE_DOWN);
     }
 
-    delete rxIPC;
-    delete consoleSvc;
+    rxIPC->deleteLater();
+    consoleSvc->deleteLater();
 
     return 0;
 }
