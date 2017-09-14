@@ -8,7 +8,4 @@ cd $current
 
 QTVER="5_8"
 
-BUILDDIR=build-wickr-wickrio-Desktop_Qt_${QTVER}_GCC_64bit_BUILT-Release
-build_number=`cat ../../../BUILD_NUMBER`
-
-$current/deploy64 $BUILDDIR $build_number "" "" true
+$current/create_pkg "$1" release "$2"
