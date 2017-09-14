@@ -6,9 +6,4 @@ set -e
 current=`dirname $0`
 cd $current
 
-QTVER="5_7"
-
-BUILDDIR=../../../../../../build-wickr-wickrio-Desktop_Qt_${QTVER}_GCC_64bit_BUILT-Beta
-build_number=`cat ../../../BUILD_NUMBER`
-
-$current/deploy64 $BUILDDIR $build_number beta Beta false $1
+$current/create_pkg "$1" beta "$2"
