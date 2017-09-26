@@ -17,6 +17,7 @@
 #define JSON_OBJECT_ATTACHMENT      "attachment"
 #define JSON_OBJECT_MSG_TEXT        "message"
 #define JSON_OBJECT_TTL             "ttl"
+#define JSON_OBJECT_BOR             "bor"
 #define JSON_OBJECT_VGROUPID        "vgroupid"
 
 #define JSON_ACTION_SEND_MESSAGE    "sendmessage"
@@ -39,6 +40,8 @@ public:
 private:
     // Definitions of values parsed from the JSON string
     long ttl;
+    long bor;
+    bool has_bor;
     WBJsonActions action;
     QList<QString> userIDs;
     QList<QString> userNames;
@@ -49,12 +52,15 @@ private:
 
 public:
     void setTTL(long ttl) { this->ttl = ttl; }
+    void setBOR(long bor) { this->bor = bor; }
     void addAttachment(QString attachment) { this->attachments.append(attachment); }
     void setMessage(QString message) { this->message = message; }
     void setRunTime(QDateTime runTime) { this->runTime = runTime; }
 
     WBJsonActions getAction() { return action; }
     long getTTL() { return ttl; }
+    long getBOR() { return bor; }
+    bool hasBOR() { return has_bor; }
 
     QList<QString> getUserIDs() { return userIDs; }
     QList<QString> getUserNames() { return userNames; }

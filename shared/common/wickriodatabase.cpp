@@ -1025,14 +1025,15 @@ WickrIOClientDatabase::insertMessage(long timestamp, int clientID, const QString
         id = getNextID(DB_MESSAGES_TABLE);
 
         QSqlQuery query(m_db);
-        QString queryString = QString("INSERT INTO messages (id, timestamp, client_id, type, json, has_attachment) VALUES (%1, %2, %3, %4, '%5', %6)")
-                .arg(id)
-                .arg(timestamp)
-                .arg(clientID)
-                .arg(type)
-                .arg(json)
-                .arg(hasAttachment);
-        if (!query.exec(queryString)) {
+        query.prepare("INSERT INTO messages (id, timestamp, client_id, type, json, has_attachment) VALUES (:id, :timestamp, :clientID, :type, :json, :hasAttachment)");
+        query.bindValue(":id", id);
+        query.bindValue(":timestamp", (int)timestamp);
+        query.bindValue(":clientID", clientID);
+        query.bindValue(":type", type);
+        query.bindValue(":json", json);
+        query.bindValue(":hasAttachment", hasAttachment);
+
+        if (!query.exec()) {
             QSqlError error = query.lastError();
             qDebug() << "insertMessage: SQL error" << error;
             id = -1;

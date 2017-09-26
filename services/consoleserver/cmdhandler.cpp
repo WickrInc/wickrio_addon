@@ -331,9 +331,9 @@ CmdHandler::addClient(WickrIOConsoleUser *pCUser, stefanfrings::HttpRequest& req
         if (chkClientsNameExists(clients, client.name)) {
             sendFailure(400, "Name already used", response);
             failed = true;
-        } else if (chkClientsUserExists(clients, client.user)) {
-            sendFailure(400, "User already exists", response);
-            failed = true;
+//        } else if (chkClientsUserExists(clients, client.user)) {
+//            sendFailure(400, "User already exists", response);
+//            failed = true;
         } else  if (chkClientsInterfaceExists(clients, client.iface, client.port)) {
             sendFailure(400, "Interface port combination already in use", response);
             failed = true;

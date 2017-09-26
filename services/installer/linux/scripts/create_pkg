@@ -17,7 +17,7 @@ outputdir="$3"
 #
 case "$product" in
 cloud)
-    productStr="Cloud"
+    productStr="Pro"
     ;;
 enterprise)
     productStr="Enterprise"
@@ -40,14 +40,14 @@ esac
 case "$buildtype" in
 alpha)
     buildTypeStr="Alpha"
-    bldExtStr="alpha"
-    bldInsStr="Alpha"
+    bldExtStr="debug"
+    bldInsStr="Debug"
     relBldFlag="false"
     ;;
 beta)
     buildTypeStr="Beta"
-    bldExtStr="alpha"
-    bldInsStr="Alpha"
+    bldExtStr="debug"
+    bldInsStr="Debug"
     relBldFlag="false"
     ;;
 release)
@@ -58,8 +58,8 @@ release)
     ;;
 qa)
     buildTypeStr="QA"
-    bldExtStr="alpha"
-    bldInsStr="Alpha"
+    bldExtStr="debug"
+    bldInsStr="Debug"
     relBldFlag="false"
     ;;
 *)

@@ -369,6 +369,17 @@ bool WickrBotJsonData::processSendMessageJsonDoc(const QJsonObject &operationObj
             qDebug() << "TTL:" << m_ttl;
     }
 
+    // Parse out any BOR
+    if (operationObject.contains("bor")) {
+        value = operationObject["bor"];
+        m_bor = value.toInt(0);
+        m_has_bor = true;
+        if (m_operation->debug)
+            qDebug() << "BOR:" << m_bor;
+    } else {
+        m_has_bor = false;
+    }
+
     return true;
 }
 
@@ -522,6 +533,8 @@ int WickrBotJsonData::processSendMessage() {
 
             // put the command into the database
             CreateJsonAction *action = new CreateJsonAction("sendmessage", user, m_ttl, m_message, m_attachments);
+            if (m_has_bor)
+                action->setBOR(m_bor);
             QByteArray json = action->toByteArray();
             delete action;
             messageCount++;
@@ -549,6 +562,8 @@ int WickrBotJsonData::processSendMessage() {
 
             // put the command into the database
             CreateJsonAction *action = new CreateJsonAction("sendmessage", users, m_ttl, m_message, m_attachments);
+            if (m_has_bor)
+                action->setBOR(m_bor);
             QByteArray json = action->toByteArray();
             delete action;
             messageCount++;
@@ -571,6 +586,8 @@ int WickrBotJsonData::processSendMessage() {
         if (m_message.size() > 0) {
             // put the command into the database
             CreateJsonAction *action = new CreateJsonAction("sendmessage", m_vgroupid, m_ttl, m_message, m_attachments, true);
+            if (m_has_bor)
+                action->setBOR(m_bor);
             QByteArray json = action->toByteArray();
             delete action;
             messageCount++;

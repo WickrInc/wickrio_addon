@@ -6,7 +6,8 @@
 #include <QString>
 #include "createjson.h"
 
-CreateJsonAction::CreateJsonAction()
+CreateJsonAction::CreateJsonAction() :
+    m_has_bor(false)
 {
     action = "";
     name = "";
@@ -16,7 +17,8 @@ CreateJsonAction::CreateJsonAction()
     attachments.clear();
 }
 
-CreateJsonAction::CreateJsonAction(QString action, QStringList users, int ttl, QString message, QList<QString> attachments)
+CreateJsonAction::CreateJsonAction(QString action, QStringList users, int ttl, QString message, QList<QString> attachments) :
+    m_has_bor(false)
 {
     this->action = action;
     this->users = users;
@@ -31,7 +33,8 @@ CreateJsonAction::CreateJsonAction(QString action, QStringList users, int ttl, Q
 }
 
 
-CreateJsonAction::CreateJsonAction(QString action, QString name, int ttl, QString message, QList<QString> attachments, bool isVGroupID)
+CreateJsonAction::CreateJsonAction(QString action, QString name, int ttl, QString message, QList<QString> attachments, bool isVGroupID) :
+    m_has_bor(false)
 {
     this->action = action;
     if (isVGroupID) {
@@ -53,6 +56,12 @@ CreateJsonAction::~CreateJsonAction()
 {
 }
 
+void
+CreateJsonAction::setBOR(int bor)
+{
+    m_bor = bor;
+    m_has_bor = true;
+}
 
 QByteArray
 CreateJsonAction::toByteArray()
@@ -91,6 +100,10 @@ CreateJsonAction::toByteArray()
 
     if (this->ttl > 0) {
         jsonObject.insert("ttl", this->ttl);
+    }
+
+    if (m_has_bor) {
+        jsonObject.insert("bor", m_bor);
     }
 
     QJsonObject operationObject;

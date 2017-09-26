@@ -85,6 +85,18 @@ WickrIOActionHdlr::sendMessageTo1To1(WickrCore::WickrConvo *convo)
         }
     }
 
+    long ttl = m_jsonHandler->getTTL();
+    if (ttl == 0) {
+        ttl = convo->getDestruct();
+    } else {
+        convo->setDestruct(ttl);
+    }
+
+    if (m_jsonHandler->hasBOR()) {
+    long bor = m_jsonHandler->getBOR();
+        convo->setBOR(bor);
+    }
+
     if (attachmentFiles.size() > 0) {
         if (! sendFile(convo, attachmentFiles, m_jsonHandler->getMessage())) {
             m_processAction = false;
@@ -265,7 +277,7 @@ void WickrIOActionHdlr::slotSendMessagePostGetUsers()
      * Create the Convo
      */
     WickrCore::WickrConvo          *convo;
-    WickrConvoInfoType      convoType = m_wickrUsers.size() > 0 ? CONVO_SECURE_ROOM : CONVO_ONE_TO_ONE;
+    WickrConvoInfoType      convoType = m_wickrUsers.size() > 1 ? CONVO_SECURE_ROOM : CONVO_ONE_TO_ONE;
 
     // get the gid for this set of users
     QString vGid = WickrCore::WickrConvo::getVGroupIDWithUsers(m_wickrUsers, convoType );
@@ -287,8 +299,8 @@ void WickrIOActionHdlr::slotSendMessagePostGetUsers()
 
 void WickrIOActionHdlr::sendMessageToConvo(WickrCore::WickrConvo *convo)
 {
-    if (!convo) {
-        m_operation->error("Convo is not set!");
+    if (!convo || convo->getAllUsers().length() == 0) {
+        m_operation->error("Convo is not set or no users in convo!");
         m_processAction = false;
         m_messagesFailed++;
 
@@ -327,7 +339,15 @@ void WickrIOActionHdlr::sendMessageToConvo(WickrCore::WickrConvo *convo)
     long ttl = m_jsonHandler->getTTL();
     if (ttl == 0) {
         ttl = convo->getDestruct();
+    } else {
+        convo->setDestruct(ttl);
     }
+
+    if (m_jsonHandler->hasBOR()) {
+    long bor = m_jsonHandler->getBOR();
+        convo->setBOR(bor);
+    }
+
 
 #if 0
     if (attachmentFiles.size() > 0) {

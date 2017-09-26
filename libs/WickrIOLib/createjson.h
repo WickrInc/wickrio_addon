@@ -12,12 +12,16 @@ public:
     CreateJsonAction(QString action, QString name, int ttl, QString message, QList<QString> attachment, bool isVGroupID = false);
     ~CreateJsonAction();
 
+    void setBOR(int bor);
+
 public:
     QString action;
     QStringList users;
     QString name;
     QString vgroupid;
     int ttl;
+    int m_bor;
+    bool m_has_bor;
     QString message;
     QList<QString> attachments;
 

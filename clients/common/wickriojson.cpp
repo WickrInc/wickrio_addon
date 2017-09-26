@@ -209,6 +209,16 @@ WickrBotJson::parseJsonString(QByteArray jsonString)
         ttl = 0;
     }
 
+    // Parse out any BOR
+    if (operationObject.contains(JSON_OBJECT_BOR)) {
+        value = operationObject[JSON_OBJECT_BOR];
+        bor = value.toInt(0);
+        has_bor = true;
+    } else {
+        bor = 0;
+        has_bor = false;
+    }
+
     return true;
 }
 

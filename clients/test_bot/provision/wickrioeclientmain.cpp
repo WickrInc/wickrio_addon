@@ -193,7 +193,7 @@ void WickrIOEClientMain::slotProvisionPageChanged(WickrIOProvisionHdlr::Page pag
             m_client->password = WickrIOTokens::getRandomString(24);
             qDebug() << "CONSOLE:********************************************************************";
             qDebug() << "CONSOLE:**** GENERATED PASSWORD";
-            qDebug() << "CONSOLE:**** DO NOT LOOSE THIS PASSWORD, YOU WILL NEED TO ENTER IT EVERY TIME";
+            qDebug() << "CONSOLE:**** DO NOT LOSE THIS PASSWORD, YOU WILL NEED TO ENTER IT EVERY TIME";
             qDebug() << "CONSOLE:**** TO START THE BOT";
             qDebug() << "CONSOLE:****";
             qDebug() << "CONSOLE:" << m_client->password;

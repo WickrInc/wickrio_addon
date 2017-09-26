@@ -20,6 +20,8 @@ public:
 
 public:
     int m_ttl;
+    int m_bor;
+    bool m_has_bor;
     QString m_action;
     QList<QString> m_userIDs;
     QList<QString> m_userNames;
