@@ -64,7 +64,7 @@ WickrIOReceiveThread::slotProcessMessage(WickrDBObject *item)
     if (processMessage(item)) {
         WickrCore::WickrMessage *msg = (WickrCore::WickrMessage *)item;
         if (msg) {
-            msg->dodelete();
+            msg->dodelete(traceInfo());
 //            delete msg;
         }
     }
@@ -435,7 +435,7 @@ void WickrIOReceiveThread::attachConvosMessages(WickrNotifyList *msgList)
         foreach(WickrDBObject *item, toBeDeleted) {
             WickrCore::WickrMessage *msg = (WickrCore::WickrMessage *)item;
             if (msg) {
-                msg->dodelete();
+                msg->dodelete(traceInfo());
     //            delete msg;
             }
         }

@@ -168,6 +168,13 @@ WickrIOHttpRequestHdlr::validateAuthentication(stefanfrings::HttpRequest& reques
             QByteArray aText = QByteArray::fromBase64(authList.at(1));
             qDebug() << "Decoded authorization header" << aText;
             QList<QByteArray> basicList = aText.split(':');
+            if (basicList.size() != 2) {
+                basicList = authList.at(1).split(':');
+                if (basicList.size() != 2) {
+                    response.setHeader("WWW-Authenticate", "Basic realm=WickrIO");
+                    return false;
+                }
+            }
             QString user = QString(basicList.at(0));
             QString pw = QString(basicList.at(1));
 

@@ -134,7 +134,7 @@ WickrIOFileDownloadThread::slotDownloadFile(WickrIORxDownloadFile *dload)
         cloudMgr->downloadFile(nullptr, dload->m_attachmentFileName, dload->m_fileInfo, false);
     } else {
         // Release the message
-        dload->m_msg->dodelete();
+        dload->m_msg->dodelete(traceInfo());
         dload->m_msg->release();
         delete dload;
     }
@@ -185,7 +185,7 @@ WickrIOFileDownloadThread::slotSendFileStatusChange(const QString& uuid, const Q
             db->insertAttachment(msgID, dload->m_attachmentFileName, dload->m_realFileName);
             m_activeDownloads.remove(uuid);
 
-            dload->m_msg->dodelete();
+            dload->m_msg->dodelete(traceInfo());
             dload->m_msg->release();
 
             delete dload;

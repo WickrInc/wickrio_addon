@@ -387,7 +387,7 @@ RequestHandler::processDeleteMessages(stefanfrings::HttpResponse& response)
 
                 WickrCore::WickrInbox *inbox = (WickrCore::WickrInbox *)msg;
 
-                inbox->dodelete();
+                inbox->dodelete(traceInfo());
 //                delete inbox;
 
                 messagesDeleted++;
