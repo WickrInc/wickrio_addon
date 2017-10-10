@@ -143,7 +143,7 @@ cp -a ${build_dir}/libs/qamqpsrc/libqamqp.* $libdir
 #
 # TODO: Are there any chrpath call needed to be done?
 #
-#chrpath -r "/usr/lib/wio_welcome_bot${bldtype}:/usr/local/wickr/Qt-5.8/lib" $bindir/welcome_parser$BldType
+#chrpath -r "/usr/lib/wio_welcome_bot${bldtype}:/usr/local/wickr/Qt-5.9/lib" $bindir/welcome_parser$BldType
 
 #
 # Change the contents appropriately for Beta version Release versions
