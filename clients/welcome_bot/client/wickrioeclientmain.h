@@ -86,9 +86,6 @@ private slots:
     void stopAndExitSlot();
     void pauseAndExitSlot();
 
-    void slotDeleteRoom(const QString& vGroupID, bool selfInitiated);
-    void slotRemoveFromRoom(const QString& vGroupID);
-
     void slotSwitchboardServiceState(WickrServiceState state, const QString& text);
     void slotMessageServiceState(WickrServiceState state);
 

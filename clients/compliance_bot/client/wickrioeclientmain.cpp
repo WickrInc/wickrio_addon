@@ -142,14 +142,6 @@ WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
                 &WickrCore::WickrSecureRoomMgr::signalActivateLandingPage,
                 this,
                 &wickrQuickMain::slotActivateLandingPage);
-        connect(roomMgr,
-                &WickrCore::WickrSecureRoomMgr::signalDeleteRoom,
-                this,
-                &WickrIOEClientMain::slotDeleteRoom);
-        connect(roomMgr,
-                &WickrCore::WickrSecureRoomMgr::signalRemoveFromRoom,
-                this,
-                &WickrIOEClientMain::slotRemoveFromRoom);
 #endif
     }
 }
@@ -167,7 +159,6 @@ WickrIOEClientMain::~WickrIOEClientMain()
     }
 
     if (m_operation->m_botDB != NULL) {
-        m_operation->updateProcessState(PROCSTATE_DOWN, false);
         m_operation->m_botDB->close();
         m_operation->m_botDB->deleteLater();
         m_operation->m_botDB = NULL;
@@ -179,24 +170,6 @@ WickrIOEClientMain::~WickrIOEClientMain()
     }
 
     QCoreApplication::processEvents();
-}
-
-void WickrIOEClientMain::slotDeleteRoom(const QString& vGroupID, bool selfInitiated)
-{
-    Q_UNUSED(selfInitiated);
-
-    WickrCore::WickrConvo* convo = WickrCore::WickrConvo::getConvoWithvGroupID( vGroupID );
-    if (convo) {
-        convo->dodelete(WickrCore::WickrConvo::DeleteInternal, false);
-    }
-}
-
-void WickrIOEClientMain::slotRemoveFromRoom(const QString& vGroupID)
-{
-    WickrCore::WickrConvo* convo = WickrCore::WickrConvo::getConvoWithvGroupID( vGroupID );
-    if (convo) {
-        convo->dodelete(WickrCore::WickrConvo::DeleteInternal, false);
-    }
 }
 
 /**
@@ -427,12 +400,6 @@ void WickrIOEClientMain::slotDoTimerWork()
     }
 
     m_timerStatsTicker++;
-
-    // Update the Process status
-    if ((m_timerStatsTicker % WICKRBOT_UPDATE_PROCESS_SECS) == 0) {
-        m_operation->log("Updating process state");
-        m_operation->updateProcessState(PROCSTATE_RUNNING);
-    }
 }
 
 /**
@@ -493,10 +460,6 @@ void WickrIOEClientMain::stopAndExit(int procState)
         if (! m_operation->m_botDB->isOpen()) {
             m_operation->m_botDB->deleteLater();
             m_operation->m_botDB = new WickrIOClientDatabase(m_operation->databaseDir);
-        }
-
-        if (m_operation->m_botDB->isOpen()) {
-            m_operation->updateProcessState(procState, false);
         }
     }
 

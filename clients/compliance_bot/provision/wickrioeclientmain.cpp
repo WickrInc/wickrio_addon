@@ -218,24 +218,6 @@ void WickrIOEClientMain::slotProvisionPageChanged(WickrIOProvisionHdlr::Page pag
     }
 }
 
-void WickrIOEClientMain::slotDeleteRoom(const QString& vGroupID, bool selfInitiated)
-{
-    Q_UNUSED(selfInitiated);
-
-    WickrCore::WickrConvo* convo = WickrCore::WickrConvo::getConvoWithvGroupID( vGroupID );
-    if (convo) {
-        convo->dodelete(WickrCore::WickrConvo::DeleteInternal, false);
-    }
-}
-
-void WickrIOEClientMain::slotRemoveFromRoom(const QString& vGroupID)
-{
-    WickrCore::WickrConvo* convo = WickrCore::WickrConvo::getConvoWithvGroupID( vGroupID );
-    if (convo) {
-        convo->dodelete(WickrCore::WickrConvo::DeleteInternal, false);
-    }
-}
-
 /**
  * @brief WickrIOEClientMain::slotLoginSuccess
  * This slot is called when the login is successful

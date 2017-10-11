@@ -599,12 +599,6 @@ void WickrIOActionHdlr::doTimerWork()
     m_appCounter.incSecond();
     m_timerStatsTicker++;
 
-    // Update the Process status
-    if ((m_timerStatsTicker % WICKRBOT_UPDATE_PROCESS_SECS) == 0) {
-        m_operation->log("Updating process state");
-        m_operation->updateProcessState(PROCSTATE_RUNNING);
-    }
-
     // If it is time to output statistics then set the appropriate flag
     if ((m_timerStatsTicker % WICKRBOT_UPDATE_STATS_SECS) == 0) {
         m_outputStats = true;

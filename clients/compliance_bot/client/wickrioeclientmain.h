@@ -27,8 +27,6 @@
 #define WICKRBOT_CONFIG_DORECEIVE   "doreceive"
 #define WICKRBOT_CONFIG_SERVERNAME  "servername"
 
-#define WICKRBOT_UPDATE_PROCESS_SECS    60
-
 class WickrIOEClientMain : public QThread
 {
     Q_OBJECT
@@ -100,9 +98,6 @@ private slots:
     void stopAndExitSlot();
     void pauseAndExitSlot();
     void slotReceivedMessage(QString type, QString value);
-
-    void slotDeleteRoom(const QString& vGroupID, bool selfInitiated);
-    void slotRemoveFromRoom(const QString& vGroupID);
 
     void slotSwitchboardServiceState(WickrServiceState state, const QString& text);
     void slotMessageServiceState(WickrServiceState state);

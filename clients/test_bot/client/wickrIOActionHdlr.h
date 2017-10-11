@@ -14,7 +14,6 @@
 
 #define WICKRBOT_INVALID_ID     -1
 
-#define WICKRBOT_UPDATE_PROCESS_SECS    60
 #define WICKRBOT_UPDATE_STATS_SECS      600
 
 class WickrIOActionHdlr : public QObject
