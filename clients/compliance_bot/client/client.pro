@@ -91,10 +91,9 @@ include($${CLIENTCOMMON}/common.pri)
 include($${DEPTH}/shared/common_http/common_http.pri)
 
 #
-# Include the Wickr Client Base library
+# Include the Wickr Client library
 #
-#include($${DEPTH}/libs/WickrBase/WickrBase.pri)
-#include($${DEPTH}/qtsingleapplication/qtsingleapplication.pri)
+include(../../libs/WickrIOClient/WickrIOClient.pri)
 
 INCLUDEPATH += $$DEPTH/wickr-sdk/export
 INCLUDEPATH += $$DEPTH/wickr-sdk/src
@@ -158,10 +157,7 @@ SOURCES += \
     wickrioreceivethread.cpp \
     wickrIOLoginHdlr.cpp \
     clientconfigurationinfo.cpp \
-    clientversioninfo.cpp \
-    wickrIOClientRuntime.cpp \
-    wickrIOCallbackService.cpp \
-    wickrIOFileDownloadService.cpp
+    clientversioninfo.cpp
 
 HEADERS += \
     wickrioeclientmain.h \
@@ -171,10 +167,7 @@ HEADERS += \
     wickrIOLoginHdlr.h \
     wickrbuildnumbers.h \
     clientconfigurationinfo.h \
-    clientversioninfo.h \
-    wickrIOClientRuntime.h \
-    wickrIOCallbackService.h \
-    wickrIOFileDownloadService.h
+    clientversioninfo.h
 
 # qsqlcipher_wickr
 

@@ -12,28 +12,8 @@
 #include "services/wickrSwitchboardService.h"
 
 #include "messaging/wickrMessage.h"
-#include "filetransfer//wickrFileInfo.h"
-
-class WickrIORxDownloadFile
-{
-public:
-    WickrIORxDownloadFile(WickrCore::WickrMessage *msg, WickrCore::FileInfo fileinfo, QString attachFilename, QString realFilename) :
-        m_msg(msg),
-        m_fileInfo(fileinfo),
-        m_attachmentFileName(attachFilename),
-        m_realFileName(realFilename),
-        m_downloaded(false),
-        m_downloading(false) {
-    }
-
-    WickrCore::WickrMessage *m_msg;
-    WickrCore::FileInfo m_fileInfo;
-    QString m_attachmentFileName;
-    QString m_realFileName;
-    bool m_downloaded;
-    bool m_downloading;
-};
-
+#include "filetransfer/wickrFileInfo.h"
+#include "wickrIOFileDownloadService.h"
 
 class WickrIOReceiveThread : public WickrIOThread
 {

@@ -370,6 +370,11 @@ int main(int argc, char *argv[])
 
     int retval = app->exec();
 
+    /*
+     * Shutdown the wickrIO Client Runtime
+     */
+    WickrIOClientRuntime::shutdown();
+
     httpListener->deleteLater();
     requestHandler->deleteLater();
     QCoreApplication::processEvents();

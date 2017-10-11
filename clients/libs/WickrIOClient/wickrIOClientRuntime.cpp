@@ -9,6 +9,7 @@ WickrIOClientRuntime::WickrIOClientRuntime() {
     // Allocate resources
     m_callbackSvc = new WickrIOCallbackService();
     m_fileDownloadSvc = new WickrIOFileDownloadService();
+    m_watchdogSvc = new WickrIOWatchdogService();
 
     m_initialized = true;
 }
@@ -34,7 +35,7 @@ WickrIOClientRuntime::redirectedOutput(QtMsgType type, const QMessageLogContext 
         break;
     case QtFatalMsg:
         WickrIOClientRuntime::operationData()->output(str);
-        abort();
+//        abort();
     }
 }
 
@@ -59,7 +60,10 @@ void WickrIOClientRuntime::init(OperationData *operation) {
  * Will shutdown runtime, cleaning up all resources.
  */
 void WickrIOClientRuntime::shutdown() {
-   return WickrIOClientRuntime::get().cleanupResources();
+    // Tell the watchdog service to shutdown
+    WickrIOClientRuntime::get().wdSvc()->shutdown();
+
+//   return WickrIOClientRuntime::get().cleanupResources();
 }
 
 /**
@@ -90,6 +94,15 @@ WickrIOClientRuntime::fdSvcDownloadFile(WickrIORxDownloadFile *dload) {
     return true;
 }
 
+/**
+ * @brief WickrIO Watchdog Service API
+ */
+WickrIOWatchdogService*
+WickrIOClientRuntime::wdSvc() {
+    return WickrIOClientRuntime::get().m_watchdogSvc;
+}
+
+
 
 /**
  * @brief get (PRIVATE STATIC)
@@ -107,6 +120,13 @@ WickrIOClientRuntime& WickrIOClientRuntime::get() {
  * Cleanup all runtime resources
  */
 void WickrIOClientRuntime::cleanupResources() {
+    // Close the dynamic services
+    for (WickrIOServiceBase *value : w_dynamicServices.values()) {
+        value->deleteLater();
+    }
+    w_dynamicServices.clear();
+
+    delete m_watchdogSvc;       m_watchdogSvc = nullptr;
     delete m_callbackSvc;       m_callbackSvc = nullptr;
     delete m_fileDownloadSvc;   m_fileDownloadSvc = nullptr;
     m_initialized = false;
@@ -114,4 +134,56 @@ void WickrIOClientRuntime::cleanupResources() {
 
 OperationData *WickrIOClientRuntime::operationData() {
     return WickrIOClientRuntime::get().m_operation;
+}
+
+/**
+ * @brief WickrIOClientRuntime::addService
+ * Add a new service to the list of dynamic services. Once the service is
+ * added to the runtime it is assumed that the runtime will delete the service
+ * when the runtime is shutdown.
+ * @param newSvc
+ * @return
+ */
+bool
+WickrIOClientRuntime::addService(WickrIOServiceBase *newSvc)
+{
+    QString svcName = newSvc->serviceName();
+    // if the service exists already then return failed
+    if (w_dynamicServices.contains(svcName)) {
+        qDebug() << "Cannot add service" << svcName << "it aleady exists!";
+        return false;
+    }
+    w_dynamicServices.insert(svcName, newSvc);
+    return true;
+}
+
+/**
+ * @brief WickrIOClientRuntime::findService
+ * Return the service associated with the input service name string.
+ * @param svcName
+ * @return
+ */
+WickrIOServiceBase *
+WickrIOClientRuntime::findService(const QString& svcName)
+{
+    WickrIOServiceBase *retSvc = nullptr;
+    if (w_dynamicServices.contains(svcName)) {
+        retSvc = w_dynamicServices.value(svcName, nullptr);
+    } else {
+        qDebug() << "Cannot find service" << svcName;
+    }
+    return retSvc;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+
+WickrIOServiceBase::WickrIOServiceBase(const QString& serviceName) :
+    m_serviceName(serviceName)
+{
 }
