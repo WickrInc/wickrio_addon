@@ -5,7 +5,7 @@
 #include "wickrioclients.h"
 #include "wickriodatabase.h"
 #include "wickrbotipc.h"
-#include "wickrioipc.h"
+#include "wickrIOIPCService.h"
 #include "operationdata.h"
 
 class CmdMain : public CmdBase
@@ -24,7 +24,7 @@ private:
 
     QList<WickrIOClients *> m_clients;
     WickrBotIPC             m_txIPC;
-    WickrBotMainIPC         *m_rxIPC;
+    WickrIOIPCService       *m_rxIPC;
 
     OperationData           *m_operation;
 
@@ -44,8 +44,10 @@ private:
     void deleteClient(int clientIndex);
     void startClient(int clientIndex, bool force);
     void pauseClient(int clientIndex);
-    bool sendClientCmd(int port, const QString& cmd);
     void configClient(int clientIndex);
+
+    bool sendClientCmd(int port, const QString& cmd);
+    bool sendClientServerCmd(const QString& cmd);
 
 public slots:
     void signalReceivedMessage(QString type, QString value);

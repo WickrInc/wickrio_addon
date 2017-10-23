@@ -32,8 +32,8 @@ case "$1" in
         echo $svrstate > $tempdir/svrstate
         if [[ $svrstate -eq 0 ]]; then
             systemctl stop WickrIOSvrINSTALLEXT
+            systemctl disable WickrIOSvrINSTALLEXT
         fi
-        systemctl disable WickrIOSvrINSTALLEXT
 
         # Remove the startup entry for the service(s)
         update-rc.d -f WickrIOSvrINSTALLEXT remove
@@ -47,8 +47,8 @@ case "$1" in
         echo $consvrstate > $tempdir/consvrstate
         if [[ $consvrstate -eq 0 ]]; then
             systemctl stop WickrIOCSvrINSTALLEXT
+            systemctl disable WickrIOCSvrINSTALLEXT
         fi
-        systemctl disable WickrIOCSvrINSTALLEXT
 
         # Remove the startup entry for the service(s)
         update-rc.d -f WickrIOCSvrINSTALLEXT remove

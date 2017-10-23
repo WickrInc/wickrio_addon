@@ -7,7 +7,7 @@
 
 #include "wickrbotsettings.h"
 #include "wickrioeclientmain.h"
-#include "wickriojson.h"
+#include "wickrIOJson.h"
 #include "wickrbotprocessstate.h"
 #include "wickrbotutils.h"
 #include "wickrbotactiondatabase.h"
@@ -322,11 +322,11 @@ void WickrIOEClientMain::processStarted()
  * signal when the applicaiton is to be closed.
  * @param ipc
  */
-void WickrIOEClientMain::setIPC(WickrBotMainIPC *ipc)
+void WickrIOEClientMain::setIPC(WickrIOIPCService *ipc)
 {
     m_wickrIPC = ipc;
-    connect(ipc, &WickrBotMainIPC::signalGotStopRequest, this, &WickrIOEClientMain::stopAndExitSlot);
-    connect(ipc, &WickrBotMainIPC::signalGotPauseRequest, this, &WickrIOEClientMain::pauseAndExitSlot);
+    connect(ipc, &WickrIOIPCService::signalGotStopRequest, this, &WickrIOEClientMain::stopAndExitSlot);
+    connect(ipc, &WickrIOIPCService::signalGotPauseRequest, this, &WickrIOEClientMain::pauseAndExitSlot);
 }
 
 void WickrIOEClientMain::slotDoTimerWork()

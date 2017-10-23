@@ -25,9 +25,11 @@ WickrIOActionHdlr::WickrIOActionHdlr(OperationData *operation) :
     this->connect(this, &WickrIOActionHdlr::signalSendMessageDoneGetUsers, this, &WickrIOActionHdlr::slotSendMessagePostGetUsers);
     this->connect(this, &WickrIOActionHdlr::signalStartProcessDatabase, this, &WickrIOActionHdlr::processDatabase);
 
-    WickrCore::WickrCloudTransferMgr *cloudMgr = WickrCore::WickrRuntime::getCloudMgr();
-    if (cloudMgr) {
-        connect(cloudMgr, &WickrCore::WickrCloudTransferMgr::statusChanged, this, &WickrIOActionHdlr::slotSendFileStatusChange);
+    WickrFileTransferService *ftSvc = WickrCore::WickrRuntime::ftSvc();
+    if (ftSvc) {
+        connect(ftSvc, &WickrFileTransferService::statusChanged, this, &WickrIOActionHdlr::slotSendFileStatusChange);
+    } else {
+        qDebug() << "WickrIOActionHdlr: cannot get file transfer service!";
     }
 }
 
@@ -427,11 +429,6 @@ bool WickrIOActionHdlr::sendFile(WickrCore::WickrConvo *targetConvo, const QList
 
     QString name = files.at(0);
 
-    WickrCore::WickrCloudTransferMgr *cloudMgr = WickrCore::WickrRuntime::getCloudMgr();
-    if (! cloudMgr) {
-        return false;
-    }
-
     WickrCore::FetchInformation fetchInfo;
 
     QByteArray encryptionKeyAES = convertCFDataToByteArray( ::randomGCMKey(), false );
@@ -490,26 +487,25 @@ bool WickrIOActionHdlr::sendFile(WickrCore::WickrConvo *targetConvo, const QList
 //                imageServer->addImage(resourceName, orig);
                 WickrCore::FileMetaData imageFileMetaData(metaDataMimeType, fileSize, fetchInfoList, hashResult, comments);
                 WickrCore::FileInfo fileToUpload(name, imageFileMetaData);
-                cloudMgr->uploadFile(targetConvo, fileNameAfterEncryption, fileToUpload);
+                WickrCore::WickrRuntime::ftScheduleUpload(targetConvo, fileNameAfterEncryption, fileToUpload);
             }
             else
             {
                 qDebug() << "can't seem to read image";
                 WickrCore::FileMetaData fileMetaData(metaDataMimeType, fileSize, fetchInfoList, hashResult, comments);
                 WickrCore::FileInfo fileToUpload(name, fileMetaData);
-
-                cloudMgr->uploadFile(targetConvo, fileNameAfterEncryption, fileToUpload);
+                WickrCore::WickrRuntime::ftScheduleUpload(targetConvo, fileNameAfterEncryption, fileToUpload);
             }
         }
         else
         {
             WickrCore::FileMetaData fileMetaData(metaDataMimeType, fileSize, fetchInfoList, hashResult, comments);
             WickrCore::FileInfo fileToUpload(name, fileMetaData);
-            cloudMgr->uploadFile(targetConvo, fileNameAfterEncryption, fileToUpload);
+            WickrCore::WickrRuntime::ftScheduleUpload(targetConvo, fileNameAfterEncryption, fileToUpload);
         }
         encryptionWatcher->deleteLater();
     });
-    QFuture<QString> encryptionStep = QtConcurrent::run(&WickrCore::WickrCloudTransferMgr::encryptFile, encryptionKeyAES, fileNameBeforeEncryption, fileNameAfterEncryption);
+    QFuture<QString> encryptionStep = QtConcurrent::run(&WickrFileTransferService::encryptFile, encryptionKeyAES, fileNameBeforeEncryption, fileNameAfterEncryption);
     encryptionWatcher->setFuture(encryptionStep);
     return true;
 }

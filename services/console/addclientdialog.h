@@ -6,7 +6,7 @@
 
 #include "wickrioclients.h"
 #include "wickriodatabase.h"
-#include "wickrioappsettings.h"
+#include "wickrIOAppSettings.h"
 
 namespace Ui {
 class AddClientDialog;

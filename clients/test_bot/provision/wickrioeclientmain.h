@@ -7,9 +7,9 @@
 #include <QString>
 
 #include "wickriodatabase.h"
-#include "wickriojson.h"
+#include "wickrIOJson.h"
 #include "wickrbotlog.h"
-#include "wickrioipc.h"
+#include "wickrIOIPCService.h"
 #include "user/wickrUser.h"
 #include "services/wickrTaskService.h"
 

@@ -1,5 +1,10 @@
 [Unit]
 Description=WickrIO Client server
+After=network.target
 
 [Service]
 ExecStart=/usr/sbin/WickrIOSvrINSTALLEXT -systemd
+Restart=on-failure
+
+[Install]
+WantedBy = multi-user.target

@@ -23,7 +23,7 @@
 #endif
 
 #include "operationdata.h"
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 #include "server_common.h"
 #include "wickrbotutils.h"
 #include "wickrbotsettings.h"
@@ -73,7 +73,7 @@ void catchUnixSignals(const std::vector<int>& quitSignals,
         if (curService != nullptr) {
             curService->stop();
         }
-        qDebug() << "\nquit the application (user request signal = %d)" << sig;
+        qDebug() << "\nquit the application: user request signal = " << sig;
         QCoreApplication::quit();
     };
 

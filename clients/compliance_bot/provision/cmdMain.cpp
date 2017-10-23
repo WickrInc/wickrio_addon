@@ -3,7 +3,7 @@
 
 #include "cmdMain.h"
 #include "wickrIOBot.h"
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 #include "wickrbotsettings.h"
 #include "clientconfigurationinfo.h"
 #include "wickrbotutils.h"
@@ -319,8 +319,18 @@ CmdMain::startClient(int clientIndex, bool force)
                         }
 
                         // It is running lets send the password to it now
-                        QString pwstring = QString("%1=%2").arg(WBIO_IPCMSGS_PASSWORD).arg(password);
+                        QString pwstring = WickrIOIPCCommands::getPasswordString(WBIO_PROVISION_TARGET, password);
                         sendClientCmd(state.ipc_port, pwstring);
+
+                        // Send client information to the Client Server
+                        {
+                            QString clientServerCmd;
+                            clientServerCmd = WickrIOIPCCommands::getBotInfoString(WBIO_PROVISION_TARGET,
+                                                                                   client->name,
+                                                                                   client->getProcessName(),
+                                                                                   password);
+                            sendClientServerCmd(clientServerCmd);
+                        }
 
                         // Need to check that the password worked
                         while (true) {
@@ -383,6 +393,23 @@ CmdMain::pauseClient(int clientIndex)
             qDebug() << "CONSOLE:Could not get the clients state!";
         }
     }
+}
+
+/**
+ * @brief CmdMain::sendClientServerCmd
+ * Gets the IPC port for the Client Server and thn sends the input command
+ * to that port.
+ * @param cmd
+ * @return
+ */
+bool
+CmdMain::sendClientServerCmd(const QString& cmd)
+{
+    WickrBotProcessState state;
+    if (!m_ioDB->getProcessState(WBIO_CLIENTSERVER_TARGET, &state)) {
+        return false;
+    }
+    return sendClientCmd(state.ipc_port, cmd);
 }
 
 /**

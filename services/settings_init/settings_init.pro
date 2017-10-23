@@ -19,11 +19,6 @@ SERVER_COMMON=../common
 INCLUDEPATH += $${SERVER_COMMON}
 
 #
-# Include the Wickr IO common files
-#
-include($${DEPTH}/shared/common/common_base.pri)
-
-#
 # Include the Wickr IO library
 #
 include($${DEPTH}/libs/WickrIOLib/WickrIOLib.pri)

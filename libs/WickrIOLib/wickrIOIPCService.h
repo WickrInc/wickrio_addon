@@ -1,0 +1,131 @@
+#ifndef WICKRIOIPCSERVICE_H
+#define WICKRIOIPCSERVICE_H
+
+#include <QObject>
+#include <QThread>
+#include <QTimer>
+#include <QString>
+#include "common/wickrNetworkUtil.h"
+
+#include "wickrbotdatabase.h"
+#include "operationdata.h"
+#include "wickrbotipc.h"
+
+// Forward declaration
+class WickrIOIPCThread;
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+
+class WickrIOIPCService : public QObject
+{
+    Q_OBJECT
+
+public:
+    explicit WickrIOIPCService();
+    virtual ~WickrIOIPCService();
+
+    bool check();
+    void startIPC(OperationData *operation);
+    void shutdown();
+    bool isRunning();
+
+private:
+    // General purpose thread lock used for common threaded related queries/updates(hence ReadWrite).
+    // NOTE: Other required service specific locks should be defined and managed by the specialized services.
+    mutable QReadWriteLock m_lock;
+
+    WickrServiceState   m_state;
+    QThread             m_thread;
+    WickrIOIPCThread    *m_ipcThread;
+
+    void startThreads();
+    void stopThreads();
+
+signals:
+    // Signals that are caught by the Thread
+    void signalShutdown();
+    void signalStartIPC(OperationData *operation);
+    void signalIPCCheck();
+
+    // Signals that should be caught by users of this service
+    void signalGotStopRequest();
+    void signalGotPauseRequest();
+    void signalReceivedMessage(QString type, QString value);
+
+public slots:
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+
+class WickrIOIPCThread : public QThread
+{
+    Q_OBJECT
+
+public:
+    explicit WickrIOIPCThread(QThread *thread, WickrIOIPCService *svc);
+    virtual ~WickrIOIPCThread();
+
+    void shutdown();
+
+    bool ipcCheck() { return m_ipcCheck; }
+
+private:
+    // General purpose thread lock used for common threaded related queries/updates(hence ReadWrite).
+    // NOTE: Other required service specific locks should be defined and managed by the specialized services.
+    mutable QReadWriteLock      m_lock;
+
+    WickrIOIPCService   *m_parent;
+
+    OperationData       *m_operation;
+    WickrBotIPC         *m_ipc;
+    bool                m_ipcCheck;
+
+signals:
+    void signalNotRunning();
+    void signalIPCCheckDone();
+
+    void signalGotStopRequest();
+    void signalGotPauseRequest();
+    void signalReceivedMessage(QString type, QString value);
+
+public slots:
+    void slotShutdown();
+    void slotIPCCheck();
+
+    void slotStartIPC(OperationData *operation);
+
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+
+class WickrIOIPCCommands
+{
+public:
+    explicit WickrIOIPCCommands() {}
+
+    static QString getBotInfoString(const QString& sendingProc, const QString& name, const QString& procName, const QString& password);
+    static QMap<QString,QString> parseBotInfoValue(const QString& value);
+
+    static QString getPasswordString(const QString& sendingProc, const QString& password);
+    static QMap<QString,QString> parsePasswordValue(const QString& value);
+};
+
+#endif // WICKRIOIPCSERVICE_H

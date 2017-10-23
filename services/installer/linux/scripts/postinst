@@ -26,13 +26,12 @@ case "$1" in
         # Start the WickrIO Client service
         #
         set +e
-        # Enable the service
-        # TODO: Need to make sure the service needs to be enabled
-        systemctl enable WickrIOSvrINSTALLEXT
-
         if [ -f $tempdir/svrstate ]; then
             svrstate=`cat $tempdir/svrstate`
             if [ $svrstate -eq 0 ]; then
+                # Enable the service
+                systemctl enable WickrIOSvrINSTALLEXT
+                # Start the service
                 systemctl start WickrIOSvrINSTALLEXT
             fi
             rm $tempdir/svrstate
@@ -45,13 +44,13 @@ case "$1" in
         # Start the WickrIO Console service
         #
         set +e
-        # Enable the service
-        # TODO: Need to make sure the service needs to be enabled
-        systemctl enable WickrIOCSvrINSTALLEXT
 
         if [ -f $tempdir/consvrstate ]; then
             consvrstate=`cat $tempdir/consvrstate`
             if [ $consvrstate -eq 0 ]; then
+                # Enable the service
+                systemctl enable WickrIOCSvrINSTALLEXT
+                # Start the service
                 systemctl start WickrIOCSvrINSTALLEXT
             fi
             rm $tempdir/consvrstate

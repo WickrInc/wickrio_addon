@@ -14,7 +14,6 @@
 
 #include "common/wickrNotifyList.h"
 
-#include "wickrIOMsgEmailService.h"
 #include "wickrIOClientRuntime.h"
 
 #include "common/wickrRuntime.h"
@@ -173,6 +172,8 @@ bool WickrIOReceiverMgr::dispatch(WickrCore::WickrInbox *msg)
             jsonObject.insert(APIJSON_MSGRECEIVER, receiver);
     }
 
+    // Add the message ID
+    jsonObject.insert(APIJSON_MSGID, msg->getSrvMsgID());
 
 #if 0
     WickrCore::WickrConvo* pConvo;

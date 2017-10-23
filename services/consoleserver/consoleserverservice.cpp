@@ -10,7 +10,7 @@
 #include "wickrbotsettings.h"
 #include "consoleserverservice.h"
 #include "server_common.h"
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 #include "wickriodatabase.h"
 
 extern bool isVERSIONDEBUG();

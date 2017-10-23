@@ -7,10 +7,10 @@
 #include <QString>
 
 #include "wickriodatabase.h"
-#include "wickriojson.h"
+#include "wickrIOJson.h"
 #include "wickrbotlog.h"
 #include "operationdata.h"
-#include "wickrioipc.h"
+#include "wickrIOIPCService.h"
 #include "wickrioreceivethread.h"
 #include "user/wickrUser.h"
 #include "services/wickrTaskService.h"
@@ -46,7 +46,7 @@ public:
     QString getPassword();
 
     // Function to set connection to the IPC signals
-    void setIPC(WickrBotMainIPC *ipc);
+    void setIPC(WickrIOIPCService *ipc);
 
     WickrIOConvoHdlr m_convoHdlr;
 
@@ -66,7 +66,7 @@ private:
     QString m_serverName;
 
     WickrBotIPC             m_txIPC;
-    WickrBotMainIPC         *m_rxIPC;
+    WickrIOIPCService       *m_rxIPC;
     WickrIOReceiveThread    *m_rxThread;
 
     bool    m_waitingForPassword;

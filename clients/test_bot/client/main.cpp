@@ -1,4 +1,4 @@
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 #include "wickrbotsettings.h"
 
 #include <QDebug>
@@ -31,7 +31,7 @@ extern void wickr_powersetup(void);
 #include <httpserver/httplistener.h>
 
 #include "wickrioeclientmain.h"
-#include "wickrioipc.h"
+#include "wickrIOIPCService.h"
 #include "wickrbotutils.h"
 #include "operationdata.h"
 
@@ -334,9 +334,8 @@ int main(int argc, char *argv[])
      * connection, so that other processes can stop this client.
      */
     QObject::connect(WICKRBOT, &WickrIOEClientMain::signalStarted, [=]() {
-        WICKRBOTIPC = new WickrBotMainIPC(operation);
-        WICKRBOTIPC->start();
-        WICKRBOT->setIPC(WICKRBOTIPC);
+        WickrIOClientRuntime::startIPC();
+        WICKRBOT->setIPC(WickrIOClientRuntime::ipcSvc());
     });
 
     /*
@@ -365,7 +364,6 @@ int main(int argc, char *argv[])
     requestHandler->deleteLater();
     QCoreApplication::processEvents();
 
-    WICKRBOTIPC->deleteLater();
     WICKRBOT->deleteLater();
     QCoreApplication::processEvents();
 

@@ -10,26 +10,6 @@ CONFIG += c++11
 CONFIG += console
 QT -= gui
 
-wickr_messenger {
-    message(*** WickrIO Welcome Bot Messenger Version)
-    DEFINES += WICKR_MESSENGER=1
-}
-else:wickr_blackout {
-    message(*** WickrIO Welcome Bot Blackout Version)
-    DEFINES += WICKR_BLACKOUT=1
-}
-else:wickr_enterprise {
-    message(*** WickrIO Welcome Bot Blackout Version)
-    DEFINES += WICKR_ENTERPRISE=1
-}
-else:wickr_scif {
-    message(*** WickrIO Welcome Bot Plus Version)
-    DEFINES += WICKR_SCIF=1
-}
-else {
-    message(*** WickrIO Welcome Bot Cloud Version)
-}
-
 wickr_compliance:DEFINES += WICKR_COMPLIANCE=1
 wickr_compliance_bot {
     DEFINES += WICKR_COMPLIANCE_BOT=1
@@ -42,11 +22,9 @@ CONFIG(release,release|debug) {
     wickr_beta {
         message(*** WickrIO Compliance Bot Beta.Release Build)
         TARGET = compliance_botBeta
-        DEFINES += WICKR_BETA
     } else {
         message(*** WickrIO Compliance Bot Production Build)
         TARGET = compliance_bot
-        DEFINES += WICKR_PRODUCTION
     }
 } else {
     DEFINES += VERSIONDEBUG
@@ -55,17 +33,14 @@ CONFIG(release,release|debug) {
     wickr_beta {
         message(*** WickrIO Compliance Bot Beta.Debug Build)
         TARGET = compliance_botBeta
-        DEFINES += WICKR_BETA
     }
     else:wickr_qa {
         message(*** WickrIO Compliance Bot QA Build)
         TARGET = compliance_botQA
-        DEFINES += WICKR_QA
     }
     else {
         message(*** WickrIO Compliance Bot Alpha Build)
         TARGET = compliance_botAlpha
-        DEFINES += WICKR_ALPHA
     }
 }
 
@@ -73,17 +48,16 @@ QT += sql multimediawidgets xml
 QT += network websockets
 
 COMMON = $${DEPTH}/shared/common
-CLIENTCOMMON=../../common
+
+#
+# Include the Wickr IO common defines files
+#
+include($${COMMON}/common_defines.pri)
 
 #
 # Include the Wickr IO common files
 #
 include($${COMMON}/common.pri)
-
-#
-# Include the Wickr IO common client files
-#
-include($${CLIENTCOMMON}/common.pri)
 
 #
 # Include the Wickr IO common HTTP files
@@ -98,7 +72,6 @@ include(../../libs/WickrIOClient/WickrIOClient.pri)
 INCLUDEPATH += $$DEPTH/wickr-sdk/export
 INCLUDEPATH += $$DEPTH/wickr-sdk/src
 INCLUDEPATH += $$DEPTH/wickr-sdk/export/Wickr
-INCLUDEPATH += $${CLIENTCOMMON}
 
 #
 # Include the Wickr IO library

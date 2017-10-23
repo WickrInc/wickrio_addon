@@ -13,11 +13,6 @@ CONFIG(release,release|debug) {
 }
 
 #
-# Include the Wickr IO common files
-#
-include($${DEPTH}/shared/common/common_base.pri)
-
-#
 # Include the QtWebApp library
 #
 include($${DEPTH}/libs/QtWebApp/QtWebApp.pri)

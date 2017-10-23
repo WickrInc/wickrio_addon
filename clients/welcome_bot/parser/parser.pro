@@ -21,12 +21,27 @@ linux-g++* {
         QMAKE_RPATHDIR += /usr/lib/wio_welcome_bot
     }
     else {
-        wickr_blackout:QMAKE_RPATHDIR = /usr/lib/wio_welcome_bot-onprem
-        else:wickr_beta:QMAKE_RPATHDIR = /usr/lib/wio_welcome_bot-beta
-        else:wickr_qa:QMAKE_RPATHDIR = /usr/lib/wio_welcome_bot-qa
-        else:QMAKE_RPATHDIR = /usr/lib/wio_welcome_bot-alpha
+        wickr_blackout {
+            QMAKE_RPATHDIR = /usr/lib/wio_welcome_bot-onprem
+        }
+        else:wickr_beta {
+            QMAKE_RPATHDIR = /usr/lib/wio_welcome_bot-beta
+        }
+        else:wickr_qa {
+            QMAKE_RPATHDIR = /usr/lib/wio_welcome_bot-qa
+        }
+        else {
+            QMAKE_RPATHDIR = /usr/lib/wio_welcome_bot-alpha
+        }
     }
 }
+
+COMMON = $${DEPTH}/shared/common
+
+#
+# Include the Wickr IO common defines files
+#
+include($${COMMON}/common_defines.pri)
 
 #
 # Include the WickrBot library
@@ -51,15 +66,12 @@ CONFIG(release,debug|release) {
 else {
     wickr_beta {
         TARGET = welcome_parserBeta
-        DEFINES += WICKR_BETA
     }
     else:wickr_qa {
         TARGET = welcome_parserQA
-        DEFINES += WICKR_QA
     }
     else {
         TARGET = welcome_parserAlpha
-        DEFINES += WICKR_ALPHA
     }
 
     DEFINES += VERSIONDEBUG

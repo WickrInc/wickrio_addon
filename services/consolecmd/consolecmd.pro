@@ -8,6 +8,11 @@ CONSOLESRC = ../console
 include(../services.pri)
 
 #
+# Include the WickrIO common defines files
+#
+include($${COMMON}/common_defines.pri)
+
+#
 # Include the WickrIO common files
 #
 include($${COMMON}/common.pri)

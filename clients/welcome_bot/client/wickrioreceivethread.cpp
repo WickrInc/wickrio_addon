@@ -12,10 +12,7 @@
 #include "user/wickrKeyVerificationMgr.h"
 
 #include "common/wickrNotifyList.h"
-
-#include "wickrIOMsgEmailService.h"
 #include "wickrIOClientRuntime.h"
-
 #include "createjson.h"
 
 #define WICKRBOT_UPDATE_STATS_SECS      600

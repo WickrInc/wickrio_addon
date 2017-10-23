@@ -2,7 +2,7 @@
 #include <QDir>
 #include <QDebug>
 
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 #include "server_common.h"
 #include "wickrbotsettings.h"
 
@@ -84,18 +84,18 @@ void
 WBIOServerCommon::initClientApps()
 {
     if (!m_initialized) {
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botAlpha",       nullptr,                nullptr));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botBeta",        nullptr,                nullptr));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botQA",          nullptr,                nullptr));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_bot",            nullptr,                nullptr));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botAlpha", "compliance_provAlpha", nullptr));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botBeta",  "compliance_provBeta",  nullptr));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botQA",    "compliance_provQA",    nullptr));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_bot",      "compliance_prov",      nullptr));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_botAlpha",    nullptr,                "welcome_parserAlpha"));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_botBeta",     nullptr,                "welcome_parserBeta"));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_botQA",       nullptr,                "welcome_parserQA"));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_bot",         nullptr,                "welcome_parser"));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botAlpha",       nullptr,                nullptr,               false));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botBeta",        nullptr,                nullptr,               false));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botQA",          nullptr,                nullptr,               false));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_bot",            nullptr,                nullptr,               false));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botAlpha", "compliance_provAlpha", nullptr,               true));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botBeta",  "compliance_provBeta",  nullptr,               true));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botQA",    "compliance_provQA",    nullptr,               true));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_bot",      "compliance_prov",      nullptr,               false));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_botAlpha",    nullptr,                "welcome_parserAlpha", false));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_botBeta",     nullptr,                "welcome_parserBeta",  false));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_botQA",       nullptr,                "welcome_parserQA",    false));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_bot",         nullptr,                "welcome_parser",      false));
 
         for (WBIOClientApps *botapp : WBIOServerCommon::m_botApps) {
             m_bots.append(botapp->bot());
@@ -173,6 +173,19 @@ WBIOServerCommon::isValidClientApp(const QString& binaryName)
     for (QString binary : binaries) {
         if (binary == binaryName) {
             return true;
+        }
+    }
+    return false;
+}
+
+bool
+WBIOServerCommon::isPasswordRequired(const QString& binaryName)
+{
+    WBIOServerCommon::initClientApps();
+
+    for (WBIOClientApps *botapp : WBIOServerCommon::m_botApps) {
+        if (botapp->bot() == binaryName) {
+            return botapp->pwRequired();
         }
     }
     return false;

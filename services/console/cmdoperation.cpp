@@ -5,7 +5,7 @@
 #include <QTimer>
 
 #include "cmdoperation.h"
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 #include "server_common.h"
 #include "wickrbotsettings.h"
 #include "consoleserver.h"
@@ -30,21 +30,25 @@ bool CmdOperation::openDatabase()
 {
     bool retVal = false;
 
-    // If there is a db location then try to open it
-    if (!m_dbLocation.isEmpty()) {
-        QDir dbDir(m_dbLocation);
-        if (!dbDir.exists()) {
-            qDebug() << "CONSOLE:DB location does not exist!";
-        } else {
-            m_ioDB = new WickrIOClientDatabase(m_dbLocation);
-            if (!m_ioDB->isOpen()) {
-                qDebug() << "CONSOLE:Cannot open database!";
-            } else {
-                retVal = true;
-            }
-        }
+    if (m_ioDB != nullptr && m_ioDB->isOpen()) {
+        retVal = true;
     } else {
-        qDebug() << "CONSOLE:No DB location specified!";
+        // If there is a db location then try to open it
+        if (!m_dbLocation.isEmpty()) {
+            QDir dbDir(m_dbLocation);
+            if (!dbDir.exists()) {
+                qDebug() << "CONSOLE:DB location does not exist!";
+            } else {
+                m_ioDB = new WickrIOClientDatabase(m_dbLocation);
+                if (!m_ioDB->isOpen()) {
+                    qDebug() << "CONSOLE:Cannot open database!";
+                } else {
+                    retVal = true;
+                }
+            }
+        } else {
+            qDebug() << "CONSOLE:No DB location specified!";
+        }
     }
 
     return retVal;

@@ -5,7 +5,7 @@
 #include <QTimer>
 
 #include "cmdhandler.h"
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 #include "server_common.h"
 #include "wickrbotsettings.h"
 #include "wickrioconsoleclienthandler.h"

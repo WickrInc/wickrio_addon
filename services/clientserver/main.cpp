@@ -23,7 +23,7 @@
 #endif
 
 #include "operationdata.h"
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 #include "server_common.h"
 #include "wickrbotutils.h"
 #include "wickrbotsettings.h"
@@ -76,7 +76,7 @@ void catchUnixSignals(const std::vector<int>& quitSignals,
         if (curService != nullptr) {
             curService->stop();
         }
-        qDebug() << "\nquit the application (user request signal = %d)" << sig;
+        qDebug() << "\nquit the application: user request signal = " << sig;
         QCoreApplication::quit();
     };
 
@@ -104,8 +104,6 @@ int main(int argc, char *argv[])
     bool systemd = false;
     int svcret;
 
-    WickrIOClientServerService service(argc, argv);
-
 #ifdef Q_OS_LINUX
     for (int i=0; i<argc; i++) {
         qDebug() << "ARG[" << i+1 << "] =" << argv[i];
@@ -118,17 +116,24 @@ int main(int argc, char *argv[])
 
     if (systemd) {
         qDebug() << "Starting in systemd mode!";
-        curService = &service;
         catchUnixSignals({SIGTSTP, SIGQUIT, SIGTERM});
 
         QCoreApplication *app = new QCoreApplication(argc, argv);
+
+        WickrIOClientServerService service(argc, argv);
+        curService = &service;
+
         service.start();
         svcret = app->exec();
         curService = nullptr;
     } else {
+        WickrIOClientServerService service(argc, argv);
+
         svcret = service.exec();
     }
 #else
+    WickrIOClientServerService service(argc, argv);
+
     svcret = service.exec();
 #endif
 

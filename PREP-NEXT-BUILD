@@ -3,8 +3,8 @@ echo This script should run to advance the build number
 echo Following this, clean everything and build everything!
 
 WICKRIOTOPBRANCH="master"
-WICKRSDKBRANCH="master"
-WICKRCOREBRANCH="master"
+WICKRSDKBRANCH="v4.9"
+WICKRCOREBRANCH="Desktop_v4.9"
 
 # make sure we are in specified branch and up to date...
 set -e
@@ -27,12 +27,6 @@ baseTag="v${majorVersion}.${minorVersion}.${patchVersion}-1"
 libTag="WickrIO_${nextTag}"
 shortVersion="${majorVersion}.${minorVersion}.${patchVersion}"
 echo $currentRelease >BUILD_NUMBER
-
-cp BUILD_NUMBER ./services/BUILD_NUMBER
-cp BUILD_NUMBER ./clients/test_bot/BUILD_NUMBER
-cp BUILD_NUMBER ./clients/compliance_bot/BUILD_NUMBER
-cp BUILD_NUMBER ./clients/welcome_bot/BUILD_NUMBER
-cp BUILD_NUMBER ./clients/provisioning/BUILD_NUMBER
 
 #
 # Generate release notes

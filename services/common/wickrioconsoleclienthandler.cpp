@@ -5,7 +5,7 @@
 #include <QNetworkInterface>
 
 #include "wickrioconsoleclienthandler.h"
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 #include "server_common.h"
 #include "wickrbotsettings.h"
 #include "wickrbotprocessstate.h"

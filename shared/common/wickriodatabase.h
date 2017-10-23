@@ -6,12 +6,12 @@
 
 #include "wickrbotclientdatabase.h"
 
-#include "wickrioappsettings.h"
+#include "wickrIOAppSettings.h"
 #include "wickrioconsoleuser.h"
 #include "wickrioclients.h"
 #include "wickriotokens.h"
 #include "wickriomessage.h"
-#include "wickrioparsers.h"
+#include "wickrIOParsers.h"
 
 class WickrIODBAttachment {
 public:

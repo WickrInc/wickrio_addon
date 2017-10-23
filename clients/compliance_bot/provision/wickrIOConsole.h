@@ -5,7 +5,7 @@
 #include <QThread>
 #include <QCoreApplication>
 #include "operationdata.h"
-#include "wickrioipc.h"
+#include "wickrIOIPCService.h"
 #include "cmdMain.h"
 
 // Forward declaration
@@ -15,7 +15,7 @@ class WickrIOConsoleService : public QObject
 {
     Q_OBJECT
 public:
-    explicit WickrIOConsoleService(QCoreApplication *app, int argc, char **argv, OperationData *operation, WickrBotMainIPC *rxIPC);
+    explicit WickrIOConsoleService(QCoreApplication *app, int argc, char **argv, OperationData *operation, WickrIOIPCService *rxIPC);
     virtual ~WickrIOConsoleService();
 
     void startConsole();
@@ -24,7 +24,7 @@ public:
     int                 m_argc;
     char                **m_argv;
     OperationData       *m_operation;
-    WickrBotMainIPC     *m_rxIPC;
+    WickrIOIPCService     *m_rxIPC;
 
 private:
     QThread                m_thread;

@@ -1,5 +1,5 @@
-#ifndef WBIO_COMMON_H
-#define WBIO_COMMON_H
+#ifndef WICKRIOCOMMON_H
+#define WICKRIOCOMMON_H
 
 #include <QString>
 #include <QSettings>
@@ -10,6 +10,20 @@
  */
 
 #define WBIO_ORGANIZATION       "Wickr, LLC"
+
+// Definitions of server targets
+#if defined(WICKR_DEBUG)
+#define WBIO_GENERAL_TARGET         "WickrIODebug"
+#define WBIO_CLIENTSERVER_TARGET    "WickrIOSvrDebug"
+#define WBIO_CONSOLE_TARGET         "WickrIOConsoleDebug"
+#define WBIO_CONSOLESERVER_TARGET   "WickrIOCSvrDebug"
+#else
+#define WBIO_GENERAL_TARGET         "WickrIO"
+#define WBIO_CLIENTSERVER_TARGET    "WickrIOSvr"
+#define WBIO_CONSOLE_TARGET         "WickrIOConsole"
+#define WBIO_CONSOLESERVER_TARGET   "WickrIOCSvr"
+#endif
+
 
 #ifdef Q_OS_WIN
 #define WBIO_SERVER_SETTINGS_FORMAT     "HKEY_LOCAL_MACHINE\\SOFTWARE\\%1\\%2"
@@ -41,29 +55,6 @@
 
 
 /*
- * definitions of the TARGET values. Make sure these are consistent with
- * the TARGET definitions within the .pro files.
- */
-#if defined(WICKR_BLACKOUT) && defined(WICKR_DEBUG)
-#define WBIO_CLIENT_PROCESS         "WickrIOClientOnPrem"
-
-#elif defined(WICKR_BETA)
-#define WBIO_CLIENT_PROCESS         "WickrIOClientBeta"
-
-#elif defined(WICKR_ALPHA)
-#define WBIO_CLIENT_PROCESS         "WickrIOClientAlpha"
-
-#elif defined(WICKR_PRODUCTION)
-#define WBIO_CLIENT_PROCESS         "WickrIOClient"
-
-#elif defined(WICKR_QA)
-#define WBIO_CLIENT_PROCESS         "WickrIOClientQA"
-
-#else
-"No WICKR_TARGET defined!!!"
-#endif
-
-/*
  * WickrIO IPC commands
  */
 #define WBIO_IPCCMDS_PAUSE          "pause"
@@ -72,6 +63,13 @@
 #define WBIO_IPCMSGS_PASSWORD       "password"
 #define WBIO_IPCMSGS_USERSIGNKEY    "usersignkey"
 #define WBIO_IPCMSGS_STATE          "state"
+#define WBIO_IPCMSGS_BOTINFO        "botinfo"
+
+#define WBIO_IPCHDR_PROCESSNAME     "hdr_process"   // Name of the sending process
+
+#define WBIO_BOTINFO_CLIENT         "client"
+#define WBIO_BOTINFO_PROCESSNAME    "process"
+#define WBIO_BOTINFO_PASSWORD       "password"
 
 class WBIOCommon
 {
@@ -82,4 +80,4 @@ public:
 };
 
 
-#endif // WBIO_COMMON_H
+#endif // WICKRIOCOMMON_H

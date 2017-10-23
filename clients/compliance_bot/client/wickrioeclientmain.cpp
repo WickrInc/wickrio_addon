@@ -7,7 +7,7 @@
 
 #include "wickrbotsettings.h"
 #include "wickrioeclientmain.h"
-#include "wickriojson.h"
+#include "wickrIOJson.h"
 #include "wickrbotprocessstate.h"
 #include "wickrbotutils.h"
 #include "wickrbotactiondatabase.h"
@@ -20,7 +20,7 @@
 
 #include "clientconfigurationinfo.h"
 #include "clientversioninfo.h"
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 #include "wickrIOBootstrap.h"
 
 
@@ -327,10 +327,14 @@ void WickrIOEClientMain::slotReceivedMessage(QString type, QString value)
         qDebug() << "Proceeding with the login";
         if (m_waitingForPassword) {
             m_waitingForPassword = false;
-            m_password = value;
-            loadBootstrapFile();
-            m_loginHdlr.addLogin(m_user, m_password);
-            m_loginHdlr.initiateLogin();
+
+            QMap<QString,QString> qmapval = WickrIOIPCCommands::parsePasswordValue(value);
+            if (qmapval.size() > 0) {
+                m_password = qmapval.value(WBIO_BOTINFO_PASSWORD);
+                loadBootstrapFile();
+                m_loginHdlr.addLogin(m_user, m_password);
+                m_loginHdlr.initiateLogin();
+            }
         }
     }
 }
@@ -385,12 +389,12 @@ WickrIOEClientMain::sendConsoleMsg(const QString& cmd, const QString& value)
  * signal when the applicaiton is to be closed.
  * @param ipc
  */
-void WickrIOEClientMain::setIPC(WickrBotMainIPC *ipc)
+void WickrIOEClientMain::setIPC(WickrIOIPCService *ipc)
 {
     m_rxIPC = ipc;
-    connect(ipc, &WickrBotMainIPC::signalGotStopRequest, this, &WickrIOEClientMain::stopAndExitSlot);
-    connect(ipc, &WickrBotMainIPC::signalGotPauseRequest, this, &WickrIOEClientMain::pauseAndExitSlot);
-    connect(ipc, &WickrBotMainIPC::signalReceivedMessage, this, &WickrIOEClientMain::slotReceivedMessage);
+    connect(ipc, &WickrIOIPCService::signalGotStopRequest, this, &WickrIOEClientMain::stopAndExitSlot);
+    connect(ipc, &WickrIOIPCService::signalGotPauseRequest, this, &WickrIOEClientMain::pauseAndExitSlot);
+    connect(ipc, &WickrIOIPCService::signalReceivedMessage, this, &WickrIOEClientMain::slotReceivedMessage);
 }
 
 void WickrIOEClientMain::slotDoTimerWork()

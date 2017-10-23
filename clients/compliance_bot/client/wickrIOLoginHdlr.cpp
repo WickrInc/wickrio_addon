@@ -215,14 +215,14 @@ void WickrIOLoginHdlr::slotLoginDone(WickrLoginContext *ls)
         qDebug() << "Dumping Wickr database counts:";
         qDebug() << WickrDBAdapter::dumpTableCounts();
 
-        WickrCore::WickrCloudTransferMgr *cloudTransferMgr = WickrCore::WickrRuntime::getCloudMgr();
-        if ( cloudTransferMgr ) {
-            QString s3_bucketId = ls->s3BucketId();
-            QString s3_secret = ls->s3Secret();
-            QString s3_key = ls->s3Key();
-            QString s3_url = ls->s3Url();
-            cloudTransferMgr->setAmazonS3Credentials( s3_bucketId, s3_secret, s3_key, s3_url );
-            qDebug() << "Amazon S3 info: " << s3_bucketId << s3_key << s3_secret << s3_url;
+        QString s3_bucketId = ls->s3BucketId();
+        QString s3_secret = ls->s3Secret();
+        QString s3_key = ls->s3Key();
+        QString s3_url = ls->s3Url();
+        qDebug() << "Amazon S3 info: " << s3_bucketId << s3_key << s3_secret << s3_url;
+
+        if (! WickrCore::WickrRuntime::ftSvcLogin(s3_bucketId, s3_key, s3_secret, s3_url )) {
+            qDebug() << "Amazon S3 File Transfer login failed!";
         }
 
         m_backupVersion = -1;

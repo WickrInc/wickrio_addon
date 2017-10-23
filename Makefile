@@ -1,6 +1,6 @@
 WICKR_SDK = wickr-sdk
 LOCALREPO = localRepo/$(WICKR_SDK)
-SDK_BRANCH = master
+SDK_BRANCH = v4.9
 
 ifeq ($(OS),Windows_NT)
     DIR := $(subst C:,,${CURDIR})
@@ -25,7 +25,7 @@ $(WICKR_SDK)/wickr-sdk.pro:
 	git status
 	git submodule init wickr-sdk
 	git submodule update --recursive wickr-sdk
-	cd $(WICKR_SDK); git checkout $(SDK_BRANCH); git pull
+	cd $(WICKR_SDK); git fetch --all; git checkout $(SDK_BRANCH); git pull
 	cd $(WICKR_SDK); make
 	@echo "Finished to install wickr-sdk from GIT"
 	@echo $(HEADER_END)
@@ -34,7 +34,7 @@ sdk.update:
 	@echo $(HEADER_START)
 	@echo "Update the submodules"
 	@echo "Starting to update wickr-sdk"
-	cd $(WICKR_SDK); git checkout $(SDK_BRANCH); git pull; make; make update
+	cd $(WICKR_SDK); git fetch --all; git checkout $(SDK_BRANCH); git pull; make; make update
 	@echo $(HEADER_END)
 
 ##########################################################

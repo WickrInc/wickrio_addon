@@ -7,19 +7,7 @@
 #include <QList>
 
 #include "wickrbotclients.h"
-#include "wickrioparsers.h"
-
-#if defined(WICKR_DEBUG)
-#define WBIO_GENERAL_TARGET         "WickrIODebug"
-#define WBIO_CLIENTSERVER_TARGET    "WickrIOSvrDebug"
-#define WBIO_CONSOLE_TARGET         "WickrIOConsoleDebug"
-#define WBIO_CONSOLESERVER_TARGET   "WickrIOCSvrDebug"
-#else
-#define WBIO_GENERAL_TARGET         "WickrIO"
-#define WBIO_CLIENTSERVER_TARGET    "WickrIOSvr"
-#define WBIO_CONSOLE_TARGET         "WickrIOConsole"
-#define WBIO_CONSOLESERVER_TARGET   "WickrIOCSvr"
-#endif
+#include "wickrIOParsers.h"
 
 /**
  * @brief The WBIOClientApps class
@@ -28,18 +16,21 @@
 class WBIOClientApps
 {
 public:
-    WBIOClientApps(const QString& bot, const QString& provision, const QString& parser) :
+    WBIOClientApps(const QString& bot, const QString& provision, const QString& parser, bool pwRequired) :
         m_botApp(bot),
         m_provisionApp(provision),
-        m_parserApp(parser) {}
+        m_parserApp(parser),
+        m_pwRequired(pwRequired) {}
 
     QString m_botApp;
     QString m_provisionApp;
     QString m_parserApp;
+    bool    m_pwRequired;
 
     QString bot()       { return m_botApp; }
     QString provision() { return m_provisionApp; }
     QString parser()    { return m_parserApp; }
+    bool pwRequired()   { return m_pwRequired; }
 };
 
 /**
@@ -60,6 +51,7 @@ public:
     static QString getProvisionApp(const QString& clientApp);
     static QString getParserApp(const QString& clientApp);
     static bool isValidClientApp(const QString& binaryName);
+    static bool isPasswordRequired(const QString& binaryName);
 
     static QString getParserProcessName(WickrIOParsers * parser);
     static QStringList getAvailableParserApps();

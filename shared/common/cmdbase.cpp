@@ -5,7 +5,7 @@
 #include <QTimer>
 
 #include "cmdbase.h"
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 
 /**
  * @brief CmdBase::handleQuit

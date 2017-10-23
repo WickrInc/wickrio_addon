@@ -9,7 +9,7 @@
 #include "cmdbase.h"
 #include "wickrbotipc.h"
 #include "wickriodatabase.h"
-#include "wickrioappsettings.h"
+#include "wickrIOAppSettings.h"
 #include "cmdoperation.h"
 #include "consoleserver.h"
 

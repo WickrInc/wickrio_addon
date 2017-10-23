@@ -7,7 +7,7 @@
 
 #include "wickrbotsettings.h"
 #include "wickrioeclientmain.h"
-#include "wickriojson.h"
+#include "wickrIOJson.h"
 #include "wickrbotprocessstate.h"
 #include "wickrbotutils.h"
 #include "wickrbotactiondatabase.h"

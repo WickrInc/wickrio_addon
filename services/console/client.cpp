@@ -2,7 +2,7 @@
 #include <QtNetwork>
 #include <QString>
 
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 
 #include "client.h"
 #include "wickrbotipc.h"
@@ -10,11 +10,11 @@
 #include "wickrbotsettings.h"
 #include "consoleserver.h"
 #include "wickrioconsoleclienthandler.h"
-#include "wickrioappsettings.h"
+#include "wickrIOAppSettings.h"
 #include "wickrioconsoleuser.h"
 
 #include "ui_console_dialog.h"
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 #include "server_common.h"
 
 extern bool isVERSIONDEBUG();

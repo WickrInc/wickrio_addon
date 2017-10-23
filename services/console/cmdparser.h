@@ -8,8 +8,8 @@
 
 #include "wickrbotipc.h"
 #include "wickriodatabase.h"
-#include "wickrioappsettings.h"
-#include "wickrioparsers.h"
+#include "wickrIOAppSettings.h"
+#include "wickrIOParsers.h"
 #include "cmdbase.h"
 #include "cmdoperation.h"
 #include "cmdconsole.h"

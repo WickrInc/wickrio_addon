@@ -5,7 +5,7 @@
 #include <QThread>
 #include <QTimer>
 
-#include "wickriothread.h"
+#include "wickrIOThread.h"
 #include "operationdata.h"
 
 #include "services/wickrMessageService.h"

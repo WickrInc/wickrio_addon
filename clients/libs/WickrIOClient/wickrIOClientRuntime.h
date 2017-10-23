@@ -1,8 +1,10 @@
 #ifndef WICKRIOCLIENTRUNTIME_H
 #define WICKRIOCLIENTRUNTIME_H
 
+#include "wickrIOServiceBase.h"
 #include "wickrIOCallbackService.h"
 #include "wickrIOFileDownloadService.h"
+#include "wickrIOIPCService.h"
 #include "wickrIOWatchdogService.h"
 
 #include "operationdata.h"
@@ -42,6 +44,12 @@ public:
     static bool fdSvcDownloadFile(WickrIORxDownloadFile *dload);
 
     /**
+     * IPC Service API
+     */
+    static WickrIOIPCService *ipcSvc();
+    static bool startIPC();
+
+    /**
      * Watchdog Service API
      */
     static WickrIOWatchdogService* wdSvc();
@@ -59,6 +67,7 @@ private:
 
     WickrIOCallbackService      *m_callbackSvc;
     WickrIOFileDownloadService  *m_fileDownloadSvc;
+    WickrIOIPCService           *m_ipcSvc;
     WickrIOWatchdogService      *m_watchdogSvc;
 
     // Map service names to dynamic services
@@ -85,32 +94,6 @@ private:
     static WickrIOClientRuntime& get();
 
     Q_DISABLE_COPY(WickrIOClientRuntime)
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-
-class WickrIOServiceBase : public QObject
-{
-    Q_OBJECT
-public:
-    explicit WickrIOServiceBase(const QString& serviceName);
-    virtual ~WickrIOServiceBase() {};
-
-    QString serviceName() { return m_serviceName; }
-
-protected:
-    WickrServiceState   m_state;        // state of the service
-    QThread             m_thread;       // thread associated with the service
-    long                m_heartbeat;    // heartbeat of the service, for keep alives
-
-private:
-    QString             m_serviceName;  // Unique name of this service
 };
 
 #endif // WICKRIOCLIENTRUNTIME_H
