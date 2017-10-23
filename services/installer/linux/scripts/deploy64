@@ -193,8 +193,8 @@ chmod 755 $debian/prerm
 chmod 755 $svcinitdir/WickrIOSvr$BldType
 chmod 755 $svcinitdir/WickrIOCSvr$BldType
 chmod 644 $optdir/WickrIOSvr$BldType.ini
-chmod 755 $systemdlibdir/WickrIOSvr$BldType.service
-chmod 755 $systemdlibdir/WickrIOCSvr$BldType.service
+chmod 644 $systemdlibdir/WickrIOSvr$BldType.service
+chmod 644 $systemdlibdir/WickrIOCSvr$BldType.service
 
 #
 # Create the actual package

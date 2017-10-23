@@ -53,10 +53,17 @@ HEADERS += \
     wickrIOCallbackService.h \
     wickrIOClientRuntime.h \
     wickrIOFileDownloadService.h \
-    wickrIOWatchdogService.h
+    wickrIOJson.h \
+    wickrIOMessageCounter.h \
+    wickrIOThread.h \
+    wickrIOWatchdogService.h \
+    wickrIOServiceBase.h
 
 SOURCES += \
     wickrIOCallbackService.cpp \
     wickrIOClientRuntime.cpp \
     wickrIOFileDownloadService.cpp \
-    wickrIOWatchdogService.cpp
+    wickrIOJson.cpp \
+    wickrIOThread.cpp \
+    wickrIOWatchdogService.cpp \
+    wickrIOServiceBase.cpp

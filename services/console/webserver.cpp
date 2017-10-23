@@ -2,6 +2,7 @@
 #include <QDir>
 #include <QProcess>
 
+#include "wickrIOCommon.h"
 #include "wickrbotutils.h"
 #include "wickrbotsettings.h"
 #include "server_common.h"

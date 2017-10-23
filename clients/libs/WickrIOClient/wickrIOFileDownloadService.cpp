@@ -6,6 +6,7 @@
 #include "common/wickrRuntime.h"
 #include "filetransfer/wickrFileInfo.h"
 #include "filetransfer/wickrCloudTransferMgr.h"
+#include "common/wickrRuntime.h"
 #include "wickriodatabase.h"
 
 
@@ -48,12 +49,6 @@ void WickrIOFileDownloadService::startThreads()
     connect(this, &WickrIOFileDownloadService::signalDownloadFile,
             m_fdThread, &WickrIOFileDownloadThread::slotDownloadFile, Qt::QueuedConnection);
 
-    WickrCore::WickrCloudTransferMgr *cloudMgr = WickrCore::WickrRuntime::getCloudMgr();
-    if (cloudMgr) {
-        connect(cloudMgr, &WickrCore::WickrCloudTransferMgr::statusChanged,
-                m_fdThread, &WickrIOFileDownloadThread::slotSendFileStatusChange, Qt::QueuedConnection);
-    }
-
     // Perform startup here, creating and configuring ressources.
     m_thread.start();
 }
@@ -65,13 +60,6 @@ void WickrIOFileDownloadService::startThreads()
 void WickrIOFileDownloadService::stopThreads()
 {
     QWriteLocker lockGuard(&m_lock);
-
-    // Perform shutdown here, wait for resources to quit, and cleanup
-    WickrCore::WickrCloudTransferMgr *cloudMgr = WickrCore::WickrRuntime::getCloudMgr();
-    if (cloudMgr) {
-        disconnect(cloudMgr, &WickrCore::WickrCloudTransferMgr::statusChanged,
-                m_fdThread, &WickrIOFileDownloadThread::slotSendFileStatusChange);
-    }
 
     // Task Service
     m_thread.quit();
@@ -106,6 +94,15 @@ WickrIOFileDownloadThread::WickrIOFileDownloadThread(QThread *thread, WickrIOFil
     // Signal to cleanup worker
     connect(thread, &QThread::finished, this, &QObject::deleteLater);
 
+    WickrFileTransferService *ftsvc = WickrCore::WickrRuntime::ftSvc();
+    if (ftsvc) {
+        connect(ftsvc, &WickrFileTransferService::statusChanged,
+                this,  &WickrIOFileDownloadThread::slotSendFileStatusChange,
+                Qt::QueuedConnection);
+    } else {
+        qDebug() << "Could not access the File Transfer service!";
+    }
+
     m_running = true;
 }
 
@@ -127,44 +124,18 @@ WickrIOFileDownloadThread::slotDownloadFile(WickrIORxDownloadFile *dload)
     }
 
     QString file_guid = dload->m_fileInfo.metaData().fetchInfo().at(0).guid;
+    QByteArray file_key = dload->m_fileInfo.metaData().fetchInfo().at(0).key;
 
-    WickrCore::WickrCloudTransferMgr *cloudMgr = WickrCore::WickrRuntime::getCloudMgr();
-    if (cloudMgr) {
-        m_activeDownloads.insert(file_guid, dload);
-        cloudMgr->downloadFile(nullptr, dload->m_attachmentFileName, dload->m_fileInfo, false);
-    } else {
+    if (!WickrCore::WickrRuntime::ftScheduleDownload(file_guid, file_key, dload->m_attachmentFileName, false)) {
+        qDebug() << "Could not schedule download for" << dload->m_attachmentFileName;
+        // TODO: Need to reschedule this, for now release the message
         // Release the message
         dload->m_msg->dodelete(traceInfo());
         dload->m_msg->release();
         delete dload;
-    }
-
-#if 0
-    WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
-    if (db == NULL) {
-        m_state = CBThreadState::CB_STARTED;
     } else {
-        WickrIOAppSettings appSetting;
-
-        if (db->getAppSetting(m_operation->m_client->id, DB_APPSETTINGS_TYPE_MSGRECVCALLBACK, &appSetting)) {
-            QString url = appSetting.value;
-            if (! url.isEmpty()) {
-                startUrlCallback(url);
-            } else {
-                m_state = CBThreadState::CB_STARTED;
-            }
-        } else if (db->getAppSetting(m_operation->m_client->id, DB_APPSETTINGS_TYPE_MSGRECVEMAIL, &appSetting)) {
-            WickrIOEmailSettings *email = new WickrIOEmailSettings();
-            if (appSetting.getEmail(email)) {
-                startEmailCallback(email);
-            }
-            delete email;
-            m_state = CBThreadState::CB_STARTED;
-        } else {
-            m_state = CBThreadState::CB_STARTED;
-        }
+        m_activeDownloads.insert(file_guid, dload);
     }
-#endif
 }
 
 void

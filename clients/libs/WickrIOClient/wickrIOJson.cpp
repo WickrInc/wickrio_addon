@@ -7,7 +7,7 @@
 #include <QDateTime>
 #include <QDebug>
 
-#include "wickriojson.h"
+#include "wickrIOJson.h"
 
 WickrBotJson::WickrBotJson() :
     m_vgroupid("")

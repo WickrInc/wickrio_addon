@@ -1,4 +1,4 @@
-#include "wickriothread.h"
+#include "wickrIOThread.h"
 
 WickrIOThread::WickrIOThread() :
     m_processing(false),

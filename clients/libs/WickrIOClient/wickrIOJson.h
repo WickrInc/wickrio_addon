@@ -1,5 +1,5 @@
-#ifndef WICKRBOTJSON_H
-#define WICKRBOTJSON_H
+#ifndef WICKRIOJSON_H
+#define WICKRIOJSON_H
 
 #include <QString>
 #include <QStringList>
@@ -69,4 +69,4 @@ public:
     QString getVGroupID() { return m_vgroupid; }
 };
 
-#endif // WICKRBOTJSON_H
+#endif // WICKRIOJSON_H

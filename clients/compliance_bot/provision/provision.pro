@@ -10,26 +10,6 @@ CONFIG += c++11
 CONFIG += console
 QT -= gui
 
-wickr_messenger {
-    message(*** WickrIO ComplianceBot Provision Messenger Version)
-    DEFINES += WICKR_MESSENGER=1
-}
-else:wickr_blackout {
-    message(*** WickrIO ComplianceBot Provision Blackout Version)
-    DEFINES += WICKR_BLACKOUT=1
-}
-else:wickr_enterprise {
-    message(*** WickrIO ComplianceBot Provision Blackout Version)
-    DEFINES += WICKR_ENTERPRISE=1
-}
-else:wickr_scif {
-    message(*** WickrIO ComplianceBot Provision Plus Version)
-    DEFINES += WICKR_SCIF=1
-}
-else {
-    message(*** WickrIO ComplianceBot Provision Cloud Version)
-}
-
 wickr_compliance:DEFINES += WICKR_COMPLIANCE=1
 wickr_compliance_bot {
     DEFINES += WICKR_COMPLIANCE_BOT=1
@@ -42,11 +22,9 @@ CONFIG(release,release|debug) {
     wickr_beta {
         message(*** WickrIO ComplianceBot Provision Beta.Release Build)
         TARGET = provisionBeta
-        DEFINES += WICKR_BETA
     } else {
         message(*** WickrIO ComplianceBot Provision Production Build)
         TARGET = provision
-        DEFINES += WICKR_PRODUCTION
     }
 } else {
     DEFINES += VERSIONDEBUG
@@ -55,17 +33,14 @@ CONFIG(release,release|debug) {
     wickr_beta {
         message(*** WickrIO ComplianceBot Provision Beta.Debug Build)
         TARGET = provisionBeta
-        DEFINES += WICKR_BETA
     }
     else:wickr_qa {
         message(*** WickrIO ComplianceBot Provision QA Build)
         TARGET = provisionQA
-        DEFINES += WICKR_QA
     }
     else {
         message(*** WickrIO ComplianceBot Provision Alpha Build)
         TARGET = provisionAlpha
-        DEFINES += WICKR_ALPHA
     }
 }
 
@@ -73,7 +48,11 @@ QT += sql multimediawidgets xml
 QT += network websockets
 
 COMMON = $${DEPTH}/shared/common
-CLIENTCOMMON=../../common
+
+#
+# Include the Wickr IO common defines files
+#
+include($${COMMON}/common_defines.pri)
 
 #
 # Include the Wickr IO common files
@@ -81,25 +60,18 @@ CLIENTCOMMON=../../common
 include($${COMMON}/common.pri)
 
 #
-# Include the Wickr IO common client files
-#
-include($${CLIENTCOMMON}/common.pri)
-
-#
 # Include the Wickr IO common HTTP files
 #
 include($${DEPTH}/shared/common_http/common_http.pri)
 
 #
-# Include the Wickr Client Base library
+# Include the Wickr Client library
 #
-#include($${DEPTH}/libs/WickrBase/WickrBase.pri)
-#include($${DEPTH}/qtsingleapplication/qtsingleapplication.pri)
+include(../../libs/WickrIOClient/WickrIOClient.pri)
 
 INCLUDEPATH += $$DEPTH/wickr-sdk/export
 INCLUDEPATH += $$DEPTH/wickr-sdk/src
 INCLUDEPATH += $$DEPTH/wickr-sdk/export/Wickr
-INCLUDEPATH += $${CLIENTCOMMON}
 
 #
 # Include the Wickr IO library

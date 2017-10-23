@@ -6,7 +6,7 @@
 #include "common/wickrNetworkUtil.h"
 
 #include "operationdata.h"
-#include "wickrioappsettings.h"
+#include "wickrIOAppSettings.h"
 #include "SmtpMime"
 
 // Forward declaration

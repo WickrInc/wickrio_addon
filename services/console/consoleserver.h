@@ -3,9 +3,9 @@
 
 #include <QObject>
 #include "wickriodatabase.h"
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 #include "server_common.h"
-#include "wickrioappsettings.h"
+#include "wickrIOAppSettings.h"
 
 class ConsoleServer
 {
@@ -21,6 +21,8 @@ public:
 private:
     WickrIOClientDatabase *m_ioDB;
     QSettings *m_settings;
+
+    bool runCommand(const QString &processName, const QString &command);
 };
 
 #endif // CONSOLESERVER_H

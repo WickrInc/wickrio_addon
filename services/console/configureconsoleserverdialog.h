@@ -3,7 +3,7 @@
 
 #include <QDialog>
 #include <QSettings>
-#include "wickrioappsettings.h"
+#include "wickrIOAppSettings.h"
 
 namespace Ui {
 class ConfigureConsoleServerDialog;

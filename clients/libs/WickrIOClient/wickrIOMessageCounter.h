@@ -3,12 +3,12 @@
 
 #define NUM_SECONDS 240
 
-class WickrBotMessageCounter {
+class WickrIOMessageCounter {
     int m_seconds[NUM_SECONDS + 1];
     int m_curSecond;
 
 public:
-    WickrBotMessageCounter() : m_curSecond(0) {
+    WickrIOMessageCounter() : m_curSecond(0) {
         clear();
     }
 

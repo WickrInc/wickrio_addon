@@ -151,22 +151,22 @@ mkdir -p "$output"
 echo "Deploy directory: $deploy"
 
 echo "Create compliance_bot for $product $btype"
-build_number=`cat $abs/clients/compliance_bot/BUILD_NUMBER`
+build_number=`cat $abs/BUILD_NUMBER`
 binary_dir="$abs/$build"
 $abs/clients/compliance_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
 
 echo "Create test_bot for $product $btype"
-build_number=`cat $abs/clients/test_bot/BUILD_NUMBER`
+build_number=`cat $abs/BUILD_NUMBER`
 binary_dir="$abs/$build"
 $abs/clients/test_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
 
 echo "Create welcome_bot for $product $btype"
-build_number=`cat $abs/clients/welcome_bot/BUILD_NUMBER`
+build_number=`cat $abs/BUILD_NUMBER`
 binary_dir="$abs/$build"
 $abs/clients/welcome_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
 
 echo "going to create $btype for services"
-build_number=`cat $abs/services/BUILD_NUMBER`
+build_number=`cat $abs/BUILD_NUMBER`
 $abs/services/installer/linux/scripts/deploy64 $binary_dir $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$deploy"
 
 (cd $deploy ; zip -r "$output/bots-${version}.zip" *.deb *.sha256)

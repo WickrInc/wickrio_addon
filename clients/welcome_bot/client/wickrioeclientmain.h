@@ -7,10 +7,10 @@
 #include <QString>
 
 #include "wickriodatabase.h"
-#include "wickriojson.h"
+#include "wickrIOJson.h"
 #include "wickrbotlog.h"
 #include "operationdata.h"
-#include "wickrioipc.h"
+#include "wickrIOIPCService.h"
 #include "wickrioreceivethread.h"
 #include "user/wickrUser.h"
 #include "services/wickrTaskService.h"
@@ -46,7 +46,7 @@ public:
     bool parseSettings(QSettings *settings);
 
     // Function to set connection to the IPC signals
-    void setIPC(WickrBotMainIPC *ipc);
+    void setIPC(WickrIOIPCService *ipc);
 
     WickrIOConvoHdlr m_convoHdlr;
 
@@ -58,7 +58,7 @@ private:
     QTimer timer;
     QString m_serverName;
 
-    WickrBotMainIPC *m_wickrIPC;
+    WickrIOIPCService *m_wickrIPC;
     WickrIOReceiveThread *m_rxThread;
 
     // Timer definitions

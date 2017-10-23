@@ -8,7 +8,7 @@
 
 #include "clientconfigurationinfo.h"
 #include "clientversioninfo.h"
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 
 #include "wickrIOBot.h"
 #include "wickrIOConsole.h"
@@ -27,13 +27,13 @@ extern void wickr_powersetup(void);
 #endif
 
 #include "wickrioeclientmain.h"
-#include "wickrioipc.h"
+#include "wickrIOIPCService.h"
 #include "wickrbotutils.h"
 #include "cmdMain.h"
 #include "operationdata.h"
 
 OperationData           *operation = NULL;
-WickrBotMainIPC         *rxIPC;
+WickrIOIPCService         *rxIPC;
 WickrIOConsoleService   *consoleSvc;
 
 void redirectedOutput(QtMsgType type, const QMessageLogContext &, const QString & str)
@@ -106,8 +106,8 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName(orgname);
 
 
-    rxIPC = new WickrBotMainIPC(operation);
-    rxIPC->start();
+    rxIPC = new WickrIOIPCService();
+    rxIPC->startIPC(operation);
 
 
     consoleSvc = new WickrIOConsoleService(app, argc, argv, operation, rxIPC);

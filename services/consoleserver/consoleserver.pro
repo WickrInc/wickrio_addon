@@ -7,6 +7,11 @@ COMMON = $${DEPTH}/shared/common
 include(../services.pri)
 
 #
+# Include the Wickr IO common defines files
+#
+include($${COMMON}/common_defines.pri)
+
+#
 # Include the Wickr IO common files
 #
 include($${COMMON}/common.pri)

@@ -13,7 +13,6 @@
 
 #include "common/wickrNotifyList.h"
 
-#include "wickrIOMsgEmailService.h"
 #include "wickrIOClientRuntime.h"
 
 #define WICKRBOT_UPDATE_STATS_SECS      600
@@ -156,6 +155,9 @@ WickrIOReceiveThread::processMessage(WickrDBObject *item)
             }
 
             if (processMsg) {
+                // Add the message ID
+                jsonObject.insert(APIJSON_MSGID, msg->getSrvMsgID());
+
                 if (inbox->getConvo()->getConvoType() == CONVO_SECURE_ROOM) {
                     jsonObject.insert(APIJSON_VGROUPID, inbox->getConvo()->getVGroupID());
                 }

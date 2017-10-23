@@ -8,9 +8,9 @@
 #include "common/wickrRequests.h"
 
 #include "wickriodatabase.h"
-#include "wickriojson.h"
+#include "wickrIOJson.h"
 #include "operationdata.h"
-#include "wickriomessagecounter.h"
+#include "wickrIOMessageCounter.h"
 
 #define WICKRBOT_INVALID_ID     -1
 
@@ -37,7 +37,7 @@ private:
     bool m_processRcvMsgs;          // True when processing incoming messages
     bool m_processCleanUp;          // True when db cleanup is processing
     bool m_delayedRcvOrClean;       // Set when a Recive or cleanup is delayed
-    WickrBotMessageCounter m_appCounter;
+    WickrIOMessageCounter m_appCounter;
     int m_backoff;
     int m_timerStatsTicker;
     bool m_outputStats;

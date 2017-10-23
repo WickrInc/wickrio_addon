@@ -18,7 +18,7 @@
 #include <QSqlError>
 
 #include "operationdata.h"
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 #include "wickrbotutils.h"
 #include "wickrbotsettings.h"
 #include "cmdhandler.h"

@@ -2,7 +2,7 @@
 #define ADVANCEDDIALOG_H
 
 #include <QDialog>
-#include "wickrioappsettings.h"
+#include "wickrIOAppSettings.h"
 
 namespace Ui {
 class AdvancedDialog;

@@ -1,5 +1,10 @@
 [Unit]
 Description=WickrIO Console server
+After=network.target
 
 [Service]
 ExecStart=/usr/sbin/WickrIOCSvrINSTALLEXT -systemd
+Restart=on-failure
+
+[Install]
+WantedBy = multi-user.target

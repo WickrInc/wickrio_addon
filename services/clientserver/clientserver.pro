@@ -50,9 +50,9 @@ SERVER_COMMON=../common
 INCLUDEPATH += $${SERVER_COMMON}
 
 #
-# Include the Wickr IO common files
+# Include the Wickr IO common defines files
 #
-include($${COMMON}/common_base.pri)
+include($${COMMON}/common_defines.pri)
 
 #
 # Include the QtWebApp library
@@ -64,11 +64,16 @@ include($${DEPTH}/libs/QtWebApp/QtWebApp.pri)
 #
 include($${DEPTH}/libs/WickrIOLib/WickrIOLib.pri)
 
+INCLUDEPATH += $$DEPTH/wickr-sdk/export
+INCLUDEPATH += $$DEPTH/wickr-sdk/export/Wickr
+INCLUDEPATH += $$DEPTH/wickr-sdk/src
+
 TEMPLATE = app
 
-QT  += core sql
-QT  += network
-QT  -= gui
+QT += core sql
+QT += network
+QT -= gui
+QT += multimediawidgets
 
 CONFIG += depend_includepath
 
@@ -104,9 +109,12 @@ win32 {
     else:LIBPATH += $$DEPTH/wickr-sdk/libs/qsqlcipher_wickr/release
 } else {
     LIBPATH += $$DEPTH/wickr-sdk/libs/qsqlcipher_wickr/
+    INCLUDEPATH += $$DEPTH/wickr-sdk/platforms/linux/include
 }
 LIBS += -lqsqlcipher_wickr
 
 # sqlcipher
 
 LIBS += -lsqlcipher
+
+INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/libs/WickrProto

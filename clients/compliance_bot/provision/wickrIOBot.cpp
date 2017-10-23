@@ -5,7 +5,7 @@
 #include "clientconfigurationinfo.h"
 #include "clientversioninfo.h"
 
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 #include "wickriotokens.h"
 #include "cmdbase.h"
 

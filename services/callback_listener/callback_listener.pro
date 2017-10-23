@@ -40,9 +40,9 @@ else {
 }
 
 #
-# Include the Wickr IO common files
+# Include the Wickr IO common defines files
 #
-include($${COMMON}/common_base.pri)
+include($${COMMON}/common_defines.pri)
 
 #
 # Include the QtWebApp library

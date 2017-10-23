@@ -1,19 +1,4 @@
-wickr_blackout:DEFINES += WICKR_BLACKOUT
-
-CONFIG(release,release|debug) {
-    DEFINES += WICKR_PRODUCTION
-}
-else {
-    wickr_beta:DEFINES += WICKR_BETA
-    else:wickr_qa:DEFINES += WICKR_QA
-    else:DEFINES += WICKR_ALPHA
-
-    DEFINES += WICKR_DEBUG
-}
-
 HEADERS += \
-    $${PWD}/wbio_common.h \
-    $${PWD}/wickrioappsettings.h \
     $${PWD}/wickriodatabase.h \
     $$PWD/wickrioconsoleuser.h \
     $$PWD/wickrioclients.h \
@@ -23,8 +8,6 @@ HEADERS += \
     $$PWD/wickrbotclientdatabase.h
 
 SOURCES += \
-    $${PWD}/wbio_common.cpp \
-    $${PWD}/wickrioappsettings.cpp \
     $${PWD}/wickriodatabase.cpp \
     $$PWD/wickrioconsoleuser.cpp \
     $$PWD/wickriotokens.cpp \

@@ -1,4 +1,4 @@
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 #include "wickrbotsettings.h"
 
 #include <QDebug>
@@ -33,7 +33,7 @@ extern void wickr_powersetup(void);
 #endif
 
 #include "wickrioeclientmain.h"
-#include "wickrioipc.h"
+#include "wickrIOIPCService.h"
 #include "wickrbotutils.h"
 
 WickrIOClients  client;

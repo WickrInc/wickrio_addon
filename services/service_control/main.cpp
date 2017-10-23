@@ -8,7 +8,7 @@
 #include <QTimer>
 
 #include <qtservice/QtServiceController>
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 
 /**
  * @brief main

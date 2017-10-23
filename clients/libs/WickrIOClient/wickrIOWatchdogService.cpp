@@ -78,6 +78,16 @@ void WickrIOWatchdogService::shutdown()
     qDebug() << "Watchdog Service shutdown: finished waiting";
 }
 
+void WickrIOWatchdogService::registerService(WickrIOServiceBase *svc)
+{
+    emit signalRegisterService(svc);
+}
+
+void WickrIOWatchdogService::deRegisterService(WickrIOServiceBase *svc)
+{
+    emit signalDeRegisterService(svc);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -108,6 +118,11 @@ WickrIOWatchdogThread::WickrIOWatchdogThread(QThread *thread, WickrIOWatchdogSer
 
     // Catch the shutdown signal
     connect(wdSvc, &WickrIOWatchdogService::signalShutdown, this, &WickrIOWatchdogThread::slotShutdown);
+
+    // Catch the register and deregister signals
+    connect(wdSvc, &WickrIOWatchdogService::signalRegisterService, this, &WickrIOWatchdogThread::slotRegisterService);
+    connect(wdSvc, &WickrIOWatchdogService::signalDeRegisterService, this, &WickrIOWatchdogThread::slotDeRegisterService);
+
     m_running = true;
 }
 
@@ -158,4 +173,14 @@ WickrIOWatchdogThread::slotShutdown()
     m_running = false;
 
     emit signalNotRunning();
+}
+
+void WickrIOWatchdogThread::slotRegisterService(WickrIOServiceBase *svc)
+{
+
+}
+
+void WickrIOWatchdogThread::slotDeRegisterService(WickrIOServiceBase *svc)
+{
+
 }

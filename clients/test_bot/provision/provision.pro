@@ -29,17 +29,16 @@ QT += sql multimediawidgets xml
 QT += network websockets
 
 COMMON = $${DEPTH}/shared/common
-CLIENTCOMMON=../../common
+
+#
+# Include the Wickr IO common defines files
+#
+include($${COMMON}/common_defines.pri)
 
 #
 # Include the Wickr IO common files
 #
 include($${COMMON}/common.pri)
-
-#
-# Include the Wickr IO common client files
-#
-#include($${CLIENTCOMMON}/common.pri)
 
 #
 # Include the Wickr IO common HTTP files
@@ -55,7 +54,6 @@ include($${DEPTH}/shared/common_http/common_http.pri)
 INCLUDEPATH += $$DEPTH/wickr-sdk/export
 INCLUDEPATH += $$DEPTH/wickr-sdk/src
 INCLUDEPATH += $$DEPTH/wickr-sdk/export/Wickr
-INCLUDEPATH += $${CLIENTCOMMON}
 
 #
 # Include the Wickr IO library
@@ -72,6 +70,10 @@ include($${DEPTH}/libs/QtWebApp/QtWebApp.pri)
 #
 include($${DEPTH}/libs/SMTPEmail/SMTPEmail.pri)
 
+#
+# Include the Wickr Client library
+#
+include(../../libs/WickrIOClient/WickrIOClient.pri)
 
 TEMPLATE = app
 

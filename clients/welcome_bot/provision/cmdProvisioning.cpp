@@ -4,7 +4,7 @@
 
 #include "cmdProvisioning.h"
 
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 #include "wickriotokens.h"
 
 CmdProvisioning::CmdProvisioning(WickrIOClients *client) :

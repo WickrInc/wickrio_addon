@@ -9,12 +9,12 @@
 #include <wickrbotutils.h>
 #include "wickrbotsettings.h"
 #include "wickrioclientserverservice.h"
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 #include "server_common.h"
 
 extern bool isVERSIONDEBUG();
 
-#define DEBUG_TRACE 1
+//#define DEBUG_TRACE 1
 
 /**
  * @brief WickrIOClientServerService::WickrIOClientServerService
@@ -109,6 +109,11 @@ bool WickrIOClientServerService::configureService()
     m_operation->log("Database size", m_operation->m_botDB->size());
     m_operation->log("Generated messages", m_operation->messageCount);
 
+    // Setup the IPC Service
+    m_ipcSvc = new WickrIOIPCService();
+    m_ipcSvc->startIPC(m_operation);
+    connect(m_ipcSvc, &WickrIOIPCService::signalReceivedMessage, this, &WickrIOClientServerService::slotRxIPCMessage);
+
     m_isConfigured = true;
 
 #ifdef DEBUG_TRACE
@@ -116,6 +121,45 @@ bool WickrIOClientServerService::configureService()
 #endif
     return true;
 }
+
+/**
+ * @brief slotGotMessage
+ * @param type
+ * @param value
+ */
+void
+WickrIOClientServerService::slotRxIPCMessage(QString type, QString value)
+{
+    if (type.toLower() == WBIO_IPCMSGS_USERSIGNKEY) {
+        qDebug().noquote() << "Received User Signing Key:" << value;
+    } else if (type.toLower() == WBIO_IPCMSGS_STATE) {
+        qDebug().noquote() << "Client changed state to" << value;
+        m_clientStateChanged = true;
+        m_clientState = value;
+    } else if (type.toLower() == WBIO_IPCMSGS_BOTINFO) {
+        qDebug().noquote() << "Received BOT Information message:" << value;
+        QMap<QString,QString> valMap;
+        valMap = WickrIOIPCCommands::parseBotInfoValue(value);
+        QString processValue = valMap.value(WBIO_BOTINFO_PROCESSNAME);
+        QString passwordValue = valMap.value(WBIO_BOTINFO_PASSWORD);
+
+        qDebug().noquote().nospace() << "BotInfo:";
+        qDebug().noquote().nospace() << "    Sender: " << valMap.value(WBIO_IPCHDR_PROCESSNAME);
+        qDebug().noquote().nospace() << "    Client: " << valMap.value(WBIO_BOTINFO_CLIENT);
+        qDebug().noquote().nospace() << "    Process: " << processValue;
+        qDebug().noquote().nospace() << "    Password: " << passwordValue;
+
+        // If the entry already exists for this client then remove it
+        if (m_clientPasswords.contains(processValue)) {
+            m_clientPasswords.remove(processValue);
+        }
+        // Add the process and password value for this client
+        m_clientPasswords.insert(processValue, passwordValue);
+    } else {
+        qDebug().noquote() << "Received unhandled message=" << type << ", value=" << value;
+    }
+}
+
 
 /**
  * @brief WickrIOClientServerService::slotTimeoutProcess
@@ -281,12 +325,14 @@ bool WickrIOClientServerService::clientNeedsStart(WickrBotClients *client)
          * that process is still running or not
          */
         if (procState.state == PROCSTATE_RUNNING) {
+#ifdef DEBUG_TRACE
             m_operation->log(QString("Process is still running, date=%1").arg(procState.last_update.toString(DB_DATETIME_FORMAT)));
-
+#endif
             const QDateTime dt = QDateTime::currentDateTime();
             int secs = procState.last_update.secsTo(dt);
+#ifdef DEBUG_TRACE
             m_operation->log(QString("Seconds since last status:%1").arg(QString::number(secs)));
-
+#endif
             // If less than 2 minutes then return failed, since the process is still running
             if (!m_operation->force && secs < 120) {
                 // Return true to identify that it is already active
@@ -316,6 +362,39 @@ bool WickrIOClientServerService::clientNeedsStart(WickrBotClients *client)
     return true;
 }
 
+bool
+WickrIOClientServerService::sendClientCmd(int port, const QString& cmd)
+{
+    qDebug() << "Sending password to client";
+    WickrBotIPC ipc;
+    if (! ipc.sendMessage(port, cmd)) {
+        return false;
+    }
+
+    QTimer timer;
+    QEventLoop loop;
+
+    loop.connect(&ipc, SIGNAL(signalSentMessage()), SLOT(quit()));
+    loop.connect(&ipc, SIGNAL(signalSendError()), SLOT(quit()));
+    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+
+    int loopCount = 6;
+
+    while (loopCount-- > 0) {
+        timer.start(10000);
+        loop.exec();
+
+        if (timer.isActive()) {
+            timer.stop();
+            break;
+        } else {
+            qDebug() << "Timed out waiting for stop client message to send!";
+        }
+    }
+    return true;
+}
+
+
 /**
  * @brief WickrIOClientServerService::stopClient
  * This function will send a stop message to the input client.
@@ -337,6 +416,8 @@ bool WickrIOClientServerService::stopClient(const WickrBotProcessState& state)
         // TODO: Need to wait to see if the message returns successfully!!!
         retVal = ipc.sendMessage(state.ipc_port, WBIO_IPCCMDS_STOP);
 
+#if 1
+#else
         QTimer timer;
         QEventLoop loop;
 
@@ -357,6 +438,7 @@ bool WickrIOClientServerService::stopClient(const WickrBotProcessState& state)
                 qDebug() << "Timed out waiting for stop client message to send!";
             }
         }
+#endif
     }
 
 #ifdef DEBUG_TRACE
@@ -383,16 +465,16 @@ bool WickrIOClientServerService::startClient(WickrBotClients *client)
     QString configFileName;
     QString clientDbDir;
     QString workingDir;
+    QString processName = WBIOServerCommon::getClientProcessName(client);
 
     // Check if the client process is still active
     if (! clientNeedsStart(client)) {
-        m_operation->log(QString("Note: Process does not need to start for %1").arg(client->name));
 #ifdef DEBUG_TRACE
+        m_operation->log(QString("Note: Process does not need to start for %1").arg(client->name));
         qDebug() << "Leaving startClient: proc not need to start!";
 #endif
         return true;
     }
-
 
 #ifdef Q_OS_WIN
     configFileName = QString(WBIO_CLIENT_SETTINGS_FORMAT).arg(WBIO_ORGANIZATION).arg(WBIO_GENERAL_TARGET).arg(client->name);
@@ -456,6 +538,16 @@ bool WickrIOClientServerService::startClient(WickrBotClients *client)
     settings->deleteLater();
 
 
+    // Check that we have the needed information to proceed
+    bool needsPassword = WBIOServerCommon::isPasswordRequired(client->binary);
+    if (needsPassword && !m_clientPasswords.contains(processName)) {
+        qDebug() << "Leaving startClient: need password for" << client->name;
+        return false;
+    }
+
+    // Clear the DB entry for the client: state and PID
+    m_operation->m_botDB->updateProcessState(processName, 0, PROCSTATE_DOWN);
+
     // Start the client application for the specific client/user
     QStringList arguments;
     QString command;
@@ -464,13 +556,51 @@ bool WickrIOClientServerService::startClient(WickrBotClients *client)
 
     arguments.append(QString("-config=%1").arg(configFileName));
     arguments.append(QString("-clientdbdir=%1").arg(clientDbDir));
-    arguments.append(QString("-processname=%1").arg(WBIOServerCommon::getClientProcessName(client)));
+    arguments.append(QString("-processname=%1").arg(processName));
 
     QProcess exec;
     exec.setStandardOutputFile(outputFile);
     exec.setProcessChannelMode(QProcess::MergedChannels);
     if (exec.startDetached(command, arguments, workingDir)) {
         m_operation->log(QString("Started client for %1").arg(client->name));
+
+        // For clients that require a password, send it over
+        if (needsPassword) {
+            qDebug() << "Client needs password!";
+
+            WickrBotProcessState state;
+
+            while ( true ) {
+                if (m_operation->m_botDB->getProcessState(processName, &state)) {
+                    // Can't get the process state, what to do
+                }
+                if (state.state != PROCSTATE_RUNNING) {
+                    qDebug().noquote() << QString("Waiting for %1 to start").arg(client->name);
+                    QThread::sleep(1);
+                    continue;
+                }
+
+                // It is running lets send the password to it now
+                QString password = m_clientPasswords.value(processName);
+                QString pwstring = WickrIOIPCCommands::getPasswordString(WBIO_CLIENTSERVER_TARGET, password);
+                sendClientCmd(state.ipc_port, pwstring);
+
+                // Need to check that the password worked
+                while (true) {
+                    QCoreApplication::processEvents();
+                    if (m_clientStateChanged) {
+                        if (m_clientState == "loggedin") {
+                            qDebug().noquote() << QString("CONSOLE:%1 is logged in").arg(client->name);
+                        } else if (m_clientState == "stopping") {
+                            qDebug().noquote() << QString("CONSOLE:%1 to login!").arg(client->name);
+                        }
+                        break;
+                    }
+                }
+                break;
+            }
+
+        }
     } else {
         m_operation->log(QString("Could NOT start client for %1").arg(client->name));
         m_operation->log(QString("command=%1").arg(command));

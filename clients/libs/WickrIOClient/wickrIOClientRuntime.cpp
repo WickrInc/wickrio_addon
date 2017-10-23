@@ -9,6 +9,7 @@ WickrIOClientRuntime::WickrIOClientRuntime() {
     // Allocate resources
     m_callbackSvc = new WickrIOCallbackService();
     m_fileDownloadSvc = new WickrIOFileDownloadService();
+    m_ipcSvc = new WickrIOIPCService();
     m_watchdogSvc = new WickrIOWatchdogService();
 
     m_initialized = true;
@@ -60,6 +61,8 @@ void WickrIOClientRuntime::init(OperationData *operation) {
  * Will shutdown runtime, cleaning up all resources.
  */
 void WickrIOClientRuntime::shutdown() {
+    WickrIOClientRuntime::get().ipcSvc()->shutdown();
+
     // Tell the watchdog service to shutdown
     WickrIOClientRuntime::get().wdSvc()->shutdown();
 
@@ -93,6 +96,20 @@ WickrIOClientRuntime::fdSvcDownloadFile(WickrIORxDownloadFile *dload) {
     fdSvc()->downloadFile(dload);
     return true;
 }
+
+/**
+ * @brief WickrIO Interprocess Communications Service API
+ */
+WickrIOIPCService*
+WickrIOClientRuntime::ipcSvc() {
+    return WickrIOClientRuntime::get().m_ipcSvc;
+}
+
+bool
+WickrIOClientRuntime::startIPC() {
+    ipcSvc()->startIPC(operationData());
+}
+
 
 /**
  * @brief WickrIO Watchdog Service API
@@ -175,15 +192,3 @@ WickrIOClientRuntime::findService(const QString& svcName)
     return retSvc;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-
-WickrIOServiceBase::WickrIOServiceBase(const QString& serviceName) :
-    m_serviceName(serviceName)
-{
-}

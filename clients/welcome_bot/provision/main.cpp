@@ -1,4 +1,4 @@
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 #include "wickrbotsettings.h"
 
 #include <QDebug>
@@ -33,7 +33,7 @@ extern void wickr_powersetup(void);
 #endif
 
 #include "wickrioeclientmain.h"
-#include "wickrioipc.h"
+#include "wickrIOIPCService.h"
 #include "wickrbotutils.h"
 
 WickrIOClients  client;
@@ -78,13 +78,10 @@ int main(int argc, char *argv[])
 
     // Setup appropriate library values based on Beta or Production client
     QByteArray secureJson;
-    bool isDebug;
     if (isVERSIONDEBUG()) {
         secureJson = "secex_json2:Fq3&M1[d^,2P";
-        isDebug = true;
     } else {
         secureJson = "secex_json:8q$&M4[d^;2R";
-        isDebug = false;
     }
 
     QString appname = WBIO_PROVISION_TARGET;
@@ -93,7 +90,6 @@ int main(int argc, char *argv[])
     wickrProductSetProductType(ClientVersionInfo::getProductType());
     WickrURLs::setDefaultBaseURL(ClientConfigurationInfo::DefaultBaseURL);
 
-    bool dbEncrypt = true;
     bool debugOutput = false;
 
     QString clientDbPath("");
@@ -122,13 +118,7 @@ int main(int argc, char *argv[])
             if( cmd == "-?" || cmd == "-help" || cmd == "--help" )
                 usage();
 
-            if( cmd == "-crypt" ) {
-                dbEncrypt = true;
-            }
-            else if( cmd == "-nocrypt" ) {
-                dbEncrypt = false;
-            }
-            else if( cmd == "-noexclusive" ) {
+            if( cmd == "-noexclusive" ) {
                 WickrDBAdapter::setDatabaseExclusiveOpenStatus(false);
             }
         }

@@ -4,7 +4,7 @@
 #include <QFile>
 #include <QFileInfo>
 
-#include "wickrioappsettings.h"
+#include "wickrIOAppSettings.h"
 #include "wickrbotsettings.h"
 
 /**

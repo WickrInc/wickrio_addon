@@ -40,12 +40,17 @@ CONFIG(debug, debug|release) {
 INCLUDEPATH += $$DEPTH/wickr-sdk/export
 INCLUDEPATH += $$DEPTH/wickr-sdk/src
 INCLUDEPATH += $$DEPTH/wickr-sdk/export/Wickr
+INCLUDEPATH += $$DEPTH/wickr-sdk/libs/WickrProto
 
 INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
 
 HEADERS += \
+    wickrIOAppSettings.h \
     wickrIOBootstrap.h \
+    wickrIOCommon.h \
+    wickrIOIPCService.h \
+    wickrIOParsers.h \
     wickrbotactioncache.h \
     wickrbotattachmentcache.h \
     wickrbotclients.h \
@@ -65,7 +70,10 @@ HEADERS += \
     clientactions.h
 
 SOURCES += \
+    wickrIOAppSettings.cpp \
     wickrIOBootstrap.cpp \
+    wickrIOCommon.cpp \
+    wickrIOIPCService.cpp \
     wickrbotdatabase.cpp \
     wickrbotprocessstate.cpp \
     wickrbotjsondata.cpp \

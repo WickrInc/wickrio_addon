@@ -9,26 +9,6 @@ DEPTH = ../../..
 CONFIG += c++11
 CONFIG += console
 
-wickr_messenger {
-    message(*** WickrIO WelcomeBot Provision Messenger Version)
-    DEFINES += WICKR_MESSENGER=1
-}
-else:wickr_blackout {
-    message(*** WickrIO WelcomeBot Provision Blackout Version)
-    DEFINES += WICKR_BLACKOUT=1
-}
-else:wickr_enterprise {
-    message(*** WickrIO WelcomeBot Provision Blackout Version)
-    DEFINES += WICKR_ENTERPRISE=1
-}
-else:wickr_scif {
-    message(*** WickrIO WelcomeBot Provision Plus Version)
-    DEFINES += WICKR_SCIF=1
-}
-else {
-    message(*** WickrIO WelcomeBot Provision Cloud Version)
-}
-
 wickr_compliance:DEFINES += WICKR_COMPLIANCE=1
 wickr_compliance_bot {
     DEFINES += WICKR_COMPLIANCE_BOT=1
@@ -41,11 +21,9 @@ CONFIG(release,release|debug) {
     wickr_beta {
         message(*** WickrIO WelcomeBot Provision Beta.Release Build)
         TARGET = provisionBeta
-        DEFINES += WICKR_BETA
     } else {
         message(*** WickrIO WelcomeBot Provision Production Build)
         TARGET = provisionAlpha
-        DEFINES += WICKR_PRODUCTION
     }
 } else {
     DEFINES += VERSIONDEBUG
@@ -54,17 +32,14 @@ CONFIG(release,release|debug) {
     wickr_beta {
         message(*** WickrIO WelcomeBot Provision Beta.Debug Build)
         TARGET = provisionBeta
-        DEFINES += WICKR_BETA
     }
     else:wickr_qa {
         message(*** WickrIO WelcomeBot Provision QA Build)
         TARGET = provisionQA
-        DEFINES += WICKR_QA
     }
     else {
         message(*** WickrIO WelcomeBot Provision Alpha Build)
         TARGET = provisionAlpha
-        DEFINES += WICKR_ALPHA
     }
 }
 
@@ -81,17 +56,16 @@ QT += sql multimediawidgets xml
 QT += network websockets
 
 COMMON = $${DEPTH}/shared/common
-CLIENTCOMMON=../../common
+
+#
+# Include the Wickr IO common defines files
+#
+include($${COMMON}/common_defines.pri)
 
 #
 # Include the Wickr IO common files
 #
 include($${COMMON}/common.pri)
-
-#
-# Include the Wickr IO common client files
-#
-#include($${CLIENTCOMMON}/common.pri)
 
 #
 # Include the Wickr IO common HTTP files
@@ -107,7 +81,6 @@ include($${DEPTH}/shared/common_http/common_http.pri)
 INCLUDEPATH += $$DEPTH/wickr-sdk/export
 INCLUDEPATH += $$DEPTH/wickr-sdk/src
 INCLUDEPATH += $$DEPTH/wickr-sdk/export/Wickr
-INCLUDEPATH += $${CLIENTCOMMON}
 
 #
 # Include the Wickr IO library
@@ -124,6 +97,10 @@ include($${DEPTH}/libs/QtWebApp/QtWebApp.pri)
 #
 include($${DEPTH}/libs/SMTPEmail/SMTPEmail.pri)
 
+#
+# Include the Wickr Client library
+#
+include(../../libs/WickrIOClient/WickrIOClient.pri)
 
 TEMPLATE = app
 

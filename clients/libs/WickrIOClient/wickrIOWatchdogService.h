@@ -5,7 +5,7 @@
 #include <QThread>
 #include <QTimer>
 #include "common/wickrNetworkUtil.h"
-
+#include "wickrIOServiceBase.h"
 #include "operationdata.h"
 
 // Forward declaration
@@ -28,6 +28,9 @@ public:
 
     void shutdown();
 
+    void registerService(WickrIOServiceBase *svc);
+    void deRegisterService(WickrIOServiceBase *svc);
+
 private:
     // General purpose thread lock used for common threaded related queries/updates(hence ReadWrite).
     // NOTE: Other required service specific locks should be defined and managed by the specialized services.
@@ -42,6 +45,8 @@ private:
 
 signals:
     void signalShutdown();
+    void signalRegisterService(WickrIOServiceBase *svc);
+    void signalDeRegisterService(WickrIOServiceBase *svc);
 
 };
 
@@ -82,6 +87,9 @@ signals:
 public slots:
     void slotTimerExpire();
     void slotShutdown();
+
+    void slotRegisterService(WickrIOServiceBase *svc);
+    void slotDeRegisterService(WickrIOServiceBase *svc);
 
 };
 

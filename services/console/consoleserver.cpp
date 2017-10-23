@@ -5,7 +5,7 @@
 
 #include "consoleserver.h"
 #include "wickrbotprocessstate.h"
-#include "wbio_common.h"
+#include "wickrIOCommon.h"
 #include "wickrbotutils.h"
 #include "wickrbotsettings.h"
 
@@ -50,6 +50,31 @@ ConsoleServer::isRunning(const QString &processName, int timeout)
     return running;
 }
 
+bool
+ConsoleServer::runCommand(const QString &processName, const QString &action)
+{
+#ifdef Q_OS_LINUX
+    QProcess exec;
+    QString command = QString("systemctl %1 %2").arg(action).arg(processName);
+    exec.start(command);
+    if (exec.waitForStarted()) {
+        QCoreApplication::processEvents();
+        QString msg = QString("Waiting to %1 %2 service").arg(action).arg(processName);
+        qDebug() << msg;
+        while (! exec.waitForFinished(100)) {
+            QCoreApplication::processEvents();
+        }
+        return true;
+    } else {
+        QString msg = QString("%1 service failed to %2").arg(processName).arg(action);
+        qDebug() << msg;
+        return false;
+    }
+#else
+    return true;
+#endif
+}
+
 void
 ConsoleServer::toggleState(const QString &processName)
 {
@@ -63,74 +88,69 @@ ConsoleServer::toggleState(const QString &processName)
     }
 
 #ifdef Q_OS_LINUX
-        QProcess exec;
-#if 1
-        QString command = QString("systemctl %1 %2").arg(start ? "start" : "stop").arg(processName);
-#else
-        QString command = QString("/etc/init.d/%1 %2").arg(processName).arg(start ? "start" : "stop");
-#endif
-
-        exec.start(command);
-        if (exec.waitForStarted()) {
-            QCoreApplication::processEvents();
-            QString msg = QString("%1 service %2").arg(processName).arg(start ? "started" : "stopped");
-            qDebug() << msg;
-            while (! exec.waitForFinished(100)) {
-                QCoreApplication::processEvents();
-            }
+    if (start) {
+        if (runCommand(processName, "enable") && runCommand(processName, "start")) {
+            qDebug().noquote().nospace() << "Started the " << processName << " service";
         } else {
-            QString msg = QString("%1 service failed to %2").arg(processName).arg(start ? "start" : "stop");
-            qDebug() << msg;
+            qDebug().noquote().nospace() << "Cound NOT start the " << processName << " service";
         }
+    } else {
+        if (runCommand(processName, "stop") && runCommand(processName, "disable")) {
+            qDebug().noquote().nospace() << "Stopped the " << processName << " service";
+        } else {
+            qDebug().noquote().nospace() << "Cound NOT stop the " << processName << " service";
+        }
+    }
+
 #elif defined(Q_OS_WIN)
-        QProcess exec;
-        QString command = QString("net %1 %2").arg(start ? "start" : "stop").arg(processName);
+    QProcess exec;
+    QString command = QString("net %1 %2").arg(start ? "start" : "stop").arg(processName);
 
-        #if 1
-        exec.start(command);
-        if (exec.waitForStarted()) {
+    #if 1
+    exec.start(command);
+    if (exec.waitForStarted()) {
+        QCoreApplication::processEvents();
+        QString msg = QString("%1 service %2").arg(processName).arg(start ? "started" : "stopped");
+        qDebug() << msg;
+        while (! exec.waitForFinished(100)) {
             QCoreApplication::processEvents();
-            QString msg = QString("%1 service %2").arg(processName).arg(start ? "started" : "stopped");
-            qDebug() << msg;
-            while (! exec.waitForFinished(100)) {
-                QCoreApplication::processEvents();
-            }
-        } else {
-            QString msg = QString("%1 service failed to %2").arg(processName).arg(start ? "start" : "stop");
-            qDebug() << msg;
         }
+    } else {
+        QString msg = QString("%1 service failed to %2").arg(processName).arg(start ? "start" : "stop");
+        qDebug() << msg;
+    }
 
-        // Change the service to automatic if being started, or demand if stopped
-        QProcess exec_sc;
-        command = QString("sc config %1.exe start=%2").arg(processName).arg(start ? "auto" : "demand");
+    // Change the service to automatic if being started, or demand if stopped
+    QProcess exec_sc;
+    command = QString("sc config %1.exe start=%2").arg(processName).arg(start ? "auto" : "demand");
 
-        exec_sc.start(command);
-        if (exec_sc.waitForStarted()) {
+    exec_sc.start(command);
+    if (exec_sc.waitForStarted()) {
+        QCoreApplication::processEvents();
+        while (! exec_sc.waitForFinished(100)) {
             QCoreApplication::processEvents();
-            while (! exec_sc.waitForFinished(100)) {
-                QCoreApplication::processEvents();
-            }
-            qDebug() << "Successfully changed startup options for" << processName;
-        } else {
-            qDebug() << "Failed to change startup options for" << processName;
         }
-        #else
-        if (exec.startDetached(command)) {
-            QString msg = QString("%1 service %2").arg(processName).arg(start ? "started" : "stopped");
-            qDebug() << msg;
-        } else {
-            QString msg = QString("%1 service failed to %2").arg(processName).arg(start ? "start" : "stop");
-            qDebug() << msg;
-        }
+        qDebug() << "Successfully changed startup options for" << processName;
+    } else {
+        qDebug() << "Failed to change startup options for" << processName;
+    }
+    #else
+    if (exec.startDetached(command)) {
+        QString msg = QString("%1 service %2").arg(processName).arg(start ? "started" : "stopped");
+        qDebug() << msg;
+    } else {
+        QString msg = QString("%1 service failed to %2").arg(processName).arg(start ? "start" : "stop");
+        qDebug() << msg;
+    }
 
-        // Change the service to automatic if being started, or demand if stopped
-        command = QString("sc config %1.exe start=%2").arg(processName).arg(start ? "auto" : "demand");
-        if (exec.startDetached(command)) {
-            qDebug() << "Successfully changed startup options for" << processName;
-        } else {
-            qDebug() << "Failed to change startup options for" << processName;
-        }
-        #endif
+    // Change the service to automatic if being started, or demand if stopped
+    command = QString("sc config %1.exe start=%2").arg(processName).arg(start ? "auto" : "demand");
+    if (exec.startDetached(command)) {
+        qDebug() << "Successfully changed startup options for" << processName;
+    } else {
+        qDebug() << "Failed to change startup options for" << processName;
+    }
+    #endif
 #endif
 }
 
