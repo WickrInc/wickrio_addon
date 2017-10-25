@@ -7,10 +7,10 @@
 #include "cmdclient.h"
 
 #include "wickrIOCommon.h"
-#include "server_common.h"
+#include "wickrIOServerCommon.h"
 #include "wickrbotsettings.h"
 #include "consoleserver.h"
-#include "wickrioconsoleclienthandler.h"
+#include "wickrIOConsoleClientHandler.h"
 
 CmdClient::CmdClient(CmdOperation *operation) :
     m_operation(operation)

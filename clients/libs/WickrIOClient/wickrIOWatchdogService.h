@@ -31,6 +31,9 @@ public:
     void registerService(WickrIOServiceBase *svc);
     void deRegisterService(WickrIOServiceBase *svc);
 
+    // Set the process state to set when shutting down
+    void setShutdownProcState(int procState) { m_shutdownMode = procState; }
+
 private:
     // General purpose thread lock used for common threaded related queries/updates(hence ReadWrite).
     // NOTE: Other required service specific locks should be defined and managed by the specialized services.
@@ -39,14 +42,16 @@ private:
     WickrServiceState       m_state;
     QThread                 m_thread;
     WickrIOWatchdogThread   *m_wdThread;
+    int                     m_shutdownMode;
 
     void startThreads();
     void stopThreads();
 
 signals:
-    void signalShutdown();
+    void signalShutdown(int procState);
     void signalRegisterService(WickrIOServiceBase *svc);
     void signalDeRegisterService(WickrIOServiceBase *svc);
+    void signalServiceNotLoggedIn();
 
 };
 
@@ -83,10 +88,11 @@ private:
 
 signals:
     void signalNotRunning();
+    void signalServiceNotLoggedIn();    // Emitted when a service is not logged in for aperiod of time
 
 public slots:
     void slotTimerExpire();
-    void slotShutdown();
+    void slotShutdown(int procState);
 
     void slotRegisterService(WickrIOServiceBase *svc);
     void slotDeRegisterService(WickrIOServiceBase *svc);

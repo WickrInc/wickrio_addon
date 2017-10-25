@@ -5,7 +5,7 @@
 
 #include "webserver.h"
 #include "wickrbotsettings.h"
-#include "server_common.h"
+#include "wickrIOServerCommon.h"
 #include "wickrIOCommon.h"
 
 #define SETTINGS_SETTINGS_LOCATION "settingslocation"

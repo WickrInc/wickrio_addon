@@ -119,6 +119,11 @@ WickrIOClientRuntime::wdSvc() {
     return WickrIOClientRuntime::get().m_watchdogSvc;
 }
 
+void
+WickrIOClientRuntime::wdSetShutdownState(int procState)
+{
+    WickrIOClientRuntime::get().m_watchdogSvc->setShutdownProcState(procState);
+}
 
 
 /**

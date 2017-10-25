@@ -75,6 +75,7 @@
 #define APIJSON_MSGRECEIVER     "receiver"
 #define APIJSON_MSGUSERS        "users"
 #define APIJSON_MSGTIME         "time"
+#define APIJSON_MSG_TS          "msg_ts"
 #define APIJSON_MESSAGE         "message"
 #define APIJSON_MESSAGES        "messages"
 #define APIJSON_ROOM            "room"

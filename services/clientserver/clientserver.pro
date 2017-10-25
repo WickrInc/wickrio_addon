@@ -49,10 +49,41 @@ win32 {
 SERVER_COMMON=../common
 INCLUDEPATH += $${SERVER_COMMON}
 
-#
-# Include the Wickr IO common defines files
-#
-include($${COMMON}/common_defines.pri)
+wickr_messenger {
+    DEFINES += WICKR_MESSENGER=1
+}
+else:wickr_blackout {
+    DEFINES += WICKR_BLACKOUT=1
+}
+else:wickr_enterprise {
+    DEFINES += WICKR_ENTERPRISE=1
+}
+else:wickr_scif {
+    DEFINES += WICKR_SCIF=1
+}
+
+
+CONFIG(release,release|debug) {
+    wickr_beta {
+        DEFINES += WICKR_BETA
+    }
+    else {
+        DEFINES += WICKR_PRODUCTION
+    }
+}
+else {
+    wickr_beta {
+        DEFINES += WICKR_BETA
+    }
+    else:wickr_qa {
+        DEFINES += WICKR_QA
+    }
+    else {
+        DEFINES += WICKR_ALPHA
+    }
+
+    DEFINES += WICKR_DEBUG
+}
 
 #
 # Include the QtWebApp library
@@ -78,12 +109,10 @@ QT += multimediawidgets
 CONFIG += depend_includepath
 
 SOURCES += \
-    $${SERVER_COMMON}/server_common.cpp \
     main.cpp \
     wickrioclientserverservice.cpp
 
 HEADERS += \
-    $${SERVER_COMMON}/server_common.h \
     WickrBotContext.h \
     wickrioclientserverservice.h
 

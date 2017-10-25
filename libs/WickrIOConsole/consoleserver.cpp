@@ -76,16 +76,9 @@ ConsoleServer::runCommand(const QString &processName, const QString &action)
 }
 
 void
-ConsoleServer::toggleState(const QString &processName)
+ConsoleServer::setState(bool start, const QString &processName)
 {
     QCoreApplication::processEvents();
-    bool start;
-    if (isRunning(processName)) {
-        // Command to stop the Clients Server Daemon/Service
-        start = false;
-    } else {
-        start = true;
-    }
 
 #ifdef Q_OS_LINUX
     if (start) {
@@ -159,11 +152,11 @@ ConsoleServer::restart()
 {
     // If is running then stop the console server
     if (isRunning()) {
-        toggleState();
+        setState(false);
     }
 
     // Start the console server
-    toggleState();
+    setState(true);
 
     return isRunning();
 }

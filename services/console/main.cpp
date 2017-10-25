@@ -3,7 +3,7 @@
 #include <QCoreApplication>
 #include "client.h"
 #include "cmdmain.h"
-#include "server_common.h"
+#include "wickrIOServerCommon.h"
 
 extern bool isVERSIONDEBUG();
 

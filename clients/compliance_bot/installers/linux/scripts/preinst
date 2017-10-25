@@ -4,7 +4,7 @@ set -e
 
 case "$1" in
     upgrade)
-        echo "Pre-install upgrade for old version of WickrIO Test Bot:"
+        echo "Pre-install upgrade for old version of WickrIO Compliance Bot:"
 
     ;;
 esac    

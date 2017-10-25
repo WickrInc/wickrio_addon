@@ -4,7 +4,7 @@ set -e
 
 case "$1" in
     configure)
-        echo "Post-install configure for new version of WickrIO Test Bot:"
+        echo "Post-install configure for new version of WickrIO Compliance Bot:"
 
         # TODO: Should only have to restart if the service was already running!
 

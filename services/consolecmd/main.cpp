@@ -1,7 +1,7 @@
 
 #include <QCoreApplication>
 #include "cmdmain.h"
-#include "server_common.h"
+#include "wickrIOServerCommon.h"
 
 extern bool isVERSIONDEBUG();
 

@@ -8,12 +8,13 @@
 #include "wickrbotipc.h"
 #include "wickriodatabase.h"
 #include "wickrIOAppSettings.h"
+#include "operationdata.h"
 
 class CmdOperation : public QObject
 {
     Q_OBJECT
 public:
-    explicit CmdOperation(QObject *parent=0);
+    explicit CmdOperation(OperationData *operation, QObject *parent=0);
 
     bool openDatabase();
 
@@ -24,6 +25,8 @@ public:
     WickrBotIPC *m_ipc;
     WickrIOClientDatabase *m_ioDB;
 
+    // Some applications rely on this class to maintain DB stuff
+    OperationData* m_operation;
 };
 
 #endif // CMDOPERATION_H

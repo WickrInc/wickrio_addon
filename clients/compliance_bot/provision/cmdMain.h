@@ -7,6 +7,7 @@
 #include "wickrbotipc.h"
 #include "wickrIOIPCService.h"
 #include "operationdata.h"
+#include "cmdserver.h"
 
 class CmdMain : public CmdBase
 {
@@ -26,16 +27,15 @@ private:
     WickrBotIPC             m_txIPC;
     WickrIOIPCService       *m_rxIPC;
 
-    OperationData           *m_operation;
-
-    WickrIOClientDatabase   *m_ioDB;
-
     QString                 m_clientState;
     bool                    m_clientStateChanged;
 
     // Client Message handling values
     bool m_clientMsgSuccess;
     bool m_clientMsgInProcess;
+
+    CmdOperation m_cmdOperation;
+    CmdServer    m_cmdServer;
 
     bool updateBotList();
     bool validateIndex(int clientIndex);

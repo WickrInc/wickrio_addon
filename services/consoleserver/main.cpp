@@ -24,7 +24,7 @@
 
 #include "operationdata.h"
 #include "wickrIOCommon.h"
-#include "server_common.h"
+#include "wickrIOServerCommon.h"
 #include "wickrbotutils.h"
 #include "wickrbotsettings.h"
 #include "consoleserverservice.h"

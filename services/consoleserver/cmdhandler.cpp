@@ -6,9 +6,9 @@
 
 #include "cmdhandler.h"
 #include "wickrIOCommon.h"
-#include "server_common.h"
+#include "wickrIOServerCommon.h"
 #include "wickrbotsettings.h"
-#include "wickrioconsoleclienthandler.h"
+#include "wickrIOConsoleClientHandler.h"
 #include "wickriodatabase.h"
 #include "wickrioapi.h"
 

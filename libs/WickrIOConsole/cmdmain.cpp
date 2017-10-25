@@ -8,14 +8,14 @@
 #include "wickrIOCommon.h"
 #include "wickrbotsettings.h"
 #include "consoleserver.h"
-#include "wickrioconsoleclienthandler.h"
+#include "wickrIOConsoleClientHandler.h"
 
 CmdMain::CmdMain() :
-    m_operation(),
-    m_cmdClient(&m_operation),
-    m_cmdConsole(&m_operation),
-    m_cmdAdvanced(&m_operation),
-    m_cmdServer(&m_operation)
+    m_cmdOperation(nullptr),
+    m_cmdClient(&m_cmdOperation),
+    m_cmdConsole(&m_cmdOperation),
+    m_cmdAdvanced(&m_cmdOperation),
+    m_cmdServer(&m_cmdOperation)
 {
 }
 
@@ -29,7 +29,7 @@ bool CmdMain::runCommands()
     QTextStream input(stdin);
 
     // If the database location is not set then get it
-    if (! m_operation.openDatabase()) {
+    if (! m_cmdOperation.openDatabase()) {
         qDebug() << "CONSOLE:Cannot open database!";
         return false;
     }

@@ -25,7 +25,7 @@ public:
     bool runCommands();
 
 private:
-    CmdOperation m_operation;
+    CmdOperation m_cmdOperation;
     CmdClient    m_cmdClient;
     CmdConsole   m_cmdConsole;
     CmdAdvanced  m_cmdAdvanced;

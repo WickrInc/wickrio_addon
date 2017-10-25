@@ -10,7 +10,7 @@
 #include "wickrbotsettings.h"
 #include "wickrioclientserverservice.h"
 #include "wickrIOCommon.h"
-#include "server_common.h"
+#include "wickrIOServerCommon.h"
 
 extern bool isVERSIONDEBUG();
 
@@ -147,7 +147,6 @@ WickrIOClientServerService::slotRxIPCMessage(QString type, QString value)
         qDebug().noquote().nospace() << "    Sender: " << valMap.value(WBIO_IPCHDR_PROCESSNAME);
         qDebug().noquote().nospace() << "    Client: " << valMap.value(WBIO_BOTINFO_CLIENT);
         qDebug().noquote().nospace() << "    Process: " << processValue;
-        qDebug().noquote().nospace() << "    Password: " << passwordValue;
 
         // If the entry already exists for this client then remove it
         if (m_clientPasswords.contains(processValue)) {

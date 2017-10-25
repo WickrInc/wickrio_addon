@@ -17,7 +17,7 @@ outputdir="$3"
 #
 case "$product" in
 cloud)
-    productStr="Cloud"
+    productStr="Pro"
     ;;
 enterprise)
     productStr="Enterprise"

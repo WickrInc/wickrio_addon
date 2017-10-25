@@ -8,7 +8,7 @@
 #include "wickrIOCommon.h"
 #include "wickrbotsettings.h"
 #include "consoleserver.h"
-#include "wickrioconsoleclienthandler.h"
+#include "wickrIOConsoleClientHandler.h"
 
 CmdAdvanced::CmdAdvanced(CmdOperation *operation) :
     m_operation(operation)

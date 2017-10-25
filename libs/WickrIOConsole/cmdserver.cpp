@@ -8,10 +8,10 @@
 #include "wickrIOCommon.h"
 #include "wickrbotsettings.h"
 #include "consoleserver.h"
-#include "wickrioconsoleclienthandler.h"
+#include "wickrIOConsoleClientHandler.h"
 
-CmdServer::CmdServer(CmdOperation *operation) :
-    m_operation(operation)
+CmdServer::CmdServer(CmdOperation *cmdOperation) :
+    m_cmdOperation(cmdOperation)
 {
     m_consoleServer = NULL;
 }
@@ -23,12 +23,12 @@ CmdServer::CmdServer(CmdOperation *operation) :
 bool CmdServer::runCommands()
 {
     if (m_consoleServer == NULL) {
-        m_consoleServer = new ConsoleServer(m_operation->m_ioDB);
+        m_consoleServer = new ConsoleServer(m_cmdOperation->m_ioDB);
     }
     QTextStream input(stdin);
 
     // If the database location is not set then get it
-    if (! m_operation->openDatabase()) {
+    if (! m_cmdOperation->openDatabase()) {
         qDebug() << "CONSOLE:Cannot open database!";
         return true;
     }
@@ -48,20 +48,25 @@ bool CmdServer::runCommands()
                 qDebug() << "CONSOLE:  help or ? - shows supported commands";
                 qDebug() << "CONSOLE:  status    - shows the state of the clients server service";
 
+#if 1
+                qDebug() << "CONSOLE:  stop      - stops the clients server service";
+                qDebug() << "CONSOLE:  start     - starts the clients server service";
+#else
                 if (m_consoleServer->isRunning(WBIO_CLIENTSERVER_TARGET)) {
                     qDebug() << "CONSOLE:  stop     - stops the clients server service";
                 } else {
                     qDebug() << "CONSOLE:  start    - starts the clients server service";
                 }
+#endif
                 qDebug() << "CONSOLE:  quit       - leaves this program";
             } else if (cmd == "back") {
                 break;
             } else if (cmd == "status") {
                 status();
             } else if (cmd == "start") {
-                m_consoleServer->toggleState(WBIO_CLIENTSERVER_TARGET);
+                m_consoleServer->setState(true, WBIO_CLIENTSERVER_TARGET);
             } else if (cmd == "stop") {
-                m_consoleServer->toggleState(WBIO_CLIENTSERVER_TARGET);
+                m_consoleServer->setState(false, WBIO_CLIENTSERVER_TARGET);
             } else if (cmd == "quit") {
                 return false;
             } else {
@@ -74,6 +79,6 @@ bool CmdServer::runCommands()
 
 void CmdServer::status()
 {
-    QString clientState = WickrIOConsoleClientHandler::getActualProcessState(WBIO_CLIENTSERVER_TARGET, m_operation->m_ioDB);
+    QString clientState = WickrIOConsoleClientHandler::getActualProcessState(WBIO_CLIENTSERVER_TARGET, m_cmdOperation->m_ioDB);
     qDebug() << "CONSOLE:The Clients Server state is" << clientState;
 }
