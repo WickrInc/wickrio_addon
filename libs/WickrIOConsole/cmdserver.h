@@ -24,8 +24,8 @@ public:
     void status();
 
 private:
-    CmdOperation *m_operation;
-    ConsoleServer *m_consoleServer;
+    CmdOperation *  m_cmdOperation;
+    ConsoleServer * m_consoleServer;
 };
 
 #endif // CMDSERVER_H

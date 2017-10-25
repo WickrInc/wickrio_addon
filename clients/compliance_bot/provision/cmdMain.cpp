@@ -13,7 +13,8 @@ CmdMain::CmdMain(QCoreApplication *app, int argc, char **argv, OperationData *op
     m_argc(argc),
     m_argv(argv),
     m_txIPC(this),
-    m_operation(operation)
+    m_cmdOperation(operation),
+    m_cmdServer(&m_cmdOperation)
 {
 }
 
@@ -49,8 +50,11 @@ void CmdMain::signalReceivedMessage(QString type, QString value)
 bool
 CmdMain::runCommands()
 {
-    // Set a pointer to the WickrIO Database, in the parent class
-    m_ioDB = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
+    // If the database location is not set then get it
+    if (! m_cmdOperation.openDatabase()) {
+        qDebug() << "CONSOLE:Cannot open database!";
+        return false;
+    }
 
     QTextStream input(stdin);
 
@@ -99,7 +103,7 @@ CmdMain::runCommands()
 #endif
             } else if (cmd == "add") {
                 // FOR NOW lets add a new user
-                WickrIOBot *newbot = new WickrIOBot(m_app, m_argc, m_argv, m_ioDB);
+                WickrIOBot *newbot = new WickrIOBot(m_app, m_argc, m_argv, m_cmdOperation.m_ioDB);
                 newbot->newBotCreate();
             } else if (cmd == "delete") {
                 if (clientIndex == -1) {
@@ -125,6 +129,9 @@ CmdMain::runCommands()
                 } else {
                     startClient(clientIndex, bForce);
                 }
+            } else if (cmd == "server") {
+                if (!m_cmdServer.runCommands())
+                    break;
             } else if (cmd == "quit") {
                 qDebug() << "CONSOLE:Good bye!";
                 break;
@@ -157,7 +164,7 @@ CmdMain::updateBotList()
     m_clients.clear();
 
     // TODO: Need to add an entry into the client record table
-    QList<WickrIOClients *> clients = m_ioDB->getClients();
+    QList<WickrIOClients *> clients = m_cmdOperation.m_ioDB->getClients();
 
     for (WickrIOClients *client : clients) {
         if (client->binary != WBIO_BOT_TARGET) {
@@ -183,7 +190,7 @@ CmdMain::listBots()
             QString clientState = "UNKNOWN";
             QString processName = client->getProcessName();
             QString procRunningString;
-            if (m_ioDB->getProcessState(processName, &state)) {
+            if (m_cmdOperation.m_ioDB->getProcessState(processName, &state)) {
                 if (state.state == PROCSTATE_DOWN) {
                     clientState = "Down";
                 } else if (state.state == PROCSTATE_RUNNING) {
@@ -237,13 +244,13 @@ CmdMain::startClient(int clientIndex, bool force)
         WickrBotProcessState state;
         QString processName = client->getProcessName();
 
-        if (m_ioDB->getProcessState(processName, &state)) {
+        if (m_cmdOperation.m_ioDB->getProcessState(processName, &state)) {
 #if 0
             if (state.state == PROCSTATE_PAUSED) {
                 QString prompt = QString(tr("Do you really want to start the client with the name %1")).arg(client->name);
                 QString response = getNewValue("", prompt);
                 if (response.toLower() == "y" || response.toLower() == "yes") {
-                    if (! m_ioDB->updateProcessState(processName, 0, PROCSTATE_DOWN)) {
+                    if (! m_cmdOperation.m_ioDB->updateProcessState(processName, 0, PROCSTATE_DOWN)) {
                         qDebug() << "CONSOLE:Failed to change start of client in database!";
                     }
                 }
@@ -309,7 +316,7 @@ CmdMain::startClient(int clientIndex, bool force)
                     QString password = getNewValue("", prompt);
 
                     while ( true ) {
-                        if (!m_ioDB->getProcessState(processName, &state)) {
+                        if (!m_cmdOperation.m_ioDB->getProcessState(processName, &state)) {
                             // Can't get the process state, what to do
                         }
                         if (state.state != PROCSTATE_RUNNING) {
@@ -375,7 +382,7 @@ CmdMain::pauseClient(int clientIndex)
         WickrBotProcessState state;
         QString processName = client->getProcessName();
 
-        if (m_ioDB->getProcessState(processName, &state)) {
+        if (m_cmdOperation.m_ioDB->getProcessState(processName, &state)) {
             if (state.ipc_port == 0) {
                 qDebug() << "CONSOLE:Client does not have an IPC port defined, cannot pause!";
             } else if (state.state == PROCSTATE_RUNNING) {
@@ -406,7 +413,7 @@ bool
 CmdMain::sendClientServerCmd(const QString& cmd)
 {
     WickrBotProcessState state;
-    if (!m_ioDB->getProcessState(WBIO_CLIENTSERVER_TARGET, &state)) {
+    if (!m_cmdOperation.m_ioDB->getProcessState(WBIO_CLIENTSERVER_TARGET, &state)) {
         return false;
     }
     return sendClientCmd(state.ipc_port, cmd);
@@ -469,7 +476,7 @@ CmdMain::configClient(int clientIndex)
         appSetting.type = DB_APPSETTINGS_TYPE_MSGRECVCALLBACK;
         appSetting.id = 0;
 
-        if (!m_ioDB->getAppSetting(client->id, DB_APPSETTINGS_TYPE_MSGRECVCALLBACK, &appSetting)) {
+        if (!m_cmdOperation.m_ioDB->getAppSetting(client->id, DB_APPSETTINGS_TYPE_MSGRECVCALLBACK, &appSetting)) {
             appSetting.clientID = client->id;
             bCallbackExists = false;
             qDebug() << "CONSOLE:No message callback plugin setup";
@@ -487,7 +494,7 @@ CmdMain::configClient(int clientIndex)
 
             appSetting.value = newCBack;
 
-            if (m_ioDB->updateAppSetting(&appSetting)) {
+            if (m_cmdOperation.m_ioDB->updateAppSetting(&appSetting)) {
 
             } else {
 
@@ -497,7 +504,7 @@ CmdMain::configClient(int clientIndex)
             if (bCallbackExists) {
                 QString temp = getNewValue("n", tr("Are you sure you want to remove the plugin (y or n)?"));
                 if (temp.toLower().startsWith("y")) {
-                    m_ioDB->deleteAppSetting(appSetting.id);
+                    m_cmdOperation.m_ioDB->deleteAppSetting(appSetting.id);
                     appSetting.value.clear();
                 }
             }
@@ -525,8 +532,8 @@ CmdMain::deleteClient(int clientIndex)
         if (response.toLower() == "y" || response.toLower() == "yes") {
             QString processName = client->getProcessName();
 
-            m_ioDB->deleteProcessState(processName);
-            m_ioDB->deleteClientUsingName(client->name);
+            m_cmdOperation.m_ioDB->deleteProcessState(processName);
+            m_cmdOperation.m_ioDB->deleteClientUsingName(client->name);
 
             // Remove the files associated with the client
             QString clientDirName = QString(WBIO_CLIENT_WORKINGDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);

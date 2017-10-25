@@ -1,6 +1,8 @@
 #ifndef WICKRIOCLIENTRUNTIME_H
 #define WICKRIOCLIENTRUNTIME_H
 
+#include <QObject>
+
 #include "wickrIOServiceBase.h"
 #include "wickrIOCallbackService.h"
 #include "wickrIOFileDownloadService.h"
@@ -16,8 +18,9 @@ class WickrIOServiceBase;
  * @brief The WickrIOClientRuntime class
  *
  */
-class WickrIOClientRuntime
+class WickrIOClientRuntime : public QObject
 {
+    Q_OBJECT
 
 public:
     // Destructor
@@ -53,6 +56,7 @@ public:
      * Watchdog Service API
      */
     static WickrIOWatchdogService* wdSvc();
+    static void wdSetShutdownState(int procState);
 
 
     // Component accessors
@@ -94,6 +98,7 @@ private:
     static WickrIOClientRuntime& get();
 
     Q_DISABLE_COPY(WickrIOClientRuntime)
+
 };
 
 #endif // WICKRIOCLIENTRUNTIME_H

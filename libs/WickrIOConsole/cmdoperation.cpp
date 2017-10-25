@@ -6,12 +6,14 @@
 
 #include "cmdoperation.h"
 #include "wickrIOCommon.h"
-#include "server_common.h"
+#include "wickrIOServerCommon.h"
 #include "wickrbotsettings.h"
 #include "consoleserver.h"
-#include "wickrioconsoleclienthandler.h"
+#include "wickrIOConsoleClientHandler.h"
 
-CmdOperation::CmdOperation(QObject *parent) : QObject(parent)
+CmdOperation::CmdOperation(OperationData* operation, QObject *parent) :
+    QObject(parent),
+    m_operation(operation)
 {
     m_appNm = WBIO_CLIENTSERVER_TARGET;
     m_settings = WBIOServerCommon::getSettings();
@@ -29,6 +31,14 @@ CmdOperation::CmdOperation(QObject *parent) : QObject(parent)
 bool CmdOperation::openDatabase()
 {
     bool retVal = false;
+
+    // If the IODatabase pointer is null but we have an m_operation then use that database
+    if (m_ioDB == nullptr) {
+        if (m_operation != nullptr && m_operation->m_botDB) {
+            // Set a pointer to the WickrIO Database, in the parent class
+            m_ioDB = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
+        }
+    }
 
     if (m_ioDB != nullptr && m_ioDB->isOpen()) {
         retVal = true;

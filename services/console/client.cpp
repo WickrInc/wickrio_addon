@@ -9,13 +9,13 @@
 #include "wickrbotmessagebox.h"
 #include "wickrbotsettings.h"
 #include "consoleserver.h"
-#include "wickrioconsoleclienthandler.h"
+#include "wickrIOConsoleClientHandler.h"
 #include "wickrIOAppSettings.h"
 #include "wickrioconsoleuser.h"
 
 #include "ui_console_dialog.h"
 #include "wickrIOCommon.h"
-#include "server_common.h"
+#include "wickrIOServerCommon.h"
 
 extern bool isVERSIONDEBUG();
 
@@ -53,10 +53,13 @@ Client::Client(QWidget *parent) :
 
     connect(ui->serverStartButton, &QPushButton::clicked, [=]() {
         QString message;
+        bool start;
         if (m_consoleServer->isRunning(WBIO_CLIENTSERVER_TARGET)) {
             message = tr("Stopping client server...");
+            start = false;
         } else {
             message = tr("Starting client server...");
+            start = true;
         }
         QProgressDialog progress(this);
         progress.setWindowModality(Qt::WindowModal);
@@ -67,7 +70,7 @@ Client::Client(QWidget *parent) :
         progress.setMinimumDuration(0);
         progress.show();
 
-        m_consoleServer->toggleState(WBIO_CLIENTSERVER_TARGET);
+        m_consoleServer->setState(start, WBIO_CLIENTSERVER_TARGET);
 
         progress.cancel();
 
@@ -355,9 +358,12 @@ Client::setupConsoleArea()
 
     connect(ui->consoleServerStartButton, &QPushButton::clicked, [=]() {
         QString message;
+        bool start;
         if (m_consoleServer->isRunning()) {
+            start = false;
             message = tr("Stopping console server...");
         } else {
+            start = true;
             message = tr("Starting console server...");
         }
         QProgressDialog progress(this);
@@ -369,7 +375,7 @@ Client::setupConsoleArea()
         progress.setMinimumDuration(0);
         progress.show();
 
-        m_consoleServer->toggleState();
+        m_consoleServer->setState(start);
 
         progress.cancel();
 

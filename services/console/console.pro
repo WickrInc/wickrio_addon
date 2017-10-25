@@ -6,10 +6,41 @@ COMMON = $${DEPTH}/shared/common
 #
 include(../services.pri)
 
-#
-# Include the WickrIO common defines files
-#
-include($${COMMON}/common_defines.pri)
+wickr_messenger {
+    DEFINES += WICKR_MESSENGER=1
+}
+else:wickr_blackout {
+    DEFINES += WICKR_BLACKOUT=1
+}
+else:wickr_enterprise {
+    DEFINES += WICKR_ENTERPRISE=1
+}
+else:wickr_scif {
+    DEFINES += WICKR_SCIF=1
+}
+
+
+CONFIG(release,release|debug) {
+    wickr_beta {
+        DEFINES += WICKR_BETA
+    }
+    else {
+        DEFINES += WICKR_PRODUCTION
+    }
+}
+else {
+    wickr_beta {
+        DEFINES += WICKR_BETA
+    }
+    else:wickr_qa {
+        DEFINES += WICKR_QA
+    }
+    else {
+        DEFINES += WICKR_ALPHA
+    }
+
+    DEFINES += WICKR_DEBUG
+}
 
 #
 # Include the WickrIO common files
@@ -56,6 +87,11 @@ SERVER_COMMON=../common
 INCLUDEPATH += $${SERVER_COMMON}
 
 #
+# Include the Wickr Console library
+#
+include($${DEPTH}/libs/WickrIOConsole/WickrIOConsole.pri)
+
+#
 # Include the Wickr library
 #
 include($${DEPTH}/libs/WickrIOLib/WickrIOLib.pri)
@@ -71,18 +107,8 @@ QT += sql
 
 HEADERS += \
     $${COMMON}/cmdbase.h \
-    $${SERVER_COMMON}/server_common.h \
-    $${SERVER_COMMON}/wickrioconsoleclienthandler.h \
     client.h \
     addclientdialog.h \
-    webserver.h \
-    cmdadvanced.h \
-    cmdclient.h \
-    cmdconsole.h \
-    cmdmain.h \
-    cmdoperation.h \
-    cmdserver.h \
-    consoleserver.h \
     advanceddialog.h \
     addconsoleuserdialog.h \
     configureconsoleserverdialog.h \
@@ -90,19 +116,9 @@ HEADERS += \
 
 SOURCES += \
     $${COMMON}/cmdbase.cpp \
-    $${SERVER_COMMON}/server_common.cpp \
-    $${SERVER_COMMON}/wickrioconsoleclienthandler.cpp \
     client.cpp \
     main.cpp \
     addclientdialog.cpp \
-    webserver.cpp \
-    cmdadvanced.cpp \
-    cmdclient.cpp \
-    cmdconsole.cpp \
-    cmdmain.cpp \
-    cmdoperation.cpp \
-    cmdserver.cpp \
-    consoleserver.cpp \
     advanceddialog.cpp \
     addconsoleuserdialog.cpp \
     configureconsoleserverdialog.cpp \

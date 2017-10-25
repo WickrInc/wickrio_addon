@@ -18,6 +18,7 @@
 #include "messaging/wickrSecureRoomMgr.h"
 #include "common/wickrRuntime.h"
 
+#include "wickrIOClientRuntime.h"
 #include "clientconfigurationinfo.h"
 #include "clientversioninfo.h"
 #include "wickrIOCommon.h"
@@ -129,7 +130,6 @@ WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
             qDebug() << "WickrIOEClientMain(): SWITCHBOARD, MESSAGE, TASK SERVICES - Not initialized.";
     }
 
-
     WickrCore::WickrSecureRoomMgr *roomMgr = WickrCore::WickrRuntime::getRoomMgr();
     if (roomMgr) {
         // Secure Room Convo Manager (SIGNALS)
@@ -143,6 +143,16 @@ WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
                 this,
                 &wickrQuickMain::slotActivateLandingPage);
 #endif
+    }
+
+    // Attached to the Watchdog service signal(s)
+    WickrIOWatchdogService *wdSvc = WickrIOClientRuntime::wdSvc();
+    if (wdSvc != nullptr) {
+        connect(wdSvc, &WickrIOWatchdogService::signalServiceNotLoggedIn,
+                this, &WickrIOEClientMain::slotServiceNotLoggedIn,
+                Qt::QueuedConnection);
+    } else {
+        qDebug() << "WickrIOEClientMain(): Watchdog Service not initialized!";
     }
 }
 
@@ -407,12 +417,31 @@ void WickrIOEClientMain::slotDoTimerWork()
 }
 
 /**
+ * @brief WickrIOClientRuntime::slotServiceNotLoggedIn
+ * This slot is called when a thread has been found to be unlogged
+ * in for longer than a good period, so we will stop the client to
+ * refresh things.
+ */
+void
+WickrIOEClientMain::slotServiceNotLoggedIn()
+{
+    sendConsoleMsg(WBIO_IPCMSGS_STATE, "stopping");
+
+    stopAndExit(PROCSTATE_DOWN);
+}
+
+
+
+/**
  * @brief WickrIOEClientMain::stopAndExit
  * This is called to exit the application. The application state is put into the input
  * state, in the database process_state table.
  */
 void WickrIOEClientMain::stopAndExit(int procState)
 {
+    // Set the process state for after the shutdown
+    WickrIOClientRuntime::wdSetShutdownState(procState);
+
     // logout of switchboard service
     WickrCore::WickrRuntime::swbSvcLogout();
 

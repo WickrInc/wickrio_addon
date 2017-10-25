@@ -9,7 +9,7 @@
 #include <wickrbotutils.h>
 #include "wickrbotsettings.h"
 #include "consoleserverservice.h"
-#include "server_common.h"
+#include "wickrIOServerCommon.h"
 #include "wickrIOCommon.h"
 #include "wickriodatabase.h"
 

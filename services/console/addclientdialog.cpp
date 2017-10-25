@@ -3,8 +3,8 @@
 #include "addclientdialog.h"
 #include "ui_addclientdialog.h"
 #include "wickrbotmessagebox.h"
-#include "wickrioconsoleclienthandler.h"
-#include "server_common.h"
+#include "wickrIOConsoleClientHandler.h"
+#include "wickrIOServerCommon.h"
 
 AddClientDialog::AddClientDialog(WickrIOClientDatabase *ioDB, WickrIOSSLSettings *sslSettings, WickrIOClients *client, QWidget *parent) :
     QDialog(parent),

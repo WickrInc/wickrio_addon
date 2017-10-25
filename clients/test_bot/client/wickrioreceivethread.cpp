@@ -200,7 +200,7 @@ WickrIOReceiveThread::processMessage(WickrDBObject *item)
                 QJsonDocument saveDoc(jsonObject);
 
                 if (mclass != MsgClass_File) {
-                    int msgID = db->insertMessage(msg->getMsgTimestamp(), m_operation->m_client->id, saveDoc.toJson(), (int)msg->getMsgClass(), 0);
+                    int msgID = db->insertMessage(msg->getMsgTimestamp(), m_operation->m_client->id, saveDoc.toJson(QJsonDocument::Compact), (int)msg->getMsgClass(), 0);
                     WickrIOClientRuntime::cbSvcMessagesPending();
                 } else {
 #if 0

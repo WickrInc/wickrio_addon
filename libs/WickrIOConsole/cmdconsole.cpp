@@ -8,7 +8,7 @@
 #include "wickrIOCommon.h"
 #include "wickrbotsettings.h"
 #include "consoleserver.h"
-#include "wickrioconsoleclienthandler.h"
+#include "wickrIOConsoleClientHandler.h"
 
 CmdConsole::CmdConsole(CmdOperation *operation) :
     m_operation(operation)
@@ -113,9 +113,9 @@ bool CmdConsole::runCommands()
             } else if (cmd == "status") {
                 status();
             } else if (cmd == "start") {
-                m_consoleServer->toggleState();
+                m_consoleServer->setState(true);
             } else if (cmd == "stop") {
-                m_consoleServer->toggleState();
+                m_consoleServer->setState(false);
             } else if (cmd == "quit") {
                 return false;
             } else {

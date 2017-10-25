@@ -12,7 +12,8 @@
 WickrIOWatchdogService::WickrIOWatchdogService() :
     m_lock(QReadWriteLock::Recursive),
     m_state(WickrServiceState::SERVICE_UNINITIALIZED),
-    m_wdThread(nullptr)
+    m_wdThread(nullptr),
+    m_shutdownMode(PROCSTATE_PAUSED)    // Default shutdown proc state is Paused
 {
     qRegisterMetaType<WickrServiceState>("WickrServiceState");
     qRegisterMetaType<WickrApplicationState>("WickrApplicationState");
@@ -44,6 +45,10 @@ void WickrIOWatchdogService::startThreads()
     // Allocate threads
     m_wdThread = new WickrIOWatchdogThread(&m_thread, this);
 
+    // Emit signals from the watchdog thread
+    connect(m_wdThread, &WickrIOWatchdogThread::signalServiceNotLoggedIn,
+            this, &WickrIOWatchdogService::signalServiceNotLoggedIn);
+
     // Perform startup here, creating and configuring ressources.
     m_thread.start();
 }
@@ -70,7 +75,7 @@ void WickrIOWatchdogService::shutdown()
 {
     QEventLoop wait_loop;
     connect(m_wdThread, &WickrIOWatchdogThread::signalNotRunning, &wait_loop, &QEventLoop::quit);
-    emit signalShutdown();
+    emit signalShutdown(m_shutdownMode);
 
     qDebug() << "Watchdog Service shutdown: starting to wait";
     // Wait for the thread to signal it is done
@@ -144,6 +149,15 @@ WickrIOWatchdogThread::slotTimerExpire()
 {
     if (m_running) {
         doStatusUpdate(PROCSTATE_RUNNING, true);
+
+        // Check the Switchboard thread state
+        WickrSwitchboardService* swbSvc = WickrCore::WickrRuntime::swbSvc();
+        if (swbSvc != nullptr) {
+            if (swbSvc->downSeconds() > 60) {
+                qDebug() << "The SwitchBoard system is down for more than 60 seconds";
+                emit signalServiceNotLoggedIn();
+            }
+        }
     }
 }
 
@@ -164,12 +178,12 @@ WickrIOWatchdogThread::doStatusUpdate(int state, bool force)
 }
 
 void
-WickrIOWatchdogThread::slotShutdown()
+WickrIOWatchdogThread::slotShutdown(int procState)
 {
     if (m_timer.isActive())
         m_timer.stop();
 
-    doStatusUpdate(PROCSTATE_PAUSED, false);
+    doStatusUpdate(procState, false);
     m_running = false;
 
     emit signalNotRunning();

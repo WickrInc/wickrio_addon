@@ -7,10 +7,41 @@ CONSOLESRC = ../console
 #
 include(../services.pri)
 
-#
-# Include the WickrIO common defines files
-#
-include($${COMMON}/common_defines.pri)
+wickr_messenger {
+    DEFINES += WICKR_MESSENGER=1
+}
+else:wickr_blackout {
+    DEFINES += WICKR_BLACKOUT=1
+}
+else:wickr_enterprise {
+    DEFINES += WICKR_ENTERPRISE=1
+}
+else:wickr_scif {
+    DEFINES += WICKR_SCIF=1
+}
+
+
+CONFIG(release,release|debug) {
+    wickr_beta {
+        DEFINES += WICKR_BETA
+    }
+    else {
+        DEFINES += WICKR_PRODUCTION
+    }
+}
+else {
+    wickr_beta {
+        DEFINES += WICKR_BETA
+    }
+    else:wickr_qa {
+        DEFINES += WICKR_QA
+    }
+    else {
+        DEFINES += WICKR_ALPHA
+    }
+
+    DEFINES += WICKR_DEBUG
+}
 
 #
 # Include the WickrIO common files
@@ -57,14 +88,14 @@ SERVER_COMMON=../common
 INCLUDEPATH += $${SERVER_COMMON}
 
 #
+# Include the Wickr Console library
+#
+include($${DEPTH}/libs/WickrIOConsole/WickrIOConsole.pri)
+
+#
 # Include the Wickr library
 #
 include($${DEPTH}/libs/WickrIOLib/WickrIOLib.pri)
-
-#
-# Include the Wickr GUI library
-#
-#include($${DEPTH}/libs/WickrIOGUI/WickrIOGUI.pri)
 
 INCLUDEPATH += $${CONSOLESRC}
 
@@ -73,30 +104,10 @@ QT += network
 QT += sql
 
 HEADERS += \
-    $${COMMON}/cmdbase.h \
-    $${SERVER_COMMON}/server_common.h \
-    $${SERVER_COMMON}/wickrioconsoleclienthandler.h \
-    $${CONSOLESRC}/webserver.h \
-    $${CONSOLESRC}/cmdadvanced.h \
-    $${CONSOLESRC}/cmdclient.h \
-    $${CONSOLESRC}/cmdconsole.h \
-    $${CONSOLESRC}/cmdmain.h \
-    $${CONSOLESRC}/cmdoperation.h \
-    $${CONSOLESRC}/cmdserver.h \
-    $${CONSOLESRC}/consoleserver.h
+    $${COMMON}/cmdbase.h
 
 SOURCES += \
     $${COMMON}/cmdbase.cpp \
-    $${SERVER_COMMON}/server_common.cpp \
-    $${SERVER_COMMON}/wickrioconsoleclienthandler.cpp \
-    $${CONSOLESRC}/webserver.cpp \
-    $${CONSOLESRC}/cmdadvanced.cpp \
-    $${CONSOLESRC}/cmdclient.cpp \
-    $${CONSOLESRC}/cmdconsole.cpp \
-    $${CONSOLESRC}/cmdmain.cpp \
-    $${CONSOLESRC}/cmdoperation.cpp \
-    $${CONSOLESRC}/cmdserver.cpp \
-    $${CONSOLESRC}/consoleserver.cpp \
     main.cpp
 
 TEMPLATE = app

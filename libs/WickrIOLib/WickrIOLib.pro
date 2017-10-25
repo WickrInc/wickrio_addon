@@ -1,6 +1,7 @@
 # Build this project to generate a shared library (*.dll or *.so).
 
 DEPTH = ../..
+COMMON = shared/common
 
 CONFIG += c++11
 
@@ -13,6 +14,42 @@ QT += sql
 QT += network
 
 VERSION = 1.0.1
+
+wickr_messenger {
+    DEFINES += WICKR_MESSENGER=1
+}
+else:wickr_blackout {
+    DEFINES += WICKR_BLACKOUT=1
+}
+else:wickr_enterprise {
+    DEFINES += WICKR_ENTERPRISE=1
+}
+else:wickr_scif {
+    DEFINES += WICKR_SCIF=1
+}
+
+
+CONFIG(release,release|debug) {
+    wickr_beta {
+        DEFINES += WICKR_BETA
+    }
+    else {
+        DEFINES += WICKR_PRODUCTION
+    }
+}
+else {
+    wickr_beta {
+        DEFINES += WICKR_BETA
+    }
+    else:wickr_qa {
+        DEFINES += WICKR_QA
+    }
+    else {
+        DEFINES += WICKR_ALPHA
+    }
+
+    DEFINES += WICKR_DEBUG
+}
 
 mac {
 #   QMAKE_MAC_SDK = macosx10.10
@@ -51,6 +88,7 @@ HEADERS += \
     wickrIOCommon.h \
     wickrIOIPCService.h \
     wickrIOParsers.h \
+    wickrIOServerCommon.h \
     wickrbotactioncache.h \
     wickrbotattachmentcache.h \
     wickrbotclients.h \
@@ -74,6 +112,7 @@ SOURCES += \
     wickrIOBootstrap.cpp \
     wickrIOCommon.cpp \
     wickrIOIPCService.cpp \
+    wickrIOServerCommon.cpp \
     wickrbotdatabase.cpp \
     wickrbotprocessstate.cpp \
     wickrbotjsondata.cpp \

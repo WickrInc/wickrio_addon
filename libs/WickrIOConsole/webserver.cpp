@@ -5,7 +5,7 @@
 #include "wickrIOCommon.h"
 #include "wickrbotutils.h"
 #include "wickrbotsettings.h"
-#include "server_common.h"
+#include "wickrIOServerCommon.h"
 
 #include "webserver.h"
 

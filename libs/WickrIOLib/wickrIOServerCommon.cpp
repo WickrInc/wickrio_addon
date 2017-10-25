@@ -3,7 +3,7 @@
 #include <QDebug>
 
 #include "wickrIOCommon.h"
-#include "server_common.h"
+#include "wickrIOServerCommon.h"
 #include "wickrbotsettings.h"
 
 bool WBIOServerCommon::m_initialized = false;
@@ -91,7 +91,7 @@ WBIOServerCommon::initClientApps()
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botAlpha", "compliance_provAlpha", nullptr,               true));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botBeta",  "compliance_provBeta",  nullptr,               true));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botQA",    "compliance_provQA",    nullptr,               true));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_bot",      "compliance_prov",      nullptr,               false));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_bot",      "compliance_prov",      nullptr,               true));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_botAlpha",    nullptr,                "welcome_parserAlpha", false));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_botBeta",     nullptr,                "welcome_parserBeta",  false));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_botQA",       nullptr,                "welcome_parserQA",    false));

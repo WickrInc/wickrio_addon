@@ -5,7 +5,7 @@
 #include "ui_configureconsoleserverdialog.h"
 #include "wickrbotmessagebox.h"
 
-#include "wickrioconsoleclienthandler.h"
+#include "wickrIOConsoleClientHandler.h"
 
 ConfigureConsoleServerDialog::ConfigureConsoleServerDialog(QSettings *settings, WickrIOSSLSettings *sslSettings, QWidget *parent) :
     QDialog(parent),

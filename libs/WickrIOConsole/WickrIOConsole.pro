@@ -1,14 +1,16 @@
 # Build this project to generate a shared library (*.dll or *.so).
 
 DEPTH = ../..
-TARGET = WickrIOGUI
+
+CONFIG += c++11
+
+TARGET = WickrIOConsole
 TEMPLATE = lib
 
-QT += gui widgets
-QT -= sql
-QT -= network
-
-CONFIG += qt
+QT += multimediawidgets
+QT -= gui
+QT += sql
+QT += network
 
 VERSION = 1.0.1
 
@@ -50,18 +52,17 @@ else {
 
 mac {
 #   QMAKE_MAC_SDK = macosx10.10
-   equals(QT_MINOR_VERSION, 4) {  #assuming major version is 5 and mixed building with 5.4.2 and 5.5.1
-       QMAKE_CXXFLAGS += -std=c++11
-   }
+   QMAKE_CXXFLAGS += -std=c++11
    QMAKE_LFLAGS_SONAME  = -Wl,-install_name,/usr/local/lib/
 }
 
 linux-g++* {
     CONFIG += staticlib
+    INCLUDEPATH += $$DEPTH/wickr-sdk/platforms/linux/include
 }
 
 win32 {
-   DEFINES += WICKRIOGUILIB_EXPORT
+   DEFINES += WICKRCONSOLELIB_EXPORT
 }
 
 # Windows and Unix get the suffix "d" to indicate a debug version of the library.
@@ -72,12 +73,35 @@ CONFIG(debug, debug|release) {
     unix:!mac:  TARGET = $$join(TARGET,,,d)
 }
 
+INCLUDEPATH += $$DEPTH/wickr-sdk/export
+INCLUDEPATH += $$DEPTH/wickr-sdk/src
+INCLUDEPATH += $$DEPTH/wickr-sdk/export/Wickr
+INCLUDEPATH += $$DEPTH/wickr-sdk/libs/WickrProto
+
 INCLUDEPATH += $$PWD
+INCLUDEPATH += ../WickrIOLib
+INCLUDEPATH += $$DEPTH/shared/common
+INCLUDEPATH += $$DEPTH/services/common
 DEPENDPATH += $$PWD
 
 HEADERS += \
-    wickrbotmessagebox.h \
-    wickrbotguilib.h
+    cmdadvanced.h \
+    cmdclient.h \
+    cmdconsole.h \
+    cmdmain.h \
+    cmdoperation.h \
+    cmdserver.h \
+    consoleserver.h \
+    webserver.h \
+    wickrIOConsoleClientHandler.h
 
 SOURCES += \
-    wickrbotmessagebox.cpp
+    cmdadvanced.cpp \
+    cmdclient.cpp \
+    cmdconsole.cpp \
+    cmdmain.cpp \
+    cmdoperation.cpp \
+    cmdserver.cpp \
+    consoleserver.cpp \
+    webserver.cpp \
+    wickrIOConsoleClientHandler.cpp

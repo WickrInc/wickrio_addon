@@ -201,6 +201,11 @@ bool WickrIOReceiverMgr::dispatch(WickrCore::WickrInbox *msg)
     QString statusText = msgDate.toString( QLocale::system().dateTimeFormat(QLocale::ShortFormat));
     jsonObject.insert(APIJSON_MSGTIME, statusText);
 
+    // Message micro seconds
+    long usec = msg->getMsgUsec();
+    QString msg_ts = QString("%1.%2").arg(timestamp).arg(usec);
+    jsonObject.insert(APIJSON_MSG_TS, msg_ts);
+
 
 #if 0
     // NOT SUPPORTED RIGHT NOW
@@ -248,7 +253,7 @@ bool WickrIOReceiverMgr::dispatch(WickrCore::WickrInbox *msg)
     if (! extendProcessing && ! failedProcessing) {
         QJsonDocument saveDoc(jsonObject);
 
-        int msgID = db->insertMessage(msg->getMsgTimestamp(), m_operation->m_client->id, saveDoc.toJson(), (int)msg->getMsgClass(), 0);
+        int msgID = db->insertMessage(msg->getMsgTimestamp(), m_operation->m_client->id, saveDoc.toJson(QJsonDocument::Compact), (int)msg->getMsgClass(), 0);
         WickrIOClientRuntime::cbSvcMessagesPending();
     }
 

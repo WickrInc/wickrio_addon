@@ -4,9 +4,9 @@
 #include <QString>
 #include <QNetworkInterface>
 
-#include "wickrioconsoleclienthandler.h"
+#include "wickrIOConsoleClientHandler.h"
 #include "wickrIOCommon.h"
-#include "server_common.h"
+#include "wickrIOServerCommon.h"
 #include "wickrbotsettings.h"
 #include "wickrbotprocessstate.h"
 #include "wickrbotutils.h"
