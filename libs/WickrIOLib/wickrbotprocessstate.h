@@ -22,8 +22,9 @@ public:
     int ipc_port;
 };
 
-#define PROCSTATE_PAUSED    2
-#define PROCSTATE_RUNNING   1
-#define PROCSTATE_DOWN      0
+#define PROCSTATE_RESET     100     // Client is to be reset, action as opposed to a state
+#define PROCSTATE_PAUSED    2       // Client is paused, or pause a client action
+#define PROCSTATE_RUNNING   1       // Client is running
+#define PROCSTATE_DOWN      0       // Client is down, initial state to start a client
 
 #endif // WICKRBOTPROCESSSTATE_H

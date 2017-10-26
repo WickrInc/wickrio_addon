@@ -14,6 +14,7 @@
 #define APIPARAM_STATE          "state"
 #define APIPARAM_START          "start"
 #define APIPARAM_PAUSE          "pause"
+#define APIPARAM_RESET          "reset"
 #define APIPARAM_COUNT          "count"
 #define APIPARAM_NAME           "name"
 #define APIPARAM_USER           "user"
@@ -96,6 +97,7 @@
 #define APIJSON_STATID_ERRSTX   "sent_errors"
 #define APIJSON_STATID_ERRSRX   "recv_errors"
 #define APIJSON_STATID_PENDING  "pending_messages"
+#define APIJSON_STATID_PNDCBOUT "pending_callback_messages"
 #define APIJSON_STATID_MSGCNT   "message_count"
 
 #define APIJSON_KEYVER_HEADER   "keyverify"

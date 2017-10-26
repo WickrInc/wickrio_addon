@@ -77,6 +77,7 @@ public:
     QList<int> getMessageIDs(int clientID);
     bool deleteMessage(int id);
     bool messageHasAttachments(int id);
+    int getClientsOutMessagesCount(int clientID);
 
     bool insertAttachment(int messageID, const QString &filename, const QString &realFilename);
     QList<WickrIODBAttachment *> getAttachments(int messageID);

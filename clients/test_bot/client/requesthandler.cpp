@@ -784,6 +784,7 @@ RequestHandler::getStatistics(const QString& apiKey, stefanfrings::HttpResponse&
         WickrBotClients *client = db->getClientUsingApiKey(apiKey);
         if (client != NULL) {
             statValues.insert(APIJSON_STATID_PENDING, db->getClientsActionCount(client->id));
+            statValues.insert(APIJSON_STATID_PNDCBOUT, db->getClientsOutMessagesCount(client->id));
 
             QList<WickrBotStatistics *> stats;
             stats = db->getClientStatistics(client->id);
