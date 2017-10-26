@@ -325,6 +325,12 @@ perftests[3]->stop();
                             // get the "hh:mm ap" format based on locale
                             QString statusText = msgDate.toString( QLocale::system().dateTimeFormat(QLocale::ShortFormat));
                             messageValue.insert(APIJSON_MSGTIME, statusText);
+
+                            // Message micro seconds
+                            long usec = msg->getMsgUsec();
+                            QString msg_ts = QString("%1.%2").arg(timestamp).arg(usec);
+                            messageValue.insert(APIJSON_MSG_TS, msg_ts);
+
                             messageArrayValue.append(messageValue);
                         }
 

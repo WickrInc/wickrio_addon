@@ -579,9 +579,14 @@ CmdHandler::updateClient(WickrIOConsoleUser *pCUser, const QString& clientID, st
 
     // User can only change the state to either pause or start
     if (paramState.toLower() == APIPARAM_PAUSE) {
+        // Pause the client
         state = PROCSTATE_PAUSED;
     } else if (paramState.toLower() == APIPARAM_START) {
+        // Start the client
         state = PROCSTATE_RUNNING;
+    } else if (paramState.toLower() == APIPARAM_RESET) {
+        // Reset the client
+        state = PROCSTATE_RESET;
     } else {
         sendFailure(400, "Invalid state value", response);
         return;
@@ -609,6 +614,75 @@ CmdHandler::updateClient(WickrIOConsoleUser *pCUser, const QString& clientID, st
                 success = true;
             } else {
                 sendFailure(409, "Failed to start client", response);
+            }
+        } else if (state == PROCSTATE_RESET) {
+            bool doNextStep = true;
+
+            // Get the process state for this client
+            WickrBotProcessState state;
+            QString processName = WBIOServerCommon::getClientProcessName(client);
+            int savedState;
+
+            if (m_ioDB->getProcessState(processName, &state)) {
+                savedState = state.state;
+                if (savedState == PROCSTATE_RUNNING) {
+                    // Client is starting, so it should be paused first
+                    // For now do not support reset of running client
+                    sendFailure(409, "Client is running, stop the client first!", response);
+                    doNextStep = false;
+                } else if (savedState == PROCSTATE_DOWN) {
+                    // The client state is DOWN, this is abnormal, usuall means it is starting up
+                    // So we should pause the client, assume it is not running, then reset and start it up
+                    // Set the state of the client process to paused
+                    if (! m_ioDB->updateProcessState(processName, 0, PROCSTATE_PAUSED)) {
+                        sendFailure(409, "Could not set Client state to paused!", response);
+                        doNextStep = false;
+                    }
+                } else if (savedState == PROCSTATE_PAUSED) {
+                    // Client is already paused
+                } else {
+                    sendFailure(409, "Client in unknown state!", response);
+                    doNextStep = false;
+                }
+
+            } else {
+                sendFailure(409, "Cannot get Client state!", response);
+                doNextStep = false;
+            }
+
+            // Time to reset, which means delete the client's database files
+            if (doNextStep) {
+                QString clientDbDir = QString("%1/clients/%2/client").arg(m_operation->databaseDir).arg(client->name);
+                QDir clientDir(clientDbDir);
+                QStringList fileList = clientDir.entryList(QDir::Files);
+
+                QStringList excludeList;
+                excludeList.append("settings");
+                excludeList.append("bootstrap");
+                excludeList.append("ds.wic");
+
+                foreach (QString s, excludeList) {
+                    int index = fileList.indexOf(s);
+                    if (index > -1)
+                        fileList.takeAt(index);
+                }
+
+                foreach (const QString& fileName, fileList)
+                {
+                    qDebug().noquote().nospace() << "Deleting " << fileName;
+#if 1
+                    QString fullFilePathname = clientDbDir + "/" + fileName;
+                    QFile *f = new QFile(fullFilePathname);
+                    if (!f->remove()) {
+                        qDebug().noquote().nospace() << "Failed to delete " << fullFilePathname;
+                    }
+                    f->deleteLater();
+#endif
+                }
+
+                // Put the client to a specific state based on where we started
+                if (savedState == PROCSTATE_DOWN) {
+                }
             }
         }
     }

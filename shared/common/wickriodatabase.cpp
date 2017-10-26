@@ -1175,6 +1175,29 @@ WickrIOClientDatabase::deleteMessage(int id) {
     return (numRows > 0);
 }
 
+int
+WickrIOClientDatabase::getClientsOutMessagesCount(int clientID)
+{
+    int retVal = 0;
+
+    if (!initialized)
+        return retVal;
+
+    QString queryString = "SELECT count(id) FROM messages WHERE client_id=?";
+    QSqlQuery *query = new QSqlQuery(m_db);
+    query->prepare(queryString);
+    query->bindValue(0, clientID);
+
+    if ( query->exec()) {
+        if (query->next()) {
+            retVal = query->value(0).toInt();
+        }
+    }
+    query->finish();
+    delete query;
+    return retVal;
+}
+
 /****************************************************************************************************************
  * Message attachments (attachments) handler functions
  ***************************************************************************************************************/
