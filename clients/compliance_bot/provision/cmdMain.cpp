@@ -60,7 +60,7 @@ CmdMain::runCommands()
 
     while (true) {
         updateBotList();
-        qDebug() << "CONSOLE:Enter command [list, add, config, start, stop]:";
+        qDebug() << "CONSOLE:Enter command [list, add, config, server, start, stop, quit]:";
         QString line = input.readLine();
 
         line = line.trimmed();
@@ -142,6 +142,7 @@ CmdMain::runCommands()
                 qDebug() << "CONSOLE:  config <index> - configure a client";
                 qDebug() << "CONSOLE:  delete <index> - delete a client";
                 qDebug() << "CONSOLE:  reset <index>  - reset a client";
+                qDebug() << "CONSOLE:  server         - show server commands";
                 qDebug() << "CONSOLE:  start <index>  - start a specific client";
                 qDebug() << "CONSOLE:  stop <index>   - pause a running client";
                 qDebug() << "CONSOLE:  quit           - exit the program";
