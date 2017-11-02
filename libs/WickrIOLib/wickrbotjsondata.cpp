@@ -325,6 +325,10 @@ bool WickrBotJsonData::processSendMessageJsonDoc(const QJsonObject &operationObj
                 } else if (arrayObject.contains("name")) {
                     QJsonValue nameobj = arrayObject["name"];
                     QString name = nameobj.toString();
+                    if (name.length() == 0) {
+                        m_operation->error("Received 0 length user!");
+                        return false;
+                    }
                     m_userNames.append(name);
                     if (m_operation->debug)
                         qDebug() << "User" << i+1 << name;
@@ -334,10 +338,14 @@ bool WickrBotJsonData::processSendMessageJsonDoc(const QJsonObject &operationObj
     } else if (operationObject.contains("vgroupid")) {
         value = operationObject["vgroupid"];
         m_vgroupid = value.toString();
+        if (m_vgroupid.length() == 0) {
+            m_operation->error("Received 0 length VGroupID!");
+            return false;
+        }
         m_userNames.clear();
         m_userIDs.clear();
     } else {
-        m_operation->error("Does not contain users!");
+        m_operation->error("Does not contain users or vgroupid!");
         return false;
     }
 
@@ -357,6 +365,10 @@ bool WickrBotJsonData::processSendMessageJsonDoc(const QJsonObject &operationObj
     if (operationObject.contains("message")) {
         value = operationObject["message"];
         m_message = value.toString();
+        if (m_vgroupid.length() == 0) {
+            m_operation->error("Received 0 length message!");
+            return false;
+        }
         if (m_operation->debug)
             qDebug() << "Message:" << m_message;
     }
