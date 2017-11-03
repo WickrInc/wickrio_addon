@@ -1,1 +1,6 @@
-Release Notes from v4.0-release to v4.4.1-5:
+Release Notes from v4.0-release to v4.9.5-3:
+  * Changes to fix issues with Wickr IO
+  * Fixes for uber
+  * Integrate the 4.9 changes from desktop other major changes as well
+  * Cleanup code for the bots.  Move watchdog to its own service.
+  * use version 5.9.1 of Qt [ci skip]
