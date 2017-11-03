@@ -22,7 +22,7 @@ const QString ClientConfigurationInfo::BugsnagAPI = "";
 #elif defined(WICKR_PRODUCTION)
     const QString ClientConfigurationInfo::DefaultBaseURL = "https://messaging-prod.wickr.com/116/src";
 #elif defined(WICKR_BETA)
-    const QString ClientConfigurationInfo::DefaultBaseURL =  "https://messaging-blue.secmv.net/116/src";
+    const QString ClientConfigurationInfo::DefaultBaseURL =  "https://messaging-pro-beta.secmv.net/116/src";
 #elif defined(WICKR_QA)
     const QString ClientConfigurationInfo::DefaultBaseURL = "https://messaging-qa4.secmv.net/116/src";
 #elif defined(WICKR_ALPHA)

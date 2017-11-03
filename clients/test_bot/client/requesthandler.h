@@ -46,6 +46,7 @@ private:
     void onDeleteSecureRoom(const QString& vGroupID);
 
     void getStatistics(const QString& apiKey, stefanfrings::HttpResponse& response);
+    void clearStatistics(const QString& apiKey, stefanfrings::HttpResponse& response);
     int numMessages();
 
     // Helper functions

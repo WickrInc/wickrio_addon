@@ -60,6 +60,7 @@ public:
     void getStatistic(QSqlQuery *query, WickrBotStatistics *stat);
     QList<WickrBotStatistics *> getStatistics();
     QList<WickrBotStatistics *> getClientStatistics(int clientID);
+    bool deleteClientStatistics(int clientID);
     bool insertStatistic(int clientID, int statID, const QString &statDesc, qlonglong statValue);
     bool incStatistic(int clientID, int statID, const QString &statDesc, qlonglong increment);
 

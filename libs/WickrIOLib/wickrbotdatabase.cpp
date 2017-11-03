@@ -1128,6 +1128,32 @@ WickrBotDatabase::getClientStatistics(int clientID)
 }
 
 bool
+WickrBotDatabase::deleteClientStatistics(int clientID)
+{
+    if (!initialized){
+        return false;
+    }
+
+    QSqlQuery query(m_db);
+    query.exec("PRAGMA foreign_keys = ON;");
+
+    QString queryString = QString("DELETE FROM statistics WHERE client_id=?");
+    query.prepare(queryString);
+    query.bindValue(0, clientID);
+    if ( !query.exec()) {
+        query.finish();
+        qDebug() << "deleteClientStatistics: Could not delete statistics for" << clientID;
+        qDebug() << "deleteClientStatistics: error=" << query.lastError();
+        return false;
+    }
+
+    int numRows = query.numRowsAffected();
+    query.finish();
+    return (numRows > 0);
+}
+
+
+bool
 WickrBotDatabase::insertStatistic(int clientID, int statID, const QString &statDesc, qlonglong statValue) {
     if (!initialized)
         return false;

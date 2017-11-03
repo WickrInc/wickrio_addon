@@ -170,6 +170,8 @@ void RequestHandler::service(stefanfrings::HttpRequest& request, stefanfrings::H
     } else if (group.toLower() == APIURL_STATISTICS) {
         if (methodString.toLower() == "get") {
             getStatistics(apiKey, response);
+        } else if (methodString.toLower() == "delete") {
+            clearStatistics(apiKey, response);
         } else {
             sendFailure(400, "Unknown command", response);
         }
@@ -993,5 +995,22 @@ RequestHandler::getStatistics(const QString& apiKey, stefanfrings::HttpResponse&
     QByteArray byteArray = saveDoc.toJson();
 
     sendSuccess(byteArray, response);
+}
+
+void
+RequestHandler::clearStatistics(const QString& apiKey, stefanfrings::HttpResponse& response)
+{
+    WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
+    if (db != NULL) {
+        WickrBotClients *client = db->getClientUsingApiKey(apiKey);
+        if (client != NULL) {
+            db->deleteClientStatistics(client->id);
+            sendSuccess(response);
+        } else {
+            sendFailure(400, "Failed to find client with input API Key", response);
+        }
+    } else {
+        sendFailure(500, "Problem handling with database", response);
+    }
 }
 

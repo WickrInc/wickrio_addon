@@ -365,7 +365,7 @@ bool WickrBotJsonData::processSendMessageJsonDoc(const QJsonObject &operationObj
     if (operationObject.contains("message")) {
         value = operationObject["message"];
         m_message = value.toString();
-        if (m_vgroupid.length() == 0) {
+        if (m_message.length() == 0) {
             m_operation->error("Received 0 length message!");
             return false;
         }
