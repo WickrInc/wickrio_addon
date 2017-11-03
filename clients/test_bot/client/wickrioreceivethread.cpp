@@ -158,7 +158,8 @@ WickrIOReceiveThread::processMessage(WickrDBObject *item)
                 // Add the message ID
                 jsonObject.insert(APIJSON_MSGID, msg->getSrvMsgID());
 
-                if (inbox->getConvo()->getConvoType() == CONVO_SECURE_ROOM) {
+                if (inbox->getConvo()->getConvoType() == CONVO_SECURE_ROOM ||
+                    inbox->getConvo()->getConvoType() == CONVO_GROUP_CONVO) {
                     jsonObject.insert(APIJSON_VGROUPID, inbox->getConvo()->getVGroupID());
                 }
                 // Get the sender of this message

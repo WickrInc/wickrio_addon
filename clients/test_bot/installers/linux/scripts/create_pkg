@@ -49,8 +49,8 @@ alpha)
     ;;
 beta)
     buildTypeStr="Beta"
-    bldExtStr="alpha"
-    bldInsStr="Alpha"
+    bldExtStr="beta"
+    bldInsStr="Beta"
     relBldFlag="false"
     ;;
 release)

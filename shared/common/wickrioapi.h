@@ -8,6 +8,7 @@
 #define APIURL_MESSAGES         "messages"
 #define APIURL_MSGRECVCBACK     "msgrecvcallback"
 #define APIURL_ROOMS            "rooms"
+#define APIURL_GROUPCONVO       "groupconvo"
 #define APIURL_MSGRECVEMAIL     "msgrecvemail"
 #define APIURL_STATISTICS       "statistics"
 
@@ -85,7 +86,9 @@
 #define APIJSON_ROOMMASTERS     "masters"
 #define APIJSON_ROOMTITLE       "title"
 #define APIJSON_ROOMTTL         "ttl"
+#define APIJSON_ROOMBOR         "bor"
 #define APIJSON_ROOMDESC        "description"
+#define APIJSON_GROUPCONVO      "groupconvo"
 #define APIJSON_VGROUPID        "vgroupid"
 #define APIJSON_MAXCLIENTS      "maxclients"
 #define APIJSON_USERTYPE        "usertype"

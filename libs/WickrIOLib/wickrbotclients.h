@@ -27,7 +27,7 @@ public:
     QString binary;
 
     bool isHttps;
-    int port;
+    int port = 0;
     QString iface;
     QString sslKeyFile;
     QString sslCertFile;

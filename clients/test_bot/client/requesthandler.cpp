@@ -157,6 +157,16 @@ void RequestHandler::service(stefanfrings::HttpRequest& request, stefanfrings::H
         } else {
             sendFailure(400, "Unknown command", response);
         }
+    } else if (group.toLower() == APIURL_GROUPCONVO) {
+        if (methodString.toLower() == "post") {
+            processAddGroupConvo(request, response);
+        } else if (methodString.toLower() == "get") {
+            processGetGroupConvos(clientID, response);
+        } else if (methodString.toLower() == "delete") {
+            processDeleteGroupConvo(clientID, response);
+        } else {
+            sendFailure(400, "Unknown command", response);
+        }
     } else if (group.toLower() == APIURL_STATISTICS) {
         if (methodString.toLower() == "get") {
             getStatistics(apiKey, response);
@@ -487,11 +497,18 @@ RequestHandler::processAddRoom(stefanfrings::HttpRequest& request, stefanfrings:
     QString title;
     QString description;
     int ttl = 0;
+    int bor = 0;
 
     // Get the TTL / Destruct time
     if (roomObject.contains(APIJSON_ROOMTTL)) {
         value = roomObject[APIJSON_ROOMTTL];
         ttl = value.toInt(0);
+    }
+
+    // Get the BOR / Burn on read
+    if (roomObject.contains(APIJSON_ROOMBOR)) {
+        value = roomObject[APIJSON_ROOMBOR];
+        bor = value.toInt(0);
     }
 
     // Get the description
@@ -559,10 +576,16 @@ RequestHandler::processAddRoom(stefanfrings::HttpRequest& request, stefanfrings:
     QString mastersString = masterHashes.join(',');
     QString membersString = memberHashes.join(',');
 
-#if 0
+#if 1
     WickrCore::WickrSecureRoomMgr *roomMgr = WickrCore::WickrRuntime::getRoomMgr();
     if (roomMgr) {
-        roomMgr->createSecureRoomConvoStart(membersString, mastersString, ttl, title, description);
+        roomMgr->createSecureRoomConvoStart(membersString,
+                                            mastersString,
+                                            ttl,
+                                            title,
+                                            description,
+                                            bor,
+                                            true);
     }
 
 #endif
@@ -721,6 +744,162 @@ RequestHandler::processGetRooms(const QString &clientID, stefanfrings::HttpRespo
 
     sendSuccess(byteArray, response);
 }
+
+void
+RequestHandler::processAddGroupConvo(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response)
+{
+    QByteArray jsonString = request.getBody();
+
+    // Get the room details from the incoming message
+    QJsonParseError jsonError;
+    QJsonDocument jsonResponse = QJsonDocument().fromJson(jsonString, &jsonError);
+
+    if (jsonError.error != QJsonParseError::NoError) {
+        sendFailure(400, "Failed", response);
+        return;
+    }
+
+    QJsonObject jsonObject = jsonResponse.object();
+    QJsonValue value;
+
+    QJsonObject grpConvoObject;
+
+    // Start the operation
+    if (jsonObject.contains(APIJSON_GROUPCONVO)) {
+        value = jsonObject[APIJSON_GROUPCONVO];
+        grpConvoObject = value.toObject();
+    } else {
+        sendFailure(400, "malformed JSON", response);
+        return;
+    }
+
+    // Check that required objects exist
+    if (!grpConvoObject.contains(APIJSON_ROOMMEMBERS))
+    {
+        sendFailure(400, "Missing required data", response);
+        return;
+    }
+
+    QStringList memberslist;
+    int ttl = 0;
+
+    // Get the TTL / Destruct time
+    if (grpConvoObject.contains(APIJSON_ROOMTTL)) {
+        value = grpConvoObject[APIJSON_ROOMTTL];
+        ttl = value.toInt(0);
+    }
+
+    // Get the members
+    memberslist = getJsonArrayValue(grpConvoObject, APIJSON_NAME, APIJSON_ROOMMEMBERS);
+    QString members = memberslist.join(",");
+    if (members.isEmpty()) {
+        sendFailure(400, "Invalid members list", response);
+        return;
+    }
+
+    QStringList memberHashes;
+    foreach (QString member, memberslist) {
+        WickrCore::WickrUser *user = WickrCore::WickrUser::getUserWithAlias(member);
+        if (user == NULL) {
+            sendFailure(400, "Cannot find user record for member", response);
+            return;
+        }
+        QString idHash = user->getServerIDHash();
+        if (idHash.isEmpty()) {
+            sendFailure(500, "Problem handling user record for member", response);
+            return;
+        }
+        memberHashes.append(idHash);
+    }
+
+    // Create the room
+
+    // Create convo (create if not found, no group name, secure room)
+    QString membersString = memberHashes.join(',');
+
+#if 0
+    WickrCore::WickrSecureRoomMgr *roomMgr = WickrCore::WickrRuntime::getRoomMgr();
+    if (roomMgr) {
+        roomMgr->createSecureRoomConvoStart(membersString, mastersString, ttl, title, description);
+    }
+
+#endif
+    sendSuccess(response);
+}
+
+void
+RequestHandler::processDeleteGroupConvo(const QString &clientID, stefanfrings::HttpResponse& response)
+{
+    WickrCore::WickrConvo *convo = WickrCore::WickrConvo::getConvoWithvGroupID(clientID);
+    if (convo) {
+        if (RequestHandler::deleteConvo(true, clientID)) {
+            sendSuccess(response);
+        } else {
+            sendFailure(400, "Failed to delete Group Convo", response);
+        }
+    }
+}
+
+void
+RequestHandler::processGetGroupConvos(const QString &clientID, stefanfrings::HttpResponse& response)
+{
+#if 0
+    QByteArray paramStart = request.getParameter(APIPARAM_START);
+    QByteArray paramCount = request.getParameter(APIPARAM_COUNT);
+
+    if (paramStart.length() == 0 || paramCount.length() == 0) {
+        sendFailure(400, "Missing parameters", response);
+        return;
+    }
+    int start = paramStart.toInt();
+    int count = paramCount.toInt();
+#endif
+    QJsonArray grpConvoArrayValue;
+
+    WickrConvoList *curConvos = WickrCore::WickrConvo::getConvoList();
+
+    // TODO: Should there be a semaphore to control access to this?
+    if (curConvos != NULL) {
+        QList<QString> keys = curConvos->acquireKeyList();
+
+        // Process each of the convos
+        for (int cid=0; cid < keys.size(); cid++) {
+
+            WickrCore::WickrConvo *currentConvo = (WickrCore::WickrConvo *)curConvos->value( keys.at(cid) );
+
+            // If a secure room then add to the list
+            if (WickrCore::WickrConvo::getConvoTypeFromVGroupID(currentConvo->getVGroupID()) == CONVO_GROUP_CONVO) {
+                QJsonObject grpConvoValue;
+
+                grpConvoValue.insert(APIJSON_VGROUPID, currentConvo->getVGroupID());
+                grpConvoValue.insert(APIJSON_ROOMTTL, QString::number(currentConvo->getDestruct()));
+
+                // Setup the users array
+                QStringList userslist = currentConvo->getUsernameStringArray();
+                QJsonArray usersArray;
+
+                for (QString user : userslist) {
+                    QJsonObject userEntry;
+
+                    userEntry.insert(APIJSON_NAME, user);
+                    usersArray.append(userEntry);
+                }
+                grpConvoValue.insert(APIJSON_ROOMMEMBERS, usersArray);
+
+
+                grpConvoArrayValue.append(grpConvoValue);
+            }
+        }
+    }
+
+    QJsonObject jsonObject;
+    jsonObject.insert(APIJSON_ROOMS, grpConvoArrayValue);
+    QJsonDocument saveDoc(jsonObject);
+    QByteArray byteArray = saveDoc.toJson();
+
+    sendSuccess(byteArray, response);
+}
+
 
 int
 RequestHandler::numMessages()

@@ -30,7 +30,7 @@ public:
     QString user;
     QString password;
     int permissions;
-    int maxclients;
+    int maxclients = 0;
 
     // Autthentication
     int authType;

@@ -36,6 +36,10 @@ private:
     void processDeleteRoom(const QString &clientID, stefanfrings::HttpResponse& response);
     void processGetRooms(const QString &clientID, stefanfrings::HttpResponse& response);
 
+    void processAddGroupConvo(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response);
+    void processDeleteGroupConvo(const QString &clientID, stefanfrings::HttpResponse& response);
+    void processGetGroupConvos(const QString &clientID, stefanfrings::HttpResponse& response);
+
     // TODO: This should move to a library!!!!
     void onCreateSecureRoom(const QString& vGroupID, const QStringList& mastersHashList, int destructionTime, const QString& roomTitle, const QString& roomDescription);
     bool deleteConvo(bool isSecureConvo, const QString& vgroupID);
