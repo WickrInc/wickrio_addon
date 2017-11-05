@@ -99,7 +99,7 @@ case "$product" in
 esac
 
 lin_appid=""
-case "$product-$btype"
+case "$product-$btype" in
     cloud-alpha)
         lin_appid="d4fb30fa00bb481ba75f356572890aee"
         ;;
