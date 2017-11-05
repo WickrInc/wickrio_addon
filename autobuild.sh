@@ -15,6 +15,8 @@
 
 
 QTVER="5.9"
+DEVID="Wickr, LLC"
+API_TOKEN="25391301ec2541dfaa1ec0201127e52a"
 
 if test -d /opt/local/bin ; then
 	PATH=$PATH:/opt/local/bin ; fi
@@ -47,6 +49,7 @@ else
 fi
 release=`expr $num - ${pat}00`
 version="${maj}.${min}.${pat}"
+buildout="${version} ${bld}"
 
 echo "release=$release"
 echo "version=$version"
@@ -94,6 +97,24 @@ case "$product" in
     cloud)
         ;;
 esac
+
+lin_appid=""
+case "$product-$btype"
+    cloud-alpha)
+        lin_appid="d4fb30fa00bb481ba75f356572890aee"
+        ;;
+    cloud-beta)
+        lin_appid="37d0f566718d43148155c9370c06ca12"
+        ;;
+    messenger-release)
+        lin_appid=""
+        ;;
+    entrprise-release)
+        lin_appid="fe01942f8e394217a6d6e4d594738152"
+        ;;
+esac
+
+
 
 if test -z "$QTDIR" ; then
     if test -d /usr/local/wickr/Qt-${QTVER} ; then
@@ -172,3 +193,49 @@ $abs/services/installer/linux/scripts/deploy64 $binary_dir $build_number "$svc_b
 (cd $deploy ; zip -r "$output/bots-${version}.zip" *.deb *.sha256)
 
 echo "ZIP File: $output/bots-${version}.zip"
+
+APP_OUT=""
+SYM_OUT=""
+relnotes="no release notes yet"
+
+if test ! -z "$lin_appid" ; then
+    APP_ID="$lin_appid"
+
+    hockeyid=`curl \
+      -F "bundle_short_version=$version" \
+      -F "bundle_version=$buildout" \
+      -H "X-HockeyAppToken: $API_TOKEN" \
+      https://rink.hockeyapp.net/api/2/apps/$APP_ID/app_versions/new \
+      | sed s/.*\"id\":// | sed s/,.*//`
+
+    echo hockeyid=$hockeyid
+
+    if [  "$hockeyid" -eq "$hockeyid" ] 2> /dev/null ; then
+        if test ! -f "$SYM_OUT" ; then
+            curl \
+              -X PUT \
+              -F "ipa=@$APP_OUT" \
+              -F "status=1" \
+              -F "notify=0" \
+              -F "notes=$relnotes" \
+              -F "notes_type=0" \
+              -H "X-HockeyAppToken: $API_TOKEN" \
+              https://rink.hockeyapp.net/api/2/apps/$APP_ID/app_versions/$hockeyid ;
+        else
+            curl \
+              -X PUT \
+              -F "ipa=@$APP_OUT" \
+              -F "dsym=@$SYM_OUT" \
+              -F "status=1" \
+              -F "notify=0" \
+              -F "notes=$relnotes" \
+              -F "notes_type=0" \
+              -H "X-HockeyAppToken: $API_TOKEN" \
+              https://rink.hockeyapp.net/api/2/apps/$APP_ID/app_versions/$hockeyid ;
+        fi
+    else
+        echo "call to add version to hockey seemed to fail!";
+        exit 1
+    fi
+fi
+
