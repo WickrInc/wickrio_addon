@@ -194,7 +194,7 @@ $abs/services/installer/linux/scripts/deploy64 $binary_dir $build_number "$svc_b
 
 echo "ZIP File: $output/bots-${version}.zip"
 
-APP_OUT=""
+APP_OUT="$output/bots-${version}.zip"
 SYM_OUT=""
 relnotes="no release notes yet"
 
