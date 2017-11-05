@@ -296,7 +296,7 @@ WickrIOReceiverMgr::processControlMsg(QJsonObject& jsonObject,  WickrCore::Wickr
     case WickrCore::WickrControlMessage::CREATEROOM:
         return processCreateSecureRoomMsg(jsonObject, (WickrCore::WickrGroupControlCreateSecureRoom *)ctrlMsg);
     case WickrCore::WickrControlMessage::CHANGEMEMBERS:
-        break;
+        return processChangeMembersMsg(jsonObject,  (WickrCore::WickrGroupControlChangeMembers *)ctrlMsg);
     case WickrCore::WickrControlMessage::LEAVE:
         break;
     case WickrCore::WickrControlMessage::CHANGEPARMS:
@@ -323,16 +323,7 @@ WickrIOReceiverMgr::processCreateRoomBase(QJsonObject& jsonObject,  WickrCore::W
 {
     QJsonArray members;
     for (WickrCore::WickrMemberInfo *mbr : ctrlMsg->getMembers()) {
-#if 0
-        QJsonObject member;
-
-        member.insert(APIJSON_CTRL_MBRUID, mbr->getUid());
-        member.insert(APIJSON_CTRL_MBRUNAME, mbr->getUname());
-        member.insert(APIJSON_CTRL_MBRUKEY, QString(mbr->getUkey().toHex()));
-        members.append(member);
-#else
         members.append(mbr->getUname());
-#endif
     }
     jsonObject.insert(APIJSON_CTRL_MEMBERS, members);
 
@@ -389,13 +380,23 @@ WickrIOReceiverMgr::processChangeMembersMsg(QJsonObject& jsonObject,  WickrCore:
 
     QJsonArray addedUsers;
     for (QString entry: ctrlMsg->getAddedUsers()) {
-        addedUsers.append(QJsonValue(entry));
+        WickrCore::WickrUser *user = WickrCore::WickrUser::getUserByServerID(entry);
+        if (user == nullptr || user->getUserID().isEmpty()) {
+            addedUsers.append(QJsonValue(entry));
+        } else {
+            addedUsers.append(user->getUserID());
+        }
     }
     ctrlJsonObject.insert(APIJSON_CTRL_ADDUSERS, addedUsers);
 
     QJsonArray deletedUsers;
     for (QString entry: ctrlMsg->getDeletedUsers()) {
-        deletedUsers.append(QJsonValue(entry));
+        WickrCore::WickrUser *user = WickrCore::WickrUser::getUserByServerID(entry);
+        if (user == nullptr || user->getUserID().isEmpty()) {
+            deletedUsers.append(QJsonValue(entry));
+        } else {
+            deletedUsers.append(user->getUserID());
+        }
     }
     ctrlJsonObject.insert(APIJSON_CTRL_DELUSERS, deletedUsers);
 
