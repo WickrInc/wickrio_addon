@@ -1,3 +1,4 @@
 [submodule "wickr-sdk"]
 	path = wickr-sdk
-	url = git@wkrnjpgit.wickrlan.net:wickr-desktop/wickr-sdk.git
+        url = git@wkrnjpgit.wickrlan.net:wickr/desktop/wickr-sdk.git
+
