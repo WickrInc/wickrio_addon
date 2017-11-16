@@ -126,7 +126,7 @@ WickrIOFileDownloadThread::slotDownloadFile(WickrIORxDownloadFile *dload)
     QString file_guid = dload->m_fileInfo.metaData().fetchInfo().at(0).guid;
     QByteArray file_key = dload->m_fileInfo.metaData().fetchInfo().at(0).key;
 
-    if (!WickrCore::WickrRuntime::ftScheduleDownload(file_guid, file_key, dload->m_attachmentFileName, false)) {
+    if (!WickrCore::WickrRuntime::ftScheduleDownload(file_guid, file_key, dload->m_attachmentFileName, true, true)) {
         qDebug() << "Could not schedule download for" << dload->m_attachmentFileName;
         // TODO: Need to reschedule this, for now release the message
         // Release the message
@@ -152,7 +152,7 @@ WickrIOFileDownloadThread::slotSendFileStatusChange(const QString& uuid, const Q
 
             QJsonDocument saveDoc(dload->m_json);
 
-            int msgID = db->insertMessage(dload->m_msg->getMsgTimestamp(), m_operation->m_client->id, saveDoc.toJson(), (int)dload->m_msg->getMsgClass(), 1);
+            int msgID = db->insertMessage(dload->m_msg->getMsgTimestamp(), m_operation->m_client->id, saveDoc.toJson(QJsonDocument::Compact), (int)dload->m_msg->getMsgClass(), 1);
             db->insertAttachment(msgID, dload->m_attachmentFileName, dload->m_realFileName);
             m_activeDownloads.remove(uuid);
 
