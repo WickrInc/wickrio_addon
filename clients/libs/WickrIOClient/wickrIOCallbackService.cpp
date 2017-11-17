@@ -214,7 +214,7 @@ WickrIOCallbackThread::sendMessages(WickrIOEmailSettings *email)
 {
     WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
     if (db == NULL) {
-        m_operation->log("Failed to cast database!");
+        m_operation->log_handler->log("Failed to cast database!");
         return false;
     }
 
@@ -330,7 +330,7 @@ WickrIOCallbackThread::sendMessage()
 {
     WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
     if (db == NULL) {
-        m_operation->log("Failed to cast database!");
+        m_operation->log_handler->log("Failed to cast database!");
         return false;
     }
 

@@ -192,7 +192,7 @@ bool WickrBotJsonData::processAttachmentFile(QString filename)
     if (exists) {
         m_attachments.append(fullPath);
     } else {
-        m_operation->error("Attachment does not exist: " + fullPath);
+        m_operation->log_handler->error("Attachment does not exist: " + fullPath);
     }
 
     return exists;
@@ -221,7 +221,7 @@ bool WickrBotJsonData::processJsonDoc(QJsonDocument &jsonResponse)
         }
         return false;
     } else {
-        m_operation->error("processContactReply: does not contain operation!");
+        m_operation->log_handler->error("processContactReply: does not contain operation!");
         return false;
     }
 
@@ -230,7 +230,7 @@ bool WickrBotJsonData::processJsonDoc(QJsonDocument &jsonResponse)
         value = operationObject["action"];
         m_action = value.toString("invalid");
         if (m_action == "invalid") {
-            m_operation->error(QString("action is invalid, value is %1").arg(m_action));
+            m_operation->log_handler->error(QString("action is invalid, value is %1").arg(m_action));
             return false;
         }
     }
@@ -326,7 +326,7 @@ bool WickrBotJsonData::processSendMessageJsonDoc(const QJsonObject &operationObj
                     QJsonValue nameobj = arrayObject["name"];
                     QString name = nameobj.toString();
                     if (name.length() == 0) {
-                        m_operation->error("Received 0 length user!");
+                        m_operation->log_handler->error("Received 0 length user!");
                         return false;
                     }
                     m_userNames.append(name);
@@ -339,13 +339,13 @@ bool WickrBotJsonData::processSendMessageJsonDoc(const QJsonObject &operationObj
         value = operationObject["vgroupid"];
         m_vgroupid = value.toString();
         if (m_vgroupid.length() == 0) {
-            m_operation->error("Received 0 length VGroupID!");
+            m_operation->log_handler->error("Received 0 length VGroupID!");
             return false;
         }
         m_userNames.clear();
         m_userIDs.clear();
     } else {
-        m_operation->error("Does not contain users or vgroupid!");
+        m_operation->log_handler->error("Does not contain users or vgroupid!");
         return false;
     }
 
@@ -366,7 +366,7 @@ bool WickrBotJsonData::processSendMessageJsonDoc(const QJsonObject &operationObj
         value = operationObject["message"];
         m_message = value.toString();
         if (m_message.length() == 0) {
-            m_operation->error("Received 0 length message!");
+            m_operation->log_handler->error("Received 0 length message!");
             return false;
         }
         if (m_operation->debug)
@@ -467,7 +467,7 @@ bool WickrBotJsonData::processAttachments(const QJsonObject &operationObject)
             } else if (filename.length() > 0) {
                 processAttachmentFile(filename);
             } else {
-                m_operation->error("THERE IS NO FILENAME or URL FOR THIS ATTACHMENT!");
+                m_operation->log_handler->error("THERE IS NO FILENAME or URL FOR THIS ATTACHMENT!");
             }
         }
     } else if (operationObject.contains("attachment")) {
@@ -639,12 +639,12 @@ bool WickrBotJsonData::parse(QByteArray jsonString) {
     QJsonDocument jsonResponse = QJsonDocument().fromJson(jsonString, &jsonError);
 
     if (jsonError.error != jsonError.NoError) {
-        m_operation->log("Error with JSON document" + jsonError.errorString());
+        m_operation->log_handler->log("Error with JSON document" + jsonError.errorString());
         return false;
     }
 
     if (! processJsonDoc(jsonResponse)) {
-        m_operation->log("Error reading json data!");
+        m_operation->log_handler->log("Error reading json data!");
         return false;
     }
 
@@ -652,7 +652,7 @@ bool WickrBotJsonData::parse(QByteArray jsonString) {
     m_operation->messageCount += processedCnt;
 
     QString message = QString("Wrote %1 messages").arg(processedCnt);
-    m_operation->log(message);
+    m_operation->log_handler->log(message);
 
     return true;
 }
@@ -671,12 +671,12 @@ WickrBotJsonData::parseSendMessage(QByteArray jsonString) {
     QJsonDocument jsonResponse = QJsonDocument().fromJson(jsonString, &jsonError);
 
     if (jsonError.error != jsonError.NoError) {
-        m_operation->log("Error with JSON document" + jsonError.errorString());
+        m_operation->log_handler->log("Error with JSON document" + jsonError.errorString());
         return false;
     }
 
     if (! processSendMessageJsonDoc(jsonResponse.object())) {
-        m_operation->log("Error reading json data!");
+        m_operation->log_handler->log("Error reading json data!");
         return false;
     }
 
@@ -686,7 +686,7 @@ WickrBotJsonData::parseSendMessage(QByteArray jsonString) {
     m_operation->messageCount += processedCnt;
 
     QString message = QString("Wrote %1 messages").arg(processedCnt);
-    m_operation->log(message);
+    m_operation->log_handler->log(message);
 
     return true;
 }

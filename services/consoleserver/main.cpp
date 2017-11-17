@@ -28,6 +28,8 @@
 #include "wickrbotutils.h"
 #include "wickrbotsettings.h"
 #include "consoleserverservice.h"
+#include "loghandler.h"
+
 
 extern bool isVERSIONDEBUG();
 
@@ -35,33 +37,13 @@ extern bool isVERSIONDEBUG();
 WickrIOConsoleServerService *curService;
 #endif
 
+LogHandler logs;
+
 void redirectedOutput(QtMsgType type, const QMessageLogContext &, const QString & str)
 {
-    QString filename;
-    QString dirname;
-
-#ifdef Q_OS_WIN
-    dirname = QString("%1/%2/%3/logs")
-            .arg(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation))
-            .arg(WBIO_ORGANIZATION)
-            .arg(WBIO_GENERAL_TARGET);
-#elif defined(Q_OS_LINUX)
-    dirname = QString("/opt/%1/logs").arg(WBIO_GENERAL_TARGET);
-#endif
-
-    filename = QString("%1/%2.output").arg(dirname).arg(WBIO_CONSOLESERVER_TARGET);
-    QFile output(filename);
-
-    // Make sure the directory exists
-    if (WBIOCommon::makeDirectory(dirname)) {
-        output.open(QIODevice::WriteOnly | QIODevice::Append);
-        QTextStream outstream(&output);
-        outstream << str << "\n";
-        output.close();
-
-        if (type == QtFatalMsg) {
-            abort();
-        }
+    logs.output(str);
+    if (type == QtFatalMsg) {
+        abort();
     }
 }
 
@@ -97,6 +79,25 @@ Q_IMPORT_PLUGIN(QSQLCipherDriverPlugin)
  */
 int main(int argc, char *argv[])
 {
+    QString filename;
+    QString dirname;
+    QString logname;
+
+#ifdef Q_OS_WIN
+    dirname = QString("%1/%2/%3/logs")
+            .arg(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation))
+            .arg(WBIO_ORGANIZATION)
+            .arg(WBIO_GENERAL_TARGET);
+#elif defined(Q_OS_LINUX)
+    dirname = QString("/opt/%1/logs").arg(WBIO_GENERAL_TARGET);
+#endif
+
+    filename = QString("%1/%2.output").arg(dirname).arg(WBIO_CONSOLESERVER_TARGET);
+    logname = QString("%1/%2.log").arg(dirname).arg(WBIO_CONSOLESERVER_TARGET);
+
+    WBIOCommon::makeDirectory(dirname);
+    logs.setupLog(logname);
+    logs.logSetOutput(filename);
     qInstallMessageHandler(redirectedOutput);
     bool systemd = false;
     int svcret;

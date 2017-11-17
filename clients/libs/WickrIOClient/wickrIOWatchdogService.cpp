@@ -171,7 +171,7 @@ WickrIOWatchdogThread::doStatusUpdate(int state, bool force)
 
         // Update the process status
         if (m_operation != nullptr) {
-            m_operation->log("Updating process state");
+            m_operation->log_handler->log("Updating process state");
             m_operation->updateProcessState(state, force);
         }
     }

@@ -14,6 +14,7 @@
 #include "wickrbotlog.h"
 #include "wickrbotdatabase.h"
 #include "wickrbotclients.h"
+#include "loghandler.h"
 
 class DECLSPEC OperationData : public QObject
 {
@@ -43,7 +44,6 @@ public:
     int duration;
 
     WickrBotDatabase *m_botDB;
-
     WickrBotClients *m_client;
 
     bool receiveOn;
@@ -62,42 +62,14 @@ private:
     bool m_waiting4image;
     bool m_imageSuccess;
     QString m_imageFileName;
-    WickrBotLog *m_wbLog;
-
     QList<QString> m_responses;
 
 public:
+    LogHandler *log_handler;
 #ifndef DO_WICKRBOT
     bool downloadImage(QUrl imageURL, QString fullpath);
 #endif
     bool busy();
-    void setupLog(const QString &logFileName);
-    QString getLogFile();
-
-    void error(QString message) {
-        if (m_wbLog != NULL)
-            m_wbLog->error(message);
-    }
-
-    void log(QString message) {
-        if (m_wbLog != NULL)
-            m_wbLog->write(message);
-    }
-
-    void log(QString message, int count) {
-        if (m_wbLog != NULL)
-            m_wbLog->write(message, count);
-    }
-
-    void output(QString message) {
-        if (m_wbLog != NULL)
-            m_wbLog->write(message, WickrBotLog::RedirectedOutput);
-    }
-
-    void logSetOutput(const QString& outputFilename) { if (m_wbLog) m_wbLog->setOutputFilename(outputFilename); }
-    QString logGetOutput() { return m_wbLog ? m_wbLog->getOutputFilename() : QString(); }
-
-    QDateTime lastLogTime();
 
     void addResponseMessage(QString message) {
         m_responses.append(message);

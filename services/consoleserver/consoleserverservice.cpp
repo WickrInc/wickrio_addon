@@ -116,11 +116,11 @@ bool WickrIOConsoleServerService::configureService()
     if (!WBIOCommon::makeDirectory(dir.path())) {
         qDebug() << "WickrBot Server cannot make log directory:" << dir;
     } else {
-        m_operation->setupLog(logFileName);
-        m_operation->log("WickrIO Client Server configured");
+        m_operation->log_handler->setupLog(logFileName);
+        m_operation->log_handler->log("WickrIO Client Server configured");
     }
 
-    m_operation->log("Database size", m_operation->m_botDB->size());
+    m_operation->log_handler->log("Database size", m_operation->m_botDB->size());
 
     m_isConfigured = true;
     return true;

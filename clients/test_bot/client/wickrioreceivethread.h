@@ -28,11 +28,11 @@ public:
     Q_INVOKABLE void logCounts()
     {
         if (m_messagesRecv > 0) {
-            m_operation->log("Messages received", m_messagesRecv);
+            m_operation->log_handler->log("Messages received", m_messagesRecv);
             m_messagesRecv = 0;
         }
         if (m_messagesRecvFailed > 0) {
-            m_operation->log("Messages received failed", m_messagesRecvFailed);
+            m_operation->log_handler->log("Messages received failed", m_messagesRecvFailed);
             m_messagesRecvFailed = 0;
         }
     }

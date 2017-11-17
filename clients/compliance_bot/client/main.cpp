@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
             operation->databaseDir = cmd.remove("-dbdir=");
         } else if (cmd.startsWith("-log=") ) {
             QString logFile = cmd.remove("-log=");
-            operation->setupLog(logFile);
+            operation->log_handler->setupLog(logFile);
         } else if (cmd.startsWith("-clientdbdir=")) {
             clientDbPath = cmd.remove("-clientdbdir=");
         } else if (cmd.startsWith("-config=")) {
@@ -284,7 +284,7 @@ int main(int argc, char *argv[])
     }
 
     // Get the log file location/name
-    if (operation->getLogFile().isEmpty()) {
+    if (operation->log_handler->getLogFile().isEmpty()) {
         settings->beginGroup(WBSETTINGS_LOGGING_HEADER);
         QString fileName = settings->value(WBSETTINGS_LOGGING_FILENAME, "").toString();
         settings->endGroup();
@@ -302,14 +302,14 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        operation->setupLog(fileName);
+        operation->log_handler->setupLog(fileName);
     }
 
     // Set the output file if it is set
     settings->beginGroup(WBSETTINGS_LOGGING_HEADER);
     QString curOutputFilename = settings->value(WBSETTINGS_LOGGING_OUTPUT_FILENAME, "").toString();
     if (! curOutputFilename.isEmpty()) {
-        operation->logSetOutput(curOutputFilename);
+        operation->log_handler->logSetOutput(curOutputFilename);
     }
     settings->endGroup();
 

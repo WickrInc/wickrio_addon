@@ -124,7 +124,7 @@ bool parseConfigFile(QString qConfigFile, ParserOperationData *operation)
 
     QString log = settings.value(WBSETTINGS_GEN_LOG, "").toString();
     if (!log.isEmpty()) {
-        operation->setupLog(log);
+        operation->log_handler->setupLog(log);
     }
     settings.endGroup();
 
@@ -224,7 +224,7 @@ int main(int argc, char *argv[])
         } else if (cmd.startsWith("-dbdir=") ) {
             operation->databaseDir = cmd.remove("-dbdir=");
         } else if (cmd.startsWith("-log=") ) {
-            operation->setupLog(cmd.remove("-log="));
+            operation->log_handler->setupLog(cmd.remove("-log="));
         } else if (cmd.startsWith("-qhost=")) {
             QString temp = cmd.remove("-qhost=");
             QStringList split = temp.split(':');
@@ -262,9 +262,9 @@ int main(int argc, char *argv[])
     parseConfigFile(wbConfigFile, operation);
 
     // Setup the logs file
-    if (!operation->getLogFile().isEmpty()) {
+    if (!operation->log_handler->getLogFile().isEmpty()) {
         // Check that can create the log file
-        QFileInfo fileInfo(operation->getLogFile());
+        QFileInfo fileInfo(operation->log_handler->getLogFile());
         QDir dir;
         dir = fileInfo.dir();
 
@@ -279,17 +279,17 @@ int main(int argc, char *argv[])
             return 1;
         }
         QString logsFile = logsDir + "/" + a.applicationName() + ".log";
-        operation->setupLog(logsFile);
+        operation->log_handler->setupLog(logsFile);
     }
     
-    operation->log("WickrBot Parser starting");
+    operation->log_handler->log("WickrBot Parser starting");
 
     // Make sure the attachments directory is set
     if (operation->attachmentsDir.isEmpty()) {
         operation->attachmentsDir = operation->appDataDir + "/attachments";
     }
     if (!makeDirectory(operation->attachmentsDir)) {
-        operation->log("WickrBot Parser cannot make attachments directory, finished");
+        operation->log_handler->log("WickrBot Parser cannot make attachments directory, finished");
         return 1;
     }
 
@@ -312,9 +312,9 @@ int main(int argc, char *argv[])
 
     WICKRBOT = new WickrBotMain(operation);
 
-    operation->log("Database size", operation->m_botDB->size());
-    operation->log("Generated messages", operation->messageCount);
-    operation->log("WickrBot Parser normal finish");
+    operation->log_handler->log("Database size", operation->m_botDB->size());
+    operation->log_handler->log("Generated messages", operation->messageCount);
+    operation->log_handler->log("WickrBot Parser normal finish");
 
     return a.exec();
 }

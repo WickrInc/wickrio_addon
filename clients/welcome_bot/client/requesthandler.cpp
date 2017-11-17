@@ -26,7 +26,7 @@ RequestHandler::RequestHandler(OperationData *operation, QObject* parent) :
         }
     }
 
-    m_operation->log("RequestHandler: created");
+    m_operation->log_handler->log("RequestHandler: created");
 }
 
 
@@ -35,7 +35,7 @@ RequestHandler::~RequestHandler() {
         perftests[i]->print();
         perftests[i]->deleteLater();
     }
-    m_operation->log("RequestHandler: deleted");
+    m_operation->log_handler->log("RequestHandler: deleted");
 }
 
 /**
@@ -53,7 +53,7 @@ void RequestHandler::service(stefanfrings::HttpRequest& request, stefanfrings::H
     QByteArray method=request.getMethod();
     QString apiKey("");
 
-    m_operation->log(QString("Controller: path=%1, method=%2").arg(QString(path)).arg(QString(method)));
+    m_operation->log_handler->log(QString("Controller: path=%1, method=%2").arg(QString(path)).arg(QString(method)));
 
     // Set a pointer to the WickrIO Database, in the parent class
     m_ioDB = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
@@ -172,7 +172,7 @@ void RequestHandler::service(stefanfrings::HttpRequest& request, stefanfrings::H
         perftests[i]->print();
     }
 
-    m_operation->log("RequestHandler: finished request");
+    m_operation->log_handler->log("RequestHandler: finished request");
 }
 
 
@@ -189,11 +189,11 @@ RequestHandler::processSendMessage(stefanfrings::HttpRequest& request, stefanfri
     WickrBotJsonData *jsonHandler = new WickrBotJsonData(m_operation);
 
     if (jsonHandler->parseSendMessage(body)) {
-        m_operation->log("Message parsed successfully");
+        m_operation->log_handler->log("Message parsed successfully");
         sendSuccess(response);
     } else {
         sendFailure(400, "Failed sending message", response);
-        m_operation->log("Message parsing failed!");
+        m_operation->log_handler->log("Message parsing failed!");
     }
     delete jsonHandler;
 }
@@ -238,20 +238,20 @@ RequestHandler::processGetMessages(stefanfrings::HttpRequest& request, stefanfri
 #if 0
             long msgcount = themessages->size();
 
-            m_operation->log(QString("CurrentConvo: id %1, vgroupTag: %2, allusersstring: %3, timestamp %4")
+            m_operation->log_handler->log(QString("CurrentConvo: id %1, vgroupTag: %2, allusersstring: %3, timestamp %4")
                                     .arg(currentConvo->getID())
                                     .arg(currentConvo->getVGroupTag())
                                     .arg(currentConvo->getAllUsersString())
                                     .arg(currentConvo->getLastTimestampString()));
-            m_operation->log((QString("Msgs (%1), Unread (%2)")
+            m_operation->log_handler->log((QString("Msgs (%1), Unread (%2)")
                                       .arg(QString::number(msgcount))
                                      .arg(QString::number(currentConvo->getUnreadMessageCount()))));
 
             WickrCore::WickrUser *lastuser = currentConvo->getLastUser();
             if( lastuser ) {
-                m_operation->log(QString("primary name: %1").arg(lastuser->getPrimaryName()));
-                m_operation->log(QString("key ID Long: %1").arg(lastuser->getKeyIdentityLong()));
-                m_operation->log(QString("User ID Hash:").arg(lastuser->getUserIDHash()));
+                m_operation->log_handler->log(QString("primary name: %1").arg(lastuser->getPrimaryName()));
+                m_operation->log_handler->log(QString("key ID Long: %1").arg(lastuser->getKeyIdentityLong()));
+                m_operation->log_handler->log(QString("User ID Hash:").arg(lastuser->getUserIDHash()));
             }
 #endif
 perftests[1]->start("acquireKeylist");
@@ -619,7 +619,7 @@ RequestHandler::deleteConvo(bool isSecureConvo, const QString& vgroupID)
                     return false;
                 }
             } else {
-                m_operation->error("DELETE SECURE ROOM: Failed\n You are not a room master of this secure room.");
+                m_operation->log_handler->error("DELETE SECURE ROOM: Failed\n You are not a room master of this secure room.");
                 return false;
             }
         } else {

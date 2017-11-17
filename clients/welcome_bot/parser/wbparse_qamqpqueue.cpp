@@ -41,7 +41,7 @@ WBParse_QAMQPQueue::~WBParse_QAMQPQueue()
 bool WBParse_QAMQPQueue::timerCall()
 {
     if (m_queueState == QSTATE_FAILED_CONNECT) {
-        m_operation->log("The Queue State Connection has failed!");
+        m_operation->log_handler->log("The Queue State Connection has failed!");
         return false;
     }
 
@@ -58,18 +58,18 @@ bool WBParse_QAMQPQueue::timerCall()
 
 void WBParse_QAMQPQueue::error(QAMQP::Error error)
 {
-    m_operation->log(QString("ERROR received from QAMQP %1").arg(error));
+    m_operation->log_handler->log(QString("ERROR received from QAMQP %1").arg(error));
 }
 
 void WBParse_QAMQPQueue::socketError(QAbstractSocket::SocketError error)
 {
-    m_operation->log(QString("ERROR received from QAMQP %1").arg(error));
+    m_operation->log_handler->log(QString("ERROR received from QAMQP %1").arg(error));
     m_queueState = QSTATE_FAILED_CONNECT;
 }
 
 void WBParse_QAMQPQueue::connected()
 {
-    m_operation->log("WBParse_QAMQPQueue: connected() called");
+    m_operation->log_handler->log("WBParse_QAMQPQueue: connected() called");
     m_queueState = QSTATE_RUNNING;
 
     m_exchange = m_client.createExchange(m_queueExchangeName);
@@ -81,7 +81,7 @@ void WBParse_QAMQPQueue::connected()
 
 void WBParse_QAMQPQueue::exchangeDeclared()
 {
-    m_operation->log("WBParse_QAMQPQueue: exchangeDeclared() called");
+    m_operation->log_handler->log("WBParse_QAMQPQueue: exchangeDeclared() called");
 
     m_queue = m_client.createQueue(m_queueName);
     connect(m_queue, SIGNAL(declared()), this, SLOT(queueDeclared()));
@@ -99,12 +99,12 @@ void WBParse_QAMQPQueue::cleanup()
 
 void WBParse_QAMQPQueue::disconnected()
 {
-    m_operation->log("WBParse_QAMQPQueue: disconnected() called");
+    m_operation->log_handler->log("WBParse_QAMQPQueue: disconnected() called");
 }
 
 void WBParse_QAMQPQueue::queueDeclared()
 {
-    m_operation->log("WBParse_QAMQPQueue: queueDeclared() called");
+    m_operation->log_handler->log("WBParse_QAMQPQueue: queueDeclared() called");
 
     // m_queue->setPrefetchCount(1);
     m_queue->consume();
@@ -127,7 +127,7 @@ void WBParse_QAMQPQueue::messageReceived()
 
 void WBParse_QAMQPQueue::ackMessage()
 {
-    m_operation->log( QString("Acknowledging %1 messages").arg(m_ackMessages.count()));
+    m_operation->log_handler->log( QString("Acknowledging %1 messages").arg(m_ackMessages.count()));
 
     for (int i=0; i<m_ackMessages.size(); i++) {
         QAmqpMessage msg = m_ackMessages.at(i);

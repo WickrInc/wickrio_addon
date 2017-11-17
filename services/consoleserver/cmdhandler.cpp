@@ -50,7 +50,7 @@ void CmdHandler::service(stefanfrings::HttpRequest& request, stefanfrings::HttpR
     QByteArray method=request.getMethod();
     QString clientID;
 
-    m_operation->log(QString("Controller: path=%1, method=%2").arg(QString(path)).arg(QString(method)));
+    m_operation->log_handler->log(QString("Controller: path=%1, method=%2").arg(QString(path)).arg(QString(method)));
 
     // Handle the OPTIONS method
     if (method.toLower() == "options") {
@@ -117,7 +117,7 @@ void CmdHandler::service(stefanfrings::HttpRequest& request, stefanfrings::HttpR
     QString methodString(method.data());
     QByteArray body=request.getBody();
 
-    m_operation->log(QString("Controller: body=%1").arg(QString(body)));
+    m_operation->log_handler->log(QString("Controller: body=%1").arg(QString(body)));
 
     bool invalidCommand = false;
 
@@ -178,7 +178,7 @@ void CmdHandler::service(stefanfrings::HttpRequest& request, stefanfrings::HttpR
         sendFailure(400, "Unknown command", response);
     }
 
-    m_operation->log("CmdHandler: finished request");
+    m_operation->log_handler->log("CmdHandler: finished request");
 }
 
 #include "SmtpMime"
