@@ -441,7 +441,7 @@ bool WickrIOEClientMain::startTheClient()
         return false;
     }
 
-    m_operation->log("Starting");
+    m_operation->log_handler->log("Starting");
 
     // Open the database if needed and get the Client information
     if (m_operation->m_botDB == NULL) {

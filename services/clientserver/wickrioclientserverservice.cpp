@@ -102,12 +102,12 @@ bool WickrIOClientServerService::configureService()
     if (!WBIOCommon::makeDirectory(dir.path())) {
         qDebug() << "WickrBot Server cannot make log directory:" << dir;
     } else {
-        m_operation->setupLog(logFileName);
-        m_operation->log("WickrIO Client Server configured");
+        m_operation->log_handler->setupLog(logFileName);
+        m_operation->log_handler->log("WickrIO Client Server configured");
     }
 
-    m_operation->log("Database size", m_operation->m_botDB->size());
-    m_operation->log("Generated messages", m_operation->messageCount);
+    m_operation->log_handler->log("Database size", m_operation->m_botDB->size());
+    m_operation->log_handler->log("Generated messages", m_operation->messageCount);
 
     // Setup the IPC Service
     m_ipcSvc = new WickrIOIPCService();
@@ -325,12 +325,12 @@ bool WickrIOClientServerService::clientNeedsStart(WickrBotClients *client)
          */
         if (procState.state == PROCSTATE_RUNNING) {
 #ifdef DEBUG_TRACE
-            m_operation->log(QString("Process is still running, date=%1").arg(procState.last_update.toString(DB_DATETIME_FORMAT)));
+            m_operation->log_handler->log(QString("Process is still running, date=%1").arg(procState.last_update.toString(DB_DATETIME_FORMAT)));
 #endif
             const QDateTime dt = QDateTime::currentDateTime();
             int secs = procState.last_update.secsTo(dt);
 #ifdef DEBUG_TRACE
-            m_operation->log(QString("Seconds since last status:%1").arg(QString::number(secs)));
+            m_operation->log_handler->log(QString("Seconds since last status:%1").arg(QString::number(secs)));
 #endif
             // If less than 2 minutes then return failed, since the process is still running
             if (!m_operation->force && secs < 120) {
@@ -343,7 +343,7 @@ bool WickrIOClientServerService::clientNeedsStart(WickrBotClients *client)
 
             // Else it has been longer than 10 minutes, kill the old process and continue
             if (WickrBotUtils::isRunning(client->binary, procState.process_id)) {
-                m_operation->log(QString("Killing old process, id=%1").arg(procState.process_id));
+                m_operation->log_handler->log(QString("Killing old process, id=%1").arg(procState.process_id));
                 WickrBotUtils::killProcess(procState.process_id);
             }
         } else if (procState.state == PROCSTATE_PAUSED) {
@@ -469,7 +469,7 @@ bool WickrIOClientServerService::startClient(WickrBotClients *client)
     // Check if the client process is still active
     if (! clientNeedsStart(client)) {
 #ifdef DEBUG_TRACE
-        m_operation->log(QString("Note: Process does not need to start for %1").arg(client->name));
+        m_operation->log_handler->log(QString("Note: Process does not need to start for %1").arg(client->name));
         qDebug() << "Leaving startClient: proc not need to start!";
 #endif
         return true;
@@ -492,20 +492,20 @@ bool WickrIOClientServerService::startClient(WickrBotClients *client)
 #endif
 
 
-    m_operation->log("**********************************");
-    m_operation->log(QString("startClient: command line arguments for %1").arg(client->name));
-    m_operation->log(QString("dbDir=%1").arg(dbDir));
-    m_operation->log(QString("logname=%1").arg(logname));
-    m_operation->log(QString("Output File=%1").arg(outputFile));
-    m_operation->log(QString("Config File=%1").arg(configFileName));
-    m_operation->log(QString("Client DB Dir=%1").arg(clientDbDir));
-    m_operation->log("**********************************");
+    m_operation->log_handler->log("**********************************");
+    m_operation->log_handler->log(QString("startClient: command line arguments for %1").arg(client->name));
+    m_operation->log_handler->log(QString("dbDir=%1").arg(dbDir));
+    m_operation->log_handler->log(QString("logname=%1").arg(logname));
+    m_operation->log_handler->log(QString("Output File=%1").arg(outputFile));
+    m_operation->log_handler->log(QString("Config File=%1").arg(configFileName));
+    m_operation->log_handler->log(QString("Client DB Dir=%1").arg(clientDbDir));
+    m_operation->log_handler->log("**********************************");
 
 #ifdef Q_OS_LINUX
     // Check for the existence of the Config file.  Cannot continue if it does not exist
     QFile configFile(configFileName);
     if (!configFile.exists()) {
-        m_operation->log(QString("Error: config file does not exist for %1").arg(client->name));
+        m_operation->log_handler->log(QString("Error: config file does not exist for %1").arg(client->name));
 #ifdef DEBUG_TRACE
         qDebug() << "Leaving startClient: config file not exist!";
 #endif
@@ -518,7 +518,7 @@ bool WickrIOClientServerService::startClient(WickrBotClients *client)
     settings->beginGroup(WBSETTINGS_USER_HEADER);
     QString user = settings->value(WBSETTINGS_USER_USER, "").toString();
     if (user.isEmpty()) {
-        m_operation->log(QString("Error: config registry does not contain User name for %1").arg(client->name));
+        m_operation->log_handler->log(QString("Error: config registry does not contain User name for %1").arg(client->name));
 #ifdef DEBUG_TRACE
         qDebug() << "Leaving startClient: registry not contain user name!";
 #endif
@@ -561,7 +561,7 @@ bool WickrIOClientServerService::startClient(WickrBotClients *client)
     exec.setStandardOutputFile(outputFile);
     exec.setProcessChannelMode(QProcess::MergedChannels);
     if (exec.startDetached(command, arguments, workingDir)) {
-        m_operation->log(QString("Started client for %1").arg(client->name));
+        m_operation->log_handler->log(QString("Started client for %1").arg(client->name));
 
         // For clients that require a password, send it over
         if (needsPassword) {
@@ -601,8 +601,8 @@ bool WickrIOClientServerService::startClient(WickrBotClients *client)
 
         }
     } else {
-        m_operation->log(QString("Could NOT start client for %1").arg(client->name));
-        m_operation->log(QString("command=%1").arg(command));
+        m_operation->log_handler->log(QString("Could NOT start client for %1").arg(client->name));
+        m_operation->log_handler->log(QString("command=%1").arg(command));
 #ifdef DEBUG_TRACE
         qDebug() << "Leaving startClient: could not start!";
 #endif
@@ -625,13 +625,13 @@ void WickrIOClientServerService::getClients(bool start)
     clients = m_operation->m_botDB->getClients();
 
     if (clients.size() > 0) {
-//        m_operation->log("List of clients:");
+//        m_operation->log_handler->log("List of clients:");
         foreach (WickrBotClients *client, clients) {
             WickrBotProcessState state;
             QString processName = WBIOServerCommon::getClientProcessName(client);
 
             if (m_operation->m_botDB->getProcessState(processName, &state)) {
-//                m_operation->log(QString("process=%1, id=%2, process=%3, state=%4").arg(state.process).arg(state.id).arg(state.process_id).arg(state.state));
+//                m_operation->log_handler->log(QString("process=%1, id=%2, process=%3, state=%4").arg(state.process).arg(state.id).arg(state.process_id).arg(state.state));
             }
 
             if (start) {

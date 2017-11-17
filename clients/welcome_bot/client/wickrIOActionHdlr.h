@@ -72,11 +72,11 @@ private:
     void logCounts()
     {
         if (m_messagesSent > 0) {
-            m_operation->log("Messages sent", m_messagesSent);
+            m_operation->log_handler->log("Messages sent", m_messagesSent);
             m_messagesSent = 0;
         }
         if (m_messagesFailed > 0) {
-            m_operation->log("Messages failed", m_messagesFailed);
+            m_operation->log_handler->log("Messages failed", m_messagesFailed);
             m_messagesFailed = 0;
         }
     }

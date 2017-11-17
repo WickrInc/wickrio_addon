@@ -62,7 +62,7 @@ void InitTest::initTestCase()
             m_operation->databaseDir = cmd.remove("-dbdir=");
         } else if (cmd.startsWith("-log=") ) {
             QString logFile = cmd.remove("-log=");
-            m_operation->setupLog(logFile);
+            m_operation->log_handler->setupLog(logFile);
         } else if (cmd.startsWith("-clientdbdir=")) {
             clientDbPath = cmd.remove("-clientdbdir=");
         } else if (cmd.startsWith("-config=")) {

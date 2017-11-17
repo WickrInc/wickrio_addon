@@ -26,7 +26,7 @@ RequestHandler::RequestHandler(OperationData *operation, QObject* parent) :
         }
     }
 
-    m_operation->log("RequestHandler: created");
+    m_operation->log_handler->log("RequestHandler: created");
 }
 
 
@@ -35,7 +35,7 @@ RequestHandler::~RequestHandler() {
         perftests[i]->print();
         perftests[i]->deleteLater();
     }
-    m_operation->log("RequestHandler: deleted");
+    m_operation->log_handler->log("RequestHandler: deleted");
 }
 
 /**
@@ -53,7 +53,7 @@ void RequestHandler::service(stefanfrings::HttpRequest& request, stefanfrings::H
     QByteArray method=request.getMethod();
     QString apiKey("");
 
-    m_operation->log(QString("Controller: path=%1, method=%2").arg(QString(path)).arg(QString(method)));
+    m_operation->log_handler->log(QString("Controller: path=%1, method=%2").arg(QString(path)).arg(QString(method)));
 
     // Set a pointer to the WickrIO Database, in the parent class
     m_ioDB = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
@@ -152,7 +152,7 @@ void RequestHandler::service(stefanfrings::HttpRequest& request, stefanfrings::H
         perftests[i]->print();
     }
 
-    m_operation->log("RequestHandler: finished request");
+    m_operation->log_handler->log("RequestHandler: finished request");
 }
 
 

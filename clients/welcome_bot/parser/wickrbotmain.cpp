@@ -27,14 +27,14 @@ void WickrBotMain::doTimerWork()
     m_seccount++;
 
     if (--m_logcountdown <= 0) {
-        m_operation->log("Keep alive message");
+        m_operation->log_handler->log("Keep alive message");
         m_operation->updateProcessState(PROCSTATE_RUNNING);
         m_logcountdown = LOG_COUNTDOWN;
     }
 
     // If we have reached the limit of how long to run then log and exit
     if (m_operation->duration && m_seccount > m_operation->duration) {
-        m_operation->log("Duration time has been reached, exiting!");
+        m_operation->log_handler->log("Duration time has been reached, exiting!");
         m_operation->updateProcessState(PROCSTATE_DOWN);
         QCoreApplication::exit(1);
     }
@@ -46,7 +46,7 @@ void WickrBotMain::doTimerWork()
         // If the Queue handler fails then delete the queue handler.
         // It will be recreated on the next iteration.
         if (! m_qamqp->timerCall()) {
-            m_operation->log("Message queue handler failed.  Deleting handler.");
+            m_operation->log_handler->log("Message queue handler failed.  Deleting handler.");
             delete  m_qamqp;
             m_qamqp = NULL;
 
@@ -60,7 +60,7 @@ void WickrBotMain::doTimerWork()
         // If more than 5 Qfailures have occured then exit.
         // Hopefully a restart will fix the problem
         if (m_qfailures > 5) {
-            m_operation->log("More than 5 successive queue failures, exiting!");
+            m_operation->log_handler->log("More than 5 successive queue failures, exiting!");
             m_operation->updateProcessState(PROCSTATE_DOWN);
             QCoreApplication::exit(1);
         }

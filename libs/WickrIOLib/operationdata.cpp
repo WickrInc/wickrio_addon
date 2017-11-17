@@ -14,11 +14,11 @@ OperationData::OperationData() :
     receiveOn(false),
     m_appTimeOut(180),
     m_pid(QCoreApplication::applicationPid()),
-    m_wbLog(NULL),
     m_handleInbox(false)
 {
     m_waiting4image = false;
 
+    log_handler = new LogHandler();
     outputFile = "";
     gotOutputFile = false;
 
@@ -45,9 +45,9 @@ OperationData::~OperationData()
         m_client = NULL;
     }
 
-    if (m_wbLog != NULL) {
-        delete m_wbLog;
-        m_wbLog = NULL;
+    if (log_handler != NULL) {
+        delete log_handler;
+        log_handler = NULL;
     }
 
     if (m_botDB != NULL) {
@@ -105,22 +105,7 @@ void OperationData::loadFailed()
 }
 #endif
 
-void OperationData::setupLog(const QString &logFileName)
-{
-    m_wbLog = new WickrBotLog(logFileName);
-}
 
-QDateTime OperationData::lastLogTime()
-{
-    return m_wbLog->lastLogTime();
-}
-
-QString OperationData::getLogFile()
-{
-    if (m_wbLog == NULL)
-        return QString("");
-    return m_wbLog->getFileName();
-}
 
 bool OperationData::setApiKey(const QString &apiKey)
 {
@@ -160,7 +145,7 @@ QString OperationData::getResponseURL()
  */
 bool OperationData::alreadyActive(bool closeDbOnExit)
 {
-    QDateTime lastLogTime = this->lastLogTime();
+    QDateTime lastLogTime = this->log_handler->lastLogTime();
     qDebug() << "LastLogTime=" << lastLogTime.toString(LOGS_DATETIME_FORMAT);
 
     WickrBotProcessState procState;
@@ -194,7 +179,7 @@ bool OperationData::alreadyActive(bool closeDbOnExit)
             // Else it has been longer than 10 minutes, kill the old process and continue
             QString appName = QFileInfo(QCoreApplication::arguments().at(0)).fileName();
             if (WickrBotUtils::isRunning(appName, procState.process_id)) {
-                log(QString("Killing old process, id=%1").arg(procState.process_id));
+                log_handler->log(QString("Killing old process, id=%1").arg(procState.process_id));
                 WickrBotUtils::killProcess(procState.process_id);
             }
         }

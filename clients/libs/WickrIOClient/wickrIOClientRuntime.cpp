@@ -32,10 +32,10 @@ WickrIOClientRuntime::redirectedOutput(QtMsgType type, const QMessageLogContext 
     case QtDebugMsg:
     case QtWarningMsg:
     case QtCriticalMsg:
-        WickrIOClientRuntime::operationData()->output(str);
+        WickrIOClientRuntime::operationData()->log_handler->output(str);
         break;
     case QtFatalMsg:
-        WickrIOClientRuntime::operationData()->output(str);
+        WickrIOClientRuntime::operationData()->log_handler->output(str);
 //        abort();
     }
 }
@@ -50,8 +50,8 @@ void WickrIOClientRuntime::init(OperationData *operation) {
     WickrIOClientRuntime& me = WickrIOClientRuntime::get();
     me.m_operation = operation;
 
-    if (!operation->logGetOutput().isEmpty()) {
-        operation->log(QString("Redirecting output to %1").arg(operation->logGetOutput()));
+    if (!operation->log_handler->logGetOutput().isEmpty()) {
+        operation->log_handler->log(QString("Redirecting output to %1").arg(operation->log_handler->logGetOutput()));
         qInstallMessageHandler(redirectedOutput);
     }
 }

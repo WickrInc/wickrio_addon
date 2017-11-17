@@ -115,10 +115,10 @@ void WickrIOLoginHdlr::initiateLogin()
         if (creatingUser) {
             // If the database already exists then cannot do a Registration!
             if( WickrDBAdapter::doesDBExist() ) {
-                m_operation->log(QString("Creating user will fail because DB already exists!"));
+                m_operation->log_handler->log(QString("Creating user will fail because DB already exists!"));
                 emit signalExit();
             } else {
-                m_operation->log(QString("Starting registration to create user " + userid));
+                m_operation->log_handler->log(QString("Starting registration to create user " + userid));
 
                 QString transID;
                 registerUser(userid, password, transID, true, false, false);
@@ -126,7 +126,7 @@ void WickrIOLoginHdlr::initiateLogin()
         } else {
             // If the database exists then just login
             if (WickrDBAdapter::doesDBExist()) {
-                m_operation->log(QString("Starting login for user " + userid));
+                m_operation->log_handler->log(QString("Starting login for user " + userid));
 
                 slotLoginStart(userid, password);
             } else {
@@ -145,12 +145,12 @@ void WickrIOLoginHdlr::initiateLogin()
  */
 void WickrIOLoginHdlr::slotRegistrationDone(WickrRegisterUserContext *c)
 {
-    m_operation->log("Received registration");
+    m_operation->log_handler->log("Received registration");
 
     if(!c->isSuccess()) {
         // If we failed because of something other than bad credentials then show the result
         if (c->apiCode().getValue() != BAD_SYNC_CREDENTIALS) {
-            m_operation->log(c->errorString());
+            m_operation->log_handler->log(c->errorString());
             emit signalOnlineFlag(false);
         }
     } else {
@@ -205,7 +205,7 @@ void WickrIOLoginHdlr::slotLoginStart(const QString& username, const QString& pa
 void WickrIOLoginHdlr::slotLoginDone(WickrLoginContext *ls)
 {
     if (ls->isSuccess()) {
-        m_operation->log("Login successful");
+        m_operation->log_handler->log("Login successful");
         m_loginState = LoggedIn;
         m_consecutiveLoginFailures = 0;
 
@@ -255,9 +255,9 @@ void WickrIOLoginHdlr::slotLoginDone(WickrLoginContext *ls)
 
             /* The login failed, should we reset the database?
              */
-            m_operation->error("Login failed!");
-            m_operation->error("Program exiting!");
-            m_operation->error(ls->errorString());
+            m_operation->log_handler->error("Login failed!");
+            m_operation->log_handler->error("Program exiting!");
+            m_operation->log_handler->error(ls->errorString());
 
 
             m_consecutiveLoginFailures++;
@@ -271,9 +271,9 @@ void WickrIOLoginHdlr::slotLoginDone(WickrLoginContext *ls)
              * password is correct.  So do NOT attempt to register which will fail.
              */
             if (ls->okToRunWithoutServer()) {
-                m_operation->error("Login failed to server, but local login was success!");
-                m_operation->error("Program exiting!");
-                m_operation->error(ls->errorString());
+                m_operation->log_handler->error("Login failed to server, but local login was success!");
+                m_operation->log_handler->error("Program exiting!");
+                m_operation->log_handler->error(ls->errorString());
 
                 m_consecutiveLoginFailures++;
                 m_logins.at(m_curLoginIndex)->m_failedLogin++;

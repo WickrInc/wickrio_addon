@@ -52,10 +52,10 @@ void WickrIOReceiveThread::onTimerAction()
             m_operation->m_botDB->incStatistic(m_operation->m_client->id, DB_STATID_MSGS_RX, DB_STATDESC_TOTAL, msgs);
 
             if (msgs > 0) {
-                m_operation->log("Messages received", msgs);
+                m_operation->log_handler->log("Messages received", msgs);
             }
             if (fails > 0) {
-                m_operation->log("Messages received failed", fails);
+                m_operation->log_handler->log("Messages received failed", fails);
             }
         }
     }

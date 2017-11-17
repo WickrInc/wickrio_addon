@@ -82,7 +82,7 @@ WickrIOActionHdlr::sendMessageTo1To1(WickrCore::WickrConvo *convo)
 //                WickrCore::WickrAttachment a = WickrCore::WickrAttachment(contents);
 //                attachments.append(a);
             } else {
-                m_operation->error("Cannot open attachment file: "+attachmentFile);
+                m_operation->log_handler->error("Cannot open attachment file: "+attachmentFile);
             }
         }
     }
@@ -142,13 +142,13 @@ bool WickrIOActionHdlr::processActionSendMessage(WickrBotJson *jsonHandler, int 
     if (jsonHandler->getUserIDs().size() == 0 && jsonHandler->getUserNames().size() == 0) {
         QString vGroupID = jsonHandler->getVGroupID();
         if (vGroupID.isEmpty()) {
-            m_operation->error("Send message has no users or vgroupid");
+            m_operation->log_handler->error("Send message has no users or vgroupid");
             return false;
         }
 
         WickrCore::WickrConvo *convo = WickrCore::WickrConvo::getConvoWithvGroupID(vGroupID);
         if ( convo == 0 ) {
-            m_operation->error("cannot convo with vgroupid = " + vGroupID);
+            m_operation->log_handler->error("cannot convo with vgroupid = " + vGroupID);
             m_messagesFailed++;
             return false;
         }
@@ -165,14 +165,14 @@ bool WickrIOActionHdlr::processActionSendMessage(WickrBotJson *jsonHandler, int 
 
         QString userIDHashSecure = WickrCore::WickrUser::activeSessionGetSecureAlias(userID, status);
         if (status.isError()) {
-            m_operation->error("Error hashing userID!");
+            m_operation->log_handler->error("Error hashing userID!");
             m_messagesFailed++;
             return false;
         }
 
         QByteArray userIDSecure = encryptUserDataString(userID, status);
         if (status.isError()) {
-            m_operation->error("Error encrypting userID!");
+            m_operation->log_handler->error("Error encrypting userID!");
             m_messagesFailed++;
             return false;
         }
@@ -199,7 +199,7 @@ bool WickrIOActionHdlr::processActionSendMessage(WickrBotJson *jsonHandler, int 
                                                    QString(),
                                                    false);
         if (!user) {
-            m_operation->error("cannot find/create user with ID = " + userID);
+            m_operation->log_handler->error("cannot find/create user with ID = " + userID);
             m_messagesFailed++;
             return false;
         } else {
@@ -348,7 +348,7 @@ void WickrIOActionHdlr::slotSendMessagePostGetUsers()
 void WickrIOActionHdlr::sendMessageToConvo(WickrCore::WickrConvo *convo)
 {
     if (!convo) {
-        m_operation->error("Convo is not set!");
+        m_operation->log_handler->error("Convo is not set!");
         m_processAction = false;
         m_messagesFailed++;
 
@@ -378,7 +378,7 @@ void WickrIOActionHdlr::sendMessageToConvo(WickrCore::WickrConvo *convo)
                 WickrCore::WickrAttachment a = WickrCore::WickrAttachment(contents);
                 attachments.append(a);
             } else {
-                m_operation->error("Cannot open attachment file: "+attachmentFile);
+                m_operation->log_handler->error("Cannot open attachment file: "+attachmentFile);
             }
         }
     }
@@ -560,7 +560,7 @@ void WickrIOActionHdlr::slotMessageDone(WickrSendContext *context)
         context->deleteLater();
         emit signalStartProcessDatabase(m_curActionID);
     } else {
-//        m_operation->error(QString("Message send error: " + context->getResult()));
+//        m_operation->log_handler->error(QString("Message send error: " + context->getResult()));
         m_messagesFailed++;
         // Increment the statistic in the database
         if (m_operation->m_botDB != NULL) {

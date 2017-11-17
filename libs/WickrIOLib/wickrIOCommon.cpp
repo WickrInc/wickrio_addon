@@ -1,7 +1,7 @@
 #include <QStandardPaths>
 #include <QDir>
 
-#include "wickrIOCommon.h".h"
+#include "wickrIOCommon.h"
 #include "wickrbotsettings.h"
 
 /**

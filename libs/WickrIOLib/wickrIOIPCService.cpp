@@ -164,43 +164,43 @@ void
 WickrIOIPCThread::slotStartIPC(OperationData *operation)
 {
     m_operation = operation;
-    m_operation->log("Started WickrIOIPCThread");
+    m_operation->log_handler->log("Started WickrIOIPCThread");
 
     m_ipc = new WickrBotIPC();
     m_ipc->startServer();
 
-    m_operation->log(QString("server port=%1").arg(m_ipc->getServerPort()));
+    m_operation->log_handler->log(QString("server port=%1").arg(m_ipc->getServerPort()));
 
     if (m_operation->m_botDB != NULL && m_operation->m_botDB->isOpen()) {
         m_operation->m_botDB->setProcessIPC(m_operation->processName, m_ipc->getServerPort());
     } else {
-        m_operation->log("WickrIOIPCThread: database is not open yet!");
+        m_operation->log_handler->log("WickrIOIPCThread: database is not open yet!");
     }
 
-    m_operation->log("WickrIOIPCThread: processStartedA");
+    m_operation->log_handler->log("WickrIOIPCThread: processStartedA");
     QObject::connect(m_ipc, &WickrBotIPC::signalGotMessage, [=](const QString &message, int peerPort) {
         Q_UNUSED(peerPort);
         if (message == WBIO_IPCCMDS_STOP) {
-            m_operation->log(QString("GOT MESSAGE: %1").arg(WBIO_IPCCMDS_STOP));
-            m_operation->log("WickrIOIPCThread::processStarted: QUITTING");
+            m_operation->log_handler->log(QString("GOT MESSAGE: %1").arg(WBIO_IPCCMDS_STOP));
+            m_operation->log_handler->log("WickrIOIPCThread::processStarted: QUITTING");
             emit signalGotStopRequest();
         } else if (message == WBIO_IPCCMDS_PAUSE) {
-            m_operation->log(QString("GOT MESSAGE: %1").arg(WBIO_IPCCMDS_PAUSE));
-            m_operation->log("WickrIOIPCThread::processStarted: PAUSING");
+            m_operation->log_handler->log(QString("GOT MESSAGE: %1").arg(WBIO_IPCCMDS_PAUSE));
+            m_operation->log_handler->log("WickrIOIPCThread::processStarted: PAUSING");
             emit signalGotPauseRequest();
         } else {
             QStringList pieces = message.split("=");
             if (pieces.size() == 2) {
                 QString type = pieces.at(0);
                 QString value = pieces.at(1);
-                m_operation->log(QString("GOT MESSAGE: %1").arg(type));
+                m_operation->log_handler->log(QString("GOT MESSAGE: %1").arg(type));
                 emit signalReceivedMessage(type, value);
             } else {
-                m_operation->log("GOT MESSAGE: invalid message:" + message);
+                m_operation->log_handler->log("GOT MESSAGE: invalid message:" + message);
             }
         }
     });
-    m_operation->log("WickrIOIPCThread: processStartedB");
+    m_operation->log_handler->log("WickrIOIPCThread: processStartedB");
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////

@@ -105,7 +105,8 @@ HEADERS += \
     wickrbotlib.h \
     perftest.h \
     wickrbotstatistics.h \
-    clientactions.h
+    clientactions.h \
+    loghandler.h
 
 SOURCES += \
     wickrIOAppSettings.cpp \
@@ -124,4 +125,5 @@ SOURCES += \
     wickrbotutils.cpp \
     perftest.cpp \
     wickrbotstatistics.cpp \
-    clientactions.cpp
+    clientactions.cpp \
+    loghandler.cpp
