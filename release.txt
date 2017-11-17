@@ -1,4 +1,5 @@
-Release Notes from v4.0-release to v4.9.7-12:
+Release Notes from v4.0-release to v4.9.8-2:
+  * Changing logging for daemons to keep files small
   * Changes to fix issues with Wickr IO
   * Fixes for uber
   * Integrate the 4.9 changes from desktop other major changes as well
