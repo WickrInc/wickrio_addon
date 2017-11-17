@@ -1,6 +1,6 @@
 WICKR_SDK = wickr-sdk
 LOCALREPO = localRepo/$(WICKR_SDK)
-SDK_BRANCH = v4.9
+SDK_BRANCH = master
 
 ifeq ($(OS),Windows_NT)
     DIR := $(subst C:,,${CURDIR})

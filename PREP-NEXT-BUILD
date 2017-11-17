@@ -3,8 +3,8 @@ echo This script should run to advance the build number
 echo Following this, clean everything and build everything!
 
 WICKRIOTOPBRANCH="master"
-WICKRSDKBRANCH="v4.9"
-WICKRCOREBRANCH="Desktop_v4.9"
+WICKRSDKBRANCH="master"
+WICKRCOREBRANCH="master"
 
 # make sure we are in specified branch and up to date...
 set -e
