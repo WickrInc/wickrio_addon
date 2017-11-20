@@ -111,7 +111,8 @@ int main(int argc, char *argv[])
     QString orgname = WBIO_ORGANIZATION;
 
     wickrProductSetProductType(ClientVersionInfo::getProductType());
-    WickrURLs::setDefaultBaseURL(ClientConfigurationInfo::DefaultBaseURL);
+    WickrURLs::setDefaultBaseURLs(ClientConfigurationInfo::DefaultBaseURL,
+                                  ClientConfigurationInfo::DefaultDirSearchBaseURL);
 
     qDebug() <<  appname << "System was booted" << WickrUtil::formatTimestamp(WickrAppClock::getBootTime());
 
@@ -221,6 +222,7 @@ int main(int argc, char *argv[])
                                   ClientVersionInfo::getOrgName(),
                                   ClientVersionInfo::getAppName(),
                                   ClientConfigurationInfo::DefaultBaseURL,
+                                  ClientConfigurationInfo::DefaultDirSearchBaseURL,
                                   productionMode,
                                   clientType,
                                   clientDbPath);

@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     }
 
     wickrProductSetProductType(ClientVersionInfo::getProductType());
-    WickrURLs::setDefaultBaseURL(ClientConfigurationInfo::DefaultBaseURL);
+    WickrURLs::setDefaultBaseURLs(ClientConfigurationInfo::DefaultBaseURL, ClientConfigurationInfo::DefaultDirSearchBaseURL);
 
     bool debugOutput = false;
 

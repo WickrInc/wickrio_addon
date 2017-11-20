@@ -99,7 +99,7 @@ private slots:
     void pauseAndExitSlot();
     void slotReceivedMessage(QString type, QString value);
 
-    void slotSwitchboardServiceState(WickrServiceState state, const QString& text);
+    void slotSwitchboardServiceState(WickrServiceState state, SBSessionStatus sessionStatus, const QString& text);
     void slotMessageServiceState(WickrServiceState state);
 
     void slotTaskServiceState(WickrServiceState state);

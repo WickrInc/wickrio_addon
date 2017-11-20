@@ -41,7 +41,8 @@ void InitTest::initTestCase()
     QString orgname = WBIO_ORGANIZATION;
 
     wickrProductSetProductType(ClientVersionInfo::getProductType());
-    WickrURLs::setDefaultBaseURL(ClientConfigurationInfo::DefaultBaseURL);
+    WickrURLs::setDefaultBaseURLs(ClientConfigurationInfo::DefaultBaseURL,
+                                  ClientConfigurationInfo::DefaultDirSearchBaseURL);
 
     qDebug() <<  appname << "System was booted" << WickrUtil::formatTimestamp(WickrAppClock::getBootTime());
 
@@ -120,6 +121,7 @@ void InitTest::initTestCase()
                                   ClientVersionInfo::getOrgName(),
                                   ClientVersionInfo::getAppName(),
                                   ClientConfigurationInfo::DefaultBaseURL,
+                                  ClientConfigurationInfo::DefaultDirSearchBaseURL,
                                   productionMode,
                                   clientType);
 

@@ -12,6 +12,7 @@
 #include "wickrIOIPCService.h"
 #include "user/wickrUser.h"
 #include "services/wickrTaskService.h"
+#include "services/wickrSwitchboardService.h"
 
 #include "wickrIOLoginHdlr.h"
 #include "wickrIOProvisionHdlr.h"
@@ -75,7 +76,7 @@ private slots:
     void stopAndExitSlot();
     void pauseAndExitSlot();
 
-    void slotSwitchboardServiceState(WickrServiceState state, const QString& text);
+    void slotSwitchboardServiceState(WickrServiceState state, SBSessionStatus sessionStatus, const QString& text);
     void slotMessageServiceState(WickrServiceState state);
 
     void slotTaskServiceState(WickrServiceState state);

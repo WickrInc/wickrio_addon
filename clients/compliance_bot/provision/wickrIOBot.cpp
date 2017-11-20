@@ -116,6 +116,7 @@ WickrIOBot::newBotCreate()
                                   ClientVersionInfo::getOrgName(),
                                   ClientVersionInfo::getAppName(),
                                   ClientConfigurationInfo::DefaultBaseURL,
+                                  ClientConfigurationInfo::DefaultDirSearchBaseURL,
                                   productionMode,
                                   clientType,
                                   m_clientDbPath);

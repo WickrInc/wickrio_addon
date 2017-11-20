@@ -86,7 +86,7 @@ private slots:
     void stopAndExitSlot();
     void pauseAndExitSlot();
 
-    void slotSwitchboardServiceState(WickrServiceState state, const QString& text);
+    void slotSwitchboardServiceState(WickrServiceState state, SBSessionStatus sessionStatus, const QString& text);
     void slotMessageServiceState(WickrServiceState state);
 
     void slotTaskServiceState(WickrServiceState state);

@@ -16,23 +16,32 @@ const QString ClientConfigurationInfo::BugsnagAPI = "";
 //  DefaultHost && DefaultBaseURL
 
 #if defined(WICKR_BLACKOUT) && defined(WICKR_PRODUCTION)
-    const QString ClientConfigurationInfo::DefaultBaseURL = "https://localhost/112/src";
+    const QString ClientConfigurationInfo::DefaultBaseURL = "https://localhost/117/src";
+    const QString ClientConfigurationInfo::DefaultDirSearchBaseURL = "https://directory-dev.secmv.net";
 #elif defined(WICKR_BLACKOUT) && defined(WICKR_DEBUG)
-    const QString ClientConfigurationInfo::DefaultBaseURL = "https://messaging.secmv.net/116/src";
+    const QString ClientConfigurationInfo::DefaultBaseURL = "https://messaging.secmv.net/117/src";
+    const QString ClientConfigurationInfo::DefaultDirSearchBaseURL = "https://directory-dev.secmv.net";
 #elif defined(WICKR_MESSENGER) && defined(WICKR_PRODUCTION)
-    const QString ClientConfigurationInfo::DefaultBaseURL = "https://messaging-me-prod.wickr.com/116/src";
+    const QString ClientConfigurationInfo::DefaultBaseURL = "https://messaging-me-prod.wickr.com/117/src";
+    const QString ClientConfigurationInfo::DefaultDirSearchBaseURL = "https://directory-dev.secmv.net";
 #elif defined(WICKR_MESSENGER) && defined(WICKR_BETA)
-    const QString ClientConfigurationInfo::DefaultBaseURL = "https://messaging-me-prod.wickr.com/116/src";
+    const QString ClientConfigurationInfo::DefaultBaseURL = "https://messaging-me-prod.wickr.com/117/src";
+    const QString ClientConfigurationInfo::DefaultDirSearchBaseURL = "https://directory-dev.secmv.net";
 #elif defined(WICKR_MESSENGER) && defined(WICKR_ALPHA)
-    const QString ClientConfigurationInfo::DefaultBaseURL = "https://messaging-wickrme-test.secmv.net/116/src";
+    const QString ClientConfigurationInfo::DefaultBaseURL = "https://messaging-wickrme-test.secmv.net/117/src";
+    const QString ClientConfigurationInfo::DefaultDirSearchBaseURL = "https://directory-dev.secmv.net";
 #elif defined(WICKR_PRODUCTION)
-    const QString ClientConfigurationInfo::DefaultBaseURL = "https://messaging-prod.wickr.com/116/src";
+    const QString ClientConfigurationInfo::DefaultBaseURL = "https://messaging-prod.wickr.com/117/src";
+    const QString ClientConfigurationInfo::DefaultDirSearchBaseURL = "https://directory-dev.secmv.net";
 #elif defined(WICKR_BETA)
-    const QString ClientConfigurationInfo::DefaultBaseURL =  "https://messaging-pro-beta.secmv.net/116/src";
+    const QString ClientConfigurationInfo::DefaultBaseURL =  "https://messaging-pro-beta.secmv.net/117/src";
+    const QString ClientConfigurationInfo::DefaultDirSearchBaseURL = "https://directory-dev.secmv.net";
 #elif defined(WICKR_QA)
-    const QString ClientConfigurationInfo::DefaultBaseURL = "https://messaging-qa4.secmv.net/116/src";
+    const QString ClientConfigurationInfo::DefaultBaseURL = "https://messaging-qa4.secmv.net/117/src";
+    const QString ClientConfigurationInfo::DefaultDirSearchBaseURL = "https://directory-dev.secmv.net";
 #elif defined(WICKR_ALPHA)
-    const QString ClientConfigurationInfo::DefaultBaseURL = "https://messaging-dev.secmv.net/116/src";
+    const QString ClientConfigurationInfo::DefaultBaseURL = "https://messaging-dev.secmv.net/117/src";
+    const QString ClientConfigurationInfo::DefaultDirSearchBaseURL = "https://directory-dev.secmv.net";
 #endif
 
 

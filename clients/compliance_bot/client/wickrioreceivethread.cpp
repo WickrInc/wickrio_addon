@@ -136,10 +136,15 @@ WickrIOReceiverMgr::WickrIOReceiverMgr() :
  * @param msg
  * @return true if still using the msg, false if done with it
  */
-bool WickrIOReceiverMgr::dispatch(WickrCore::WickrInbox *msg)
+bool WickrIOReceiverMgr::dispatch(WickrCore::WickrMessage *msg)
 {
     bool extendProcessing = false;
     bool failedProcessing = false;
+
+    // Do not handle outbox sync messages
+    if (msg->isSyncedOutboxConversion()) {
+        return false;
+    }
 
     /*
      * Check if there is a callback defined, for this current client.
@@ -218,6 +223,7 @@ bool WickrIOReceiverMgr::dispatch(WickrCore::WickrInbox *msg)
     /*
      * Insert message specific stuff
      */
+    WickrCore::WickrInbox *inbox = static_cast<WickrCore::WickrInbox*>(msg);
 
     WickrMsgClass mclass = msg->getMsgClass();
     jsonObject.insert(APIJSON_MSGTYPE, msg->getMessageType());
@@ -226,7 +232,7 @@ bool WickrIOReceiverMgr::dispatch(WickrCore::WickrInbox *msg)
         QString txt = msg->getCachedText();
         jsonObject.insert(APIJSON_MESSAGE, txt);
     } else if (mclass == MsgClass_File) {
-        if (!processFileMsg(jsonObject,  msg)) {
+        if (!processFileMsg(jsonObject,  inbox)) {
             //TODO: what to do if this returns false
             failedProcessing = true;
         } else {
@@ -234,17 +240,17 @@ bool WickrIOReceiverMgr::dispatch(WickrCore::WickrInbox *msg)
             extendProcessing = true;
         }
     } else if (mclass == MsgClass_KeyVerification) {
-        if (!processKeyVerificationMsg(jsonObject,  msg)) {
+        if (!processKeyVerificationMsg(jsonObject,  inbox)) {
             //TODO: what to do if this returns false
             failedProcessing = true;
         }
     } else if (mclass == MsgClass_Control) {
-        if (!processControlMsg(jsonObject,  msg)) {
+        if (!processControlMsg(jsonObject,  inbox)) {
             //TODO: what to do if this returns false
             failedProcessing = true;
         }
     } else if (mclass == MsgClass_Call) {
-        if (!processCallingMsg(jsonObject, msg)) {
+        if (!processCallingMsg(jsonObject, inbox)) {
             failedProcessing = true;
         }
     }
