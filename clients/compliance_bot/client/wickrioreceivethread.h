@@ -27,7 +27,7 @@ class WickrIOReceiverMgr : public WickrMessageMgr
 public:
     WickrIOReceiverMgr();
 
-    bool dispatch(WickrCore::WickrInbox *msg);
+    bool dispatch(WickrCore::WickrMessage *msg);
 
     int messagesReceived() {
         int msgs = m_messagesRecv;

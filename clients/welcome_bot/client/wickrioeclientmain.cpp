@@ -84,6 +84,10 @@ WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
                 this,
                 &WickrIOEClientMain::slotProfileImageUpdated);
 #endif
+        connect(swbsvc,
+                &WickrSwitchboardService::signalDownloadAtLoginStart,
+                this,
+                &WickrIOEClientMain::slotMessageDownloadStatusStart);
 
         // Signals from message service
         connect(msgsvc,
@@ -101,10 +105,6 @@ WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
 #endif
             qDebug() << "Your Wickr ID has been suspended. If you feel this is in error please contact us by email at support@wickr.com" << "Suspended account";
         });
-        connect(msgsvc,
-                &WickrMessageService::signalDownloadAtLoginStart,
-                this,
-                &WickrIOEClientMain::slotMessageDownloadStatusStart);
         connect(msgsvc,
                 &WickrMessageService::signalDownloadAtLoginUpdate,
                 this,
@@ -463,7 +463,7 @@ bool WickrIOEClientMain::startTheClient()
  * Can be used to synchronize startup/shutdown procedures.
  * @param state
  */
-void WickrIOEClientMain::slotSwitchboardServiceState(WickrServiceState state, const QString& text)
+void WickrIOEClientMain::slotSwitchboardServiceState(WickrServiceState state, SBSessionStatus sessionStatus, const QString& text)
 {
     switch(state) {
     case WickrServiceState::SERVICE_LOGGED_IN:

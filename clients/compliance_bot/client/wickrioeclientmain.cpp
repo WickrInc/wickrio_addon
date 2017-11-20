@@ -80,6 +80,11 @@ WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
                 &WickrSwitchboardService::signalAdminDeviceSuspend,
                 this,
                 &WickrIOEClientMain::slotAdminDeviceSuspend);
+        connect(swbsvc,
+                &WickrSwitchboardService::signalDownloadAtLoginStart,
+                this,
+                &WickrIOEClientMain::slotMessageDownloadStatusStart);
+
 #if 0
         connect(swbsvc,
                 &WickrSwitchboardService::signalProfileImageUpdated,
@@ -103,10 +108,6 @@ WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
 #endif
             qDebug() << "Your Wickr ID has been suspended. If you feel this is in error please contact us by email at support@wickr.com" << "Suspended account";
         });
-        connect(msgsvc,
-                &WickrMessageService::signalDownloadAtLoginStart,
-                this,
-                &WickrIOEClientMain::slotMessageDownloadStatusStart);
         connect(msgsvc,
                 &WickrMessageService::signalDownloadAtLoginUpdate,
                 this,
@@ -544,7 +545,7 @@ bool WickrIOEClientMain::startTheClient()
  * Can be used to synchronize startup/shutdown procedures.
  * @param state
  */
-void WickrIOEClientMain::slotSwitchboardServiceState(WickrServiceState state, const QString& text)
+void WickrIOEClientMain::slotSwitchboardServiceState(WickrServiceState state, SBSessionStatus sessionStatus, const QString& text)
 {
     switch(state) {
     case WickrServiceState::SERVICE_LOGGED_IN:
@@ -556,15 +557,52 @@ void WickrIOEClientMain::slotSwitchboardServiceState(WickrServiceState state, co
 
     case WickrServiceState::SERVICE_LOGGED_OUT:
 #if 0
-        // If client state is LOGIN STARTED, we will force logout of switchboard, and
-        // subsequently log client out.
-        if (m_clientState == SERVICE_LOGIN_COMPLETE || text == "Login Timeout") {
-            if (text == "Login Timeout")
-                qDebug() << "Switchboard login has timed out, you are being logged out.";
-            else
-                qDebug() << "Switchboard currently unavailable, you are being logged out.";
+        switch(sessionStatus) {
+        case SBSessionStatus::NETWORK_ERROR:
+            // NETWORK ERROR STATE: Update network status, and reset interfaces
+            //
+            // Network status
+            m_quickMain->getDashboardData()->slotNetworkState(false);
+
+            // Flag Task service to reset communications (direct call, although could be called by signal)
+            WickrCore::WickrRuntime::taskSvcResetNetwork();
+
+            // Flag Message service to reset communications (signals)
+            WickrCore::WickrRuntime::msgSvcResetNetwork();
+            break;
+
+        case SBSessionStatus::LOGIN_AUTH_FAIL:
+            // LOGIN FAILURE: Login failure is due to invalid authorization token, so let's perform relogin.
+            //
+            slotReloginStart();
+            break;
+
+        case SBSessionStatus::LOGIN_TIMEOUT:
+            // LOGIN TIMEOUT: Timeout waiting for login response.
+            //
+            showError("Switchboard login has timed out, you are being logged out.");
             WickrCore::WickrRuntime::swbSvcLogout();
             logout();
+            break;
+
+        case SBSessionStatus::SENDER_VALIDATION_ERROR:
+            // SENDER VALIDATION ERROR: Sender validation error occurred, this forces logoff to ensure in-order
+            //                          processing without undue code complexity. Should only be in cases of network failure.
+            //
+            showError("Server connectivity error has occurred, you are being logged out. No data loss.");
+            WickrCore::WickrRuntime::swbSvcLogout();    // Force switchboard logout immediately
+            logout();
+            break;
+
+        default:
+            // CHECK CLIENT STATE: If switchboard service logs out and client is in LOGIN_COMPLETE state, then
+            //                     force logout of client, as it is most likely an availability issue.
+            if (m_clientState == LOGIN_COMPLETE) {
+                showError("Switchboard currently unavailable, you are being logged out.");
+                WickrCore::WickrRuntime::swbSvcLogout();
+                logout();
+            }
+            break;
         }
 #endif
 

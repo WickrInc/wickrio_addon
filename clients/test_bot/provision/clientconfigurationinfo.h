@@ -40,6 +40,7 @@ public:
     static const QString DefaultNPLUserSuffix;
 
     static const QString DefaultBaseURL;
+    static const QString DefaultDirSearchBaseURL;
 
 #ifdef WICKR_SPARKLE_ENABLED
     static const QString SparkleAutoUpdateURL;

@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
     QString orgname = WBIO_ORGANIZATION;
 
     wickrProductSetProductType(ClientVersionInfo::getProductType());
-    WickrURLs::setDefaultBaseURL(ClientConfigurationInfo::DefaultBaseURL);
+    WickrURLs::setDefaultBaseURLs(ClientConfigurationInfo::DefaultBaseURL, ClientConfigurationInfo::DefaultDirSearchBaseURL);
 
     qDebug() <<  appname << "System was booted" << WickrUtil::formatTimestamp(WickrAppClock::getBootTime());
 
@@ -217,10 +217,11 @@ int main(int argc, char *argv[])
                                   ClientVersionInfo::getOrgName(),
                                   ClientVersionInfo::getAppName(),
                                   ClientConfigurationInfo::DefaultBaseURL,
+                                  ClientConfigurationInfo::DefaultDirSearchBaseURL,
                                   productionMode,
                                   clientType,
                                   clientDbPath,
-                                  WickrCore::WickrRuntime::DATA_MGMT_LAYER_1);    
+                                  WickrCore::WickrRuntime::DATA_MGMT_LAYER_1);
 
     // If the user did not set the config file then lets try a default location
     if (wbConfigFile.isEmpty()) {

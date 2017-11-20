@@ -197,7 +197,8 @@ bool WickrIOActionHdlr::processActionSendMessage(WickrBotJson *jsonHandler, int 
                                                    false,
                                                    0,
                                                    QString(),
-                                                   false);
+                                                   false,
+                                                   0);
         if (!user) {
             m_operation->log_handler->error("cannot find/create user with ID = " + userID);
             m_messagesFailed++;
