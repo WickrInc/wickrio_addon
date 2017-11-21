@@ -534,7 +534,7 @@ RequestHandler::processAddRoom(stefanfrings::HttpRequest& request, stefanfrings:
     // Get the list of masters
     masterslist = getJsonArrayValue(roomObject, APIJSON_NAME, APIJSON_ROOMMASTERS);
     if (masterslist.size() == 0) {
-        sendFailure(400, "Invalid members list", response);
+        sendFailure(400, "Invalid masters list", response);
         return;
     }
 

@@ -536,11 +536,12 @@ RequestHandler::processAddRoom(stefanfrings::HttpRequest& request, stefanfrings:
     }
 
     QStringList memberHashes;
+    QStringList memberSearchList;
     foreach (QString member, memberslist) {
         WickrCore::WickrUser *user = WickrCore::WickrUser::getUserWithAlias(member);
         if (user == NULL) {
-            sendFailure(400, "Cannot find user record for member", response);
-            return;
+            memberSearchList.append(member);
+            continue;
         }
         QString idHash = user->getServerIDHash();
         if (idHash.isEmpty()) {
@@ -550,10 +551,63 @@ RequestHandler::processAddRoom(stefanfrings::HttpRequest& request, stefanfrings:
         memberHashes.append(idHash);
     }
 
+    // TODO: Need to check if is a master in the room
+    if (memberSearchList.size() > 0) {
+
+        // Post a request to th server for each member to search for
+        foreach (QString searchMember, memberSearchList) {
+            WickrUserValidateSearch *c = new WickrUserValidateSearch(WICKR_USERNAME_ALIAS,searchMember,0);
+            QObject::connect(c, &WickrUserValidateSearch::signalRequestCompleted, [=](WickrUserValidateSearch *context) {
+                emit signalMemberSearchDone();
+                context->deleteLater();
+            });
+            WickrCore::WickrRuntime::taskSvcMakeRequest(c);
+
+            QTimer timer;
+            QEventLoop loop;
+
+            loop.connect(this, SIGNAL(signalMemberSearchDone()), SLOT(quit()));
+            connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+
+            int loopCount = 10;
+
+            while (loopCount-- > 0) {
+                timer.start(1000);
+                loop.exec();
+
+                if (timer.isActive()) {
+                    timer.stop();
+                    break;
+                } else {
+                    qDebug() << "CONSOLE:Timed out waiting for User Validate Search response!";
+                    sendFailure(400, "Failed to create room", response);
+                    return;
+                }
+            }
+        }
+
+        // Now make sure that user records have been created for the searched members
+        foreach (QString searchMember, memberSearchList) {
+            WickrCore::WickrUser *user = WickrCore::WickrUser::getUserWithAlias(searchMember);
+            if (user == NULL) {
+                QString errMsg = "Cannot find user record for member " + searchMember;
+                sendFailure(400, errMsg.toLatin1(), response);
+                return;
+            }
+            QString idHash = user->getServerIDHash();
+            if (idHash.isEmpty()) {
+                QString errMsg = "Problem handling user record for member " + searchMember;
+                sendFailure(500, errMsg.toLatin1(), response);
+                return;
+            }
+            memberHashes.append(idHash);
+        }
+    }
+
     // Get the list of masters
     masterslist = getJsonArrayValue(roomObject, APIJSON_NAME, APIJSON_ROOMMASTERS);
     if (masterslist.size() == 0) {
-        sendFailure(400, "Invalid members list", response);
+        sendFailure(400, "Invalid masters list", response);
         return;
     }
 
@@ -578,7 +632,6 @@ RequestHandler::processAddRoom(stefanfrings::HttpRequest& request, stefanfrings:
     QString mastersString = masterHashes.join(',');
     QString membersString = memberHashes.join(',');
 
-#if 1
     WickrCore::WickrSecureRoomMgr *roomMgr = WickrCore::WickrRuntime::getRoomMgr();
     if (roomMgr) {
         roomMgr->createSecureRoomConvoStart(membersString,
@@ -588,9 +641,34 @@ RequestHandler::processAddRoom(stefanfrings::HttpRequest& request, stefanfrings:
                                             description,
                                             bor,
                                             true);
+
+
+
+
+        QTimer timer;
+        QEventLoop loop;
+
+        loop.connect(roomMgr, SIGNAL(roomCreatedServerSuccess()), SLOT(quit()));
+//        loop.connect(roomMgr, SIGNAL(signalError()), SLOT(quit()));
+        connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+
+        int loopCount = 10;
+
+        while (loopCount-- > 0) {
+            timer.start(1000);
+            loop.exec();
+
+            if (timer.isActive()) {
+                timer.stop();
+                break;
+            } else {
+                qDebug() << "CONSOLE:Timed out waiting for create secure room response!";
+                sendFailure(400, "Failed to create room", response);
+                return;
+            }
+        }
     }
 
-#endif
     sendSuccess(response);
 }
 

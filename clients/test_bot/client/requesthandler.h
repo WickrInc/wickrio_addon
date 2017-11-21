@@ -71,6 +71,10 @@ private:
     // Performance testing stuff
     static PerfTest * perftests[10];
     static bool perftestsetup;
+
+signals:
+    void signalMemberSearchDone();
+
 };
 
 #endif // REQUESTHANDLER_H
