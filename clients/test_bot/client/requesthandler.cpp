@@ -149,11 +149,27 @@ void RequestHandler::service(stefanfrings::HttpRequest& request, stefanfrings::H
         }
     } else if (group.toLower() == APIURL_ROOMS) {
         if (methodString.toLower() == "post") {
-            processAddRoom(request, response);
+            // differentiate an add from and update
+            if (clientID.isEmpty()) {
+                processAddRoom(request, response);
+            } else {
+                processUpdateRoom(clientID, request, response);
+            }
         } else if (methodString.toLower() == "get") {
-            processGetRooms(clientID, response);
+            if (clientID.isEmpty()) {
+                processGetRooms(response);
+            } else {
+                processGetRoom(clientID, response);
+            }
         } else if (methodString.toLower() == "delete") {
-            processDeleteRoom(clientID, response);
+            QByteArray reason=request.getParameter("reason");
+            if (reason.isEmpty() || reason == "delete") {
+                processDeleteRoom(clientID, response);
+            } else if (reason == "leave") {
+                processLeaveRoom(clientID, response);
+            } else {
+                sendFailure(400, "Unknown command", response);
+            }
         } else {
             sendFailure(400, "Unknown command", response);
         }
@@ -458,6 +474,79 @@ RequestHandler::getJsonArrayValue(QJsonObject jsonObject, QString jsonName, QStr
     return retList;
 }
 
+bool
+RequestHandler::updateAndValidateMembers(stefanfrings::HttpResponse& response, const QStringList& memberslist, QStringList& memberHashes)
+{
+    QStringList memberSearchList;
+    foreach (QString member, memberslist) {
+        WickrCore::WickrUser *user = WickrCore::WickrUser::getUserWithAlias(member);
+        if (user == NULL) {
+            memberSearchList.append(member);
+            continue;
+        }
+        QString idHash = user->getServerIDHash();
+        if (idHash.isEmpty()) {
+            sendFailure(500, "Problem handling user record for member", response);
+            return false;
+        }
+        memberHashes.append(idHash);
+    }
+
+    // TODO: Need to check if is a master in the room
+    if (memberSearchList.size() > 0) {
+
+        // Post a request to th server for each member to search for
+        foreach (QString searchMember, memberSearchList) {
+            WickrUserValidateSearch *c = new WickrUserValidateSearch(WICKR_USERNAME_ALIAS,searchMember,0);
+            QObject::connect(c, &WickrUserValidateSearch::signalRequestCompleted, [=](WickrUserValidateSearch *context) {
+                emit signalMemberSearchDone();
+                context->deleteLater();
+            });
+            WickrCore::WickrRuntime::taskSvcMakeRequest(c);
+
+            QTimer timer;
+            QEventLoop loop;
+
+            loop.connect(this, SIGNAL(signalMemberSearchDone()), SLOT(quit()));
+            connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+
+            int loopCount = 10;
+
+            while (loopCount-- > 0) {
+                timer.start(1000);
+                loop.exec();
+
+                if (timer.isActive()) {
+                    timer.stop();
+                    break;
+                } else {
+                    qDebug() << "CONSOLE:Timed out waiting for User Validate Search response!";
+                    sendFailure(400, "Failed to create room", response);
+                    return false;
+                }
+            }
+        }
+
+        // Now make sure that user records have been created for the searched members
+        foreach (QString searchMember, memberSearchList) {
+            WickrCore::WickrUser *user = WickrCore::WickrUser::getUserWithAlias(searchMember);
+            if (user == NULL) {
+                QString errMsg = "Cannot find user record for member " + searchMember;
+                sendFailure(400, errMsg.toLatin1(), response);
+                return false;
+            }
+            QString idHash = user->getServerIDHash();
+            if (idHash.isEmpty()) {
+                QString errMsg = "Problem handling user record for member " + searchMember;
+                sendFailure(500, errMsg.toLatin1(), response);
+                return false;
+            }
+            memberHashes.append(idHash);
+        }
+    }
+    return true;
+}
+
 void
 RequestHandler::processAddRoom(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response)
 {
@@ -495,6 +584,7 @@ RequestHandler::processAddRoom(stefanfrings::HttpRequest& request, stefanfrings:
     }
 
     QStringList memberslist;
+    QStringList memberHashes;
     QStringList masterslist;
     QString title;
     QString description;
@@ -535,73 +625,10 @@ RequestHandler::processAddRoom(stefanfrings::HttpRequest& request, stefanfrings:
         return;
     }
 
-    QStringList memberHashes;
-    QStringList memberSearchList;
-    foreach (QString member, memberslist) {
-        WickrCore::WickrUser *user = WickrCore::WickrUser::getUserWithAlias(member);
-        if (user == NULL) {
-            memberSearchList.append(member);
-            continue;
-        }
-        QString idHash = user->getServerIDHash();
-        if (idHash.isEmpty()) {
-            sendFailure(500, "Problem handling user record for member", response);
-            return;
-        }
-        memberHashes.append(idHash);
-    }
-
-    // TODO: Need to check if is a master in the room
-    if (memberSearchList.size() > 0) {
-
-        // Post a request to th server for each member to search for
-        foreach (QString searchMember, memberSearchList) {
-            WickrUserValidateSearch *c = new WickrUserValidateSearch(WICKR_USERNAME_ALIAS,searchMember,0);
-            QObject::connect(c, &WickrUserValidateSearch::signalRequestCompleted, [=](WickrUserValidateSearch *context) {
-                emit signalMemberSearchDone();
-                context->deleteLater();
-            });
-            WickrCore::WickrRuntime::taskSvcMakeRequest(c);
-
-            QTimer timer;
-            QEventLoop loop;
-
-            loop.connect(this, SIGNAL(signalMemberSearchDone()), SLOT(quit()));
-            connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
-
-            int loopCount = 10;
-
-            while (loopCount-- > 0) {
-                timer.start(1000);
-                loop.exec();
-
-                if (timer.isActive()) {
-                    timer.stop();
-                    break;
-                } else {
-                    qDebug() << "CONSOLE:Timed out waiting for User Validate Search response!";
-                    sendFailure(400, "Failed to create room", response);
-                    return;
-                }
-            }
-        }
-
-        // Now make sure that user records have been created for the searched members
-        foreach (QString searchMember, memberSearchList) {
-            WickrCore::WickrUser *user = WickrCore::WickrUser::getUserWithAlias(searchMember);
-            if (user == NULL) {
-                QString errMsg = "Cannot find user record for member " + searchMember;
-                sendFailure(400, errMsg.toLatin1(), response);
-                return;
-            }
-            QString idHash = user->getServerIDHash();
-            if (idHash.isEmpty()) {
-                QString errMsg = "Problem handling user record for member " + searchMember;
-                sendFailure(500, errMsg.toLatin1(), response);
-                return;
-            }
-            memberHashes.append(idHash);
-        }
+    // Update and validate the input list of members.  If false is returned then
+    // there was an error processing the list, or the member was invalid!
+    if (!updateAndValidateMembers(response, memberslist, memberHashes)) {
+        return;
     }
 
     // Get the list of masters
@@ -633,39 +660,258 @@ RequestHandler::processAddRoom(stefanfrings::HttpRequest& request, stefanfrings:
     QString membersString = memberHashes.join(',');
 
     WickrCore::WickrSecureRoomMgr *roomMgr = WickrCore::WickrRuntime::getRoomMgr();
-    if (roomMgr) {
-        roomMgr->createSecureRoomConvoStart(membersString,
-                                            mastersString,
-                                            ttl,
-                                            title,
-                                            description,
-                                            bor,
-                                            true);
+    if (!roomMgr) {
+        sendFailure(400, "Failed to create room", response);
+        return;
+    }
 
+    QString vgroupID = roomMgr->createSecureRoomConvoStart(membersString,
+                                                           mastersString,
+                                                           ttl,
+                                                           title,
+                                                           description,
+                                                           bor,
+                                                           true);
+    if (vgroupID.isEmpty()) {
+        sendFailure(400, "Failed to create room", response);
+        return;
+    }
 
+    // no will wait for the room to be created or timeout due to an error
 
+    QTimer timer;
+    QEventLoop loop;
 
-        QTimer timer;
-        QEventLoop loop;
-
-        loop.connect(roomMgr, SIGNAL(roomCreatedServerSuccess()), SLOT(quit()));
+    loop.connect(roomMgr, SIGNAL(roomCreatedServerSuccess()), SLOT(quit()));
 //        loop.connect(roomMgr, SIGNAL(signalError()), SLOT(quit()));
-        connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
 
-        int loopCount = 10;
+    int loopCount = 10;
 
-        while (loopCount-- > 0) {
-            timer.start(1000);
-            loop.exec();
+    while (loopCount-- > 0) {
+        timer.start(1000);
+        loop.exec();
 
-            if (timer.isActive()) {
-                timer.stop();
-                break;
-            } else {
-                qDebug() << "CONSOLE:Timed out waiting for create secure room response!";
-                sendFailure(400, "Failed to create room", response);
+        if (timer.isActive()) {
+            timer.stop();
+            break;
+        } else {
+            qDebug() << "CONSOLE:Timed out waiting for create secure room response!";
+            sendFailure(400, "Failed to create room", response);
+            return;
+        }
+    }
+
+    // Return the vGroupID
+    QString body = QString("{ \"vgroupid\" : \"%1\" }").arg(vgroupID);
+    sendSuccess(body.toLatin1(), response);
+}
+
+void
+RequestHandler::processUpdateRoom(const QString &vGroupID, stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response)
+{
+    QByteArray jsonString = request.getBody();
+
+    // Get the room details from the incoming message
+    QJsonParseError jsonError;
+    QJsonDocument jsonResponse = QJsonDocument().fromJson(jsonString, &jsonError);
+
+    if (jsonError.error != QJsonParseError::NoError) {
+        sendFailure(400, "Failed", response);
+        return;
+    }
+
+    // Get the convo associated with the room to be changed
+    WickrCore::WickrConvo* convo = WickrCore::WickrConvo::getConvoWithvGroupID( vGroupID );
+    if (!convo) {
+        sendFailure(400, "Convo does not exist", response);
+        return;
+    }
+
+    QJsonObject jsonObject = jsonResponse.object();
+    QJsonValue value;
+
+    bool has_memberslist;
+    QStringList memberslist;
+    QStringList memberHashes;
+    QStringList addMembersList;
+    QStringList addMembersHashes;
+    QStringList delMembersList;
+    QStringList delMembersHashes;
+    bool has_masterslist;
+    QStringList masterslist;
+    QStringList masterHashes;
+    bool has_title;
+    QString title;
+    bool has_description;
+    QString description;
+    bool has_ttl;
+    long ttl = 0;
+    bool has_bor;
+    long bor = 0;
+
+    // Get the TTL / Destruct time
+    has_ttl = jsonObject.contains(APIJSON_ROOMTTL);
+    if (has_ttl) {
+        value = jsonObject[APIJSON_ROOMTTL];
+        ttl = value.toInt(0);
+    } else {
+        ttl = convo->getDestruct();
+    }
+
+    // Get the BOR / Burn on read
+    has_bor = jsonObject.contains(APIJSON_ROOMBOR);
+    if (has_bor) {
+        value = jsonObject[APIJSON_ROOMBOR];
+        bor = value.toInt(0);
+    } else {
+        bor = convo->getBOR();
+    }
+
+    // Get the description
+    has_description = jsonObject.contains(APIJSON_ROOMDESC);
+    if (has_description) {
+        value = jsonObject[APIJSON_ROOMDESC];
+        description = value.toString();
+    } else {
+        description = convo->getRoomPurpose();
+    }
+
+    // Get the title
+    has_title = jsonObject.contains(APIJSON_ROOMTITLE);
+    if (has_title) {
+        value = jsonObject[APIJSON_ROOMTITLE];
+        title = value.toString();
+        if (title.isEmpty()) {
+            sendFailure(400, "Invalid title", response);
+            return;
+        }
+    } else {
+        title = convo->getVGroupTag();
+    }
+
+    // Get the members
+    has_memberslist = jsonObject.contains(APIJSON_ROOMMEMBERS);
+    if (has_memberslist) {
+        memberslist = getJsonArrayValue(jsonObject, APIJSON_NAME, APIJSON_ROOMMEMBERS);
+        QString members = memberslist.join(",");
+        if (members.isEmpty()) {
+            sendFailure(400, "Invalid members list", response);
+            return;
+        }
+
+        // Update and validate the input list of members.  If false is returned then
+        // there was an error processing the list, or the member was invalid!
+        if (!updateAndValidateMembers(response, memberslist, memberHashes)) {
+            return;
+        }
+
+        QStringList allUserNames;
+        QList<WickrCore::WickrUser *>users = convo->getAllUsers();
+        for (WickrCore::WickrUser *user : users) {
+            allUserNames.append(user->getUserID());
+        }
+        addMembersList = memberslist;
+        for (QString userName : allUserNames)
+            addMembersList.removeOne(userName);
+        delMembersList = allUserNames;
+        for (QString userName : memberslist)
+            delMembersList.removeOne(userName);
+
+        // Update and validate the input list of members.  If false is returned then
+        // there was an error processing the list, or the member was invalid!
+        if (!updateAndValidateMembers(response, addMembersList, addMembersHashes)) {
+            return;
+        }
+        // Update and validate the input list of members.  If false is returned then
+        // there was an error processing the list, or the member was invalid!
+        if (!updateAndValidateMembers(response, delMembersList, delMembersHashes)) {
+            return;
+        }
+    }
+
+    // Get the list of masters
+    has_masterslist = jsonObject.contains(APIJSON_ROOMMASTERS);
+    if (has_masterslist) {
+        masterslist = getJsonArrayValue(jsonObject, APIJSON_NAME, APIJSON_ROOMMASTERS);
+        if (masterslist.size() == 0) {
+            sendFailure(400, "Invalid masters list", response);
+            return;
+        }
+
+        foreach (QString master, masterslist) {
+            WickrCore::WickrUser *user = WickrCore::WickrUser::getUserWithAlias(master);
+            if (user == NULL) {
+                sendFailure(400, "Cannot find user record for master", response);
                 return;
             }
+            QString idHash = user->getServerIDHash();
+            if (idHash.isEmpty()) {
+                sendFailure(500, "Problem handling user record for master", response);
+                return;
+            }
+            masterHashes.append(idHash);
+        }
+    }
+
+    WickrCore::WickrSecureRoomMgr *roomMgr = WickrCore::WickrRuntime::getRoomMgr();
+    if (!roomMgr) {
+        sendFailure(400, "Failed to create room", response);
+        return;
+    }
+
+    // Update the room
+
+    // Create convo (create if not found, no group name, secure room)
+    QString mastersString = masterHashes.join(',');
+    QString membersString = memberHashes.join(',');
+
+    QString addUsersHash = addMembersHashes.join(',');
+    QString delUsersHash = delMembersHashes.join(',');
+
+    int roomFunction = 0;
+
+    if (has_memberslist || has_masterslist)
+        roomFunction |= WickrCore::WickrSecureRoomMgr::EDIT_MEMBERS;
+    if (has_bor || has_ttl || has_title || has_description)
+        roomFunction |= WickrCore::WickrSecureRoomMgr::EDIT_CONFIG;
+
+    if (! roomMgr->editSecureRoomStart(roomFunction,
+                                       vGroupID,
+                                       addUsersHash,
+                                       delUsersHash,
+                                       ttl,
+                                       title,
+                                       description,
+                                       masterHashes,
+                                       bor,
+                                       false)) {
+        sendFailure(400, "Failed to modify room", response);
+        return;
+    }
+
+    // no will wait for the room to be created or timeout due to an error
+
+    QTimer timer;
+    QEventLoop loop;
+
+    loop.connect(roomMgr, SIGNAL(roomCreatedServerSuccess()), SLOT(quit()));
+//        loop.connect(roomMgr, SIGNAL(signalError()), SLOT(quit()));
+    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+
+    int loopCount = 10;
+
+    while (loopCount-- > 0) {
+        timer.start(1000);
+        loop.exec();
+
+        if (timer.isActive()) {
+            timer.stop();
+            break;
+        } else {
+            qDebug() << "CONSOLE:Timed out waiting for create secure room response!";
+            sendFailure(400, "Failed to create room", response);
+            return;
         }
     }
 
@@ -751,7 +997,89 @@ RequestHandler::processDeleteRoom(const QString &clientID, stefanfrings::HttpRes
 }
 
 void
-RequestHandler::processGetRooms(const QString &clientID, stefanfrings::HttpResponse& response)
+RequestHandler::processLeaveRoom(const QString &vGroupID, stefanfrings::HttpResponse& response)
+{
+    WickrCore::WickrConvo *convo = WickrCore::WickrConvo::getConvoWithvGroupID(vGroupID);
+    if (convo) {
+        if (convo->getConvoType() == CONVO_SECURE_ROOM || convo->getConvoType() == CONVO_GROUP_CONVO) {
+            WickrCore::WickrSecureRoomMgr *roomMgr = WickrCore::WickrRuntime::getRoomMgr();
+            if (roomMgr) {
+                roomMgr->leaveSecureRoomStart(vGroupID);
+                sendSuccess(response);
+            } else {
+                sendFailure(500, "Internal error", response);
+            }
+        } else {
+            sendFailure(400, "Can only leave secure room or group convo", response);
+        }
+    } else {
+        sendFailure(400, "Cannot find convo for vgroupid", response);
+    }
+}
+
+QJsonObject
+RequestHandler::getRoomInfo(WickrCore::WickrConvo *convo)
+{
+    QJsonObject roomValue;
+
+    // If a secure room then add to the list
+    if (WickrCore::WickrConvo::getConvoTypeFromVGroupID(convo->getVGroupID()) == CONVO_SECURE_ROOM &&
+        convo->isSecureRoomStateSynced()) {
+
+        roomValue.insert(APIJSON_ROOMTITLE, convo->getVGroupTag());
+        roomValue.insert(APIJSON_ROOMDESC, convo->getRoomPurpose());
+        roomValue.insert(APIJSON_VGROUPID, convo->getVGroupID());
+        roomValue.insert(APIJSON_ROOMTTL, QString::number(convo->getDestruct()));
+        roomValue.insert(APIJSON_ROOMBOR, QString::number(convo->getBOR()));
+
+        // Setup the users array
+        QStringList masterslist = convo->getRoomMastersUserName();
+        QJsonArray mastersArray;
+
+        for (QString master : masterslist) {
+            QJsonObject masterEntry;
+
+            masterEntry.insert(APIJSON_NAME, master);
+            mastersArray.append(masterEntry);
+        }
+        roomValue.insert(APIJSON_ROOMMASTERS, mastersArray);
+
+        // Setup the users array
+        QStringList userslist = convo->getUsernameStringArray();
+        QJsonArray usersArray;
+
+        for (QString user : userslist) {
+            QJsonObject userEntry;
+
+            userEntry.insert(APIJSON_NAME, user);
+            usersArray.append(userEntry);
+        }
+        roomValue.insert(APIJSON_ROOMMEMBERS, usersArray);
+    }
+    return roomValue;
+}
+
+void
+RequestHandler::processGetRoom(const QString &vGroupID, stefanfrings::HttpResponse& response)
+{
+    WickrCore::WickrConvo *convo = WickrCore::WickrConvo::getConvoWithvGroupID(vGroupID);
+    if (convo != nullptr) {
+        QJsonObject roomValue = getRoomInfo(convo);
+        if (roomValue.isEmpty()) {
+            sendFailure(400, "Convo is not a secure room", response);
+        } else {
+            QJsonDocument saveDoc(roomValue);
+            QByteArray byteArray = saveDoc.toJson();
+
+            sendSuccess(byteArray, response);
+        }
+    } else {
+        sendFailure(400, "Can not find convo", response);
+    }
+}
+
+void
+RequestHandler::processGetRooms(stefanfrings::HttpResponse& response)
 {
 #if 0
     QByteArray paramStart = request.getParameter(APIPARAM_START);
@@ -776,44 +1104,9 @@ RequestHandler::processGetRooms(const QString &clientID, stefanfrings::HttpRespo
         for (int cid=0; cid < keys.size(); cid++) {
 
             WickrCore::WickrConvo *currentConvo = (WickrCore::WickrConvo *)curConvos->value( keys.at(cid) );
-
-            // If a secure room then add to the list
-            if (WickrCore::WickrConvo::getConvoTypeFromVGroupID(currentConvo->getVGroupID()) == CONVO_SECURE_ROOM &&
-                currentConvo->isSecureRoomStateSynced()) {
-                QJsonObject roomValue;
-
-                roomValue.insert(APIJSON_ROOMTITLE, currentConvo->getVGroupTag());
-                roomValue.insert(APIJSON_ROOMDESC, currentConvo->getRoomPurpose());
-                roomValue.insert(APIJSON_VGROUPID, currentConvo->getVGroupID());
-                roomValue.insert(APIJSON_ROOMTTL, QString::number(currentConvo->getDestruct()));
-
-                // Setup the users array
-                QStringList masterslist = currentConvo->getRoomMastersUserName();
-                QJsonArray mastersArray;
-
-                for (QString master : masterslist) {
-                    QJsonObject masterEntry;
-
-                    masterEntry.insert(APIJSON_NAME, master);
-                    mastersArray.append(masterEntry);
-                }
-                roomValue.insert(APIJSON_ROOMMASTERS, mastersArray);
-
-                // Setup the users array
-                QStringList userslist = currentConvo->getUsernameStringArray();
-                QJsonArray usersArray;
-
-                for (QString user : userslist) {
-                    QJsonObject userEntry;
-
-                    userEntry.insert(APIJSON_NAME, user);
-                    usersArray.append(userEntry);
-                }
-                roomValue.insert(APIJSON_ROOMMEMBERS, usersArray);
-
-
+            QJsonObject roomValue = getRoomInfo(currentConvo);
+            if (!roomValue.isEmpty())
                 roomArrayValue.append(roomValue);
-            }
         }
     }
 
