@@ -14,19 +14,23 @@ public:
     ~WickrBotJsonData();
 
     bool parse(QByteArray jsonString);
+    bool parseJson4SendMessage(QByteArray jsonString);
+    bool postEntry4SendMessage();
     bool parseSendMessage(QByteArray jsonString);
 
     void setClientType(const QString &clientType);
+
+    QStringList getUserNames() { return m_userNames; }
 
 public:
     int m_ttl;
     int m_bor;
     bool m_has_bor;
     QString m_action;
-    QList<QString> m_userIDs;
-    QList<QString> m_userNames;
+    QStringList m_userIDs;
+    QStringList m_userNames;
     QString m_vgroupid;
-    QList<QString> m_attachments;
+    QStringList m_attachments;
     bool m_rmAttachmentWhenDone;
     QString m_message;
     QDateTime m_runTime;

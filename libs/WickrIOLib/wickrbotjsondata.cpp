@@ -657,16 +657,8 @@ bool WickrBotJsonData::parse(QByteArray jsonString) {
     return true;
 }
 
-/**
- * @brief WickrBotJsonData::parseSendMessage
- * Call this function if the JSON string is specifically for a sendmessage action.
- * The send message values are not contained in an "operation" JSON object
- * @param operation
- * @param jsonString
- * @return
- */
 bool
-WickrBotJsonData::parseSendMessage(QByteArray jsonString) {
+WickrBotJsonData::parseJson4SendMessage(QByteArray jsonString) {
     QJsonParseError jsonError;
     QJsonDocument jsonResponse = QJsonDocument().fromJson(jsonString, &jsonError);
 
@@ -681,7 +673,11 @@ WickrBotJsonData::parseSendMessage(QByteArray jsonString) {
     }
 
     m_action = "sendmessage";
+    return true;
+}
 
+bool
+WickrBotJsonData::postEntry4SendMessage() {
     int processedCnt = processOperationData();
     m_operation->messageCount += processedCnt;
 
@@ -689,4 +685,20 @@ WickrBotJsonData::parseSendMessage(QByteArray jsonString) {
     m_operation->log_handler->log(message);
 
     return true;
+}
+
+/**
+ * @brief WickrBotJsonData::parseSendMessage
+ * Call this function if the JSON string is specifically for a sendmessage action.
+ * The send message values are not contained in an "operation" JSON object
+ * @param operation
+ * @param jsonString
+ * @return
+ */
+bool
+WickrBotJsonData::parseSendMessage(QByteArray jsonString) {
+    if (! parseJson4SendMessage(jsonString))
+        return false;
+
+    return postEntry4SendMessage();
 }

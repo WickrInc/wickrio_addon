@@ -216,12 +216,28 @@ RequestHandler::processSendMessage(stefanfrings::HttpRequest& request, stefanfri
     QByteArray body=request.getBody();
     WickrBotJsonData *jsonHandler = new WickrBotJsonData(m_operation);
 
-    if (jsonHandler->parseSendMessage(body)) {
-        m_operation->log_handler->log("Message parsed successfully");
-        sendSuccess(response);
+    if (! jsonHandler->parseJson4SendMessage(body)) {
+        sendFailure(400, "Failed parsing message JSON", response);
+        m_operation->log_handler->log("Message JSON parsing failed!");
     } else {
-        sendFailure(400, "Failed sending message", response);
-        m_operation->log_handler->log("Message parsing failed!");
+        QStringList userNames = jsonHandler->getUserNames();
+
+        if (userNames.isEmpty()) {
+            sendFailure(400, "No users identified", response);
+            m_operation->log_handler->log("No users identified!");
+        } else {
+            // Update and validate the input list of usernames.  If false is returned then
+            // there was an error processing the list, or the user was invalid!
+            if (updateAndValidateMembers(response, userNames)) {
+                if (jsonHandler->postEntry4SendMessage()) {
+                    m_operation->log_handler->log("Message parsed successfully");
+                    sendSuccess(response);
+                } else {
+                    sendFailure(400, "Failed sending message", response);
+                    m_operation->log_handler->log("Message parsing failed!");
+                }
+            }
+        }
     }
     delete jsonHandler;
 }
@@ -475,7 +491,7 @@ RequestHandler::getJsonArrayValue(QJsonObject jsonObject, QString jsonName, QStr
 }
 
 bool
-RequestHandler::updateAndValidateMembers(stefanfrings::HttpResponse& response, const QStringList& memberslist, QStringList& memberHashes)
+RequestHandler::updateAndValidateMembers(stefanfrings::HttpResponse& response, const QStringList& memberslist, QStringList *memberHashes)
 {
     QStringList memberSearchList;
     foreach (QString member, memberslist) {
@@ -486,10 +502,11 @@ RequestHandler::updateAndValidateMembers(stefanfrings::HttpResponse& response, c
         }
         QString idHash = user->getServerIDHash();
         if (idHash.isEmpty()) {
-            sendFailure(500, "Problem handling user record for member", response);
+            sendFailure(500, "Problem handling user record!", response);
             return false;
         }
-        memberHashes.append(idHash);
+        if (memberHashes != nullptr)
+            memberHashes->append(idHash);
     }
 
     // TODO: Need to check if is a master in the room
@@ -521,7 +538,7 @@ RequestHandler::updateAndValidateMembers(stefanfrings::HttpResponse& response, c
                     break;
                 } else {
                     qDebug() << "CONSOLE:Timed out waiting for User Validate Search response!";
-                    sendFailure(400, "Failed to create room", response);
+                    sendFailure(400, "Failure waiting for user verification", response);
                     return false;
                 }
             }
@@ -531,17 +548,19 @@ RequestHandler::updateAndValidateMembers(stefanfrings::HttpResponse& response, c
         foreach (QString searchMember, memberSearchList) {
             WickrCore::WickrUser *user = WickrCore::WickrUser::getUserWithAlias(searchMember);
             if (user == NULL) {
-                QString errMsg = "Cannot find user record for member " + searchMember;
+                QString errMsg = "Cannot find user record for " + searchMember;
                 sendFailure(400, errMsg.toLatin1(), response);
                 return false;
             }
-            QString idHash = user->getServerIDHash();
-            if (idHash.isEmpty()) {
-                QString errMsg = "Problem handling user record for member " + searchMember;
-                sendFailure(500, errMsg.toLatin1(), response);
-                return false;
+            if (memberHashes != nullptr) {
+                QString idHash = user->getServerIDHash();
+                if (idHash.isEmpty()) {
+                    QString errMsg = "Problem handling user record for " + searchMember;
+                    sendFailure(500, errMsg.toLatin1(), response);
+                    return false;
+                }
+                memberHashes->append(idHash);
             }
-            memberHashes.append(idHash);
         }
     }
     return true;
@@ -627,7 +646,7 @@ RequestHandler::processAddRoom(stefanfrings::HttpRequest& request, stefanfrings:
 
     // Update and validate the input list of members.  If false is returned then
     // there was an error processing the list, or the member was invalid!
-    if (!updateAndValidateMembers(response, memberslist, memberHashes)) {
+    if (!updateAndValidateMembers(response, memberslist, &memberHashes)) {
         return;
     }
 
@@ -802,7 +821,7 @@ RequestHandler::processUpdateRoom(const QString &vGroupID, stefanfrings::HttpReq
 
         // Update and validate the input list of members.  If false is returned then
         // there was an error processing the list, or the member was invalid!
-        if (!updateAndValidateMembers(response, memberslist, memberHashes)) {
+        if (!updateAndValidateMembers(response, memberslist, &memberHashes)) {
             return;
         }
 
@@ -820,12 +839,12 @@ RequestHandler::processUpdateRoom(const QString &vGroupID, stefanfrings::HttpReq
 
         // Update and validate the input list of members.  If false is returned then
         // there was an error processing the list, or the member was invalid!
-        if (!updateAndValidateMembers(response, addMembersList, addMembersHashes)) {
+        if (!updateAndValidateMembers(response, addMembersList, &addMembersHashes)) {
             return;
         }
         // Update and validate the input list of members.  If false is returned then
         // there was an error processing the list, or the member was invalid!
-        if (!updateAndValidateMembers(response, delMembersList, delMembersHashes)) {
+        if (!updateAndValidateMembers(response, delMembersList, &delMembersHashes)) {
             return;
         }
     }

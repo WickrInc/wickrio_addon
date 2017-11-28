@@ -32,7 +32,7 @@ private:
     void processGetMessages(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response);
     void processDeleteMessages(stefanfrings::HttpResponse& response);
 
-    bool updateAndValidateMembers(stefanfrings::HttpResponse& response, const QStringList& memberslist, QStringList& memberHashes);
+    bool updateAndValidateMembers(stefanfrings::HttpResponse& response, const QStringList& memberslist, QStringList *memberHashes=nullptr);
     QJsonObject getRoomInfo(WickrCore::WickrConvo *convo);
 
     void processUpdateRoom(const QString &vGroupID, stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response);
