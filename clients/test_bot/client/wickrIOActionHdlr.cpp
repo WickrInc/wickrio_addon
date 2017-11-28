@@ -107,7 +107,10 @@ WickrIOActionHdlr::sendMessageTo1To1(WickrCore::WickrConvo *convo)
         // Send message
         WickrSendContext *context = new WickrSendContext(MsgType_Text, convo, WickrCore::WickrMessage::createTextMsgBody(m_jsonHandler->getMessage(),convo));
         connect(context, &WickrSendContext::signalRequestCompleted, this, &WickrIOActionHdlr::slotMessageDone, Qt::QueuedConnection);
-        WickrCore::WickrRuntime::msgSvcSend(context);
+        if (!WickrCore::WickrRuntime::msgSvcSend(context)) {
+            qDebug() << "IN sendMessageTo1To1(): msgSvcSend returned failure!";
+            m_processAction = false;
+        }
     }
 
     // Free the JSON Handler object
@@ -152,6 +155,7 @@ bool WickrIOActionHdlr::processActionSendMessage(WickrBotJson *jsonHandler, int 
             return false;
         }
         if (convo->getConvoType() == CONVO_ONE_TO_ONE) {
+            qDebug() << "IN processActionSendMessage(): CONVO_ONE_TO_ONE but NO users!";
 
         } else {
             sendMessageToConvo(convo);
@@ -231,7 +235,10 @@ void WickrIOActionHdlr::sendMessageValidateUser()
         WickrUserValidateSearch *c = new WickrUserValidateSearch(WICKR_USERNAME_ALIAS,id,0);
         QObject::connect(c, &WickrUserValidateSearch::signalRequestCompleted,
                          this, &WickrIOActionHdlr::slotUserValidated,Qt::QueuedConnection);
-        WickrCore::WickrRuntime::taskSvcMakeRequest(c);
+        if (!WickrCore::WickrRuntime::taskSvcMakeRequest(c)) {
+            qDebug() << "sendMessageValidateUser: taskSvcMakeRequest failed!";
+            m_processAction = false;
+        }
 
         qDebug() << "searching for " << id;
     } else {
@@ -501,7 +508,6 @@ void WickrIOActionHdlr::slotMessageDone(WickrSendContext *context)
 #else
         m_appCounter.add(ms->wickrBotMsgNumApps);
 #endif
-        qDebug() << "The Message was sent successfully";
 
         // Do not need to keep the outbox message around, so free it
 #if 0 //TODO: HOW DO WE FREE THE OUTBOX MESSAGE
@@ -511,6 +517,7 @@ void WickrIOActionHdlr::slotMessageDone(WickrSendContext *context)
         context->deleteLater();
         emit signalStartProcessDatabase(m_curActionID);
     } else {
+        qDebug() << "IN slotMessageDone(): failed";
 //        m_operation->log_handler->error(QString("Message send error: " + context->getResult()));
         m_messagesFailed++;
         // Increment the statistic in the database
