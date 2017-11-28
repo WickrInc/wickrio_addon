@@ -1,4 +1,4 @@
-Release Notes from v4.0-release to v4.15.3-5:
+Release Notes from v4.0-release to v4.15.3-6:
   * Backoff for Daemon when starting client fails
   * Changes to work with the 117 server API, and switchboard changes [ci skip]
   * Changing logging for daemons to keep files small
