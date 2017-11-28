@@ -12,6 +12,8 @@
 #include "wickrIOIPCService.h"
 
 #define UPDATE_STATUS_SECS  60
+#define BACK_OFF_START      1
+#define BACK_OFF_MAX        60
 
 class WickrIOClientServerService : public QObject, public QtService<QCoreApplication>
 {
@@ -29,7 +31,7 @@ public:
 
 private:
     void usage();
-    void getClients(bool start);
+    bool getClients(bool start);
     bool clientNeedsStart(WickrBotClients *client);
     bool startClient(WickrBotClients *client);
     bool stopClient(const WickrBotProcessState& state);
@@ -43,6 +45,8 @@ private:
     QTimer              *m_processTimer;
     QString             m_vendorName;
     int                 m_statusCntDwn;
+    int                 m_backOffCntDwn;
+    int                 m_backOff;
     bool                m_isConfigured;
 
     QString             m_appNm;

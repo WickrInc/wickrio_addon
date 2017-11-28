@@ -168,6 +168,8 @@ WickrIOClientServerService::slotRxIPCMessage(QString type, QString value)
  * Windows this means the registry has been setup, for Linux this requires the
  * settings INI file to be setup. If everything is configured then the list of
  * client process' will be checked and if necessary the clients will be started.
+ * If starting of the client processes fail, it will double the time waited between
+ * starting the clients up to 1 minute
  */
 void WickrIOClientServerService::slotTimeoutProcess()
 {
@@ -176,8 +178,19 @@ void WickrIOClientServerService::slotTimeoutProcess()
             m_operation->updateProcessState(PROCSTATE_RUNNING);
             m_statusCntDwn = UPDATE_STATUS_SECS;
         }
+    }
 
-        getClients(true);
+    if (--m_backOffCntDwn < 0){
+        if (getClients(true) == true){
+            m_backOff = BACK_OFF_START;
+            m_backOffCntDwn = m_backOff;
+        }
+        else {
+            if (m_backOff < BACK_OFF_MAX){
+                m_backOff = m_backOff * 2;
+            }
+            m_backOffCntDwn = m_backOff;
+        }
     }
 }
 
@@ -193,6 +206,8 @@ void WickrIOClientServerService::start()
     qDebug() << "Entering start";
 #endif
     m_statusCntDwn = UPDATE_STATUS_SECS;
+    m_backOff = BACK_OFF_START;
+    m_backOffCntDwn = m_backOff;
 
     if (m_processTimer != NULL) {
         m_processTimer->deleteLater();
@@ -616,10 +631,12 @@ bool WickrIOClientServerService::startClient(WickrBotClients *client)
 
 /**
  * @brief WickrIOClientServerService::getClients
- * This function will get a list of clients and then either start or stop them
+ * This function will get a list of clients and then either start or stop them. If unable to start one will return false,
+ * otherwise will return true
  */
-void WickrIOClientServerService::getClients(bool start)
+bool WickrIOClientServerService::getClients(bool start)
 {
+    bool allClientsStart = true;
     QList<WickrBotClients *> clients;
 
     clients = m_operation->m_botDB->getClients();
@@ -635,11 +652,13 @@ void WickrIOClientServerService::getClients(bool start)
             }
 
             if (start) {
-                startClient(client);
+                if(startClient(client) == false)
+                    allClientsStart = false;
             } else {
                 stopClient(state);
             }
         }
     }
+    return allClientsStart;
 }
 
