@@ -18,6 +18,7 @@
 #include "messaging/wickrSecureRoomMgr.h"
 #include "common/wickrRuntime.h"
 
+#include "wickrIOClientRuntime.h"
 #include "clientconfigurationinfo.h"
 #include "clientversioninfo.h"
 
@@ -33,7 +34,9 @@ WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
     m_operation(operation),
     m_loginHdlr(operation),
     m_actionHdlr(operation),
-    m_wickrIPC(0)
+    m_wickrIPC(0),
+    m_seccount(0),
+    m_durationreached(false)
 {
     if( isVERSIONDEBUG() ) {
         m_operation->cleanUpSecs = 20;
@@ -336,6 +339,21 @@ void WickrIOEClientMain::slotDoTimerWork()
         return;
     }
 
+    // If there is a duration set then check if it is time to stop running
+    if (m_operation->duration > 0) {
+        if (m_durationreached)
+            return;
+        m_seccount++;
+        if (m_seccount > m_operation->duration) {
+            m_operation->log_handler->log("Duration time has been reached, exiting!");
+            QString output = QString("duration=%1, seccount=%2").arg(m_operation->duration).arg(m_seccount);
+            m_operation->log_handler->log("Duration time has been reached, exiting!");
+            emit signalExit();
+            m_durationreached = true;
+            return;
+        }
+    }
+
     if (m_wickrIPC != NULL && m_wickrIPC->isRunning()) {
         m_wickrIPC->check();
     }
@@ -350,6 +368,9 @@ void WickrIOEClientMain::slotDoTimerWork()
  */
 void WickrIOEClientMain::stopAndExit(int procState)
 {
+    // Set the process state for after the shutdown
+    WickrIOClientRuntime::wdSetShutdownState(procState);
+
     // logout of switchboard service
     WickrCore::WickrRuntime::swbSvcLogout();
 

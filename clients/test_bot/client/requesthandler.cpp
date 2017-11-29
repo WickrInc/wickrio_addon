@@ -221,11 +221,12 @@ RequestHandler::processSendMessage(stefanfrings::HttpRequest& request, stefanfri
         m_operation->log_handler->log("Message JSON parsing failed!");
     } else {
         QStringList userNames = jsonHandler->getUserNames();
+        QString vGroupID = jsonHandler->getVGroupID();
 
-        if (userNames.isEmpty()) {
+        if (userNames.isEmpty() && vGroupID.isEmpty()) {
             sendFailure(400, "No users identified", response);
             m_operation->log_handler->log("No users identified!");
-        } else {
+        } else if (!userNames.isEmpty()){
             // Update and validate the input list of usernames.  If false is returned then
             // there was an error processing the list, or the user was invalid!
             if (updateAndValidateMembers(response, userNames)) {
@@ -236,6 +237,14 @@ RequestHandler::processSendMessage(stefanfrings::HttpRequest& request, stefanfri
                     sendFailure(400, "Failed sending message", response);
                     m_operation->log_handler->log("Message parsing failed!");
                 }
+            }
+        } else {
+            if (jsonHandler->postEntry4SendMessage()) {
+                m_operation->log_handler->log("Message parsed successfully");
+                sendSuccess(response);
+            } else {
+                sendFailure(400, "Failed sending message", response);
+                m_operation->log_handler->log("Message parsing failed!");
             }
         }
     }

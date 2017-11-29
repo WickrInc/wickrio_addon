@@ -21,6 +21,7 @@ public:
     void setClientType(const QString &clientType);
 
     QStringList getUserNames() { return m_userNames; }
+    QString getVGroupID() { return m_vgroupid; }
 
 public:
     int m_ttl;

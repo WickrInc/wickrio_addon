@@ -125,6 +125,7 @@ int main(int argc, char *argv[])
     QString suffix;
     QString wbConfigFile("");
     bool setProcessName = false;
+    bool setDuration = false;
 
     for( int argidx = 1; argidx < argc; argidx++ ) {
         QString cmd(argv[argidx]);
@@ -153,6 +154,10 @@ int main(int argc, char *argv[])
         } else if (cmd.startsWith("-processname")) {
             operation->processName = cmd.remove("-processname=");
             setProcessName = true;
+        } else if (cmd.startsWith("-duration")) {
+            QString temp = cmd.remove("-duration=");
+            operation->duration = temp.toLong();
+            setDuration = true;
         }
     }
 
@@ -321,7 +326,7 @@ int main(int argc, char *argv[])
         operation->processName = QString("%1.%2").arg(fi.fileName() ).arg(username);
     }
 
-    // Set the output file if it is set
+    // Parse the services settings
     settings->beginGroup(WBSETTINGS_SERVICES_HEADER);
     QString handleInbox = settings->value(WBSETTINGS_SERVICES_HANDLEINBOX, "").toString();
     if (handleInbox.isEmpty() || handleInbox.toLower() != "true") {
@@ -329,7 +334,16 @@ int main(int argc, char *argv[])
     } else {
         operation->m_handleInbox = true;
     }
+
+    // If the duration was not set by command line then check the ini file
+    if (!setDuration) {
+        operation->duration = settings->value(WBSETTINGS_SERVICES_DURATION, 0).toInt();
+    }
     settings->endGroup();
+
+    if (operation->duration != 0) {
+        qDebug() << "Duration is set to " << operation->duration;
+    }
 
     /*
      * Start the wickrIO Client Runtime

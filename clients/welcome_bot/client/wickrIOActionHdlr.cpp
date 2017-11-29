@@ -46,7 +46,7 @@ WickrIOActionHdlr::~WickrIOActionHdlr()
  * @param jsonHandler The JSON Handler, that contains all of the action information
  * @param actionID The ID of the action from the database. Need to remove after success.
  */
-void WickrIOActionHdlr::processAction(WickrBotJson *jsonHandler, int actionID)
+bool WickrIOActionHdlr::processAction(WickrBotJson *jsonHandler, int actionID)
 {
     // Action is starting, set flag so no other action is performed
     m_processAction = true;
@@ -55,10 +55,12 @@ void WickrIOActionHdlr::processAction(WickrBotJson *jsonHandler, int actionID)
         if (!processActionSendMessage(jsonHandler, actionID)) {
             m_processAction = false;
             delete jsonHandler;
+            return false;
         }
     } else {
         m_processAction = false;
     }
+    return true;
 }
 
 void
@@ -746,7 +748,9 @@ void WickrIOActionHdlr::processDatabase(int deleteID)
         WickrBotJson *jsonHandler = new WickrBotJson();
 
         if (jsonHandler->parseJsonString(action->json)) {
-            processAction(jsonHandler, action->id);
+            if (!processAction(jsonHandler, action->id)) {
+                m_operation->m_botDB->deleteAction(action->id);
+            }
         }
     } else {
         m_processAction = false;

@@ -44,7 +44,7 @@ private:
     bool m_shutdownTime;
     bool m_shuttingdown;
 
-    void processAction(WickrBotJson *jsonHandler, int actionID);
+    bool processAction(WickrBotJson *jsonHandler, int actionID);
     bool processActionSendMessage(WickrBotJson *jsonHandler, int actionID);
     void sendMessageValidateUser();
     void create1To1ConvoStart(const QString& member);

@@ -57,6 +57,8 @@ private:
 
     QTimer timer;
     QString m_serverName;
+    long    m_seccount;             // Count off seconds so duration can be determined
+    bool    m_durationreached;      // true if duration was reached, so exit only once
 
     WickrIOIPCService *m_wickrIPC;
     WickrIOReceiveThread *m_rxThread;

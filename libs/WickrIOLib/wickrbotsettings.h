@@ -49,5 +49,6 @@
 
 #define WBSETTINGS_SERVICES_HEADER      "services"              // Settings for bot services
 #define WBSETTINGS_SERVICES_HANDLEINBOX "handleinbox"           // True if handling inbox messages, otherwise drop
+#define WBSETTINGS_SERVICES_DURATION    "duration"              // How long to run the client for, before restarting
 
 #endif // WICKRBOTSETTINGS
