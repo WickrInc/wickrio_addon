@@ -159,7 +159,6 @@ SOURCES += \
     wickrioconvohdlr.cpp \
     wickrioreceivethread.cpp \
     wickrIOLoginHdlr.cpp \
-    wickrIOActionHdlr.cpp \
     clientconfigurationinfo.cpp \
     clientversioninfo.cpp
 
@@ -169,7 +168,6 @@ HEADERS += \
     wickrioconvohdlr.h \
     wickrioreceivethread.h \
     wickrIOLoginHdlr.h \
-    wickrIOActionHdlr.h \
     wickrbuildnumbers.h \
     clientconfigurationinfo.h \
     clientversioninfo.h

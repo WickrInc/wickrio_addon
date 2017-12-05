@@ -42,6 +42,7 @@ CONFIG(debug, debug|release) {
 INCLUDEPATH += $$PWD
 INCLUDEPATH += $$DEPTH/wickr-sdk/src
 INCLUDEPATH += $$DEPTH/wickr-sdk/export
+INCLUDEPATH += $$DEPTH/wickr-sdk/export/Wickr
 INCLUDEPATH += $$DEPTH/wickr-sdk/libs/WickrProto
 INCLUDEPATH += $$DEPTH/wickr-sdk/libs/cloud/qcloud
 INCLUDEPATH += $$DEPTH/libs/WickrIOLib
@@ -50,6 +51,7 @@ INCLUDEPATH += $$DEPTH/shared/common
 DEPENDPATH += $$PWD
 
 HEADERS += \
+    wickrIOActionHdlr.h \
     wickrIOCallbackService.h \
     wickrIOClientRuntime.h \
     wickrIOFileDownloadService.h \
@@ -60,6 +62,7 @@ HEADERS += \
     wickrIOServiceBase.h
 
 SOURCES += \
+    wickrIOActionHdlr.cpp \
     wickrIOCallbackService.cpp \
     wickrIOClientRuntime.cpp \
     wickrIOFileDownloadService.cpp \
