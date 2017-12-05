@@ -73,7 +73,8 @@ WickrIOActionHdlr::sendMessageTo1To1(WickrCore::WickrConvo *convo)
     if (ttl == 0) {
         ttl = convo->getDestruct();
     } else {
-        convo->setDestruct(ttl);
+        if (ttl != convo->getDestruct())
+            convo->setDestruct(ttl);
     }
 
     if (m_jsonHandler->hasBOR()) {
@@ -272,7 +273,10 @@ void WickrIOActionHdlr::sendMessageValidateUserSearch()
         QObject::connect(c, &WickrUserValidateSearch::signalRequestCompleted,
                          this, &WickrIOActionHdlr::slotValidateUserCheckDone,
                          Qt::QueuedConnection);
-        WickrCore::WickrRuntime::taskSvcMakeRequest(c);
+        if (!WickrCore::WickrRuntime::taskSvcMakeRequest(c)) {
+            qDebug() << "sendMessageValidateUser: taskSvcMakeRequest failed!";
+            m_processAction = false;
+        }
 
         qDebug() << "searching for " << id;
     } else {
@@ -361,8 +365,8 @@ void WickrIOActionHdlr::slotSendMessagePostGetUsers()
 bool
 WickrIOActionHdlr::sendMessageToConvo(WickrCore::WickrConvo *convo)
 {
-    if (!convo) {
-        m_operation->log_handler->error("Convo is not set!");
+    if (!convo || convo->getAllUsers().length() == 0) {
+        m_operation->log_handler->error("Convo is not set or no users in convo!");
         m_messagesFailed++;
         return false;
     }
@@ -569,7 +573,6 @@ void WickrIOActionHdlr::slotMessageDone(WickrSendContext *context)
 #else
         m_appCounter.add(ms->wickrBotMsgNumApps);
 #endif
-        qDebug() << "The Message was sent successfully";
 
         // Do not need to keep the outbox message around, so free it
 #if 0 //TODO: HOW DO WE FREE THE OUTBOX MESSAGE
@@ -579,6 +582,7 @@ void WickrIOActionHdlr::slotMessageDone(WickrSendContext *context)
         context->deleteLater();
         emit signalStartProcessDatabase(m_curActionID);
     } else {
+        qDebug() << "IN slotMessageDone(): failed";
 //        m_operation->log_handler->error(QString("Message send error: " + context->getResult()));
         m_messagesFailed++;
         // Increment the statistic in the database

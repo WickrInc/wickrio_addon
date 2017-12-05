@@ -223,11 +223,46 @@ bool WickrIOActionHdlr::processActionSendMessage(WickrBotJson *jsonHandler, int 
     }
 
     // Lets see if users need to be updated first
-    sendMessageValidateUser();
+    sendMessageValidateUserUpdate();
     return true;
 }
 
-void WickrIOActionHdlr::sendMessageValidateUser()
+void WickrIOActionHdlr::sendMessageValidateUserUpdate()
+{
+    if (m_wickrUsers.size() == 0) {
+        sendMessageValidateUserSearch();
+        return;
+    }
+
+    QList<WickrCore::WickrUser *> updateUsers;
+
+    // Check if any of the users need to be updated, especially if the signing key is missing
+    for (WickrCore::WickrUser *user : m_wickrUsers) {
+        if (user->getUserSigningKey().isEmpty())
+            updateUsers.append(user);
+    }
+
+    if (updateUsers.size() > 0) {
+                WickrUserValidateUpdate *u = new WickrUserValidateUpdate(updateUsers,true,true,true,0);
+                QObject::connect(u, &WickrUserValidateUpdate::signalRequestCompleted,
+                                 this, &WickrIOActionHdlr::slotValidateUserUpdateDone,
+                                 Qt::QueuedConnection);
+                WickrCore::WickrRuntime::taskSvcMakeRequest(u);
+    } else {
+        sendMessageValidateUserSearch();
+    }
+}
+
+void WickrIOActionHdlr::slotValidateUserUpdateDone(WickrUserValidateUpdate *context)
+{
+    QObject::disconnect(context, &WickrUserValidateUpdate::signalRequestCompleted,
+                        this, &WickrIOActionHdlr::slotValidateUserUpdateDone);
+
+    context->deleteLater();
+    sendMessageValidateUserSearch();
+}
+
+void WickrIOActionHdlr::sendMessageValidateUserSearch()
 {
     // If there are any usernames to process then do so
     if (m_userNames.size() > 0) {
@@ -236,7 +271,8 @@ void WickrIOActionHdlr::sendMessageValidateUser()
 
         WickrUserValidateSearch *c = new WickrUserValidateSearch(WICKR_USERNAME_ALIAS,id,0);
         QObject::connect(c, &WickrUserValidateSearch::signalRequestCompleted,
-                         this, &WickrIOActionHdlr::slotUserValidated,Qt::QueuedConnection);
+                         this, &WickrIOActionHdlr::slotValidateUserCheckDone,
+                         Qt::QueuedConnection);
         if (!WickrCore::WickrRuntime::taskSvcMakeRequest(c)) {
             qDebug() << "sendMessageValidateUser: taskSvcMakeRequest failed!";
             m_processAction = false;
@@ -248,8 +284,11 @@ void WickrIOActionHdlr::sendMessageValidateUser()
     }
 }
 
-void WickrIOActionHdlr::slotUserValidated(WickrUserValidateSearch *context)
+void WickrIOActionHdlr::slotValidateUserCheckDone(WickrUserValidateSearch *context)
 {
+    QObject::disconnect(context, &WickrUserValidateSearch::signalRequestCompleted,
+                        this, &WickrIOActionHdlr::slotValidateUserCheckDone);
+
     if (context->isSuccess()) {
 
         const QList<WickrCore::WickrUserValidatorResult>& theResults = context->validationResults();
@@ -261,7 +300,7 @@ void WickrIOActionHdlr::slotUserValidated(WickrUserValidateSearch *context)
                 if (oneUser != nullptr) {
                     m_wickrUsers.append(oneUser);
                 }
-                sendMessageValidateUser();
+                sendMessageValidateUserSearch();
             }
         } else {
             m_processAction = false;
@@ -361,7 +400,8 @@ WickrIOActionHdlr::sendMessageToConvo(WickrCore::WickrConvo *convo)
     if (ttl == 0) {
         ttl = convo->getDestruct();
     } else {
-        convo->setDestruct(ttl);
+        if (ttl != convo->getDestruct())
+            convo->setDestruct(ttl);
     }
 
     if (m_jsonHandler->hasBOR()) {
@@ -376,8 +416,21 @@ WickrIOActionHdlr::sendMessageToConvo(WickrCore::WickrConvo *convo)
         }
     } else {
 #endif
+        // Get the users
+        QList<WickrCore::WickrUser *> userList;
+
+        QList<WickrCore::WickrUser *> convoUsers = convo->getAllUsers();
+        WickrCore::WickrUser *selfUser = WickrCore::WickrUser::getSelfUser();
+        for (WickrCore::WickrUser *user : convoUsers) {
+            if (user != selfUser) {
+                userList.append(user);
+            }
+        }
         // Send message
-        WickrSendContext *context = new WickrSendContext(MsgType_Text, convo, WickrCore::WickrMessage::createTextMsgBody(m_jsonHandler->getMessage(),convo));
+        WickrSendContext *context = new WickrSendContext(MsgType_Text,
+                                                         convo,
+                                                         WickrCore::WickrMessage::createTextMsgBody(m_jsonHandler->getMessage(),convo),
+                                                         userList);
         connect(context, &WickrSendContext::signalRequestCompleted, this, &WickrIOActionHdlr::slotMessageDone, Qt::QueuedConnection);
         WickrCore::WickrRuntime::msgSvcSend(context);
 #if 0

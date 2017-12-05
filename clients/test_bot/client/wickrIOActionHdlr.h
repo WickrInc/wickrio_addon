@@ -45,7 +45,8 @@ private:
     bool m_shuttingdown;
 
     bool processActionSendMessage(WickrBotJson *jsonHandler, int actionID);
-    void sendMessageValidateUser();
+    void sendMessageValidateUserUpdate();
+    void sendMessageValidateUserSearch();
     void create1To1ConvoStart(const QString& member);
 
     bool sendMessageToConvo(WickrCore::WickrConvo *convo);
@@ -96,7 +97,8 @@ private slots:
     void processDatabase(int deleteID);
     void slotSendMessagePostGetUsers();
 
-    void slotUserValidated(WickrUserValidateSearch *context);
+    void slotValidateUserUpdateDone(WickrUserValidateUpdate *context);
+    void slotValidateUserCheckDone(WickrUserValidateSearch *context);
     void slotSendFileStatusChange(const QString& uuid, const QString& status, float progress, const QString& finalFileName);
 
 public slots:
