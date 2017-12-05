@@ -17,7 +17,7 @@ CreateJsonAction::CreateJsonAction() :
     attachments.clear();
 }
 
-CreateJsonAction::CreateJsonAction(QString action, QStringList users, int ttl, QString message, QList<QString> attachments) :
+CreateJsonAction::CreateJsonAction(QString action, QStringList users, long ttl, QString message, QList<QString> attachments) :
     m_has_bor(false)
 {
     this->action = action;
@@ -33,7 +33,7 @@ CreateJsonAction::CreateJsonAction(QString action, QStringList users, int ttl, Q
 }
 
 
-CreateJsonAction::CreateJsonAction(QString action, QString name, int ttl, QString message, QList<QString> attachments, bool isVGroupID) :
+CreateJsonAction::CreateJsonAction(QString action, QString name, long ttl, QString message, QList<QString> attachments, bool isVGroupID) :
     m_has_bor(false)
 {
     this->action = action;
@@ -99,11 +99,11 @@ CreateJsonAction::toByteArray()
     }
 
     if (this->ttl > 0) {
-        jsonObject.insert("ttl", this->ttl);
+        jsonObject.insert("ttl", (qint64)this->ttl);
     }
 
     if (m_has_bor) {
-        jsonObject.insert("bor", m_bor);
+        jsonObject.insert("bor", (qint64)m_bor);
     }
 
     QJsonObject operationObject;

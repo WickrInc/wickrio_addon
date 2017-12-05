@@ -199,7 +199,7 @@ WickrIOReceiveThread::processMessage(WickrDBObject *item)
                 QList<QString> attachments;
                 CreateJsonAction *action = new CreateJsonAction("sendmessage",
                                                                 msg->getvGroupID(),
-                                                                60,
+                                                                msg->getDestructTime(),
                                                                 responseMessageText(msg->getSenderUserID()),
                                                                 attachments,
                                                                 true);
