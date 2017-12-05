@@ -56,9 +56,14 @@ if [ "$release_flag" = "true" ]; then
     svcbldtype=""
     svcBldType=""
 else
-    bldtype="-${build_extension}"
+    if test -z "$build_extension" ; then
+        bldtype=""
+        version="${maj}.${min}.${pat}-${bld}"
+    else
+        bldtype="-${build_extension}"
+        version="${maj}.${min}.${pat}-${bld}~${build_extension}"
+    fi
     BldType=$install_extension
-    version="${maj}.${min}.${pat}-${bld}~${build_extension}"
     svcbldtype="-debug"
     svcBldType="Debug"
 fi

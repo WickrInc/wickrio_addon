@@ -32,9 +32,9 @@ CONFIG(release,release|debug) {
         message(*** WickrIO Welcome Bot Beta.Debug Build)
         TARGET = welcome_botBeta
     }
-    else:wickr_qa {
-        message(*** WickrIO Welcome Bot QA Build)
-        TARGET = welcome_botQA
+    else:wickr_production {
+        message(*** WickrIO Welcome Bot Production Build - debuggable)
+        TARGET = welcome_bot
     }
     else {
         message(*** WickrIO Welcome Bot Alpha Build)
@@ -74,8 +74,8 @@ else {
     wickr_beta {
         DEFINES += WICKR_BETA
     }
-    else:wickr_qa {
-        DEFINES += WICKR_QA
+    else:wickr_production {
+        DEFINES += WICKR_PRODUCTION
     }
     else {
         DEFINES += WICKR_ALPHA
@@ -216,7 +216,7 @@ linux-g++* {
     else {
         wickr_blackout:QMAKE_RPATHDIR = /usr/lib/wio_welcome_bot-onprem
         else:wickr_beta:QMAKE_RPATHDIR = /usr/lib/wio_welcome_bot-beta
-        else:wickr_qa:QMAKE_RPATHDIR = /usr/lib/wio_welcome_bot-qa
+        else:wickr_production:QMAKE_RPATHDIR = /usr/lib/wio_welcome_bot
         else:QMAKE_RPATHDIR = /usr/lib/wio_welcome_bot-alpha
     }
 

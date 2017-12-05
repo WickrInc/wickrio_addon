@@ -98,8 +98,9 @@ else {
     wickr_beta {
         TARGET = welcome_parserBeta
     }
-    else:wickr_qa {
-        TARGET = welcome_parserQA
+    else:wickr_production {
+        TARGET = welcome_parser
+        DEFINES += WICKR_PRODUCTION
     }
     else {
         TARGET = welcome_parserAlpha

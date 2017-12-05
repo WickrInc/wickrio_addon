@@ -232,6 +232,10 @@ int main(int argc, char *argv[])
                                   clientType,
                                   clientDbPath);
 
+    // do not do backups for convo or contacts for Welcome Bot
+    WickrCore::WickrRuntime::taskSvcEnableContactBackup(false);
+    WickrCore::WickrRuntime::taskSvcEnableConvoBackup(false);
+
     if( !username.isEmpty() ) {
         WickrDBAdapter::setDBName( WickrDBAdapter::getDBName() + "." + username );
     }

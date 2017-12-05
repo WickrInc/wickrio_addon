@@ -75,8 +75,8 @@ else {
     wickr_beta {
         DEFINES += WICKR_BETA
     }
-    else:wickr_qa {
-        DEFINES += WICKR_QA
+    else:wickr_production {
+        DEFINES += WICKR_PRODUCTION
     }
     else {
         DEFINES += WICKR_ALPHA
