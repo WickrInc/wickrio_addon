@@ -73,7 +73,8 @@ WickrIOActionHdlr::sendMessageTo1To1(WickrCore::WickrConvo *convo)
     if (ttl == 0) {
         ttl = convo->getDestruct();
     } else {
-        convo->setDestruct(ttl);
+        if (ttl != convo->getDestruct())
+            convo->setDestruct(ttl);
     }
 
     if (m_jsonHandler->hasBOR()) {
