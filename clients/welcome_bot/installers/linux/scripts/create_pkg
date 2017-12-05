@@ -59,6 +59,12 @@ release)
     bldInsStr=""
     relBldFlag="true"
     ;;
+reldeb)
+    buildTypeStr="Debug"
+    bldExtStr=""
+    bldInsStr=""
+    relBldFlag="false"
+    ;;
 qa)
     buildTypeStr="QA"
     bldExtStr="alpha"

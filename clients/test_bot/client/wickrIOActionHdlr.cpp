@@ -37,35 +37,15 @@ WickrIOActionHdlr::~WickrIOActionHdlr()
 {
 }
 
-/**
- * @brief WickrIOActionHdlr::processAction
- * This function will determine what action is to be processed and call the appropriate
- * function to perform the action.  The default action is to send a message.  The
- * m_processAction boolean is set to true so that no other action should be performed
- * while the current action is being handled.
- * @param jsonHandler The JSON Handler, that contains all of the action information
- * @param actionID The ID of the action from the database. Need to remove after success.
- */
-bool WickrIOActionHdlr::processAction(WickrBotJson *jsonHandler, int actionID)
-{
-    // Action is starting, set flag so no other action is performed
-    m_processAction = true;
-
-    if (jsonHandler->getAction() == WickrBotJson::ACTION_SEND_MESSAGE) {
-        if (!processActionSendMessage(jsonHandler, actionID)) {
-            m_processAction = false;
-            delete jsonHandler;
-            return false;
-        }
-    } else {
-        m_processAction = false;
-    }
-    return true;
-}
-
-void
+bool
 WickrIOActionHdlr::sendMessageTo1To1(WickrCore::WickrConvo *convo)
 {
+    // Make sure there are actually users in this 1to1
+    if (!convo || convo->getAllUsers().length() == 0) {
+        qDebug() << "sendMessageTo1To1: no users in 1to1!";
+        return false;
+    }
+
     /*
      * Setup and send the message
      */
@@ -103,27 +83,43 @@ WickrIOActionHdlr::sendMessageTo1To1(WickrCore::WickrConvo *convo)
 
     if (attachmentFiles.size() > 0) {
         if (! sendFile(convo, attachmentFiles, m_jsonHandler->getMessage())) {
-            m_processAction = false;
+            return false;
         }
     } else {
+#if 0
         // Send message
-        WickrSendContext *context = new WickrSendContext(MsgType_Text, convo, WickrCore::WickrMessage::createTextMsgBody(m_jsonHandler->getMessage(),convo));
+        WickrSendContext *context = new WickrSendContext(MsgType_Text,
+                                                         convo,
+                                                         WickrCore::WickrMessage::createTextMsgBody(m_jsonHandler->getMessage(),convo));
+#else
+        // Get the users
+        QList<WickrCore::WickrUser *> userList;
+        QList<WickrCore::WickrUser *> convoUsers = convo->getAllUsers();
+        WickrCore::WickrUser *selfUser = WickrCore::WickrUser::getSelfUser();
+        for (WickrCore::WickrUser *user : convoUsers) {
+            if (user != selfUser) {
+                userList.append(user);
+            }
+        }
+
+        // Send message
+        WickrSendContext *context = new WickrSendContext(MsgType_Text,
+                                                         convo,
+                                                         WickrCore::WickrMessage::createTextMsgBody(m_jsonHandler->getMessage(),convo),
+                                                         userList);
+#endif
         connect(context, &WickrSendContext::signalRequestCompleted, this, &WickrIOActionHdlr::slotMessageDone, Qt::QueuedConnection);
         if (!WickrCore::WickrRuntime::msgSvcSend(context)) {
             qDebug() << "IN sendMessageTo1To1(): msgSvcSend returned failure!";
-            m_processAction = false;
+            return false;
         }
     }
 
     // Free the JSON Handler object
     delete m_jsonHandler;
     m_jsonHandler = NULL;
+    return true;
 }
-
-
-
-
-
 
 
 /**
@@ -157,29 +153,32 @@ bool WickrIOActionHdlr::processActionSendMessage(WickrBotJson *jsonHandler, int 
             return false;
         }
         if (convo->getConvoType() == CONVO_ONE_TO_ONE) {
-            qDebug() << "IN processActionSendMessage(): CONVO_ONE_TO_ONE but NO users!";
-
+            return sendMessageTo1To1(convo);
         } else {
-            sendMessageToConvo(convo);
+            return sendMessageToConvo(convo);
         }
-        return true;
     }
 
     for (QString userID : jsonHandler->getUserIDs()) {
-        QByteArray userIDSecure;
         WickrStatus status(0);
 
-        userIDSecure = encryptUserDataString(userID, status);
-
+        QString userIDHashSecure = WickrCore::WickrUser::activeSessionGetSecureAlias(userID, status);
         if (status.isError()) {
-            m_operation->log_handler->error("Error encrypting user data!");
+            m_operation->log_handler->error("Error hashing userID!");
+            m_messagesFailed++;
+            return false;
+        }
+
+        QByteArray userIDSecure = encryptUserDataString(userID, status);
+        if (status.isError()) {
+            m_operation->log_handler->error("Error encrypting userID!");
             m_messagesFailed++;
             return false;
         }
 
 
         WickrCore::WickrUser *user;
-        user = WickrCore::WickrUser::getUserWithID(userID,
+        user = WickrCore::WickrUser::getUserWithID(userIDHashSecure,
                                                    0,
                                                    userIDSecure,
                                                    0,
@@ -199,7 +198,6 @@ bool WickrIOActionHdlr::processActionSendMessage(WickrBotJson *jsonHandler, int 
                                                    QString(),
                                                    false,
                                                    0);
-
         if (!user) {
             m_operation->log_handler->error("cannot find/create user with ID = " + userID);
             m_messagesFailed++;
@@ -223,6 +221,7 @@ bool WickrIOActionHdlr::processActionSendMessage(WickrBotJson *jsonHandler, int 
         }
     }
 
+    // Lets see if users need to be updated first
     sendMessageValidateUser();
     return true;
 }
@@ -303,25 +302,33 @@ void WickrIOActionHdlr::slotSendMessagePostGetUsers()
             convo->setVGroupTag("");
         }
     }
+
+    bool sentSuccess;
     if (convo->getConvoType() == CONVO_ONE_TO_ONE) {
-        sendMessageTo1To1(convo);
+        sentSuccess = sendMessageTo1To1(convo);
     } else {
-        sendMessageToConvo(convo);
+        sentSuccess = sendMessageToConvo(convo);
     }
-}
 
-void WickrIOActionHdlr::sendMessageToConvo(WickrCore::WickrConvo *convo)
-{
-    if (!convo || convo->getAllUsers().length() == 0) {
-        m_operation->log_handler->error("Convo is not set or no users in convo!");
-        m_processAction = false;
-        m_messagesFailed++;
-
+    // If there was a problems sending then clean up
+    if (!sentSuccess) {
         // Free the JSON Handler object
         delete m_jsonHandler;
         m_jsonHandler = NULL;
 
-        return;
+        m_processAction = false;
+
+        emit signalStartProcessDatabase(m_curActionID);
+    }
+}
+
+bool
+WickrIOActionHdlr::sendMessageToConvo(WickrCore::WickrConvo *convo)
+{
+    if (!convo || convo->getAllUsers().length() == 0) {
+        m_operation->log_handler->error("Convo is not set or no users in convo!");
+        m_messagesFailed++;
+        return false;
     }
 
     /*
@@ -361,7 +368,6 @@ void WickrIOActionHdlr::sendMessageToConvo(WickrCore::WickrConvo *convo)
         convo->setBOR(bor);
     }
 
-
 #if 0
     if (attachmentFiles.size() > 0) {
         if (!sendFile(convo, attachmentFiles, m_jsonHandler->getMessage())) {
@@ -380,6 +386,7 @@ void WickrIOActionHdlr::sendMessageToConvo(WickrCore::WickrConvo *convo)
     // Free the JSON Handler object
     delete m_jsonHandler;
     m_jsonHandler = NULL;
+    return true;
 }
 
 bool WickrIOActionHdlr::sendFile(WickrCore::WickrConvo *targetConvo, const QList<QString> files, const QString& comments)
@@ -487,6 +494,8 @@ WickrIOActionHdlr::slotSendFileStatusChange(const QString& uuid, const QString& 
                status == "canceled") {
         m_processAction = false;
         emit signalStartProcessDatabase(m_curActionID);
+    } else {
+        qDebug() << "not signaling signalStartProcessDatabase()";
     }
 }
 
@@ -705,8 +714,24 @@ void WickrIOActionHdlr::processDatabase(int deleteID)
         WickrBotJson *jsonHandler = new WickrBotJson();
 
         if (jsonHandler->parseJsonString(action->json)) {
-            // If this fails then delete the action, can't do anything with it.
-            if (!processAction(jsonHandler, action->id)) {
+
+            // Action is starting, set flag so no other action is performed
+            m_processAction = true;
+            bool doneWithAction = false;
+
+            if (jsonHandler->getAction() == WickrBotJson::ACTION_SEND_MESSAGE) {
+                if (!processActionSendMessage(jsonHandler, action->id)) {
+                    m_processAction = false;
+                    doneWithAction = true;
+                }
+            } else {
+                m_processAction = false;
+                doneWithAction = true;
+            }
+
+            // If done with the action then delete it from the database
+            if (doneWithAction) {
+                delete jsonHandler;
                 m_operation->m_botDB->deleteAction(action->id);
             }
         }

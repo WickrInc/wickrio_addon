@@ -590,7 +590,7 @@ void WickrIOEClientMain::slotOnLoginMsgSynchronizationComplete()
     // ONLINE PROCESSING
 
     // Perform immediate houskeeping after download (backups if required, unsuspend convo backup after login)
-    WickrCore::WickrRuntime::taskSvc()->suspendConvoBackUp(false);
+    WickrCore::WickrRuntime::taskSvc()->suspendConvoBackUp(true);
     WickrConvoBackupContext *c = new WickrConvoBackupContext();
     WickrCore::WickrRuntime::taskSvcMakeRequest(c, true);
 
