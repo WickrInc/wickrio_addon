@@ -573,7 +573,15 @@ bool WickrIOClientServerService::startClient(WickrBotClients *client)
     arguments.append(QString("-processname=%1").arg(processName));
 
     QProcess exec;
-    exec.setStandardOutputFile(outputFile);
+
+    // If any errors occur put them in the output file
+    connect(&exec, &QProcess::errorOccurred, [=](QProcess::ProcessError error)
+    {
+        qDebug() << "error enum val = " << error;
+    });
+
+    exec.setStandardOutputFile(outputFile, QIODevice::Append);
+    exec.setStandardErrorFile(outputFile, QIODevice::Append);
     exec.setProcessChannelMode(QProcess::MergedChannels);
     if (exec.startDetached(command, arguments, workingDir)) {
         m_operation->log_handler->log(QString("Started client for %1").arg(client->name));

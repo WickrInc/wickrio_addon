@@ -44,13 +44,12 @@ private:
     bool m_shutdownTime;
     bool m_shuttingdown;
 
-    bool processAction(WickrBotJson *jsonHandler, int actionID);
     bool processActionSendMessage(WickrBotJson *jsonHandler, int actionID);
     void sendMessageValidateUserUpdate();
     void sendMessageValidateUserSearch();
     void create1To1ConvoStart(const QString& member);
 
-    void sendMessageToConvo(WickrCore::WickrConvo *convo);
+    bool sendMessageToConvo(WickrCore::WickrConvo *convo);
 
     bool sendFile(WickrCore::WickrConvo *targetConvo, const QList<QString> files, const QString& comments);
 
@@ -82,7 +81,7 @@ private:
     }
 
     void cleanUpDatabase();
-    void sendMessageTo1To1(WickrCore::WickrConvo *convo);
+    bool sendMessageTo1To1(WickrCore::WickrConvo *convo);
 
     void cleanUpConvoList();
 

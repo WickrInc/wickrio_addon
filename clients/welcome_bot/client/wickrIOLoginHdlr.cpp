@@ -233,10 +233,12 @@ void WickrIOLoginHdlr::slotLoginDone(WickrLoginContext *ls)
         });
 #endif
 
+#if 0   // Do not do a contact restore
         if (!WickrCore::WickrSession::getActiveSession()->getContactManager()->restoreContactsIfRequired( m_backupVersion )) {
             // No contact backup download needed, proceed
             refreshDirectory();
         }
+#endif
 
         // Store switchboard credentials from login receipt (in WickrSession)
         WickrCore::WickrSession::getActiveSession()->setSwitchboardServer(ls->switchboardServer());
