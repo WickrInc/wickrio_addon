@@ -52,6 +52,7 @@ DEPENDPATH += $$PWD
 
 HEADERS += \
     wickrIOActionHdlr.h \
+    wickrIOActionService.h \
     wickrIOCallbackService.h \
     wickrIOClientRuntime.h \
     wickrIOFileDownloadService.h \
@@ -63,6 +64,7 @@ HEADERS += \
 
 SOURCES += \
     wickrIOActionHdlr.cpp \
+    wickrIOActionService.cpp \
     wickrIOCallbackService.cpp \
     wickrIOClientRuntime.cpp \
     wickrIOFileDownloadService.cpp \

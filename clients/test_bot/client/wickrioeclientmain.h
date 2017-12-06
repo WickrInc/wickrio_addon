@@ -17,7 +17,7 @@
 
 #include "wickrioconvohdlr.h"
 #include "wickrIOLoginHdlr.h"
-#include "wickrIOActionHdlr.h"
+#include "wickrIOActionService.h"
 
 #define WICKRBOT WickrIOEClientMain::theBot
 
@@ -51,9 +51,9 @@ public:
     WickrIOConvoHdlr m_convoHdlr;
 
 private:
-    OperationData *m_operation;
-    WickrIOLoginHdlr m_loginHdlr;
-    WickrIOActionHdlr m_actionHdlr;
+    OperationData           *m_operation;
+    WickrIOLoginHdlr        m_loginHdlr;
+    WickrIOActionService    *m_actionService;
 
     QTimer timer;
     QString m_serverName;

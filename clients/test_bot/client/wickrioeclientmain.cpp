@@ -18,6 +18,7 @@
 #include "messaging/wickrSecureRoomMgr.h"
 #include "common/wickrRuntime.h"
 
+#include "wickrIOClientRuntime.h"
 #include "clientconfigurationinfo.h"
 #include "clientversioninfo.h"
 
@@ -32,7 +33,6 @@ WickrIOEClientMain *WickrIOEClientMain::theBot;
 WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
     m_operation(operation),
     m_loginHdlr(operation),
-    m_actionHdlr(operation),
     m_wickrIPC(0)
 {
     if( isVERSIONDEBUG() ) {
@@ -47,8 +47,6 @@ WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
 
     this->connect(this, &WickrIOEClientMain::started, this, &WickrIOEClientMain::processStarted);
     this->connect(this, &WickrIOEClientMain::signalExit, this, &WickrIOEClientMain::stopAndExitSlot);
-
-    this->connect(&m_actionHdlr, &WickrIOActionHdlr::signalExit, this, &WickrIOEClientMain::stopAndExitSlot);
 
     this->connect(&m_loginHdlr, &WickrIOLoginHdlr::signalExit, this, &WickrIOEClientMain::stopAndExitSlot);
     this->connect(&m_loginHdlr, &WickrIOLoginHdlr::signalLoginSuccess, this, &WickrIOEClientMain::slotLoginSuccess);
@@ -143,6 +141,9 @@ WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
                 &wickrQuickMain::slotActivateLandingPage);
 #endif
     }
+
+    // Startup the action handler
+    m_actionService = new WickrIOActionService(operation);
 }
 
 
@@ -331,16 +332,13 @@ void WickrIOEClientMain::setIPC(WickrIOIPCService *ipc)
 
 void WickrIOEClientMain::slotDoTimerWork()
 {
-    // If we are shutting down then do not proceed
-    if (m_actionHdlr.isShuttingDown()) {
-        return;
-    }
-
     if (m_wickrIPC != NULL && m_wickrIPC->isRunning()) {
         m_wickrIPC->check();
     }
 
-    m_actionHdlr.doTimerWork();
+    if (m_actionService != nullptr && !m_actionService->isHealthy()) {
+        qDebug() << "Action Handler Service is NOT healthy!";
+    }
 }
 
 /**
@@ -350,6 +348,9 @@ void WickrIOEClientMain::slotDoTimerWork()
  */
 void WickrIOEClientMain::stopAndExit(int procState)
 {
+    // Set the process state for after the shutdown
+    WickrIOClientRuntime::wdSetShutdownState(procState);
+
     // logout of switchboard service
     WickrCore::WickrRuntime::swbSvcLogout();
 
@@ -363,13 +364,11 @@ void WickrIOEClientMain::stopAndExit(int procState)
 
     QMetaObject::invokeMethod(m_rxThread, "stopReceiving", Qt::QueuedConnection);
 
-    m_actionHdlr.setShutowntime(true);
-    m_actionHdlr.setShuttingDown(true);
-    if (m_actionHdlr.isProcessingActions() ||
-        m_actionHdlr.isProcessingCleanUp() ||
-        m_rxThread->m_threadState != Idle) {
-        // TODO: Need to make sure the callbackservice is done
+    // shutdown the action handler service.  Will not return till it is down.
+    m_actionService->shutdown();
+    m_actionService->deleteLater();
 
+    if (!m_rxThread->m_threadState != Idle) {
         // Wait till the action/cleanup/rcvmsg processes are finished
         QTimer timer;
         QEventLoop loop;
@@ -377,28 +376,12 @@ void WickrIOEClientMain::stopAndExit(int procState)
         connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
 
         int iterationsProcAction = 20;
-        while ((m_actionHdlr.isProcessingActions() && iterationsProcAction > 0) ||
-               m_actionHdlr.isProcessingCleanUp() ||
-               m_rxThread->m_threadState != Idle ) {
-            //TODO: need to make sure the callback service is stopped
-            if (m_actionHdlr.isProcessingActions()) {
-                iterationsProcAction--;
-                qDebug() << "Waiting for client Action Handler process to finish!";
-            }
-            if (m_actionHdlr.isProcessingCleanUp()) {
-                qDebug() << "Waiting for client Clean Up process to finish!";
-            }
+        while (iterationsProcAction > 0 || m_rxThread->m_threadState != Idle ) {
+            iterationsProcAction--;
             if (m_rxThread->m_threadState != Idle) {
                 qDebug() << "Waiting for client Receive Messages process to finish!";
                 QMetaObject::invokeMethod(m_rxThread, "stopProcessing", Qt::QueuedConnection);
             }
-#if 0
-            if ( m_callbackThread->m_threadState != Idle) {
-                qDebug() << "Waiting for Callback Thread process to finish!";
-                QMetaObject::invokeMethod(m_callbackThread, "stopProcessing", Qt::QueuedConnection);
-            }
-#endif
-
             timer.start(1000);
             loop.exec();
         }
