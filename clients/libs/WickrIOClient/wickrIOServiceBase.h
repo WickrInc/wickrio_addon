@@ -16,6 +16,7 @@ public:
     virtual ~WickrIOServiceBase();
 
     QString serviceName() { return m_serviceName; }
+    virtual bool isHealthy() = 0;
 
 protected:
     WickrServiceState   m_state;        // state of the service
