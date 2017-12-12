@@ -18,7 +18,6 @@
 
 #include "wickrIOClientRuntime.h"
 
-
 #ifdef WICKR_PLUGIN_SUPPORT
 Q_IMPORT_PLUGIN(WickrPlugin)
 #endif

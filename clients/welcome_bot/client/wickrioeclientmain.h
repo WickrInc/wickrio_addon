@@ -11,13 +11,14 @@
 #include "wickrbotlog.h"
 #include "operationdata.h"
 #include "wickrIOIPCService.h"
-#include "wickrioreceivethread.h"
 #include "user/wickrUser.h"
 #include "services/wickrTaskService.h"
 
 #include "wickrioconvohdlr.h"
 #include "wickrIOLoginHdlr.h"
 #include "wickrIOActionService.h"
+#include "wickrIORxService.h"
+#include "welcomeClientRxDetails.h"
 
 #define WICKRBOT WickrIOEClientMain::theBot
 
@@ -61,7 +62,9 @@ private:
     bool    m_durationreached;      // true if duration was reached, so exit only once
 
     WickrIOIPCService *m_wickrIPC;
-    WickrIOReceiveThread *m_rxThread;
+
+    WickrIORxService    *m_rxService;
+    WelcomeClientRxDetails *m_rxDetails;
 
     // Timer definitions
     void startTimer()

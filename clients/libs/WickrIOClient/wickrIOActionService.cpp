@@ -124,7 +124,7 @@ WickrIOActionThread::WickrIOActionThread(QThread *thread, WickrIOActionService *
     m_running(false),
     m_operation(operation)
 {
-    thread->setObjectName("WickrIOWatchdogThread");
+    thread->setObjectName("WickrIOActionThread");
     this->moveToThread(thread);
 
     // Signal to cleanup worker
@@ -156,7 +156,7 @@ WickrIOActionThread::WickrIOActionThread(QThread *thread, WickrIOActionService *
 }
 
 /**
- * @brief WickrIOWatchdogThread::~WickrIOWatchdogThread
+ * @brief WickrIOActionThread::~WickrIOActionThread
  * Destructor
  */
 WickrIOActionThread::~WickrIOActionThread() {
@@ -165,7 +165,7 @@ WickrIOActionThread::~WickrIOActionThread() {
     // Stop the timer
     disconnect(&m_timer, SIGNAL(timeout()), this, SLOT(slotTimerExpire()));
 
-    qDebug() << "WICKRIOWATCHDOG THREAD: Worker Destroyed.";
+    qDebug() << "WICKRIOACTION THREAD: Worker Destroyed.";
 }
 
 void
@@ -215,7 +215,6 @@ void WickrIOActionThread::slotTimerExpire()
     // If it is time to output statistics then set the appropriate flag
     if ((m_timerStatsTicker % WICKRIO_AH_UPDATE_STATS_SECS) == 0) {
         m_outputStats = true;
-//        QMetaObject::invokeMethod(m_rxThread, "logCounts", Qt::QueuedConnection);
     }
 
     // Only print out if app count is greater than 0 (reduce output)
