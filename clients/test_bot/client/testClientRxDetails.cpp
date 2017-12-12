@@ -1,7 +1,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 
-#include "wickrioreceivethread.h"
+#include "testClientRxDetails.h"
 #include "wickriodatabase.h"
 #include "wickrioapi.h"
 
@@ -15,70 +15,28 @@
 
 #include "wickrIOClientRuntime.h"
 
-#define WICKRBOT_UPDATE_STATS_SECS      600
 
-WickrIOReceiveThread::WickrIOReceiveThread(OperationData *operation) :
-    WickrIOThread(),
-    m_operation(operation),
-    m_enableSwitchboard(false),
-    m_receiving(false),
-    m_timerStatsTicker(0),
-    m_convoList(NULL)
+TestClientRxDetails::TestClientRxDetails(OperationData *operation) : WickrIORxDetails(operation)
 {
 }
 
-WickrIOReceiveThread::~WickrIOReceiveThread()
+TestClientRxDetails::~TestClientRxDetails()
 {
-    if (m_convoList != NULL) {
-        stopReceiving();
-    }
 }
 
-
-void WickrIOReceiveThread::processStarted()
+bool TestClientRxDetails::init()
 {
-    qDebug() << "Started WickrIOReceiveThread";
-    initMessageServicesConnections();
-
-    // Login successful, so login to switchboard
-    startSwitchboard();
-
-    emit signalProcessStarted();
+    return true;
 }
 
-
-void WickrIOReceiveThread::onTimerAction()
+bool TestClientRxDetails::healthCheck()
 {
-    m_timerStatsTicker++;
-
-    // If it is time to output statistics then set the appropriate flag
-    if ((m_timerStatsTicker % WICKRBOT_UPDATE_STATS_SECS) == 0) {
-        logCounts();
-    }
+    return true;
 }
 
-void
-WickrIOReceiveThread::slotProcessMessage(WickrDBObject *item)
+bool TestClientRxDetails::processMessage(WickrDBObject *item)
 {
-    if (processMessage(item)) {
-        WickrCore::WickrMessage *msg = (WickrCore::WickrMessage *)item;
-        if (msg) {
-            msg->dodelete(traceInfo());
-//            delete msg;
-        }
-    }
-}
-
-bool
-WickrIOReceiveThread::processMessage(WickrDBObject *item)
-{
-    Q_UNUSED(item)
     bool deleteMsg = false;
-
-    if (m_shuttingdown || m_threadState == Idle) {
-        makeIdle();
-        return false;
-    }
 
     /*
      * Check if there is a callback defined, for this current client.
@@ -192,8 +150,7 @@ WickrIOReceiveThread::processMessage(WickrDBObject *item)
                 jsonObject.insert(APIJSON_MSGTIME, statusText);
 
 
-                OperationData *pOperation = WickrIOClientRuntime::operationData();
-                QString respondApiText = pOperation->getResponseURL();
+                QString respondApiText = m_operation->getResponseURL();
                 if (!respondApiText.isEmpty()) {
                     jsonObject.insert(APIJSON_RESPOND_API, respondApiText);
                 }
@@ -296,185 +253,5 @@ WickrIOReceiveThread::processMessage(WickrDBObject *item)
 #endif
         }
     }
-
-    m_processing = false;
-    if (m_shuttingdown) {
-        if (!m_processing)
-            makeIdle();
-    }
     return deleteMsg;
-}
-
-QString
-WickrIOReceiveThread::getAttachmentFile(const QByteArray &data, QString extension)
-{
-    QDateTime dateTime = QDateTime::currentDateTime();
-    QString dateTimeString = dateTime.toString("yyyyMMddhhmmsszzz");
-
-    QString dirName = m_operation->attachmentsDir;
-
-    if (dirName.isEmpty()) {
-        // Save the attachment to the temp dir
-        dirName = QDir::tempPath();
-    }
-
-    QString attachmentFileName(dirName +
-#ifdef Q_OS_LINUX
-            "/" +
-#endif
-     "attachment_" + dateTimeString + "." + extension);
-
-    QFile tempFile(attachmentFileName);
-    tempFile.open(QIODevice::WriteOnly);
-    tempFile.write(data);
-    tempFile.close();
-    return attachmentFileName;
-}
-
-
-
-
-
-void WickrIOReceiveThread::startReceiving()
-{
-    if (! m_receiving) {
-        m_receiving = true;
-
-        m_convoList = WickrCore::WickrConvo::getConvoList();
-        attachConvos();
-    }
-    emit signalReceivingStarted();
-}
-
-void WickrIOReceiveThread::stopReceiving()
-{
-    if (m_receiving) {
-        if (m_convoList != NULL) {
-            detachConvos();
-            m_convoList = NULL;
-        }
-        m_receiving = false;
-    }
-    emit signalReceivingEnded();
-}
-
-void WickrIOReceiveThread::attachConvos()
-{
-    if (m_convoList) {
-        QList<WickrDBObject *>items = m_convoList->acquireItemList(false);
-        foreach(WickrDBObject *item, items) {
-            slotConvoAdded(item, false);
-        }
-
-        connect(m_convoList, SIGNAL(addedItem(WickrDBObject*)),   this, SLOT(slotConvoAdded(WickrDBObject*)), Qt::QueuedConnection);
-        connect(m_convoList, SIGNAL(changedItem(WickrDBObject*)), this, SLOT(slotConvoChanged(WickrDBObject*)), Qt::QueuedConnection);
-        connect(m_convoList, SIGNAL(deletedItem(WickrDBObject*)), this, SLOT(slotConvoDeleted(WickrDBObject*)), Qt::QueuedConnection);
-
-        m_convoList->releaseAcquire();
-    }
-}
-
-void WickrIOReceiveThread::detachConvos()
-{
-    if(m_convoList) {
-        disconnect(m_convoList, SIGNAL(addedItem(WickrDBObject*)),   this, SLOT(slotConvoAdded(WickrDBObject*)));
-        disconnect(m_convoList, SIGNAL(changedItem(WickrDBObject*)), this, SLOT(slotConvoChanged(WickrDBObject*)));
-        disconnect(m_convoList, SIGNAL(deletedItem(WickrDBObject*)), this, SLOT(slotConvoDeleted(WickrDBObject*)));
-    }
-}
-
-void WickrIOReceiveThread::slotConvoAdded(WickrDBObject *item, bool existing)
-{
-    WickrCore::WickrConvo *convo = static_cast<WickrCore::WickrConvo *>(item);
-    if (convo) {
-        // TODO: Need to check if this convo is setup already or not
-        if (existing) {
-            // Check if the convo is in a Key Validation state that needs to be acted on
-            if (convo->getKeyVerState() == WickrCore::WickrConvo::KeyVerStateGotVideo) {
-                // We have the users video, so verify and send a key verification response
-                WickrCore::WickrKeyVerificationMgr *wkvm = WickrCore::WickrRuntime::getKeyVerifyMgr();
-                if (wkvm) {
-                    wkvm->acceptVerification(convo);
-                }
-            }
-        } else {
-            attachConvosMessages(convo->getMessages());
-        }
-    }
-}
-
-void WickrIOReceiveThread::slotConvoChanged(WickrDBObject *item) {
-    slotConvoAdded(item, true);
-}
-
-void WickrIOReceiveThread::slotConvoDeleted(WickrDBObject *inItem) {
-    if(inItem != NULL) {
-        WickrCore::WickrConvo *convo = static_cast<WickrCore::WickrConvo *>(inItem);
-        detachConvosMessages(convo->getMessages());
-    }
-}
-
-
-void WickrIOReceiveThread::attachConvosMessages(WickrNotifyList *msgList)
-{
-    if (msgList != NULL) {
-        QList<WickrDBObject*> toBeDeleted;
-        QList<WickrDBObject*> items = msgList->acquireItemList(false);
-        foreach(WickrDBObject *item, items) {
-            //qDebug() << "**** FILTER " << item;
-            if (item != NULL) {
-                if (processMessage(item)) {
-                    toBeDeleted.append(item);
-                }
-            }
-        }
-
-        connect(msgList, SIGNAL(addedItem  (WickrDBObject*)), this, SLOT(slotProcessMessage(WickrDBObject*)));
-        connect(msgList, SIGNAL(changedItem(WickrDBObject*)), this, SLOT(slotProcessMessage(WickrDBObject*)));
-//        connect(msgList, SIGNAL(deletedItem(WickrDBObject*)), this, SLOT(slotConvoMessageDeleted(WickrDBObject*)));
-
-        msgList->releaseAcquire();
-
-        foreach(WickrDBObject *item, toBeDeleted) {
-            WickrCore::WickrMessage *msg = (WickrCore::WickrMessage *)item;
-            if (msg) {
-                msg->dodelete(traceInfo());
-    //            delete msg;
-            }
-        }
-    }
-}
-
-void WickrIOReceiveThread::detachConvosMessages(WickrNotifyList *msgList)
-{
-    disconnect(msgList, SIGNAL(addedItem  (WickrDBObject*)), this, SLOT(slotProcessMessage(WickrDBObject*)));
-    disconnect(msgList, SIGNAL(changedItem(WickrDBObject*)), this, SLOT(slotProcessMessage(WickrDBObject*)));
-//    disconnect(msgList, SIGNAL(deletedItem(WickrDBObject*)), this, SLOT(slotConvoMessageDeleted(WickrDBObject*)));
-}
-
-
-
-
-
-
-void WickrIOReceiveThread::startSwitchboard()
-{
-    // Update switchboard login credentials (login is performed only if not already logged in)
-    WickrCore::WickrRuntime::swbSvcLogin(WickrCore::WickrSession::getActiveSession()->getSwitchboardServer(),
-                                         WickrCore::WickrUser::getSelfUser()->getServerIDHash(),
-                                         WickrCore::WickrSession::getActiveSession()->getAppID(),
-                                         WickrCore::WickrSession::getActiveSession()->getSwitchboardToken(),
-                                         WickrCore::WickrSession::getActiveSession()->getNetworkIdFromLogin(),
-                                         true);
-}
-
-void WickrIOReceiveThread::stopSwitchboard()
-{
-    WickrCore::WickrRuntime::swbSvcLogout();
-}
-
-
-
-void WickrIOReceiveThread::initMessageServicesConnections()
-{
 }

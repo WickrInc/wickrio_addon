@@ -51,24 +51,24 @@ INCLUDEPATH += $$DEPTH/shared/common
 DEPENDPATH += $$PWD
 
 HEADERS += \
-    wickrIOActionHdlr.h \
     wickrIOActionService.h \
     wickrIOCallbackService.h \
     wickrIOClientRuntime.h \
     wickrIOFileDownloadService.h \
     wickrIOJson.h \
     wickrIOMessageCounter.h \
+    wickrIORxService.h \
     wickrIOThread.h \
     wickrIOWatchdogService.h \
     wickrIOServiceBase.h
 
 SOURCES += \
-    wickrIOActionHdlr.cpp \
     wickrIOActionService.cpp \
     wickrIOCallbackService.cpp \
     wickrIOClientRuntime.cpp \
     wickrIOFileDownloadService.cpp \
     wickrIOJson.cpp \
+    wickrIORxService.cpp \
     wickrIOThread.cpp \
     wickrIOWatchdogService.cpp \
     wickrIOServiceBase.cpp

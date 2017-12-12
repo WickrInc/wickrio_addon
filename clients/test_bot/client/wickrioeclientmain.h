@@ -11,13 +11,14 @@
 #include "wickrbotlog.h"
 #include "operationdata.h"
 #include "wickrIOIPCService.h"
-#include "wickrioreceivethread.h"
 #include "user/wickrUser.h"
 #include "services/wickrTaskService.h"
 
 #include "wickrioconvohdlr.h"
 #include "wickrIOLoginHdlr.h"
 #include "wickrIOActionService.h"
+#include "wickrIORxService.h"
+#include "testClientRxDetails.h"
 
 #define WICKRBOT WickrIOEClientMain::theBot
 
@@ -59,7 +60,9 @@ private:
     QString m_serverName;
 
     WickrIOIPCService *m_wickrIPC;
-    WickrIOReceiveThread *m_rxThread;
+
+    WickrIORxService    *m_rxService;
+    TestClientRxDetails *m_rxDetails;
 
     // Timer definitions
     void startTimer()

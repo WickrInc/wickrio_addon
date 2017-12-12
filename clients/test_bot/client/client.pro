@@ -144,8 +144,8 @@ SOURCES += \
     main.cpp \
     wickrioeclientmain.cpp \
     requesthandler.cpp \
+    testClientRxDetails.cpp \
     wickrioconvohdlr.cpp \
-    wickrioreceivethread.cpp \
     wickrIOLoginHdlr.cpp \
     clientconfigurationinfo.cpp \
     clientversioninfo.cpp
@@ -153,8 +153,8 @@ SOURCES += \
 HEADERS += \
     wickrioeclientmain.h \
     requesthandler.h \
+    testClientRxDetails.h \
     wickrioconvohdlr.h \
-    wickrioreceivethread.h \
     wickrIOLoginHdlr.h \
     wickrbuildnumbers.h \
     clientconfigurationinfo.h \

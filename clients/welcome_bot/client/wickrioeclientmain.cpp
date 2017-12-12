@@ -45,8 +45,6 @@ WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
         m_operation->startRcvSecs = 2;
     }
 
-    m_rxThread = new WickrIOReceiveThread(operation);
-
     this->connect(this, &WickrIOEClientMain::started, this, &WickrIOEClientMain::processStarted);
     this->connect(this, &WickrIOEClientMain::signalExit, this, &WickrIOEClientMain::stopAndExitSlot);
 
@@ -206,15 +204,16 @@ void WickrIOEClientMain::slotDatabaseLoadDone(WickrDatabaseLoadContext *context)
                                          WickrCore::WickrSession::getActiveSession()->getNetworkIdFromLogin(),
                                          true);
 
-    // Start the receive thread
-    connect(m_rxThread, &WickrIOReceiveThread::signalProcessStarted, this, &WickrIOEClientMain::slotRxProcessStarted, Qt::QueuedConnection);
-    m_rxThread->start();
+    // Start the receive service
+    m_rxDetails = new WelcomeClientRxDetails(m_operation);
+    m_rxService = new WickrIORxService(m_operation, m_rxDetails);
+    connect(m_rxService, &WickrIORxService::signalProcessStarted, this, &WickrIOEClientMain::slotRxProcessStarted, Qt::QueuedConnection);
 }
 
 void WickrIOEClientMain::slotRxProcessStarted()
 {
-    connect(m_rxThread, &WickrIOReceiveThread::signalReceivingStarted, this, &WickrIOEClientMain::slotRxProcessReceiving, Qt::QueuedConnection);
-    QMetaObject::invokeMethod(m_rxThread, "startReceiving", Qt::QueuedConnection);
+    connect(m_rxService, &WickrIORxService::signalReceivingStarted, this, &WickrIOEClientMain::slotRxProcessReceiving, Qt::QueuedConnection);
+    m_rxService->startReceive();
 }
 
 void WickrIOEClientMain::slotRxProcessReceiving()
@@ -357,6 +356,9 @@ void WickrIOEClientMain::slotDoTimerWork()
         qDebug() << "Action Handler Service is NOT healthy!";
         // TODO: Reset the action service if not healthy
     }
+    if (m_rxService != nullptr && !m_rxService->isHealthy()) {
+        qDebug() << "Receive Service is NOT healthy!";
+    }
 }
 
 /**
@@ -380,32 +382,15 @@ void WickrIOEClientMain::stopAndExit(int procState)
 
 //    WickrService::requestLogoff();
 
-    QMetaObject::invokeMethod(m_rxThread, "stopReceiving", Qt::QueuedConnection);
+    // shutdown the receive service. will not return till it is down
+    m_rxService->stopReceive();
+    m_rxService->shutdown();
+    m_rxService->deleteLater();
+    m_rxDetails->deleteLater();
 
     // shutdown the action handler service.  Will not return till it is down.
     m_actionService->shutdown();
     m_actionService->deleteLater();
-
-    if (m_rxThread->m_threadState != Idle) {
-        // TODO: Need to make sure the callbackservice is done
-
-        // Wait till the action/cleanup/rcvmsg processes are finished
-        QTimer timer;
-        QEventLoop loop;
-
-        connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
-
-        int iterationsProcAction = 20;
-        while (iterationsProcAction > 0 || m_rxThread->m_threadState != Idle) {
-            iterationsProcAction--;
-            if (m_rxThread->m_threadState != Idle) {
-                qDebug() << "Waiting for client Receive Messages process to finish!";
-                QMetaObject::invokeMethod(m_rxThread, "stopProcessing", Qt::QueuedConnection);
-            }
-            timer.start(1000);
-            loop.exec();
-        }
-    }
 
     // If the logins have failed, make sure tbhe DB is open so the state can be changed
     if (m_loginHdlr.getLoginState() == LoginsFailed) {
