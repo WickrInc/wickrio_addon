@@ -15,7 +15,7 @@
 
 #include "clientconfigurationinfo.h"
 #include "clientversioninfo.h"
-
+#include "testClientConfigInfo.h"
 #include "wickrIOClientRuntime.h"
 
 #ifdef WICKR_PLUGIN_SUPPORT

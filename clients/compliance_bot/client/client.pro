@@ -160,15 +160,18 @@ SOURCES += \
     wickrioconvohdlr.cpp \
     wickrioreceivethread.cpp \
     wickrIOLoginHdlr.cpp \
+    wickrIOThread.cpp \
     clientconfigurationinfo.cpp \
     clientversioninfo.cpp
 
 HEADERS += \
+    complianceClientConfigInfo.h \
     wickrioeclientmain.h \
     requesthandler.h \
     wickrioconvohdlr.h \
     wickrioreceivethread.h \
     wickrIOLoginHdlr.h \
+    wickrIOThread.h \
     wickrbuildnumbers.h \
     clientconfigurationinfo.h \
     clientversioninfo.h

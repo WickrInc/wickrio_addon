@@ -175,12 +175,13 @@ SOURCES += \
 
 HEADERS += \
     $${COMMON}/cmdbase.h \
+    clientconfigurationinfo.h \
+    complianceClientConfigInfo.h \
     cmdProvisioning.h \
     wickrioeclientmain.h \
     wickrIOLoginHdlr.h \
     wickrIOProvisionHdlr.h \
     wickrbuildnumbers.h \
-    clientconfigurationinfo.h \
     clientversioninfo.h \
     wickrIOClientRuntime.h \
     wickrIOBot.h \

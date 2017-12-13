@@ -147,17 +147,17 @@ SOURCES += \
     testClientRxDetails.cpp \
     wickrioconvohdlr.cpp \
     wickrIOLoginHdlr.cpp \
-    clientconfigurationinfo.cpp \
     clientversioninfo.cpp
 
 HEADERS += \
+    testClientConfigInfo.h \
     wickrioeclientmain.h \
     requesthandler.h \
+    testClientConfigInfo.h \
     testClientRxDetails.h \
     wickrioconvohdlr.h \
     wickrIOLoginHdlr.h \
     wickrbuildnumbers.h \
-    clientconfigurationinfo.h \
     clientversioninfo.h
 
 # qsqlcipher_wickr

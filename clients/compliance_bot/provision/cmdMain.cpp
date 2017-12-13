@@ -5,7 +5,7 @@
 #include "wickrIOBot.h"
 #include "wickrIOCommon.h"
 #include "wickrbotsettings.h"
-#include "clientconfigurationinfo.h"
+#include "complianceClientConfigInfo.h"
 #include "wickrbotutils.h"
 
 CmdMain::CmdMain(QCoreApplication *app, int argc, char **argv, OperationData *operation) :

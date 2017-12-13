@@ -1,8 +1,8 @@
 #include "wbparse_qamqpqueue.h"
 #include "wickrbotjsondata.h"
 #include "qamqpexchange.h"
-#include "clientconfigurationinfo.h"
 #include <QHostInfo>
+#include "welcomeClientConfigInfo.h"
 
 WBParse_QAMQPQueue::WBParse_QAMQPQueue(ParserOperationData *operation)
 {

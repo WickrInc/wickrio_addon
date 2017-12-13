@@ -15,6 +15,7 @@
 
 #include "clientconfigurationinfo.h"
 #include "clientversioninfo.h"
+#include "complianceClientConfigInfo.h"
 #include "wickrIOClientRuntime.h"
 
 

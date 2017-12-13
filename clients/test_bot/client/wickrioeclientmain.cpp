@@ -571,7 +571,7 @@ bool WickrIOEClientMain::parseSettings(QSettings *settings)
         qDebug() << "User or password is not set";
         return false;
     }
-    m_loginHdlr.addLogin(user, password);
+    m_loginHdlr.addLogin(user, password, username);
 
     settings->endGroup();
 

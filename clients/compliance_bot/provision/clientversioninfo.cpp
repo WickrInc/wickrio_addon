@@ -1,5 +1,6 @@
 #include "clientversioninfo.h"
 #include "clientconfigurationinfo.h"
+#include "complianceClientConfigInfo.h"
 
 #include "wickrBuildNumbers.h"
 #include "WickrProduct.h"

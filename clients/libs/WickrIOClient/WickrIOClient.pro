@@ -13,6 +13,42 @@ QT -= gui
 
 VERSION = 1.0.1
 
+wickr_messenger {
+    DEFINES += WICKR_MESSENGER=1
+}
+else:wickr_blackout {
+    DEFINES += WICKR_BLACKOUT=1
+}
+else:wickr_enterprise {
+    DEFINES += WICKR_ENTERPRISE=1
+}
+else:wickr_scif {
+    DEFINES += WICKR_SCIF=1
+}
+
+CONFIG(release,release|debug) {
+    wickr_beta {
+        DEFINES += WICKR_BETA
+    }
+    else {
+        DEFINES += WICKR_PRODUCTION
+    }
+}
+else {
+    wickr_beta {
+        DEFINES += WICKR_BETA
+    }
+    else:wickr_production {
+        DEFINES += WICKR_PRODUCTION
+    }
+    else {
+        DEFINES += WICKR_ALPHA
+    }
+
+    DEFINES += WICKR_DEBUG
+}
+
+
 mac {
 #   QMAKE_MAC_SDK = macosx10.10
    equals(QT_MINOR_VERSION, 4) {  #assuming major version is 5 and mixed building with 5.4.2 and 5.5.1
@@ -51,6 +87,7 @@ INCLUDEPATH += $$DEPTH/shared/common
 DEPENDPATH += $$PWD
 
 HEADERS += \
+    clientconfigurationinfo.h \
     wickrIOActionService.h \
     wickrIOCallbackService.h \
     wickrIOClientRuntime.h \
@@ -58,17 +95,16 @@ HEADERS += \
     wickrIOJson.h \
     wickrIOMessageCounter.h \
     wickrIORxService.h \
-    wickrIOThread.h \
     wickrIOWatchdogService.h \
     wickrIOServiceBase.h
 
 SOURCES += \
+    clientconfigurationinfo.cpp \
     wickrIOActionService.cpp \
     wickrIOCallbackService.cpp \
     wickrIOClientRuntime.cpp \
     wickrIOFileDownloadService.cpp \
     wickrIOJson.cpp \
     wickrIORxService.cpp \
-    wickrIOThread.cpp \
     wickrIOWatchdogService.cpp \
     wickrIOServiceBase.cpp

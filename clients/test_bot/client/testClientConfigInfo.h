@@ -1,7 +1,5 @@
-#ifndef CLIENTCONFIGURATIONINFO_H
-#define CLIENTCONFIGURATIONINFO_H
-
-#include <QString>
+#ifndef TESTCLIENTCONFIGINFO_H
+#define TESTCLIENTCONFIGINFO_H
 
 /*
  * definitions of the TARGET values. Make sure these are consistent with
@@ -26,21 +24,4 @@
 "No WICKR_TARGET defined!!!"
 #endif
 
-
-class ClientConfigurationInfo {
-public:
-    static const QString BugsnagURL;
-    static const QString BugsnagAPI;
-
-    static const QString DefaultNPLUserSuffix;
-
-    static const QString DefaultBaseURL;
-    static const QString DefaultDirSearchBaseURL;
-
-#ifdef WICKR_SPARKLE_ENABLED
-    static const QString SparkleAutoUpdateURL;
-#endif
-};
-
-
-#endif // CLIENTCONFIGURATIONINFO_H
+#endif // TESTCLIENTCONFIGINFO_H
