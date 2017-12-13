@@ -122,8 +122,8 @@ SOURCES += \
     parseroperationdata.cpp
 
 HEADERS += \
+    welcomeClientConfigInfo.h \
     WickrBotContext.h \
     wbparse_qamqpqueue.h \
     wickrbotmain.h \
-    parseroperationdata.h \
-    clientconfigurationinfo.h
+    parseroperationdata.h

@@ -15,6 +15,7 @@
 
 #include "clientconfigurationinfo.h"
 #include "clientversioninfo.h"
+#include "testClientConfigInfo.h"
 
 #include "wickrIOClientRuntime.h"
 #include "cmdProvisioning.h"

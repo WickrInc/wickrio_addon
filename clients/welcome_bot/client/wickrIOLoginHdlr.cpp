@@ -107,7 +107,12 @@ void WickrIOLoginHdlr::initiateLogin()
         bool creatingUser = m_logins.at(m_curLoginIndex)->m_creating;
 
         if (m_operation->m_botDB->isOpen()) {
-            m_operation->m_client = m_operation->m_botDB->getClientUsingName(userName);
+            EnvironmentMgr *env = WickrCore::WickrRuntime::getEnvironmentMgr();
+            if (env->emailAsUserIdMode()) {
+                m_operation->m_client = m_operation->m_botDB->getClientUsingUserName(userid);
+            } else {
+                m_operation->m_client = m_operation->m_botDB->getClientUsingName(userName);
+            }
         }
 
         WickrDBAdapter::setDBNameForUser( userid );
@@ -233,12 +238,13 @@ void WickrIOLoginHdlr::slotLoginDone(WickrLoginContext *ls)
         });
 #endif
 
-#if 0   // Do not do a contact restore
-        if (!WickrCore::WickrSession::getActiveSession()->getContactManager()->restoreContactsIfRequired( m_backupVersion )) {
-            // No contact backup download needed, proceed
-            refreshDirectory();
+        // If contact back is enabled then initiate a restore
+        if (WickrCore::WickrRuntime::taskSvcIsContactBackupEnabled()) {
+            if (!WickrCore::WickrSession::getActiveSession()->getContactManager()->restoreContactsIfRequired( m_backupVersion )) {
+                // No contact backup download needed, proceed
+                refreshDirectory();
+            }
         }
-#endif
 
         // Store switchboard credentials from login receipt (in WickrSession)
         WickrCore::WickrSession::getActiveSession()->setSwitchboardServer(ls->switchboardServer());

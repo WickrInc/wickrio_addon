@@ -3,6 +3,7 @@
 
 #include "wickrBuildNumbers.h"
 #include "WickrProduct.h"
+#include "testClientConfigInfo.h"
 
 QString ClientVersionInfo::getPlatform()
 {

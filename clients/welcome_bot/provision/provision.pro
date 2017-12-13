@@ -173,7 +173,6 @@ SOURCES += \
     wickrioeclientmain.cpp \
     wickrIOLoginHdlr.cpp \
     wickrIOProvisionHdlr.cpp \
-    clientconfigurationinfo.cpp \
     clientversioninfo.cpp \
     wickrIOClientRuntime.cpp
 
@@ -184,7 +183,6 @@ HEADERS += \
     wickrIOLoginHdlr.h \
     wickrIOProvisionHdlr.h \
     wickrbuildnumbers.h \
-    clientconfigurationinfo.h \
     clientversioninfo.h \
     wickrIOClientRuntime.h
 

@@ -8,6 +8,8 @@
 
 #include "clientconfigurationinfo.h"
 #include "clientversioninfo.h"
+#include "complianceClientConfigInfo.h"
+
 #include "wickrIOCommon.h"
 
 #include "wickrIOBot.h"

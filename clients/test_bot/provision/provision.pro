@@ -153,18 +153,17 @@ SOURCES += \
     wickrioeclientmain.cpp \
     wickrIOLoginHdlr.cpp \
     wickrIOProvisionHdlr.cpp \
-    clientconfigurationinfo.cpp \
     clientversioninfo.cpp \
     wickrIOClientRuntime.cpp
 
 HEADERS += \
     $${COMMON}/cmdbase.h \
+    testClientConfigInfo.h \
     cmdProvisioning.h \
     wickrioeclientmain.h \
     wickrIOLoginHdlr.h \
     wickrIOProvisionHdlr.h \
     wickrbuildnumbers.h \
-    clientconfigurationinfo.h \
     clientversioninfo.h \
     wickrIOClientRuntime.h
 
