@@ -13,13 +13,15 @@ class WickrBotLogin {
 public:
     QString m_name;
     QString m_pass;
+    QString m_userName;
     int m_sent;
     int m_failedLogin;
     bool m_creating;
 
-    WickrBotLogin(QString name, QString pass) :
+    WickrBotLogin(QString name, QString pass, QString userName) :
         m_name(name),
         m_pass(pass),
+        m_userName(userName),
         m_creating(false) {}
 };
 
@@ -43,8 +45,8 @@ public:
      * @param user The username of the new userSS
      * @param pass The password for the new user
      */
-    void addLogin(const QString& user, const QString& pass) {
-        m_logins.append(new WickrBotLogin(user, pass));
+    void addLogin(const QString& user, const QString& pass, const QString& userName) {
+        m_logins.append(new WickrBotLogin(user, pass, userName));
     }
 
 
@@ -60,8 +62,6 @@ private:
     int m_consecutiveLoginFailures;
     bool m_firstLogin;
     long m_backupVersion;
-
-    QList<WickrCore::WickrMemberValidity *> m_convoMemberKeys;
 
     void loginNextUser();
     void refreshDirectory();

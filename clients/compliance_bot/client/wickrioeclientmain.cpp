@@ -256,7 +256,7 @@ void WickrIOEClientMain::slotRxProcessReceiving()
 void WickrIOEClientMain::slotAdminUserSuspend(const QString& reason)
 {
     // Display Informational Message
-    qDebug() << "You have been logged out of the system.\nREASON: " << reason;
+    qDebug() << "Your account has been suspended!\nREASON: " << reason;
 
 #if 0
     // Force logout
@@ -344,7 +344,7 @@ void WickrIOEClientMain::slotReceivedMessage(QString type, QString value)
             if (qmapval.size() > 0) {
                 m_password = qmapval.value(WBIO_BOTINFO_PASSWORD);
                 loadBootstrapFile();
-                m_loginHdlr.addLogin(m_user, m_password);
+                m_loginHdlr.addLogin(m_user, m_password, m_userName);
                 m_loginHdlr.initiateLogin();
             }
         }
@@ -725,7 +725,7 @@ bool WickrIOEClientMain::parseSettings(QSettings *settings)
         m_waitingForPassword = true;
     } else {
         loadBootstrapFile();
-        m_loginHdlr.addLogin(user, password);
+        m_loginHdlr.addLogin(user, password, username);
         m_waitingForPassword = false;
     }
 

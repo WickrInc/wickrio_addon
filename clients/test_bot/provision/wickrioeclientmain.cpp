@@ -240,7 +240,7 @@ void WickrIOEClientMain::slotLoginSuccess()
 void WickrIOEClientMain::slotAdminUserSuspend(const QString& reason)
 {
     // Display Informational Message
-    qDebug() << "You have been logged out of the system.\nREASON: " << reason;
+    qDebug() << "Your account has been suspended!\nREASON: " << reason;
 
 #if 0
     // Force logout

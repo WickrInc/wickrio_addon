@@ -176,8 +176,10 @@ WickrIOEClientMain::~WickrIOEClientMain()
  * @brief WickrIOEClientMain::slotLoginSuccess
  * This slot is called when the login is successful
  */
-void WickrIOEClientMain::slotLoginSuccess()
+void WickrIOEClientMain::slotLoginSuccess(QString userSigningKey)
 {
+    //    sendConsoleMsg(WBIO_IPCMSGS_USERSIGNKEY, userSigningKey);
+
     // Execute database load
     WickrDatabaseLoadContext *c = new WickrDatabaseLoadContext(WickrUtil::dbDump);
     connect(c, &WickrDatabaseLoadContext::signalRequestCompleted, this, &WickrIOEClientMain::slotDatabaseLoadDone, Qt::QueuedConnection);
@@ -240,7 +242,7 @@ void WickrIOEClientMain::slotRxProcessReceiving()
 void WickrIOEClientMain::slotAdminUserSuspend(const QString& reason)
 {
     // Display Informational Message
-    qDebug() << "You have been logged out of the system.\nREASON: " << reason;
+    qDebug() << "Your account has been suspended!\nREASON: " << reason;
 
 #if 0
     // Force logout

@@ -83,7 +83,7 @@ private:
 
 private slots:
     void slotDoTimerWork();
-    void slotLoginSuccess();
+    void slotLoginSuccess(QString userSigningKey);
     void slotRxProcessStarted();
     void slotRxProcessReceiving();
 

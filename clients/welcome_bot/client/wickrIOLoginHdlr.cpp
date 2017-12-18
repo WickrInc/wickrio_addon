@@ -253,7 +253,16 @@ void WickrIOLoginHdlr::slotLoginDone(WickrLoginContext *ls)
         // Store networkId (in WickrSession)
         WickrCore::WickrSession::getActiveSession()->setNetworkIdFromLogin(ls->networkId());
 
-        emit signalLoginSuccess();
+        // Need to display the Keys
+        WickrCore::WickrUser *selfUser = WickrCore::WickrUser::getSelfUser();
+        qDebug() << "********************************************************************";
+        qDebug() << "**** USER SIGNING KEY";
+        qDebug() << "**** You will need this to enter into the console for the Bot";
+        qDebug() << "****";
+        qDebug() << "" << QString(selfUser->getUserSigningKey().toHex());
+        qDebug() << "********************************************************************";
+
+        emit signalLoginSuccess(QString(selfUser->getUserSigningKey().toHex()));
 
     } else {
         m_loginState = LoggedOut;

@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file alias="strings.xml">strings.xml</file>
-    </qresource>
-</RCC>

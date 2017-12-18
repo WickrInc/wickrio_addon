@@ -103,10 +103,16 @@ void WickrIOLoginHdlr::initiateLogin()
         m_loginState = InProcess;
         QString userid = m_logins.at(m_curLoginIndex)->m_name;
         QString password = m_logins.at(m_curLoginIndex)->m_pass;
+        QString userName = m_logins.at(m_curLoginIndex)->m_userName;
         bool creatingUser = m_logins.at(m_curLoginIndex)->m_creating;
 
         if (m_operation->m_botDB->isOpen()) {
-            m_operation->m_client = m_operation->m_botDB->getClientUsingUserName(userid);
+            EnvironmentMgr *env = WickrCore::WickrRuntime::getEnvironmentMgr();
+            if (env->emailAsUserIdMode()) {
+                m_operation->m_client = m_operation->m_botDB->getClientUsingUserName(userid);
+            } else {
+                m_operation->m_client = m_operation->m_botDB->getClientUsingName(userName);
+            }
         }
 
         WickrDBAdapter::setDBNameForUser( userid );
@@ -175,11 +181,7 @@ void WickrIOLoginHdlr::slotLoginStart(const QString& username, const QString& pa
                 return;
             }
 
-            // Should not hit this!  The user should be provisioned by the provision executable!
-#if 0
-            UserSelfProvisioningHelper *userprovision = wickrMain::get()->getQuickMain()->getUserSelfProvisioningHelper();
-            userprovision->onPremBegin(username, password, networkToken);
-#endif
+            // TODO: Do we need to handle this?
         } else {
             // No DB or wrong DB so try existing user registration
             QString unused = "UNUSED";
@@ -190,7 +192,7 @@ void WickrIOLoginHdlr::slotLoginStart(const QString& username, const QString& pa
         return;
     }
 
-    QString otp = "";
+    QString otp="";
     WickrLoginContext *c = new WickrLoginContext(username,password,otp,ClientVersionInfo::versionForLogin());
     connect(c, &WickrLoginContext::signalRequestCompleted, this, &WickrIOLoginHdlr::slotLoginDone, Qt::QueuedConnection);
     WickrCore::WickrRuntime::taskSvcMakeRequest(c);
@@ -236,9 +238,12 @@ void WickrIOLoginHdlr::slotLoginDone(WickrLoginContext *ls)
         });
 #endif
 
-        if (!WickrCore::WickrSession::getActiveSession()->getContactManager()->restoreContactsIfRequired( m_backupVersion )) {
-            // No contact backup download needed, proceed
-            refreshDirectory();
+        // If contact back is enabled then initiate a restore
+        if (WickrCore::WickrRuntime::taskSvcIsContactBackupEnabled()) {
+            if (!WickrCore::WickrSession::getActiveSession()->getContactManager()->restoreContactsIfRequired( m_backupVersion )) {
+                // No contact backup download needed, proceed
+                refreshDirectory();
+            }
         }
 
         // Store switchboard credentials from login receipt (in WickrSession)
@@ -258,7 +263,6 @@ void WickrIOLoginHdlr::slotLoginDone(WickrLoginContext *ls)
         qDebug() << "********************************************************************";
 
         emit signalLoginSuccess(QString(selfUser->getUserSigningKey().toHex()));
-
 
     } else {
         m_loginState = LoggedOut;
@@ -328,7 +332,7 @@ void WickrIOLoginHdlr::slotRefreshDirectoryDone(WickrDirectoryGetContext* contex
 {
     if (context->isSuccess()) {
         if (context->usersToValidate().size()) {
-            WickrUserValidateUpdate *u = new WickrUserValidateUpdate(context->usersToValidate(), m_convoMemberKeys, false,false,true,0);
+            WickrUserValidateUpdate *u = new WickrUserValidateUpdate(context->usersToValidate(),false,false,true,0);
             WickrCore::WickrRuntime::taskSvcMakeRequest(u);
         }
 

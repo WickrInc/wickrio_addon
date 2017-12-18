@@ -435,7 +435,6 @@ bool WickrIOActionThread::processActionSendMessage(WickrBotJson *jsonHandler, in
     // Process the User Names, if any
     m_userNames.clear();
     for (QString userName : jsonHandler->getUserNames()) {
-//        QString serverUserName = WickrIOEClientMain::serverId(userName);
         QString serverUserName = userName;
 
         WickrCore::WickrUser *dest = WickrCore::WickrUser::getUserWithAlias(serverUserName);

@@ -27,7 +27,7 @@ WickrIOBootstrap::encryptAndSave(const QString& bstrapString, const QString& fil
 }
 
 /**
- * @brief WickrIOEClientMain::loadBootstrapFile
+ * @brief WickrIOBootstrap::readFile
  * Decrypts the input file using the input passphrase. The resulting string will be passed
  * to the loadBootstrapString() function to be applied as appropriate.
  * @param fileName name of the bootstrap file
