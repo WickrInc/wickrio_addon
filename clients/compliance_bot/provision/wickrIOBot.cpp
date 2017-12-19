@@ -113,9 +113,9 @@ WickrIOBot::newBotCreate()
 
     // Wickr Runtime Environment (all applications include this line)
     WickrCore::WickrRuntime::init(m_argc, m_argv,
-                                  ClientVersionInfo::getProductType(),
+                                  PRODUCT_TYPE_BOT,
                                   ClientVersionInfo::getOrgName(),
-                                  ClientVersionInfo::getAppName(),
+                                  m_client.binary,
                                   ClientConfigurationInfo::DefaultBaseURL,
                                   ClientConfigurationInfo::DefaultDirSearchBaseURL,
                                   productionMode,

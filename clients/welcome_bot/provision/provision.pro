@@ -173,7 +173,6 @@ SOURCES += \
     wickrioeclientmain.cpp \
     wickrIOLoginHdlr.cpp \
     wickrIOProvisionHdlr.cpp \
-    clientversioninfo.cpp \
     wickrIOClientRuntime.cpp
 
 HEADERS += \
@@ -182,8 +181,6 @@ HEADERS += \
     wickrioeclientmain.h \
     wickrIOLoginHdlr.h \
     wickrIOProvisionHdlr.h \
-    wickrbuildnumbers.h \
-    clientversioninfo.h \
     wickrIOClientRuntime.h
 
 # qsqlcipher_wickr

@@ -86,16 +86,16 @@ WBIOServerCommon::initClientApps()
     if (!m_initialized) {
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botAlpha",       nullptr,                nullptr,               false));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botBeta",        nullptr,                nullptr,               false));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botQA",          nullptr,                nullptr,               false));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_bot",            nullptr,                nullptr,               false));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botAlpha", "compliance_provAlpha", nullptr,               true));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botBeta",  "compliance_provBeta",  nullptr,               true));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botQA",    "compliance_provQA",    nullptr,               true));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_bot",      "compliance_prov",      nullptr,               true));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_botAlpha",    nullptr,                "welcome_parserAlpha", false));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_botBeta",     nullptr,                "welcome_parserBeta",  false));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_botQA",       nullptr,                "welcome_parserQA",    false));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_bot",         nullptr,                "welcome_parser",      false));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("core_botAlpha",       nullptr,                nullptr,               false));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("core_botBeta",        nullptr,                nullptr,               false));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("core_bot",            nullptr,                nullptr,               false));
 
         for (WBIOClientApps *botapp : WBIOServerCommon::m_botApps) {
             m_bots.append(botapp->bot());

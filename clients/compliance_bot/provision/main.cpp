@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
         operation->m_botDB->updateProcessState(WBIO_PROVISION_TARGET, QCoreApplication::applicationPid(), PROCSTATE_RUNNING);
     }
 
-    wickrProductSetProductType(ClientVersionInfo::getProductType());
+    wickrProductSetProductType(PRODUCT_TYPE_BOT);
     WickrURLs::setDefaultBaseURLs(ClientConfigurationInfo::DefaultBaseURL, ClientConfigurationInfo::DefaultDirSearchBaseURL);
 
     bool debugOutput = false;

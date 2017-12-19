@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
     QString appname = WBIO_CLIENT_TARGET;
     QString orgname = WBIO_ORGANIZATION;
 
-    wickrProductSetProductType(ClientVersionInfo::getProductType());
+    wickrProductSetProductType(BOT_PRODUCT_TYPE);
     WickrURLs::setDefaultBaseURLs(ClientConfigurationInfo::DefaultBaseURL,
                                   ClientConfigurationInfo::DefaultDirSearchBaseURL);
 
@@ -224,9 +224,9 @@ int main(int argc, char *argv[])
 
     // Wickr Runtime Environment (all applications include this line)
     WickrCore::WickrRuntime::init(argc, argv,
-                                  ClientVersionInfo::getProductType(),
+                                  BOT_PRODUCT_TYPE,
                                   ClientVersionInfo::getOrgName(),
-                                  ClientVersionInfo::getAppName(),
+                                  appname,
                                   ClientConfigurationInfo::DefaultBaseURL,
                                   ClientConfigurationInfo::DefaultDirSearchBaseURL,
                                   productionMode,

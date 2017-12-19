@@ -32,7 +32,7 @@ WickrIOEClientMain *WickrIOEClientMain::theBot;
  */
 WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
     m_operation(operation),
-    m_loginHdlr(operation),
+    m_loginHdlr(operation, ClientVersionInfo::versionForLogin()),
     m_wickrIPC(0)
 {
     if( isVERSIONDEBUG() ) {
@@ -46,8 +46,8 @@ WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
     this->connect(this, &WickrIOEClientMain::started, this, &WickrIOEClientMain::processStarted);
     this->connect(this, &WickrIOEClientMain::signalExit, this, &WickrIOEClientMain::stopAndExitSlot);
 
-    this->connect(&m_loginHdlr, &WickrIOLoginHdlr::signalExit, this, &WickrIOEClientMain::stopAndExitSlot);
-    this->connect(&m_loginHdlr, &WickrIOLoginHdlr::signalLoginSuccess, this, &WickrIOEClientMain::slotLoginSuccess);
+    this->connect(&m_loginHdlr, &WickrIOClientLoginHdlr::signalExit, this, &WickrIOEClientMain::stopAndExitSlot);
+    this->connect(&m_loginHdlr, &WickrIOClientLoginHdlr::signalLoginSuccess, this, &WickrIOEClientMain::slotLoginSuccess);
 
 
 
@@ -174,10 +174,8 @@ WickrIOEClientMain::~WickrIOEClientMain()
  * @brief WickrIOEClientMain::slotLoginSuccess
  * This slot is called when the login is successful
  */
-void WickrIOEClientMain::slotLoginSuccess(QString userSigningKey)
+void WickrIOEClientMain::slotLoginSuccess()
 {
-//    sendConsoleMsg(WBIO_IPCMSGS_USERSIGNKEY, userSigningKey);
-
     // Execute database load
     WickrDatabaseLoadContext *c = new WickrDatabaseLoadContext(WickrUtil::dbDump);
     connect(c, &WickrDatabaseLoadContext::signalRequestCompleted, this, &WickrIOEClientMain::slotDatabaseLoadDone, Qt::QueuedConnection);
