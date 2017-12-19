@@ -211,7 +211,7 @@ WickrBotDatabase::insertAttachment(const QString &url, const QString &filename, 
             .arg(dateTime);
     if (!query.exec(queryString)) {
         QSqlError error = query.lastError();
-        qDebug() << "SQL error" << error;
+        qDebug() << "insert Attachment: SQL error" << error;
         qDebug() << "QUERY=" << queryString;
         qDebug() << "FILENAME=" << filename;
         qDebug() << "URL=" << url;
@@ -1170,7 +1170,7 @@ WickrBotDatabase::insertStatistic(int clientID, int statID, const QString &statD
             .arg(statValue);
     if (!query.exec(queryString)) {
         QSqlError error = query.lastError();
-        qDebug() << "SQL error" << error;
+        qDebug() << "insertStatistic: SQL error" << error;
     } else if (query.numRowsAffected() > 0) {
         retval = true;
     }

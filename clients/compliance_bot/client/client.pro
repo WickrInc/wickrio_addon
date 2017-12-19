@@ -159,10 +159,7 @@ SOURCES += \
     requesthandler.cpp \
     wickrioconvohdlr.cpp \
     wickrioreceivethread.cpp \
-    wickrIOLoginHdlr.cpp \
-    wickrIOThread.cpp \
-    clientconfigurationinfo.cpp \
-    clientversioninfo.cpp
+    wickrIOThread.cpp
 
 HEADERS += \
     complianceClientConfigInfo.h \
@@ -170,11 +167,7 @@ HEADERS += \
     requesthandler.h \
     wickrioconvohdlr.h \
     wickrioreceivethread.h \
-    wickrIOLoginHdlr.h \
-    wickrIOThread.h \
-    wickrbuildnumbers.h \
-    clientconfigurationinfo.h \
-    clientversioninfo.h
+    wickrIOThread.h
 
 # qsqlcipher_wickr
 

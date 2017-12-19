@@ -88,8 +88,11 @@ DEPENDPATH += $$PWD
 
 HEADERS += \
     clientconfigurationinfo.h \
+    clientversioninfo.h \
+    wickrBuildNumbers.h \
     wickrIOActionService.h \
     wickrIOCallbackService.h \
+    wickrIOClientLoginHdlr.h \
     wickrIOClientRuntime.h \
     wickrIOFileDownloadService.h \
     wickrIOJson.h \
@@ -100,8 +103,10 @@ HEADERS += \
 
 SOURCES += \
     clientconfigurationinfo.cpp \
+    clientversioninfo.cpp \
     wickrIOActionService.cpp \
     wickrIOCallbackService.cpp \
+    wickrIOClientLoginHdlr.cpp \
     wickrIOClientRuntime.cpp \
     wickrIOFileDownloadService.cpp \
     wickrIOJson.cpp \

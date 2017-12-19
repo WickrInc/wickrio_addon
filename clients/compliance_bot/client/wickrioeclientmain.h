@@ -16,7 +16,7 @@
 #include "services/wickrTaskService.h"
 
 #include "wickrioconvohdlr.h"
-#include "wickrIOLoginHdlr.h"
+#include "wickrIOClientLoginHdlr.h"
 
 #define WICKRBOT WickrIOEClientMain::theBot
 
@@ -59,7 +59,7 @@ public:
 
 private:
     OperationData *m_operation;
-    WickrIOLoginHdlr m_loginHdlr;
+    WickrIOClientLoginHdlr m_loginHdlr;
 
     QTimer timer;
     int m_timerStatsTicker;
@@ -90,7 +90,7 @@ private:
 
 private slots:
     void slotDoTimerWork();
-    void slotLoginSuccess(QString userSigningKey);
+    void slotLoginSuccess();
     void slotRxProcessStarted();
     void slotRxProcessReceiving();
 

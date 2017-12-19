@@ -36,7 +36,7 @@ WickrIOEClientMain *WickrIOEClientMain::theBot;
  */
 WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
     m_operation(operation),
-    m_loginHdlr(operation),
+    m_loginHdlr(operation, ClientVersionInfo::versionForLogin()),
     m_txIPC(this),
     m_rxIPC(0),
     m_timerStatsTicker(0),
@@ -55,8 +55,8 @@ WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
     this->connect(this, &WickrIOEClientMain::started, this, &WickrIOEClientMain::processStarted);
     this->connect(this, &WickrIOEClientMain::signalExit, this, &WickrIOEClientMain::stopAndExitSlot);
 
-    this->connect(&m_loginHdlr, &WickrIOLoginHdlr::signalExit, this, &WickrIOEClientMain::stopAndExitSlot);
-    this->connect(&m_loginHdlr, &WickrIOLoginHdlr::signalLoginSuccess, this, &WickrIOEClientMain::slotLoginSuccess);
+    this->connect(&m_loginHdlr, &WickrIOClientLoginHdlr::signalExit, this, &WickrIOEClientMain::stopAndExitSlot);
+    this->connect(&m_loginHdlr, &WickrIOClientLoginHdlr::signalLoginSuccess, this, &WickrIOEClientMain::slotLoginSuccess);
 
     WickrSwitchboardService *swbsvc = WickrCore::WickrRuntime::swbSvc();
     WickrMessageService *msgsvc = WickrCore::WickrRuntime::msgSvc();
@@ -188,10 +188,8 @@ WickrIOEClientMain::~WickrIOEClientMain()
  * @brief WickrIOEClientMain::slotLoginSuccess
  * This slot is called when the login is successful
  */
-void WickrIOEClientMain::slotLoginSuccess(QString userSigningKey)
+void WickrIOEClientMain::slotLoginSuccess()
 {
-    sendConsoleMsg(WBIO_IPCMSGS_USERSIGNKEY, userSigningKey);
-
     // Execute database load
     WickrDatabaseLoadContext *c = new WickrDatabaseLoadContext(WickrUtil::dbDump);
     connect(c, &WickrDatabaseLoadContext::signalRequestCompleted, this, &WickrIOEClientMain::slotDatabaseLoadDone, Qt::QueuedConnection);
@@ -206,6 +204,17 @@ void WickrIOEClientMain::slotDatabaseLoadDone(WickrDatabaseLoadContext *context)
 {
     // Cleanup request
     context->deleteLater();
+
+    // Need to display the Keys. Need to do here AFTER Database was loaded
+    WickrCore::WickrUser *selfUser = WickrCore::WickrUser::getSelfUser();
+    qDebug() << "********************************************************************";
+    qDebug() << "**** USER SIGNING KEY";
+    qDebug() << "**** You will need this to enter into the console for the Bot";
+    qDebug() << "****";
+    qDebug() << "" << QString(selfUser->getUserSigningKey().toHex());
+    qDebug() << "********************************************************************";
+
+    sendConsoleMsg(WBIO_IPCMSGS_USERSIGNKEY, QString(selfUser->getUserSigningKey().toHex()));
 
     emit signalLoginSuccess();
 

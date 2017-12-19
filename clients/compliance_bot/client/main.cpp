@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
     QString appname = WBIO_BOT_TARGET;
     QString orgname = WBIO_ORGANIZATION;
 
-    wickrProductSetProductType(ClientVersionInfo::getProductType());
+    wickrProductSetProductType(PRODUCT_TYPE_BOT);
     WickrURLs::setDefaultBaseURLs(ClientConfigurationInfo::DefaultBaseURL, ClientConfigurationInfo::DefaultDirSearchBaseURL);
 
     qDebug() <<  appname << "System was booted" << WickrUtil::formatTimestamp(WickrAppClock::getBootTime());
@@ -214,9 +214,9 @@ int main(int argc, char *argv[])
 
     // Wickr Runtime Environment (all applications include this line)
     WickrCore::WickrRuntime::init(argc, argv,
-                                  ClientVersionInfo::getProductType(),
+                                  PRODUCT_TYPE_BOT,
                                   ClientVersionInfo::getOrgName(),
-                                  ClientVersionInfo::getAppName(),
+                                  appname,
                                   ClientConfigurationInfo::DefaultBaseURL,
                                   ClientConfigurationInfo::DefaultDirSearchBaseURL,
                                   productionMode,
