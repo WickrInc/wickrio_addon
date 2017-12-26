@@ -18,6 +18,7 @@
 #include "welcomeClientConfigInfo.h"
 
 #include "wickrIOClientRuntime.h"
+#include "welcomeClientRxDetails.h"
 
 #include "common/wickrUtil.h"
 
@@ -32,7 +33,7 @@ extern void wickr_powersetup(void);
 
 #include <httpserver/httplistener.h>
 
-#include "wickrioeclientmain.h"
+#include "wickrIOClientMain.h"
 #include "wickrIOIPCService.h"
 #include "wickrbotutils.h"
 #include "operationdata.h"
@@ -355,20 +356,23 @@ int main(int argc, char *argv[])
      */
     WickrIOClientRuntime::init(operation);
 
+    // Create the receive details object
+    WelcomeClientRxDetails *rxDetails = new WelcomeClientRxDetails(operation);
+
     /*
      * Start the WickrIO thread
      */
-    WICKRBOT = new WickrIOEClientMain(operation);
+    WICKRBOT = new WickrIOClientMain(operation, rxDetails, WICKRBOT_SERVICE_ACTIONSVC);
     if (!WICKRBOT->parseSettings(settings)) {
         qDebug() << "Problem parsing Config file!";
         exit(1);
     }
 
     /*
-     * When the WickrIOEClientMain thread is started then create the IP
+     * When the WickrIOClientMain thread is started then create the IP
      * connection, so that other processes can stop this client.
      */
-    QObject::connect(WICKRBOT, &WickrIOEClientMain::signalStarted, [=]() {
+    QObject::connect(WICKRBOT, &WickrIOClientMain::signalStarted, [=]() {
         WickrIOClientRuntime::startIPC();
         WICKRBOT->setIPC(WickrIOClientRuntime::ipcSvc());
     });
@@ -377,7 +381,7 @@ int main(int argc, char *argv[])
      * When the login is successful create the HTTP listner to receive
      * the Web API requests.
      */
-    QObject::connect(WICKRBOT, &WickrIOEClientMain::signalLoginSuccess, [=]() {
+    QObject::connect(WICKRBOT, &WickrIOClientMain::signalLoginSuccess, [=]() {
         /*
          * Configure and start the TCP listener
          */

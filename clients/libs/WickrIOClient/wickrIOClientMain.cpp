@@ -6,7 +6,7 @@
 #include <QJsonArray>
 
 #include "wickrbotsettings.h"
-#include "wickrioeclientmain.h"
+#include "wickrIOClientMain.h"
 #include "wickrIOJson.h"
 #include "wickrbotprocessstate.h"
 #include "wickrbotutils.h"
@@ -22,20 +22,19 @@
 #include "clientconfigurationinfo.h"
 #include "clientversioninfo.h"
 
-WickrIOEClientMain *WickrIOEClientMain::theBot;
+WickrIOClientMain *WickrIOClientMain::theBot;
 
 /**
- * @brief WickrIOEClientMain::WickrIOEClientMain
+ * @brief WickrIOClientMain::WickrIOClientMain
  * This is the constructor for this class. Variables are initialized, the logins are created and
  * the m_logins list is set with those logins. Logging is started, counts initialized and SLOTS
  * are setup to receive specific SIGNALs
  */
-WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
+WickrIOClientMain::WickrIOClientMain(OperationData *operation, WickrIORxDetails *rxDetails, unsigned services) :
     m_operation(operation),
+    m_services(services),
     m_loginHdlr(operation, ClientVersionInfo::versionForLogin()),
-    m_wickrIPC(0),
-    m_seccount(0),
-    m_durationreached(false)
+    m_rxDetails(rxDetails)
 {
     if( isVERSIONDEBUG() ) {
         m_operation->cleanUpSecs = 20;
@@ -45,11 +44,11 @@ WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
         m_operation->startRcvSecs = 2;
     }
 
-    this->connect(this, &WickrIOEClientMain::started, this, &WickrIOEClientMain::processStarted);
-    this->connect(this, &WickrIOEClientMain::signalExit, this, &WickrIOEClientMain::stopAndExitSlot);
+    this->connect(this, &WickrIOClientMain::started, this, &WickrIOClientMain::processStarted);
+    this->connect(this, &WickrIOClientMain::signalExit, this, &WickrIOClientMain::stopAndExitSlot);
 
-    this->connect(&m_loginHdlr, &WickrIOClientLoginHdlr::signalExit, this, &WickrIOEClientMain::stopAndExitSlot);
-    this->connect(&m_loginHdlr, &WickrIOClientLoginHdlr::signalLoginSuccess, this, &WickrIOEClientMain::slotLoginSuccess);
+    this->connect(&m_loginHdlr, &WickrIOClientLoginHdlr::signalExit, this, &WickrIOClientMain::stopAndExitSlot);
+    this->connect(&m_loginHdlr, &WickrIOClientLoginHdlr::signalLoginSuccess, this, &WickrIOClientMain::slotLoginSuccess);
 
 
 
@@ -61,41 +60,41 @@ WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
         connect(swbsvc,
                 &WickrSwitchboardService::signalState,
                 this,
-                &WickrIOEClientMain::slotSwitchboardServiceState);
+                &WickrIOClientMain::slotSwitchboardServiceState);
 #if 0
         connect(swbsvc,
                 &WickrSwitchboardService::signalUserVideoUpdate,
                 this,
-                &WickrIOEClientMain::slotUserVideoUpdate);
+                &WickrIOClientMain::slotUserVideoUpdate);
 #endif
         connect(swbsvc,
                 &WickrSwitchboardService::signalAdminUserSuspend,
                 this,
-                &WickrIOEClientMain::slotAdminUserSuspend);
+                &WickrIOClientMain::slotAdminUserSuspend);
         connect(swbsvc,
                 &WickrSwitchboardService::signalAdminDeviceSuspend,
                 this,
-                &WickrIOEClientMain::slotAdminDeviceSuspend);
+                &WickrIOClientMain::slotAdminDeviceSuspend);
 #if 0
         connect(swbsvc,
                 &WickrSwitchboardService::signalProfileImageUpdated,
                 this,
-                &WickrIOEClientMain::slotProfileImageUpdated);
+                &WickrIOClientMain::slotProfileImageUpdated);
 #endif
         connect(swbsvc,
                 &WickrSwitchboardService::signalDownloadAtLoginStart,
                 this,
-                &WickrIOEClientMain::slotMessageDownloadStatusStart);
+                &WickrIOClientMain::slotMessageDownloadStatusStart);
 
         // Signals from message service
         connect(msgsvc,
                 &WickrMessageService::signalState,
                 this,
-                &WickrIOEClientMain::slotMessageServiceState);
+                &WickrIOClientMain::slotMessageServiceState);
         connect(msgsvc,
                 &WickrMessageService::signalSuspendedAccount,
                 this,
-                &WickrIOEClientMain::slotSetSuspendError);
+                &WickrIOClientMain::slotSetSuspendError);
         connect(msgsvc,
                 &WickrMessageService::signalSuspendedAccount, this, [=] {
 #if 0
@@ -106,24 +105,24 @@ WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
         connect(msgsvc,
                 &WickrMessageService::signalDownloadAtLoginUpdate,
                 this,
-                &WickrIOEClientMain::slotMessageDownloadStatusUpdate);
+                &WickrIOClientMain::slotMessageDownloadStatusUpdate);
         connect(msgsvc,
                 &WickrMessageService::signalDownloadAtLoginEnd,
                 this,
-                &WickrIOEClientMain::slotOnLoginMsgSynchronizationComplete);
+                &WickrIOClientMain::slotOnLoginMsgSynchronizationComplete);
 
         // Signals from task service
         //
         connect(tasksvc,
                 &WickrTaskService::signalState,
                 this,
-                &WickrIOEClientMain::slotTaskServiceState);
+                &WickrIOClientMain::slotTaskServiceState);
 
         qDebug() << "MESSAGE SERVICES: Application connections initialized.";
 
     } else {
         if (!swbsvc || !msgsvc || !tasksvc)
-            qDebug() << "WickrIOEClientMain(): SWITCHBOARD, MESSAGE, TASK SERVICES - Not initialized.";
+            qDebug() << "WickrIOClientMain(): SWITCHBOARD, MESSAGE, TASK SERVICES - Not initialized.";
     }
 
 
@@ -143,15 +142,20 @@ WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
     }
 
     // Startup the action handler
-    m_actionService = new WickrIOActionService(operation);
+    if (m_services & WICKRBOT_SERVICE_ACTIONSVC)
+        m_actionService = new WickrIOActionService(operation);
+
+    // Startup the event handler
+    if (m_services & WICKRBOT_SERVICE_EVENTSVC)
+        m_eventService = new WickrIOEventService(operation);
 }
 
 
 /**
- * @brief WickrIOEClientMain::~WickrIOEClientMain
+ * @brief WickrIOClientMain::~WickrIOClientMain
  * This is the destructor for this class. The timer is stopped and the DB closed.
  */
-WickrIOEClientMain::~WickrIOEClientMain()
+WickrIOClientMain::~WickrIOClientMain()
 {
     if (timer.isActive()) {
         timer.stop();
@@ -173,22 +177,26 @@ WickrIOEClientMain::~WickrIOEClientMain()
 }
 
 /**
- * @brief WickrIOEClientMain::slotLoginSuccess
+ * @brief WickrIOClientMain::slotLoginSuccess
  * This slot is called when the login is successful
  */
-void WickrIOEClientMain::slotLoginSuccess()
+void WickrIOClientMain::slotLoginSuccess()
 {
-     // Execute database load
+    m_operation->postEvent("Logged in", false);
+
+//    sendConsoleMsg(WBIO_IPCMSGS_USERSIGNKEY, userSigningKey);
+
+    // Execute database load
     WickrDatabaseLoadContext *c = new WickrDatabaseLoadContext(WickrUtil::dbDump);
-    connect(c, &WickrDatabaseLoadContext::signalRequestCompleted, this, &WickrIOEClientMain::slotDatabaseLoadDone, Qt::QueuedConnection);
+    connect(c, &WickrDatabaseLoadContext::signalRequestCompleted, this, &WickrIOClientMain::slotDatabaseLoadDone, Qt::QueuedConnection);
     WickrCore::WickrRuntime::taskSvcMakeRequest(c);
 }
 
 /**
- * @brief WickrIOEClientMain::slotDatabaseLoadDone
+ * @brief WickrIOClientMain::slotDatabaseLoadDone
  * Complete database load.
  */
-void WickrIOEClientMain::slotDatabaseLoadDone(WickrDatabaseLoadContext *context)
+void WickrIOClientMain::slotDatabaseLoadDone(WickrDatabaseLoadContext *context)
 {
     // Cleanup request
     context->deleteLater();
@@ -204,18 +212,17 @@ void WickrIOEClientMain::slotDatabaseLoadDone(WickrDatabaseLoadContext *context)
                                          true);
 
     // Start the receive service
-    m_rxDetails = new WelcomeClientRxDetails(m_operation);
     m_rxService = new WickrIORxService(m_operation, m_rxDetails);
-    connect(m_rxService, &WickrIORxService::signalProcessStarted, this, &WickrIOEClientMain::slotRxProcessStarted, Qt::QueuedConnection);
+    connect(m_rxService, &WickrIORxService::signalProcessStarted, this, &WickrIOClientMain::slotRxProcessStarted, Qt::QueuedConnection);
 }
 
-void WickrIOEClientMain::slotRxProcessStarted()
+void WickrIOClientMain::slotRxProcessStarted()
 {
-    connect(m_rxService, &WickrIORxService::signalReceivingStarted, this, &WickrIOEClientMain::slotRxProcessReceiving, Qt::QueuedConnection);
+    connect(m_rxService, &WickrIORxService::signalReceivingStarted, this, &WickrIOClientMain::slotRxProcessReceiving, Qt::QueuedConnection);
     m_rxService->startReceive();
 }
 
-void WickrIOEClientMain::slotRxProcessReceiving()
+void WickrIOClientMain::slotRxProcessReceiving()
 {
     // ONLINE: Login successful, so login to message service
     WickrCore::WickrRuntime::msgSvcLogin();
@@ -236,33 +243,37 @@ void WickrIOEClientMain::slotRxProcessReceiving()
  * @brief slotAdminUserSuspend (SWITCHBOARD SIGNAL)
  * Administrator forced logout received via switchboard.
  */
-void WickrIOEClientMain::slotAdminUserSuspend(const QString& reason)
+void WickrIOClientMain::slotAdminUserSuspend(const QString& reason)
 {
+    m_operation->postEvent("User is suspended!", true);
+
     // Display Informational Message
     qDebug() << "Your account has been suspended!\nREASON: " << reason;
 
-#if 0
-    // Force logout
-    slotOnLogout(false);
-#endif
+    // TODO: Need to send a notification to an admin
+
+    // Lets stop the application from running
+    stopAndExitSlot();
 }
 
 /**
  * @brief slotAdminDeviceSuspend (SWITCHBOARD SIGNAL)
  * Administrator forced logout and reset received via switchboard. Essentially a device reset/suspension.
  */
-void WickrIOEClientMain::slotAdminDeviceSuspend()
+void WickrIOClientMain::slotAdminDeviceSuspend()
 {
+    m_operation->postEvent("Device is suspended!", true);
+
     // Display Informational Message
     qDebug() << "System has reset this device as a result of either a forgot password performed by user, or a user account deletion.";
 
-#if 0
-    // Logout and Reset device
-    slotResetDevice();
-#endif
+    // TODO: Need to send a notification to an admin
+
+    // Lets stop the application from running
+    stopAndExitSlot();
 }
 
-void WickrIOEClientMain::slotSetSuspendError() {
+void WickrIOClientMain::slotSetSuspendError() {
 #if 0
     m_gotSuspendError = true;
     logout();
@@ -276,12 +287,12 @@ void WickrIOEClientMain::slotSetSuspendError() {
  * NOTE: Used to display progress on initial login only.
  * @param msgsToDownload
  */
-void WickrIOEClientMain::slotMessageDownloadStatusStart(int msgsToDownload)
+void WickrIOClientMain::slotMessageDownloadStatusStart(int msgsToDownload)
 {
     qDebug() << "Messages to download:" << msgsToDownload;
 }
 
-void WickrIOEClientMain::slotMessageDownloadStatusUpdate(int msgsDownloaded)
+void WickrIOClientMain::slotMessageDownloadStatusUpdate(int msgsDownloaded)
 {
     Q_UNUSED(msgsDownloaded);
 }
@@ -289,48 +300,48 @@ void WickrIOEClientMain::slotMessageDownloadStatusUpdate(int msgsDownloaded)
 
 
 /**
- * @brief WickrIOEClientMain::pauseAndExitSlot
+ * @brief WickrIOClientMain::pauseAndExitSlot
  * Call this slot to put the state of the client into the DOWN state,
  * and exit the client application.
  */
-void WickrIOEClientMain::stopAndExitSlot()
+void WickrIOClientMain::stopAndExitSlot()
 {
     stopAndExit(PROCSTATE_DOWN);
 }
 
 /**
- * @brief WickrIOEClientMain::pauseAndExitSlot
+ * @brief WickrIOClientMain::pauseAndExitSlot
  * Call this slot to put the state of the client into the paused state,
  * and exit the client application.
  */
-void WickrIOEClientMain::pauseAndExitSlot()
+void WickrIOClientMain::pauseAndExitSlot()
 {
     stopAndExit(PROCSTATE_PAUSED);
 }
 
 
-void WickrIOEClientMain::processStarted()
+void WickrIOClientMain::processStarted()
 {
-    qDebug() << "Started WickrIOEClientMain";
+    qDebug() << "Started WickrIOClientMain";
 
     if (! startTheClient())
         stopAndExit(PROCSTATE_DOWN);
 }
 
 /**
- * @brief WickrIOEClientMain::setIPC
+ * @brief WickrIOClientMain::setIPC
  * Save the IPC object.  Only really need to make a connection to receive the stop
  * signal when the applicaiton is to be closed.
  * @param ipc
  */
-void WickrIOEClientMain::setIPC(WickrIOIPCService *ipc)
+void WickrIOClientMain::setIPC(WickrIOIPCService *ipc)
 {
     m_wickrIPC = ipc;
-    connect(ipc, &WickrIOIPCService::signalGotStopRequest, this, &WickrIOEClientMain::stopAndExitSlot);
-    connect(ipc, &WickrIOIPCService::signalGotPauseRequest, this, &WickrIOEClientMain::pauseAndExitSlot);
+    connect(ipc, &WickrIOIPCService::signalGotStopRequest, this, &WickrIOClientMain::stopAndExitSlot);
+    connect(ipc, &WickrIOIPCService::signalGotPauseRequest, this, &WickrIOClientMain::pauseAndExitSlot);
 }
 
-void WickrIOEClientMain::slotDoTimerWork()
+void WickrIOClientMain::slotDoTimerWork()
 {
     // If there is a duration set then check if it is time to stop running
     if (m_operation->duration > 0) {
@@ -351,9 +362,11 @@ void WickrIOEClientMain::slotDoTimerWork()
         m_wickrIPC->check();
     }
 
+    if (m_eventService != nullptr && !m_eventService->isHealthy()) {
+        qDebug() << "Event Handler Service is NOT healthy!";
+    }
     if (m_actionService != nullptr && !m_actionService->isHealthy()) {
         qDebug() << "Action Handler Service is NOT healthy!";
-        // TODO: Reset the action service if not healthy
     }
     if (m_rxService != nullptr && !m_rxService->isHealthy()) {
         qDebug() << "Receive Service is NOT healthy!";
@@ -361,12 +374,14 @@ void WickrIOEClientMain::slotDoTimerWork()
 }
 
 /**
- * @brief WickrIOEClientMain::stopAndExit
+ * @brief WickrIOClientMain::stopAndExit
  * This is called to exit the application. The application state is put into the input
  * state, in the database process_state table.
  */
-void WickrIOEClientMain::stopAndExit(int procState)
+void WickrIOClientMain::stopAndExit(int procState)
 {
+    m_operation->postEvent("Shutting down", false);
+
     // Set the process state for after the shutdown
     WickrIOClientRuntime::wdSetShutdownState(procState);
 
@@ -387,9 +402,17 @@ void WickrIOEClientMain::stopAndExit(int procState)
     m_rxService->deleteLater();
     m_rxDetails->deleteLater();
 
+    // shutdown the event handler service.  Will not return till it is down.
+    if (m_eventService != nullptr) {
+        m_eventService->shutdown();
+        m_eventService->deleteLater();
+    }
+
     // shutdown the action handler service.  Will not return till it is down.
-    m_actionService->shutdown();
-    m_actionService->deleteLater();
+    if (m_actionService != nullptr) {
+        m_actionService->shutdown();
+        m_actionService->deleteLater();
+    }
 
     // If the logins have failed, make sure tbhe DB is open so the state can be changed
     if (m_loginHdlr.getLoginState() == LoginsFailed) {
@@ -416,12 +439,12 @@ void WickrIOEClientMain::stopAndExit(int procState)
 }
 
 /**
- * @brief WickrIOEClientMain::startTheClient
+ * @brief WickrIOClientMain::startTheClient
  * This method will start the client running, if it is not active already. The process
  * of starting the client begins with the login process.
  * @return  True is returned if the process is initiated. False if already active.
  */
-bool WickrIOEClientMain::startTheClient()
+bool WickrIOClientMain::startTheClient()
 {
     // Check if there is already a WickrBotClient running
     if (m_operation->alreadyActive()) {
@@ -445,12 +468,12 @@ bool WickrIOEClientMain::startTheClient()
 }
 
 /**
- * @brief WickrIOEClientMain::slotSwitchboardState (SWITCHBOARD SIGNAL)
+ * @brief WickrIOClientMain::slotSwitchboardState (SWITCHBOARD SIGNAL)
  * Slot accepts state change update signals from switchboard service
  * Can be used to synchronize startup/shutdown procedures.
  * @param state
  */
-void WickrIOEClientMain::slotSwitchboardServiceState(WickrServiceState state, SBSessionStatus sessionStatus, const QString& text)
+void WickrIOClientMain::slotSwitchboardServiceState(WickrServiceState state, SBSessionStatus sessionStatus, const QString& text)
 {
     switch(state) {
     case WickrServiceState::SERVICE_LOGGED_IN:
@@ -480,11 +503,11 @@ void WickrIOEClientMain::slotSwitchboardServiceState(WickrServiceState state, SB
 }
 
 /**
- * @brief WickrIOEClientMain::slotMessageServiceState
+ * @brief WickrIOClientMain::slotMessageServiceState
  * @param state
  * @param text
  */
-void WickrIOEClientMain::slotMessageServiceState(WickrServiceState state)
+void WickrIOClientMain::slotMessageServiceState(WickrServiceState state)
 {
     switch(state) {
     case WickrServiceState::SERVICE_LOGGED_IN:
@@ -520,12 +543,12 @@ void WickrIOEClientMain::slotMessageServiceState(WickrServiceState state)
 
 
 /**
- * @brief WickrIOEClientMain::slotTaskServiceState
+ * @brief WickrIOClientMain::slotTaskServiceState
  * Slot accepts state change update signals from task service.
  * Can be used to synchronize startup/shutdown procedures.
  * @param state
  */
-void WickrIOEClientMain::slotTaskServiceState(WickrServiceState state)
+void WickrIOClientMain::slotTaskServiceState(WickrServiceState state)
 {
     switch(state) {
     case WickrServiceState::SERVICE_LOGGED_IN:
@@ -540,7 +563,7 @@ void WickrIOEClientMain::slotTaskServiceState(WickrServiceState state)
 }
 
 /**
- * @brief WickrIOEClientMain::slotOnLoginMsgSynchronizationComplete()
+ * @brief WickrIOClientMain::slotOnLoginMsgSynchronizationComplete()
  * This slot is called whenever the initial download is complete after
  * a switchboard login (or login after recovery). If there is any further
  * UI "bootstrap" processing, it will be continued here.
@@ -551,14 +574,18 @@ void WickrIOEClientMain::slotTaskServiceState(WickrServiceState state)
  * OFFLINE LOGIN: Since we are offline, switchboard login and download are not executed,
  *                so this slot is called directly from completeLogin().
  */
-void WickrIOEClientMain::slotOnLoginMsgSynchronizationComplete()
+void WickrIOClientMain::slotOnLoginMsgSynchronizationComplete()
 {
     // ONLINE PROCESSING
 
     // Perform immediate houskeeping after download (backups if required, unsuspend convo backup after login)
-    WickrCore::WickrRuntime::taskSvc()->suspendConvoBackUp(true);
-    WickrConvoBackupContext *c = new WickrConvoBackupContext();
-    WickrCore::WickrRuntime::taskSvcMakeRequest(c, true);
+    if (WickrCore::WickrRuntime::taskSvcIsConvoBackupEnabled()) {
+        WickrCore::WickrRuntime::taskSvc()->suspendConvoBackUp(false);
+        WickrConvoBackupContext *c = new WickrConvoBackupContext();
+        WickrCore::WickrRuntime::taskSvcMakeRequest(c, true);
+    } else {
+        WickrCore::WickrRuntime::taskSvc()->suspendConvoBackUp(true);
+    }
 
     // Start housekeeping timer (i.e. periodic backup check on interval)
 //    housekeepingTimerStart();
@@ -573,7 +600,7 @@ void WickrIOEClientMain::slotOnLoginMsgSynchronizationComplete()
 }
 
 
-bool WickrIOEClientMain::parseSettings(QSettings *settings)
+bool WickrIOClientMain::parseSettings(QSettings *settings)
 {
     /*
      * Parse out the settings associated with the User

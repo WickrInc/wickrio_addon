@@ -1073,6 +1073,9 @@ CmdHandler::getUsers(stefanfrings::HttpResponse& response)
         userValue.insert(APIJSON_USER, cuser->user);
         userValue.insert(APIJSON_MAXCLIENTS, cuser->maxclients);
         userValue.insert(APIJSON_USERTYPE, cuser->isAdmin() ? APIJSON_UTYPE_ADMIN : APIJSON_UTYPE_USER);
+        userValue.insert(APIJSON_CANEDIT, cuser->canEdit());
+        userValue.insert(APIJSON_CANCREATE, cuser->canCreate());
+        userValue.insert(APIJSON_RXEVENTS, cuser->rxEvents());
         userValue.insert(APIJSON_AUTHTYPE, cuser->getAuthTypeStr());
         userValue.insert(APIJSON_EMAIL, cuser->email);
 
@@ -1104,6 +1107,9 @@ CmdHandler::getUser(const QString& clientID, stefanfrings::HttpResponse& respons
     userValue.insert(APIJSON_USER, cuser.user);
     userValue.insert(APIJSON_MAXCLIENTS, cuser.maxclients);
     userValue.insert(APIJSON_USERTYPE, cuser.isAdmin() ? APIJSON_UTYPE_ADMIN : APIJSON_UTYPE_USER);
+    userValue.insert(APIJSON_CANEDIT, cuser.canEdit());
+    userValue.insert(APIJSON_CANCREATE, cuser.canCreate());
+    userValue.insert(APIJSON_RXEVENTS, cuser.rxEvents());
     userValue.insert(APIJSON_AUTHTYPE, cuser.getAuthTypeStr());
     userValue.insert(APIJSON_EMAIL, cuser.email);
 

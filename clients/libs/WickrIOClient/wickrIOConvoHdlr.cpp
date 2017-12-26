@@ -1,4 +1,4 @@
-#include "wickrioconvohdlr.h"
+#include "wickrIOConvoHdlr.h"
 #include "common/wickrRuntime.h"
 
 void WickrIOConvoHdlr::convoBackupUploadStart()
@@ -18,3 +18,10 @@ void WickrIOConvoHdlr::slotConvoRestoreDone(WickrConvoRestoreContext *context)
     context->deleteLater();
 }
 
+void WickrIOConvoHdlr::deleteConvo(WickrCore::WickrConvo *convo) {
+    if (convo) {
+        convo->dodelete(WickrCore::WickrConvo::DeleteInternal,false);
+        QCoreApplication::processEvents(QEventLoop::AllEvents);
+        convoBackupUploadStart();
+    }
+}

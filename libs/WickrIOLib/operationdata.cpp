@@ -220,3 +220,22 @@ OperationData::updateProcessState(int state, bool force)
     }
     return false;
 }
+
+/**
+ * @brief OperationData::postEvent
+ * This function will post an event for this client, using this client's id
+ * @param event Text of the event to post.
+ * @param critical true if the event is critical
+ * @return false if there is an issue posting the event.
+ */
+bool
+OperationData::postEvent(QString event, bool critical)
+{
+    if (m_botDB && m_client) {
+        QString message = QString("%1: %2").arg(m_client->name).arg(event);
+        return m_botDB->insertClientEventRecord(m_client->id,
+                                                message,
+                                                critical ? WickrBotClientEvents::CriticalEvent : WickrBotClientEvents::NormalEvent);
+    }
+    return false;
+}

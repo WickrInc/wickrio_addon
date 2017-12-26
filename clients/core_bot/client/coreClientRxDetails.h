@@ -7,6 +7,7 @@
 
 #include "wickrIORxService.h"
 #include "operationdata.h"
+#include "wickriodatabase.h"
 
 #include "services/wickrMessageService.h"
 #include "services/wickrSwitchboardService.h"
@@ -27,8 +28,10 @@ public:
     bool healthCheck();
 
 private:
-    bool            m_receiving;
-    bool            m_processing;
+    bool                m_receiving;
+    bool                m_processing;
+    WickrIOConsoleUser  m_consoleUser;
+
 
     // File Download definitions
     QMap<QString, WickrIORxDownloadFile *> m_activeDownloads;
@@ -38,6 +41,8 @@ private:
     QString getClientList();
     QString getClients();
     QString getClientFile(const QString& clientName, CoreClientFileType type);
+    QString pauseClient(const QString& clientName);
+    QString startClient(const QString& clientName);
 
 };
 

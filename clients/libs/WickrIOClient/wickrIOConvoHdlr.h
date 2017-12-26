@@ -16,14 +16,7 @@ public:
     ~WickrIOConvoHdlr() {}
 
     void convoBackupUploadStart();
-
-    void deleteConvo(WickrCore::WickrConvo *convo) {
-        if (convo) {
-            convo->dodelete(WickrCore::WickrConvo::DeleteInternal,false);
-            QCoreApplication::processEvents(QEventLoop::AllEvents);
-            convoBackupUploadStart();
-        }
-    }
+    void deleteConvo(WickrCore::WickrConvo *convo);
 
 private slots:
     void slotConvoRestoreDone(WickrConvoRestoreContext *context);

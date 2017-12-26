@@ -1,5 +1,5 @@
-#ifndef WICKRIOECLIENTMAIN_H
-#define WICKRIOECLIENTMAIN_H
+#ifndef WICKRIOCLIENTMAIN_H
+#define WICKRIOCLIENTMAIN_H
 
 #include <QObject>
 #include <QThread>
@@ -14,13 +14,13 @@
 #include "user/wickrUser.h"
 #include "services/wickrTaskService.h"
 
-#include "wickrioconvohdlr.h"
+#include "wickrIOConvoHdlr.h"
 #include "wickrIOClientLoginHdlr.h"
 #include "wickrIOActionService.h"
 #include "wickrIORxService.h"
-#include "coreClientRxDetails.h"
+#include "wickrIOEventService.h"
 
-#define WICKRBOT WickrIOEClientMain::theBot
+#define WICKRBOT WickrIOClientMain::theBot
 
 #define WICKRBOT_NEXTMSG_TIME           86400       // Number of seconds to wait before reponding to received message
 
@@ -29,19 +29,21 @@
 #define WICKRBOT_CONFIG_DORECEIVE   "doreceive"
 #define WICKRBOT_CONFIG_SERVERNAME  "servername"
 
+#define WICKRBOT_SERVICE_EVENTSVC   0x01    // Run the Event handler service
+#define WICKRBOT_SERVICE_ACTIONSVC  0x02    // Run the Action handler service
 
-class WickrIOEClientMain : public QThread
+class WickrIOClientMain : public QThread
 {
     Q_OBJECT
 
     friend class WickrIOConvoHdlr;
 public:
-    WickrIOEClientMain(OperationData *operation);
-    ~WickrIOEClientMain();
+    WickrIOClientMain(OperationData *operation, WickrIORxDetails *rxDetails, unsigned services);
+    ~WickrIOClientMain();
 
     bool startTheClient();
 
-    static WickrIOEClientMain *theBot;
+    static WickrIOClientMain *theBot;
 
     // Parse the settings file (replaces the JSON config file)
     bool parseSettings(QSettings *settings);
@@ -54,15 +56,20 @@ public:
 private:
     OperationData           *m_operation;
     WickrIOClientLoginHdlr  m_loginHdlr;
-    WickrIOActionService    *m_actionService;
+    WickrIOActionService    *m_actionService = nullptr;
+    WickrIOEventService     *m_eventService = nullptr;
+    unsigned                m_services;
 
     QTimer timer;
     QString m_serverName;
 
-    WickrIOIPCService *m_wickrIPC;
+    long    m_seccount = 0;             // Count off seconds so duration can be determined
+    bool    m_durationreached = false;  // true if duration was reached, so exit only once
+
+    WickrIOIPCService *m_wickrIPC = nullptr;
 
     WickrIORxService    *m_rxService;
-    CoreClientRxDetails *m_rxDetails;
+    WickrIORxDetails    *m_rxDetails;
 
     // Timer definitions
     void startTimer()
@@ -113,4 +120,4 @@ signals:
 };
 
 
-#endif // WICKRIOECLIENTMAIN_H
+#endif // WICKRIOCLIENTMAIN_H

@@ -2,7 +2,6 @@
 #include <QJsonDocument>
 
 #include "coreClientRxDetails.h"
-#include "wickriodatabase.h"
 #include "wickrioapi.h"
 
 #include "messaging/wickrInbox.h"
@@ -18,6 +17,7 @@
 #include "wickrbotjsondata.h"
 #include "wickrIOCommon.h"
 #include "wickrbotsettings.h"
+#include "wickrIOServerCommon.h"
 
 CoreClientRxDetails::CoreClientRxDetails(OperationData *operation) : WickrIORxDetails(operation)
 {
@@ -82,6 +82,12 @@ bool CoreClientRxDetails::processMessage(WickrDBObject *item)
             m_operation->m_botDB->incStatistic(m_operation->m_client->id, DB_STATID_MSGS_RX, DB_STATDESC_TOTAL, 1);
         }
 
+        // Only one to one messages are supported
+        if (msg->getConvo()->getConvoType() != CONVO_ONE_TO_ONE) {
+            m_messagesRecvInvalid++;
+            return true;
+        }
+
         WickrCore::WickrInbox *inbox = (WickrCore::WickrInbox *)msg;
         switch( inbox->getInboxState() ) {
         case WICKR_INBOX_NEEDS_DOWNLOAD:
@@ -102,6 +108,27 @@ bool CoreClientRxDetails::processMessage(WickrDBObject *item)
         if( gotInboxMsg ) {
             bool processMsg = true;
             QString txt;
+
+            WickrCore::WickrUser *sender = msg->getSenderUser();
+            QString userid;
+            if (sender != nullptr) {
+                userid = sender->getUserID();
+            } else {
+
+            }
+
+            // If we do not know the user id or there is no console user then don't respond
+            if (userid.isEmpty() || !db->getConsoleUser(userid, &m_consoleUser)) {
+                if (userid.isEmpty()) {
+                    qDebug() << "Sender's userid NOT found!";
+                } else {
+                    qDebug() << "No Console user records found for " << userid;
+                }
+                return true;
+            } else {
+                qDebug() << "Sender's userid=" << userid;
+            }
+
 
             WickrMsgClass mclass = msg->getMsgClass();
             if( mclass == MsgClass_Text ) {
@@ -141,7 +168,9 @@ bool CoreClientRxDetails::processMessage(WickrDBObject *item)
                 if (commands.count() == 0) {
                     qDebug() << "Got command with 0 arguments";
                 } else {
-                    if (commands[0] == "client") {
+                    if (commands[0] == "help") {
+                        jsonHandler->m_message = "client list\nclient <name> [getoutput|getlog|start|pause]\nservice list\n";
+                    } else if (commands[0] == "client") {
                         if (commands.count() >= 2) {
                             if (commands[1] == "list") {
                                 jsonHandler->m_message = getClientList();
@@ -163,7 +192,7 @@ bool CoreClientRxDetails::processMessage(WickrDBObject *item)
                                 }
                             } else if (commands[1] == "getlog") {
                                 if (commands.count() == 3) {
-                                    QString fname = this->getClientFile(raw[2], CMD_CLIENTFILE_LOG);
+                                    QString fname = getClientFile(raw[2], CMD_CLIENTFILE_LOG);
                                     if (fname.isEmpty()) {
                                         jsonHandler->m_message = "Cannot find log file";
                                     } else {
@@ -176,6 +205,20 @@ bool CoreClientRxDetails::processMessage(WickrDBObject *item)
                                             m_operation->m_botDB->insertAttachment(fname, fname, (int)fi.size());
                                         }
                                     }
+                                } else {
+                                    jsonHandler->m_message = "Invalid command: missing bot name";
+                                }
+                            } else if (commands[1] == "pause") {
+                                if (commands.count() == 3) {
+                                    jsonHandler->m_message = pauseClient(raw[2]);
+                                } else {
+                                    jsonHandler->m_message = "Invalid command: missing bot name";
+                                }
+                            } else if (commands[1] == "start") {
+                                if (commands.count() == 3) {
+                                    jsonHandler->m_message = startClient(raw[2]);
+                                } else {
+                                    jsonHandler->m_message = "Invalid command: missing bot name";
                                 }
                             } else {
                                 jsonHandler->m_message = "Invalid command";
@@ -211,16 +254,12 @@ CoreClientRxDetails::getClientList()
         return clientsString;
     }
 
-#if 0
     // Get the clients records.  If admin console user get all of the clients
-    if (pCUser->isAdmin()) {
-        clients = m_ioDB->getClients();
+    if (m_consoleUser.isAdmin()) {
+        clients = db->getClients();
     } else {
-        clients = m_ioDB->getConsoleClients(pCUser->id);
+        clients = db->getConsoleClients(m_consoleUser.id);
     }
-#else
-    clients = db->getClients();
-#endif
 
     int index=0;
     while (clients.length() > 0) {
@@ -270,16 +309,12 @@ CoreClientRxDetails::getClients()
         return clientsString;
     }
 
-#if 0
     // Get the clients records.  If admin console user get all of the clients
-    if (pCUser->isAdmin()) {
-        clients = m_ioDB->getClients();
+    if (m_consoleUser.isAdmin()) {
+        clients = db->getClients();
     } else {
-        clients = m_ioDB->getConsoleClients(pCUser->id);
+        clients = db->getConsoleClients(m_consoleUser.id);
     }
-#else
-    clients = db->getClients();
-#endif
 
     while (clients.length() > 0) {
         WickrBotClients * client = clients.first();
@@ -376,4 +411,41 @@ CoreClientRxDetails::getClientFile(const QString& clientName, CoreClientFileType
     }
 
     return filename;
+}
+
+QString
+CoreClientRxDetails::pauseClient(const QString& clientName)
+{
+    return "To be implemented";
+}
+
+QString
+CoreClientRxDetails::startClient(const QString& clientName)
+{
+    WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
+    if (db == NULL) {
+        return "Internal error";
+    }
+
+    WickrIOClients *client = db->getClientUsingName(clientName);
+    if (client == nullptr) {
+        return "Cannot find client!";
+    }
+    WickrBotProcessState state;
+    QString processName = WBIOServerCommon::getClientProcessName(client);
+
+    if (m_operation->m_botDB->getProcessState(processName, &state)) {
+        if (state.state == PROCSTATE_PAUSED) {
+            if (m_operation->m_botDB->updateProcessState(processName, 0, PROCSTATE_DOWN)) {
+                return "Client started";
+            }
+            return "Error changing client state";
+        } else if (state.state == PROCSTATE_DOWN){
+            return "Client is in Down state. The WickrIO Client Server should change the state to running. If this is not happening, please check that the WickrIOSvr process is running!";
+        } else if (state.state == PROCSTATE_RUNNING) {
+            return "Client is already in the running state";
+        }
+    } else {
+        return "Could not get the clients state!";
+    }
 }

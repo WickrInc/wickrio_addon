@@ -91,6 +91,7 @@ HEADERS += \
     wickrIOServerCommon.h \
     wickrbotactioncache.h \
     wickrbotattachmentcache.h \
+    wickrbotclientevents.h \
     wickrbotclients.h \
     wickrbotdatabase.h \
     wickrbotprocessstate.h \

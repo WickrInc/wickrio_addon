@@ -155,6 +155,7 @@ protected:
     OperationData *m_operation;
     int m_messagesRecv;
     int m_messagesRecvFailed;
+    int m_messagesRecvInvalid;
 
 };
 

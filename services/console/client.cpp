@@ -508,10 +508,10 @@ Client::updateConsoleUsersList()
                 model->setData(index, cuser->user);
                 index = model->index(i, CONSOLEUSER_MODEL_PERMISSION_IDX, QModelIndex());
                 QString permissions;
-                if (cuser->permissions & CUSER_PERM_ADMIN_FLAG)
-                    permissions = "Admin";
-                else
-                    permissions = "User";
+                permissions = cuser->isAdmin() ? "Admin" : "User";
+                permissions += cuser->canCreate() ? ",Create" : "";
+                permissions += cuser->canEdit() ? ",Edit" : "";
+                permissions += cuser->rxEvents() ? ",Events" : "";
                 model->setData(index, permissions);
                 index = model->index(i, CONSOLEUSER_MODEL_MAXCLIENTS_IDX, QModelIndex());
                 model->setData(index, cuser->maxclients);

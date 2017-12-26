@@ -400,6 +400,7 @@ void WickrIORxDetails::initCounts()
 {
     m_messagesRecv = 0;
     m_messagesRecvFailed = 0;
+    m_messagesRecvInvalid = 0;
 }
 
 void WickrIORxDetails::logCounts()
@@ -411,5 +412,9 @@ void WickrIORxDetails::logCounts()
     if (m_messagesRecvFailed > 0) {
         m_operation->log_handler->log("Messages received failed", m_messagesRecvFailed);
         m_messagesRecvFailed = 0;
+    }
+    if (m_messagesRecvInvalid > 0) {
+        m_operation->log_handler->log("Messages received invalid", m_messagesRecvInvalid);
+        m_messagesRecvInvalid = 0;
     }
 }

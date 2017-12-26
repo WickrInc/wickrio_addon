@@ -335,20 +335,39 @@ bool CmdConsole::getConsoleUserValues(WickrIOConsoleUser *cuser)
 
     // Get the permissions
     QString yesString;
-    if (cuser->isAdmin()) {
-        yesString = "yes";
-    } else {
-        yesString = "no";
-    }
+
+    yesString = cuser->isAdmin() ? "yes" : "no";
     temp = getNewValue(yesString, tr("Is this an administrator?"), CHECK_BOOL);
     if (handleQuit(temp, &quit) && quit) {
         return false;
     }
-    if (temp == "yes") {
-        newCUser.setAdmin(true);
-    } else {
-        newCUser.setAdmin(false);
+    newCUser.setAdmin(temp == "yes");
+
+    yesString = cuser->canEdit() ? "yes" : "no";
+    temp = getNewValue(yesString, tr("Can edit Bot configurations?"), CHECK_BOOL);
+    if (handleQuit(temp, &quit) && quit) {
+        return false;
     }
+    newCUser.setEdit(temp == "yes");
+
+    // Must be able to edit to have create capability
+    if (cuser->canEdit()) {
+        yesString = cuser->canCreate() ? "yes" : "no";
+        temp = getNewValue(yesString, tr("Can create bots?"), CHECK_BOOL);
+        if (handleQuit(temp, &quit) && quit) {
+            return false;
+        }
+        newCUser.setCreate(temp == "yes");
+    } else {
+        newCUser.setCreate(false);
+    }
+
+    yesString = cuser->rxEvents() ? "yes" : "no";
+    temp = getNewValue(yesString, tr("Can receive event messages?"), CHECK_BOOL);
+    if (handleQuit(temp, &quit) && quit) {
+        return false;
+    }
+    newCUser.setRxEvents(temp == "yes");
 
     // Authentication Settings
 
@@ -496,11 +515,10 @@ void CmdConsole::listConsoleUsers()
     int cnt=0;
     for (WickrIOConsoleUser *cuser : m_consoleUsers) {
         QString permissions;
-        if (cuser->isAdmin()) {
-            permissions = "admin";
-        } else {
-            permissions = "user";
-        }
+        permissions = cuser->isAdmin() ? "admin" : "user";
+        permissions += cuser->canCreate() ? ",create" : "";
+        permissions += cuser->canEdit() ? ",edit" : "";
+        permissions += cuser->rxEvents() ? ",events" : "";
 
         // Get any associated token(s)
         WickrIOTokens token;
@@ -511,7 +529,7 @@ void CmdConsole::listConsoleUsers()
             tokenStr = "Not set!";
         }
 
-        QString data = QString("CONSOLE:  user[%1] User=%2, Permissons=%3, MaxClients=%4, Token=%5")
+        QString data = QString("CONSOLE:  user[%1] User=%2, Permissons=[%3], MaxClients=%4, Token=%5")
             .arg(cnt++)
             .arg(cuser->user)
             .arg(permissions)

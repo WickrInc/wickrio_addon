@@ -92,6 +92,8 @@ public:
     bool alreadyActive(bool closeDbOnExit=false);
     bool updateProcessState(int state, bool force=true);
 
+    bool postEvent(QString event, bool critical);
+
 private slots:
 #ifndef DO_WICKRBOT
     void loadImage();

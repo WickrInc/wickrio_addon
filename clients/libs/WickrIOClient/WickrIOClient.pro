@@ -93,7 +93,10 @@ HEADERS += \
     wickrIOActionService.h \
     wickrIOCallbackService.h \
     wickrIOClientLoginHdlr.h \
+    wickrIOClientMain.h \
     wickrIOClientRuntime.h \
+    wickrIOConvoHdlr.h \
+    wickrIOEventService.h \
     wickrIOFileDownloadService.h \
     wickrIOJson.h \
     wickrIOMessageCounter.h \
@@ -107,7 +110,10 @@ SOURCES += \
     wickrIOActionService.cpp \
     wickrIOCallbackService.cpp \
     wickrIOClientLoginHdlr.cpp \
+    wickrIOClientMain.cpp \
     wickrIOClientRuntime.cpp \
+    wickrIOConvoHdlr.cpp \
+    wickrIOEventService.cpp \
     wickrIOFileDownloadService.cpp \
     wickrIOJson.cpp \
     wickrIORxService.cpp \

@@ -141,17 +141,13 @@ RESOURCES += \
 
 SOURCES += \
     main.cpp \
-    wickrioeclientmain.cpp \
     requesthandler.cpp \
-    coreClientRxDetails.cpp \
-    wickrioconvohdlr.cpp
+    coreClientRxDetails.cpp
 
 HEADERS += \
     coreClientConfigInfo.h \
     coreClientRxDetails.h \
-    wickrioeclientmain.h \
-    requesthandler.h \
-    wickrioconvohdlr.h
+    requesthandler.h
 
 # qsqlcipher_wickr
 

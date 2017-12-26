@@ -5,7 +5,10 @@
 
 #include "wickrbotlib.h"
 
-#define CUSER_PERM_ADMIN_FLAG   0x1
+#define CUSER_PERM_ADMIN_FLAG   0x01
+#define CUSER_PERM_EDIT_FLAG    0x02
+#define CUSER_PERM_CREATE_FLAG  0x04
+#define CUSER_PERM_EVENTS_FLAG  0x08
 
 #define CUSER_AUTHTYPE_BASIC    0
 #define CUSER_AUTHTYPE_EMAIL    1
@@ -25,6 +28,12 @@ public:
 
     bool isAdmin() { return(permissions & CUSER_PERM_ADMIN_FLAG); }
     void setAdmin(bool admin);
+    bool canEdit() { return permissions & CUSER_PERM_EDIT_FLAG; }
+    void setEdit(bool edit);
+    bool canCreate() { return permissions & CUSER_PERM_CREATE_FLAG; }
+    void setCreate(bool create);
+    bool rxEvents() { return permissions & CUSER_PERM_EVENTS_FLAG; }
+    void setRxEvents(bool rxEvents);
 
     int id;
     QString user;

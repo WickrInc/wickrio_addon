@@ -67,11 +67,21 @@ WickrBotDatabase::createRelationalTables()
         query.finish();
     }
 
+    // Check if the client events table exists already, if not create it
+    if (! m_db.tables().contains(QLatin1String(DB_CLIENTEVENTS_TABLE))) {
+        QSqlQuery query(m_db);
+        if (!query.exec("CREATE TABLE client_events (id int primary key, client_id int, message text NOT NULL UNIQUE, event_time timestamp, type int)")) {
+            qDebug() << "create client eventss table failed, query error=" << query.lastError();
+            query.finish();
+            return false;
+        }
+        query.finish();
+    }
+
     // Check if the action cache table exists already, if not create it
     if (! m_db.tables().contains(QLatin1String(DB_ACTION_TABLE))) {
         QSqlQuery query(m_db);
-        if (!query.exec("CREATE TABLE action_cache (id int primary key, json text, created timestamp, runtime timestamp, attempts int, \
-                client_id int, FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE)")) {
+        if (!query.exec("CREATE TABLE action_cache (id int primary key, json text, created timestamp, runtime timestamp, attempts int, client_id int, FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE)")) {
             qDebug() << "create table failed, query error=" << query.lastError();
             query.finish();
             return false;
@@ -1059,6 +1069,153 @@ WickrBotDatabase::deleteClientUsingName(QString name) {
     query.finish();
     return (numRows > 0);
 }
+
+
+/****************************************************************************************************************
+ * Client Events handler functions
+ ***************************************************************************************************************/
+
+void
+WickrBotDatabase::getClientEventFromQuery(QSqlQuery *query, WickrBotClientEvents *event)
+{
+    QSqlRecord rec = query->record();
+
+    event->id = query->value(rec.indexOf("id")).toInt();
+    event->m_clientID = query->value(rec.indexOf("client_id")).toInt();
+    event->m_message = query->value(rec.indexOf("message")).toString();
+    event->m_date = query->value(rec.indexOf("event_time")).toDateTime();
+    event->m_type = (WickrBotClientEvents::WickrIOEventType)query->value(rec.indexOf("type")).toInt();
+}
+
+
+QList<WickrBotClientEvents *>
+WickrBotDatabase::getClientEvents(int maxCount)
+{
+    QList<WickrBotClientEvents *> events;
+    if (initialized) {
+        QString queryString = "SELECT id,client_id,message,type FROM client_events";
+        QSqlQuery *query = new QSqlQuery(m_db);
+        query->prepare(queryString);
+
+        if ( !query->exec()) {
+            qDebug() << "getClientEvents: Could not retrieve, Error=" << query->lastError();
+        } else {
+            int cur=0;
+            while (query->next()) {
+                WickrBotClientEvents *event = new WickrBotClientEvents();
+                getClientEventFromQuery(query, event);
+                events.append(event);
+                if (cur++ >= maxCount)
+                    break;
+            }
+        }
+        query->finish();
+        delete query;
+    }
+    return events;
+}
+
+bool
+WickrBotDatabase::getClientEvent(int id, WickrBotClientEvents *event)
+{
+    bool retval=false;
+    if (initialized) {
+        QString queryString = "SELECT id,client_id,message,type,event_time FROM client_events WHERE id=?";
+        QSqlQuery query(m_db);
+        query.prepare(queryString);
+        query.bindValue(0, id);
+
+        if ( !query.exec()) {
+            qDebug() << "getClientEvent: Could not retrieve, Error=" << query.lastError();
+        } else {
+            if (query.next()) {
+                getClientEventFromQuery(&query, event);
+                retval=true;
+            }
+        }
+        query.finish();
+    }
+    return retval;
+}
+
+bool
+WickrBotDatabase::insertClientEventRecord(int clientID, const QString& message, WickrBotClientEvents::WickrIOEventType type) {
+    if (!initialized)
+        return false;
+
+    // The ProcessState will use local time since this has to operate independent of the server
+    QString dateTime = getClientTime();
+
+    int id = getNextID(DB_CLIENTEVENTS_TABLE);
+
+    QSqlQuery query(m_db);
+    query.prepare("INSERT INTO client_events (id, client_id, message, type, event_time) "
+                  "VALUES (:id, :client_id, :message, :type, :event_time)");
+    query.bindValue(":id", id);
+    query.bindValue(":client_id", clientID);
+    query.bindValue(":message", message);
+    query.bindValue(":type", (int)type);
+    query.bindValue(":event_time", dateTime);
+    if (!query.exec()) {
+        qDebug() << query.lastQuery();
+        QSqlError error = query.lastError();
+        qDebug() << "insertClientEventRecord: SQL error" << error;
+        query.finish();
+    } else {
+        int numRows = query.numRowsAffected();
+        query.finish();
+        if (numRows > 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool
+WickrBotDatabase::deleteClientEvent(int id) {
+    if (!initialized)
+        return false;
+    bool retval = false;
+
+    QString queryString = "DELETE FROM client_events WHERE id = ?";
+    QSqlQuery query(m_db);
+    query.prepare(queryString);
+    query.bindValue(0, id);
+
+    if ( !query.exec()) {
+        qDebug() << "deleteClientEvent: Could not retrieve" << id << "last error=" << query.lastError();
+    } else if (query.numRowsAffected() > 0) {
+        retval = true;
+    }
+    query.finish();
+    return retval;
+}
+
+bool
+WickrBotDatabase::getFirstClientEvent(QString dateTime, WickrBotClientEvents *event) {
+    bool retval=false;
+    if (initialized) {
+        QSqlQuery query(m_db);
+        QString queryString = QString("SELECT MIN(id) FROM client_events WHERE runtime <= '%1'")
+                .arg(dateTime);
+        if ( !query.exec(queryString)) {
+            qDebug() << "getFirstClientEvent: Could not retrieve action. DBError=" << query.lastError();
+            query.finish();
+        } else {
+            if (query.next()) {
+                int id = query.value(0).toInt();
+                query.finish();
+                retval = getClientEvent(id, event);
+            } else {
+                qDebug() << "getFirstClientEvent: No rows retrieved";
+                query.finish();
+            }
+        }
+    }
+    return retval;
+}
+
+
 
 /****************************************************************************************************************
  * Statistics Table functions

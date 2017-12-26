@@ -30,7 +30,7 @@ AddConsoleUserDialog::AddConsoleUserDialog(WickrIOClientDatabase *ioDB, WickrIOC
         ui->userLineEdit->setText(m_consoleUser->user);
         ui->passwordLineEdit->setText(m_consoleUser->password);
         ui->maxClientsLineEdit->setText(QString::number(m_consoleUser->maxclients));
-        if (m_consoleUser->permissions & CUSER_PERM_ADMIN_FLAG) {
+        if (m_consoleUser->isAdmin()) {
             ui->permissionsComboBox->setCurrentIndex(1);
         } else {
             ui->permissionsComboBox->setCurrentIndex(0);

@@ -2,7 +2,7 @@
 #include "requesthandler.h"
 #include "wickrbotjsondata.h"
 #include "wickrbotipc.h"
-#include "wickrioeclientmain.h"
+#include "wickrIOClientMain.h"
 #include "wickrioapi.h"
 
 #include "libinterface/libwickrcore.h"

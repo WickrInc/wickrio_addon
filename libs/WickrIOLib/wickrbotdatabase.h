@@ -8,6 +8,7 @@
 #include "wickrbotactioncache.h"
 #include "wickrbotprocessstate.h"
 #include "wickrbotclients.h"
+#include "wickrbotclientevents.h"
 #include "wickrbotstatistics.h"
 
 class DECLSPEC WickrBotDatabase : public QObject
@@ -51,6 +52,13 @@ public:
     void getClient(QSqlQuery *query, WickrBotClients *client);
     QList<int> getClientIDFromType(const QString& clientType);
     int numberOfActionsForClient(int clientid);
+
+    bool getClientEvent(int id, WickrBotClientEvents *event);
+    void getClientEventFromQuery(QSqlQuery *query, WickrBotClientEvents *event);
+    QList<WickrBotClientEvents *> getClientEvents(int maxCount);
+    bool insertClientEventRecord(int clientID, const QString& message, WickrBotClientEvents::WickrIOEventType type);
+    bool deleteClientEvent(int id);
+    bool getFirstClientEvent(QString dateTime, WickrBotClientEvents *event);
 
     virtual bool updateLastUserMessage(const QString &) {return false;}
     virtual QDateTime getLastUserMessageTime(const QString &) {return QDateTime::currentDateTime();}
@@ -103,5 +111,8 @@ protected:
 // The Clients table identifies all of the possible clients running on the
 // WickrBot server. Also details of each of the clients.
 #define DB_CLIENTS_TABLE        "clients"
+
+// The Client Events table contains list of events from the clients
+#define DB_CLIENTEVENTS_TABLE   "client_events"
 
 #endif // WICKRBOTDATABASE_H
