@@ -60,7 +60,7 @@ CmdMain::runCommands()
 
     while (true) {
         updateBotList();
-        qDebug() << "CONSOLE:Enter command [list, add, config, server, start, stop, quit]:";
+        qDebug() << "CONSOLE:Enter command [list, add, config, server, start, stop, update, quit]:";
         QString line = input.readLine();
 
         line = line.trimmed();
@@ -105,6 +105,18 @@ CmdMain::runCommands()
                 // FOR NOW lets add a new user
                 WickrIOBot *newbot = new WickrIOBot(m_app, m_argc, m_argv, m_cmdOperation.m_ioDB);
                 newbot->newBotCreate();
+            } else if (cmd == "update") {
+                if (clientIndex == -1) {
+                    qDebug() << "CONSOLE:Usage: update <index>";
+                } else {
+                    if (validateIndex(clientIndex)) {
+                        WickrIOClients *client = m_clients.at(clientIndex);
+                        WickrIOBot *updatebot = new WickrIOBot(m_app, client, m_cmdOperation.m_ioDB);
+                        updatebot->botUpdate();
+                    } else {
+                        qDebug() << "CONSOLE:Client index is not valid!";
+                    }
+                }
             } else if (cmd == "delete") {
                 if (clientIndex == -1) {
                     qDebug() << "CONSOLE:Usage: delete <index>";
@@ -145,6 +157,7 @@ CmdMain::runCommands()
                 qDebug() << "CONSOLE:  server         - show server commands";
                 qDebug() << "CONSOLE:  start <index>  - start a specific client";
                 qDebug() << "CONSOLE:  stop <index>   - pause a running client";
+                qDebug() << "CONSOLE:  update <index> - update a client's config";
                 qDebug() << "CONSOLE:  quit           - exit the program";
             } else {
                 qDebug() << "CONSOLE:" << cmd << "is not a known command!";

@@ -14,6 +14,7 @@ public:
 
     bool runCommands();
     void status();
+    bool runUpdateCommands();
 
     WickrIOClients  *m_client;
 

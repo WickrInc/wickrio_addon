@@ -54,7 +54,17 @@ WickrIOBot::WickrIOBot(QCoreApplication *app, int argc, char **argv, WickrIOClie
             }
         }
     }
+}
 
+WickrIOBot::WickrIOBot(QCoreApplication *app, WickrIOClients *client, WickrIOClientDatabase *ioDB) :
+    m_app(app),
+    m_argc(0),
+    m_argv(nullptr),
+    m_dbEncrypt(true),
+    m_provision(&m_client),
+    m_ioDB(ioDB)
+{
+    m_client = *client;
 }
 
 bool
@@ -66,8 +76,6 @@ WickrIOBot::newBotCreate()
     if (!m_provision.runCommands()) {
         return false;
     }
-
-    m_client.binary = WBIO_BOT_TARGET;
 
     // Load the bootstrap file
     QString bootstrapString = WickrIOBootstrap::readFile(m_provision.m_configFileName, m_provision.m_configPassword);
@@ -282,4 +290,49 @@ WickrIOBot::newBotCreate()
     return true;
 }
 
+bool WickrIOBot::botUpdate()
+{
+    /*
+     * Get input from the user
+     */
+    if (!m_provision.runUpdateCommands()) {
+        return false;
+    }
+
+    m_client.binary = WBIO_BOT_TARGET;
+
+    // Load the bootstrap file
+    QString bootstrapString = WickrIOBootstrap::readFile(m_provision.m_configFileName, m_provision.m_configPassword);
+
+    if (bootstrapString == nullptr) {
+        qDebug() << "CONSOLE:Cannot read the bootstrap file!";
+        exit(1);
+    }
+
+    // Set the test account name, which is appended to make the device ID specific to the client
+    WickrUtil::setTestAccountMode(m_client.name);
+
+    if (m_clientDbPath.isEmpty()) {
+        m_clientDbPath = QString("%1/clients/%2/client").arg(WBIO_DEFAULT_DBLOCATION).arg(m_client.name);
+
+        QDir clientDb(m_clientDbPath);
+        if (!clientDb.exists()) {
+            QDir dir = QDir::root();
+            dir.mkpath(m_clientDbPath);
+        }
+    }
+    if (m_wbConfigFile.isEmpty()) {
+        m_wbConfigFile = QString(WBIO_CLIENT_SETTINGS_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(m_client.name);
+    }
+
+    // Need to save the bootstrap file
+    QString bootstrapFilename = m_clientDbPath + "/bootstrap";
+    if (!WickrIOBootstrap::encryptAndSave(bootstrapString, bootstrapFilename, m_client.password)) {
+        qDebug() << "CONSOLE:Problem encrypting config reil";
+    }
+
+
+
+    return true;
+}
 

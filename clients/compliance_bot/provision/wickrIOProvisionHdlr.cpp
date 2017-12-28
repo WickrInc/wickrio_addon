@@ -304,6 +304,8 @@ void WickrIOProvisionHdlr::internalBegin(Mode mode, const QString &email, const 
 
                 // TODO: DISPLAY ERROR TO USER
                 qDebug() << "ERROR:" << m_errorMsg;
+
+                emit signalFailed(c->errorString().isEmpty() ? m_errorMsg : c->errorString());
             }
         }
         c->deleteLater();

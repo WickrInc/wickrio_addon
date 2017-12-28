@@ -11,8 +11,10 @@ class WickrIOBot
 {
 public:
     WickrIOBot(QCoreApplication *app, int argc, char **argv, WickrIOClientDatabase *ioDB);
+    WickrIOBot(QCoreApplication *app, WickrIOClients *client, WickrIOClientDatabase *ioDB);
 
     bool newBotCreate();
+    bool botUpdate();
 
 private:
     QCoreApplication        *m_app;

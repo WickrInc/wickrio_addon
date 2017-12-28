@@ -152,6 +152,11 @@ void WickrIOEClientMain::processStarted()
                 &WickrIOProvisionHdlr::signalRegisterEnterprise,
                 &m_loginHdlr,
                 &WickrIOLoginHdlr::slotRegisterUser);
+
+        connect(provhdlr,
+                &WickrIOProvisionHdlr::signalFailed,
+                this,
+                &WickrIOEClientMain::slotProvisionFailed);
     }
 
     // Start the provisioning here
@@ -160,6 +165,13 @@ void WickrIOEClientMain::processStarted()
     } else {
         WickrIOClientRuntime::provHdlrBeginCloud(m_client->user, m_invite);
     }
+}
+
+void WickrIOEClientMain::slotProvisionFailed(const QString& errorString)
+{
+    qDebug().noquote().nospace() << "CONSOLE:" << errorString;
+    m_loginSuccess = false;
+    emit signalLoginFailure();
 }
 
 void WickrIOEClientMain::slotProvisionPageChanged(WickrIOProvisionHdlr::Page page)

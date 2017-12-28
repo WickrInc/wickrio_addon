@@ -73,6 +73,7 @@ private:
 
 private slots:
     void slotProvisionPageChanged(WickrIOProvisionHdlr::Page page);
+    void slotProvisionFailed(const QString& errorString);
 
     void slotInitiateLogin();
     void slotLoginSuccess();
