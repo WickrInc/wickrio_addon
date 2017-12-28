@@ -18,6 +18,8 @@
 #include "wickrIOCommon.h"
 #include "wickrbotsettings.h"
 #include "wickrIOServerCommon.h"
+#include "wickrIOConsoleClientHandler.h"
+#include "consoleserver.h"
 
 CoreClientRxDetails::CoreClientRxDetails(OperationData *operation) : WickrIORxDetails(operation)
 {
@@ -169,7 +171,11 @@ bool CoreClientRxDetails::processMessage(WickrDBObject *item)
                     qDebug() << "Got command with 0 arguments";
                 } else {
                     if (commands[0] == "help") {
-                        jsonHandler->m_message = "client list\nclient <name> [getoutput|getlog|start|pause]\nservice list\n";
+                        if (m_consoleUser.isAdmin()) {
+                            jsonHandler->m_message = "client list\nclient [getoutput|getlog|start|pause] <name>\nservice [status|start|stop]\n";
+                        } else {
+                            jsonHandler->m_message = "client list\nclient [getoutput|getlog|start|pause] <name>\n";
+                        }
                     } else if (commands[0] == "client") {
                         if (commands.count() >= 2) {
                             if (commands[1] == "list") {
@@ -227,7 +233,25 @@ bool CoreClientRxDetails::processMessage(WickrDBObject *item)
                             jsonHandler->m_message = "Invalid command";
                         }
                     } else if (commands[0] == "service") {
-                        jsonHandler->m_message = "Invalid command";
+                        if (m_consoleUser.isAdmin() && commands.count() >= 2) {
+                            if (commands[1] == "status") {
+                                WickrIOClientDatabase* ioDB = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
+                                QString clientState = WickrIOConsoleClientHandler::getActualProcessState(WBIO_CLIENTSERVER_TARGET, ioDB);
+                                jsonHandler->m_message = clientState;
+                            } else if (commands[1] == "start") {
+                                WickrIOClientDatabase* ioDB = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
+                                ConsoleServer consoleServer(ioDB);
+                                QString status = consoleServer.setState(true, WBIO_CLIENTSERVER_TARGET);
+                                jsonHandler->m_message = status;
+                            } else if (commands[1] == "stop") {
+                                WickrIOClientDatabase* ioDB = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
+                                ConsoleServer consoleServer(ioDB);
+                                QString status = consoleServer.setState(false, WBIO_CLIENTSERVER_TARGET);
+                                jsonHandler->m_message = status;
+                            }
+                        } else {
+                            jsonHandler->m_message = "Invalid command";
+                        }
                     } else {
                         jsonHandler->m_message = "Invalid command";
                     }

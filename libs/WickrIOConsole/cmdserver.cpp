@@ -64,9 +64,11 @@ bool CmdServer::runCommands()
             } else if (cmd == "status") {
                 status();
             } else if (cmd == "start") {
-                m_consoleServer->setState(true, WBIO_CLIENTSERVER_TARGET);
+                QString state = m_consoleServer->setState(true, WBIO_CLIENTSERVER_TARGET);
+                qDebug().noquote().nospace() << "CONSOLE:" << state;
             } else if (cmd == "stop") {
-                m_consoleServer->setState(false, WBIO_CLIENTSERVER_TARGET);
+                QString state = m_consoleServer->setState(false, WBIO_CLIENTSERVER_TARGET);
+                qDebug().noquote().nospace() << "CONSOLE:" << state;
             } else if (cmd == "quit") {
                 return false;
             } else {

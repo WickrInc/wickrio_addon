@@ -75,23 +75,24 @@ ConsoleServer::runCommand(const QString &processName, const QString &action)
 #endif
 }
 
-void
+QString
 ConsoleServer::setState(bool start, const QString &processName)
 {
     QCoreApplication::processEvents();
+    QString retString;
 
 #ifdef Q_OS_LINUX
     if (start) {
         if (runCommand(processName, "enable") && runCommand(processName, "start")) {
-            qDebug().noquote().nospace() << "Started the " << processName << " service";
+            retString = "Started the " + processName + " service";
         } else {
-            qDebug().noquote().nospace() << "Cound NOT start the " << processName << " service";
+            retString = "Cound NOT start the " + processName + " service";
         }
     } else {
         if (runCommand(processName, "stop") && runCommand(processName, "disable")) {
-            qDebug().noquote().nospace() << "Stopped the " << processName << " service";
+            retString = "Stopped the " + processName + " service";
         } else {
-            qDebug().noquote().nospace() << "Cound NOT stop the " << processName << " service";
+            retString = "Cound NOT stop the " + processName + " service";
         }
     }
 
@@ -145,6 +146,7 @@ ConsoleServer::setState(bool start, const QString &processName)
     }
     #endif
 #endif
+    return retString;
 }
 
 bool

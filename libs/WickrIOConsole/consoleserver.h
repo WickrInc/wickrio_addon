@@ -12,7 +12,7 @@ public:
     ConsoleServer(WickrIOClientDatabase *ioDB);
 
     bool isRunning(const QString &processName = WBIO_CONSOLESERVER_TARGET, int timeout=60);
-    void setState(bool start, const QString &processName = WBIO_CONSOLESERVER_TARGET);
+    QString setState(bool start, const QString &processName = WBIO_CONSOLESERVER_TARGET);
     bool restart();
     bool isConfigured();
     bool setSSL(WickrIOSSLSettings *ssl);

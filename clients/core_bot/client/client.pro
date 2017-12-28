@@ -85,6 +85,11 @@ INCLUDEPATH += $$DEPTH/wickr-sdk/src
 INCLUDEPATH += $$DEPTH/wickr-sdk/export/Wickr
 
 #
+# Include the Wickr Console library
+#
+include($${DEPTH}/libs/WickrIOConsole/WickrIOConsole.pri)
+
+#
 # Include the Wickr IO library
 #
 include($${DEPTH}/libs/WickrIOLib/WickrIOLib.pri)
