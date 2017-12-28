@@ -194,6 +194,13 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName(appname);
     QCoreApplication::setOrganizationName(orgname);
 
+#ifdef WICKR_PRODUCTION
+    qDebug().nospace().noquote() << "CONSOLE:" << "Version: " << ClientVersionInfo::getVersionString();
+#else
+    qDebug().nospace().noquote() << "CONSOLE:" << "Version: " << ClientVersionInfo::getVersionString() <<
+                                    " " << ClientVersionInfo::getBuildString();
+#endif
+
     // Production mode
     bool productionMode;
 #ifdef WICKR_PRODUCTION
