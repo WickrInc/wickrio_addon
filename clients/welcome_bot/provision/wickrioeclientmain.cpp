@@ -42,6 +42,7 @@ WickrIOEClientMain::WickrIOEClientMain(WickrIOClients *client, const QString& in
 
     this->connect(&m_loginHdlr, &WickrIOLoginHdlr::signalExit, this, &WickrIOEClientMain::stopAndExitSlot);
     this->connect(&m_loginHdlr, &WickrIOLoginHdlr::signalLoginSuccess, this, &WickrIOEClientMain::slotLoginSuccess);
+    this->connect(&m_loginHdlr, &WickrIOLoginHdlr::signalLoginFailed, this, &WickrIOEClientMain::slotLoginFailure);
 
     WickrSwitchboardService *swbsvc = WickrCore::WickrRuntime::swbSvc();
     WickrMessageService *msgsvc = WickrCore::WickrRuntime::msgSvc();
@@ -150,6 +151,11 @@ void WickrIOEClientMain::processStarted()
                 &WickrIOProvisionHdlr::signalRegisterEnterprise,
                 &m_loginHdlr,
                 &WickrIOLoginHdlr::slotRegisterUser);
+
+        connect(provhdlr,
+                &WickrIOProvisionHdlr::signalFailed,
+                this,
+                &WickrIOEClientMain::slotProvisionFailed);
     }
 
     // Start the provisioning here
@@ -158,6 +164,13 @@ void WickrIOEClientMain::processStarted()
     } else {
         WickrIOClientRuntime::provHdlrBeginCloud(m_client->user, m_invite);
     }
+}
+
+void WickrIOEClientMain::slotProvisionFailed(const QString& errorString)
+{
+    qDebug().noquote().nospace() << "CONSOLE:" << errorString;
+    m_loginSuccess = false;
+    emit signalLoginFailure();
 }
 
 void WickrIOEClientMain::slotProvisionPageChanged(WickrIOProvisionHdlr::Page page)
@@ -203,7 +216,7 @@ void WickrIOEClientMain::slotProvisionPageChanged(WickrIOProvisionHdlr::Page pag
             provhdlr->setPassword(m_client->password);
 
             // At this point login
-            m_loginHdlr.addLogin(m_client->user, m_client->password, m_client->name, provhdlr->transactionID(), true);
+            m_loginHdlr.addLogin(m_client->user, m_client->password, provhdlr->transactionID(), true);
             m_loginHdlr.initiateLogin();
         }
         break;
@@ -231,6 +244,12 @@ void WickrIOEClientMain::slotLoginSuccess()
     qDebug() << "CONSOLE:********************************************************************";
 
     emit signalLoginSuccess();
+}
+
+void WickrIOEClientMain::slotLoginFailure()
+{
+    m_loginSuccess = false;
+    emit signalLoginFailure();
 }
 
 /**
@@ -381,7 +400,6 @@ void WickrIOEClientMain::slotSwitchboardServiceState(WickrServiceState state, SB
 /**
  * @brief WickrIOEClientMain::slotMessageServiceState
  * @param state
- * @param text
  */
 void WickrIOEClientMain::slotMessageServiceState(WickrServiceState state)
 {
@@ -471,45 +489,20 @@ void WickrIOEClientMain::slotOnLoginMsgSynchronizationComplete()
                                          false);
 }
 
-void
-WickrIOEClientMain::loadBootstrapFile(const QString& fileName, const QString& passphrase)
+/**
+ * @brief WickrIOEClientMain::loadBootstrapString
+ * Take the decrypted bootstrap string and call the environment manager to apply
+ * @param bootstrapStr
+ * @return
+ */
+bool
+WickrIOEClientMain::loadBootstrapString(const QString& bootstrapStr)
 {
-    qDebug() << "The bootstrap file " << fileName << " with the passphrase " << passphrase << " was loaded";
-
-    QFile bootstrap(fileName);
-
-    // Try to decrypt the configuration file
-    if (!bootstrap.open(QIODevice::ReadOnly))
-    {
-        qDebug() << "can't open bootstrap file";
-        return;
-    }
-    QByteArray bootstrapBlob(bootstrap.readAll());
-    bootstrap.close();
-    if (bootstrapBlob.size() == 0)
-        return;
-
-    QString bootstrapStr = cryptoDecryptConfiguration(passphrase, bootstrapBlob);
-    if (bootstrapStr == NULL || bootstrapStr.isEmpty()) {
-        if (!bootstrap.open(QIODevice::ReadOnly | QIODevice::Text))
-        {
-            qDebug() << "can't open bootstrap file";
-            return;
-        }
-        // try reading the file as a text file
-        bootstrapStr = QString(bootstrap.readAll());
-        bootstrap.close();
-        if (bootstrapStr == NULL || bootstrapStr.isEmpty())
-            return;
-    }
-
     QJsonDocument d;
     d = d.fromJson(bootstrapStr.toUtf8());
-    if(WickrCore::WickrRuntime::getEnvironmentMgr()->loadBootStrapJson(d))
+    if (!WickrCore::WickrRuntime::getEnvironmentMgr()->loadBootStrapJson(d))
     {
-//        WickrCore::WickrRuntime::getEnvironmentMgr()->storeNetworkConfig(controller->getNetworkSettings());
-    } else {
         qDebug() << "Incorrect credentials - please try again. Configuration file error";
     }
+    return true;
 }
-

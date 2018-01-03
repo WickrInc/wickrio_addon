@@ -70,6 +70,8 @@ WickrIOBot::WickrIOBot(QCoreApplication *app, WickrIOClients *client, WickrIOCli
 bool
 WickrIOBot::newBotCreate()
 {
+    m_client.binary = WBIO_BOT_TARGET;
+
     /*
      * Get input from the user
      */

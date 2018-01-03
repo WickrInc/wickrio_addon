@@ -19,6 +19,7 @@
 
 #include "wickrIOClientRuntime.h"
 #include "cmdProvisioning.h"
+#include "wickrIOBootstrap.h"
 
 #ifdef WICKR_PLUGIN_SUPPORT
 Q_IMPORT_PLUGIN(WickrPlugin)
@@ -139,8 +140,14 @@ int main(int argc, char *argv[])
     client.binary = WBIO_BOT_TARGET;
 
     // Load the bootstrap file
-    // TODO: Need to save an encrypted version of the file
-    WickrIOEClientMain::loadBootstrapFile(provisioningInput.m_configFileName, provisioningInput.m_configPassword);
+    QString bootstrapString = WickrIOBootstrap::readFile(provisioningInput.m_configFileName, provisioningInput.m_configPassword);
+    if (bootstrapString == nullptr) {
+        qDebug() << "CONSOLE:Cannot read the bootstrap file!";
+        exit(1);
+    }
+
+    // Will need to save the bootstrap file once we get the real password
+    WickrIOEClientMain::loadBootstrapString(bootstrapString);
 
     if (clientDbPath.isEmpty()) {
         clientDbPath = QString("%1/clients/%2/client").arg(WBIO_DEFAULT_DBLOCATION).arg(client.name);

@@ -55,6 +55,9 @@ public:
 
     bool m_handleInbox; // True if the client should handle inbox messaging
 
+    // Set this to true to clean the messaging database when logging out
+    bool m_cleanDBOnLogout = false;
+
 private:
 #ifndef DO_WICKRBOT
     FileDownloader *m_pImgCtrl;

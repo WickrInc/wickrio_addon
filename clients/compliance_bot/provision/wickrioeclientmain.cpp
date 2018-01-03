@@ -35,8 +35,7 @@ WickrIOEClientMain *WickrIOEClientMain::theBot;
  */
 WickrIOEClientMain::WickrIOEClientMain(WickrIOClients *client, const QString& invite) :
     m_client(client),
-    m_invite(invite),
-    m_loginSuccess(true)
+    m_invite(invite)
 {
     this->connect(this, &WickrIOEClientMain::started, this, &WickrIOEClientMain::processStarted);
     this->connect(this, &WickrIOEClientMain::signalExit, this, &WickrIOEClientMain::stopAndExitSlot);

@@ -122,6 +122,7 @@ int main(int argc, char *argv[])
 
     operation = new OperationData();
     operation->processName = WBIO_CLIENT_TARGET;
+    operation->m_cleanDBOnLogout = true;
 
     QString clientDbPath("");
     QString suffix;

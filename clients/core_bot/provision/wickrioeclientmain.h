@@ -17,6 +17,7 @@
 #include "wickrIOLoginHdlr.h"
 #include "wickrIOProvisionHdlr.h"
 
+
 #define WICKRBOT WickrIOEClientMain::theBot
 
 #define WICKRBOT_NEXTMSG_TIME           86400       // Number of seconds to wait before reponding to received message
@@ -40,7 +41,9 @@ public:
 
     static WickrIOEClientMain *theBot;
 
-    static void loadBootstrapFile(const QString& fileName, const QString& passphrase);
+    static bool loadBootstrapString(const QString& bootstrapStr);
+
+    bool loginSuccess() { return m_loginSuccess; }
 
 private:
     WickrIOClients *m_client;
@@ -50,6 +53,8 @@ private:
 
     QTimer timer;
     QString m_serverName;
+
+    bool m_loginSuccess = true;
 
     // Timer definitions
     void startTimer()
@@ -68,9 +73,11 @@ private:
 
 private slots:
     void slotProvisionPageChanged(WickrIOProvisionHdlr::Page page);
+    void slotProvisionFailed(const QString& errorString);
 
     void slotInitiateLogin();
     void slotLoginSuccess();
+    void slotLoginFailure();
 
     void processStarted();
     void stopAndExitSlot();
@@ -93,6 +100,7 @@ signals:
     void signalStarted();
     void signalExit();
     void signalLoginSuccess();
+    void signalLoginFailure();
 
     void signalMessageCheck(WickrApplicationState appContext);
 };

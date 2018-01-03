@@ -170,6 +170,7 @@ bool WickrIOProvisionHdlr::provisionBotUser(Mode mode)
             return false;
         }
         map.insert(WickrProvisionUserContext::USER_STEP, 0);
+        map.insert(WickrProvisionUserContext::USER_PRODUCT, wickrProductGetProductType());
         map.insert(WickrProvisionUserContext::USER_USERNAME, m_username);
         map.insert(WickrProvisionUserContext::USER_REGTOKEN, m_regToken);
     } else {
@@ -303,6 +304,8 @@ void WickrIOProvisionHdlr::internalBegin(Mode mode, const QString &email, const 
 
                 // TODO: DISPLAY ERROR TO USER
                 qDebug() << "ERROR:" << m_errorMsg;
+
+                emit signalFailed(c->errorString().isEmpty() ? m_errorMsg : c->errorString());
             }
         }
         c->deleteLater();

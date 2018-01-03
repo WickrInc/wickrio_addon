@@ -176,6 +176,7 @@ void WickrIOLoginHdlr::slotRegistrationDone(WickrRegisterUserContext *c)
             qDebug() << c->errorString();
             emit signalOnlineFlag(false);
         }
+        emit signalLoginFailed();
     } else {
         // GET Arguments: <wickrid> <password>
         QString wickrid  = c->getArg(arg_USERID).toString();

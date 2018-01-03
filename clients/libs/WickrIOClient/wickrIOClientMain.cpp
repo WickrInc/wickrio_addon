@@ -428,6 +428,11 @@ void WickrIOClientMain::stopAndExit(int procState)
     }
 
     if (m_loginHdlr.getLoginState() == LoggedIn) {
+        // If we clean up messaging when logging out then do so here
+        if (m_operation->m_cleanDBOnLogout) {
+            WickrDBAdapter::clearUserAndMsgData();
+        }
+
         if (WickrCore::WickrSession::getActiveSession()) {
             WickrCore::WickrSession::getActiveSession()->closeSession(true);
         }

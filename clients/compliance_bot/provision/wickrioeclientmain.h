@@ -54,7 +54,7 @@ private:
     QTimer timer;
     QString m_serverName;
 
-    bool m_loginSuccess;
+    bool m_loginSuccess = true;
 
     // Timer definitions
     void startTimer()
