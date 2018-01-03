@@ -132,6 +132,10 @@ WickrIOBot::newBotCreate()
                                   clientType,
                                   m_clientDbPath);
 
+    // do not do backups for convo or contacts for Welcome Bot
+    WickrCore::WickrRuntime::taskSvcEnableContactBackup(false);
+    WickrCore::WickrRuntime::taskSvcEnableConvoBackup(false);
+
     // Will need to save the bootstrap file once we get the real password
     WickrIOEClientMain::loadBootstrapString(bootstrapString);
 

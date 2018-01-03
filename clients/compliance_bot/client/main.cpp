@@ -231,6 +231,10 @@ int main(int argc, char *argv[])
                                   clientDbPath,
                                   WickrCore::WickrRuntime::DATA_MGMT_LAYER_1);
 
+    // do not do backups for convo or contacts for Welcome Bot
+    WickrCore::WickrRuntime::taskSvcEnableContactBackup(false);
+    WickrCore::WickrRuntime::taskSvcEnableConvoBackup(false);
+
     // If the user did not set the config file then lets try a default location
     if (wbConfigFile.isEmpty()) {
         wbConfigFile = searchConfigFile();
