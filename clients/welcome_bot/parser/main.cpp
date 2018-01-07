@@ -62,10 +62,10 @@ searchConfigFile() {
 #else
     // Setup the list of locations to search for the ini file
     QString filesdir = QStandardPaths::writableLocation( QStandardPaths::DataLocation );
-#ifdef VERSIONDEBUG
-    QString optdir = "/opt/WickrIODebug";
-#else
+#ifdef WICKR_PRODUCTION
     QString optdir = "/opt/WickrIO";
+#else
+    QString optdir = "/opt/WickrIODebug";
 #endif
 
     QStringList searchList;

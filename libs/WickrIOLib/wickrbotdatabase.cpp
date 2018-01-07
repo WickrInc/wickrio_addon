@@ -1093,7 +1093,7 @@ WickrBotDatabase::getClientEvents(int maxCount)
 {
     QList<WickrBotClientEvents *> events;
     if (initialized) {
-        QString queryString = "SELECT id,client_id,message,type FROM client_events";
+        QString queryString = "SELECT id,client_id,message,type,event_time FROM client_events";
         QSqlQuery *query = new QSqlQuery(m_db);
         query->prepare(queryString);
 

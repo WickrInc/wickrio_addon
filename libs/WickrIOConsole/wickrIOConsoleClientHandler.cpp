@@ -122,6 +122,10 @@ WickrIOConsoleClientHandler::addClient(WickrIOClientDatabase *ioDB, WickrIOClien
     settings->setValue(WBSETTINGS_ATTACH_DIRNAME, attachDir);
     settings->endGroup();
 
+    settings->beginGroup(WBSETTINGS_SERVICES_HEADER);
+    settings->setValue(WBSETTINGS_SERVICES_HANDLEINBOX, newClient->m_handleInbox);
+    settings->endGroup();
+
     settings->sync();
 
     // Insert a client record into the database

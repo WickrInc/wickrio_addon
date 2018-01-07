@@ -27,8 +27,8 @@ linux-g++* {
         else:wickr_beta {
             QMAKE_RPATHDIR = /usr/lib/wio_welcome_bot-beta
         }
-        else:wickr_qa {
-            QMAKE_RPATHDIR = /usr/lib/wio_welcome_bot-qa
+        else:wickr_production {
+            QMAKE_RPATHDIR = /usr/lib/wio_welcome_bot
         }
         else {
             QMAKE_RPATHDIR = /usr/lib/wio_welcome_bot-alpha
@@ -64,8 +64,8 @@ else {
     wickr_beta {
         DEFINES += WICKR_BETA
     }
-    else:wickr_qa {
-        DEFINES += WICKR_QA
+    else:wickr_production {
+        DEFINES += WICKR_PRODUCTION
     }
     else {
         DEFINES += WICKR_ALPHA
@@ -100,7 +100,6 @@ else {
     }
     else:wickr_production {
         TARGET = welcome_parser
-        DEFINES += WICKR_PRODUCTION
     }
     else {
         TARGET = welcome_parserAlpha
