@@ -123,10 +123,10 @@ WickrIOClientDatabase::createRelationalTables()
     if (! m_db.tables().contains(QLatin1String(DB_USERS_TABLE))) {
         QSqlQuery query(m_db);
         if (!query.exec("CREATE TABLE users (id int primary key, "
-                        "user text UNIQUE NOT NULL, "
+                        "user text NOT NULL, "
                         "permissions int, "
                         "max_clients int, "
-                        "mother_id int UNIQUE NOT NULL, "
+                        "mother_id int NOT NULL, "
                         "FOREIGN KEY (mother_id) REFERENCES clients(id) ON DELETE CASCADE)")) {
             qDebug() << "create users table failed, query error=" << query.lastError();
             query.finish();
