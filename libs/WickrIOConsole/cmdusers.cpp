@@ -120,14 +120,12 @@ bool CmdUsers::getUserValues(WickrIODBUser *user)
     WickrIODBUser newUser = *user;
 
     // Calculate which clients are Mother Bots (core_bot)
-    QList<WickrBotClients *> clients = m_operation->m_ioDB->getClients();
+    QList<WickrBotClients *> mbClients = m_operation->m_ioDB->getMotherBotClients(true);
     QStringList motherBots;
     QString mbDesc = "Enter the appropriate number:\n";
-    for (WickrBotClients* client : clients) {
-        if (client->binary.startsWith("core_bot")) {
-            motherBots.append(QString::number(client->id));
-            mbDesc += QString("  %1 for %2").arg(client->id).arg((client->name));
-        }
+    for (WickrBotClients* client : mbClients) {
+        motherBots.append(QString::number(client->id));
+        mbDesc += QString("  %1 for %2").arg(client->id).arg((client->name));
         delete client;
     }
 
@@ -229,14 +227,12 @@ bool CmdUsers::getUserClients(WickrIODBUser *user)
     bool quit = false;
 
     // Calculate which clients are available
-    QList<WickrBotClients *> clients = m_operation->m_ioDB->getClients();
+    QList<WickrBotClients *> clients = m_operation->m_ioDB->getMotherBotClients(false);
     QStringList clientList;
     QString mbDesc = "Possible clients:\n";
     for (WickrBotClients* client : clients) {
-        if (!client->binary.startsWith("core_bot")) {
-            clientList.append(QString::number(client->id));
-            mbDesc += QString("  %1 for %2\n").arg(client->id).arg((client->name));
-        }
+        clientList.append(QString::number(client->id));
+        mbDesc += QString("  %1 for %2\n").arg(client->id).arg((client->name));
         delete client;
     }
 

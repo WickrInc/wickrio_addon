@@ -538,6 +538,43 @@ WickrIOClientDatabase::getClients()
     return clients;
 }
 
+/**
+ * @brief WickrIOClientDatabase::getMotherBotClients
+ * This function will return a list of clients that are mother bots
+ * @param getMBots
+ * @return
+ */
+QList<WickrBotClients *>
+WickrIOClientDatabase::getMotherBotClients(bool getMBots)
+{
+    QList<WickrBotClients *> mbClients;
+
+    // Calculate which clients are Mother Bots (core_bot)
+    QList<WickrBotClients *> clients = getClients();
+    for (WickrBotClients* client : clients) {
+        // If this is a mother bot (core_bot)
+        if (client->binary.startsWith("core_bot")) {
+            // and mother bots are to be returned
+            if (getMBots) {
+                mbClients.append(client);
+            } else {
+                delete client;
+            }
+        }
+        // Else it is NOT a mother bot (core_bot)
+        else {
+            // and mother bots are to be returned
+            if (getMBots) {
+                delete client;
+            } else {
+                mbClients.append(client);
+            }
+        }
+    }
+    return mbClients;
+}
+
+
 WickrBotClients *
 WickrIOClientDatabase::getClientUsingName(QString name)
 {

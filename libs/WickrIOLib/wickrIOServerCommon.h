@@ -16,21 +16,24 @@
 class WBIOClientApps
 {
 public:
-    WBIOClientApps(const QString& bot, const QString& provision, const QString& parser, bool pwRequired) :
+    WBIOClientApps(const QString& bot, const QString& provision, const QString& parser, bool pwRequired, bool isMotherBot) :
         m_botApp(bot),
         m_provisionApp(provision),
         m_parserApp(parser),
-        m_pwRequired(pwRequired) {}
+        m_pwRequired(pwRequired),
+        m_isMotherBot(isMotherBot) {}
 
     QString m_botApp;
     QString m_provisionApp;
     QString m_parserApp;
     bool    m_pwRequired;
+    bool    m_isMotherBot;
 
     QString bot()       { return m_botApp; }
     QString provision() { return m_provisionApp; }
     QString parser()    { return m_parserApp; }
     bool pwRequired()   { return m_pwRequired; }
+    bool isMotherBot()  { return m_isMotherBot; }
 };
 
 /**
@@ -55,6 +58,9 @@ public:
 
     static QString getParserProcessName(WickrIOParsers * parser);
     static QStringList getAvailableParserApps();
+
+    static QStringList getAvailableMotherClients();
+
 private:
     static bool                     m_initialized;
     static QList<WBIOClientApps *>  m_botApps;

@@ -84,18 +84,18 @@ void
 WBIOServerCommon::initClientApps()
 {
     if (!m_initialized) {
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botAlpha",       nullptr,                nullptr,               false));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botBeta",        nullptr,                nullptr,               false));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_bot",            nullptr,                nullptr,               false));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botAlpha", "compliance_provAlpha", nullptr,               true));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botBeta",  "compliance_provBeta",  nullptr,               true));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_bot",      "compliance_prov",      nullptr,               true));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_botAlpha",    nullptr,                "welcome_parserAlpha", false));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_botBeta",     nullptr,                "welcome_parserBeta",  false));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_bot",         nullptr,                "welcome_parser",      false));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("core_botAlpha",       nullptr,                nullptr,               false));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("core_botBeta",        nullptr,                nullptr,               false));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("core_bot",            nullptr,                nullptr,               false));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botAlpha",       nullptr,                nullptr,               false, false));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botBeta",        nullptr,                nullptr,               false, false));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_bot",            nullptr,                nullptr,               false, false));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botAlpha", "compliance_provAlpha", nullptr,               true,  false));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botBeta",  "compliance_provBeta",  nullptr,               true,  false));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_bot",      "compliance_prov",      nullptr,               true,  false));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_botAlpha",    nullptr,                "welcome_parserAlpha", false, false));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_botBeta",     nullptr,                "welcome_parserBeta",  false, false));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_bot",         nullptr,                "welcome_parser",      false, false));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("core_botAlpha",       nullptr,                nullptr,               false, true));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("core_botBeta",        nullptr,                nullptr,               false, true));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("core_bot",            nullptr,                nullptr,               false, true));
 
         for (WBIOClientApps *botapp : WBIOServerCommon::m_botApps) {
             m_bots.append(botapp->bot());
@@ -123,6 +123,11 @@ WBIOServerCommon::getAvailableClientApps()
     return availableBinaries;
 }
 
+/**
+ * @brief WBIOServerCommon::getAvailableParserApps
+ * Returns a list of the binary names for the parser applications
+ * @return
+ */
 QStringList
 WBIOServerCommon::getAvailableParserApps()
 {
@@ -134,6 +139,29 @@ WBIOServerCommon::getAvailableParserApps()
         QFileInfo fi(filePath);
         if (fi.exists()) {
             availableBinaries.append(binary);
+        }
+    }
+    return availableBinaries;
+}
+
+/**
+ * @brief WBIOServerCommon::getAvailableMotherClients
+ * Returns a list of the binary names for clients that are mother bots
+ * @return
+ */
+QStringList
+WBIOServerCommon::getAvailableMotherClients()
+{
+    initClientApps();
+    QStringList availableBinaries;
+
+    for (WBIOClientApps *botapp : WBIOServerCommon::m_botApps) {
+        if (botapp->m_isMotherBot) {
+            QString filePath = QString("/usr/bin/%1").arg(botapp->m_botApp);
+            QFileInfo fi(filePath);
+            if (fi.exists()) {
+                availableBinaries.append(botapp->m_botApp);
+            }
         }
     }
     return availableBinaries;

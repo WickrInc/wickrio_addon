@@ -92,6 +92,7 @@ public:
     WickrBotClients *getClientUsingName(QString name);
     int getClientsConsoleID(int id);
     QList<WickrBotClients *> getClients();
+    QList<WickrBotClients *> getMotherBotClients(bool getMBots);
     QList<WickrBotClients *> getConsoleClients(int console_id);
     int numConsoleClients(int console_id);
     QString getClientsConsoleUser(int id);
