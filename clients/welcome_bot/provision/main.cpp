@@ -38,7 +38,7 @@ extern void wickr_powersetup(void);
 #include "wickrIOIPCService.h"
 #include "wickrbotutils.h"
 
-WickrIOClients  client;
+WickrBotClients  client;
 CmdProvisioning provisioningInput(&client);
 
 // TODO: UPDATE THIS

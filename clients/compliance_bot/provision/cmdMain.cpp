@@ -20,7 +20,7 @@ CmdMain::CmdMain(QCoreApplication *app, int argc, char **argv, OperationData *op
 
 CmdMain::~CmdMain()
 {
-    for (WickrIOClients *client : m_clients) {
+    for (WickrBotClients *client : m_clients) {
         delete client;
     }
     m_clients.clear();
@@ -110,7 +110,7 @@ CmdMain::runCommands()
                     qDebug() << "CONSOLE:Usage: update <index>";
                 } else {
                     if (validateIndex(clientIndex)) {
-                        WickrIOClients *client = m_clients.at(clientIndex);
+                        WickrBotClients *client = m_clients.at(clientIndex);
                         WickrIOBot *updatebot = new WickrIOBot(m_app, client, m_cmdOperation.m_ioDB);
                         updatebot->botUpdate();
                     } else {
@@ -172,15 +172,15 @@ CmdMain::runCommands()
 bool
 CmdMain::updateBotList()
 {
-    for (WickrIOClients *client : m_clients) {
+    for (WickrBotClients *client : m_clients) {
         delete client;
     }
     m_clients.clear();
 
     // TODO: Need to add an entry into the client record table
-    QList<WickrIOClients *> clients = m_cmdOperation.m_ioDB->getClients();
+    QList<WickrBotClients *> clients = m_cmdOperation.m_ioDB->getClients();
 
-    for (WickrIOClients *client : clients) {
+    for (WickrBotClients *client : clients) {
         if (client->binary != WBIO_BOT_TARGET) {
             delete client;
             continue;
@@ -195,7 +195,7 @@ CmdMain::listBots()
 {
     int i=0;
     if (m_clients.size() > 0) {
-        for (WickrIOClients *client : m_clients) {
+        for (WickrBotClients *client : m_clients) {
             if (client->binary != WBIO_BOT_TARGET)
                 continue;
 
@@ -254,7 +254,7 @@ void
 CmdMain::startClient(int clientIndex, bool force)
 {
     if (validateIndex(clientIndex)) {
-        WickrIOClients *client = m_clients.at(clientIndex);
+        WickrBotClients *client = m_clients.at(clientIndex);
         WickrBotProcessState state;
         QString processName = client->getProcessName();
 
@@ -392,7 +392,7 @@ void
 CmdMain::pauseClient(int clientIndex)
 {
     if (validateIndex(clientIndex)) {
-        WickrIOClients *client = m_clients.at(clientIndex);
+        WickrBotClients *client = m_clients.at(clientIndex);
         WickrBotProcessState state;
         QString processName = client->getProcessName();
 
@@ -483,7 +483,7 @@ void
 CmdMain::configClient(int clientIndex)
 {
     if (validateIndex(clientIndex)) {
-        WickrIOClients *client = m_clients.at(clientIndex);
+        WickrBotClients *client = m_clients.at(clientIndex);
         WickrIOAppSettings appSetting;
         bool bCallbackExists;
 
@@ -539,7 +539,7 @@ void
 CmdMain::deleteClient(int clientIndex)
 {
     if (validateIndex(clientIndex)) {
-        WickrIOClients *client = m_clients.at(clientIndex);
+        WickrBotClients *client = m_clients.at(clientIndex);
 
         QString prompt = QString(tr("Do you really want to delete the client with the name %1")).arg(client->name);
         QString response = getNewValue("", prompt);
@@ -569,7 +569,7 @@ void
 CmdMain::resetClient(int clientIndex)
 {
     if (validateIndex(clientIndex)) {
-        WickrIOClients *client = m_clients.at(clientIndex);
+        WickrBotClients *client = m_clients.at(clientIndex);
 
         QString prompt = QString(tr("Do you really want to reset the client with the name %1")).arg(client->name);
         QString response = getNewValue("", prompt);

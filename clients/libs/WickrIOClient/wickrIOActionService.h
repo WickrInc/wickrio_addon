@@ -131,14 +131,14 @@ private:
 
     void logCounts()
     {
-        if (m_messagesSent > 0) {
-            m_operation->log_handler->log("Messages sent", m_messagesSent);
-            m_messagesSent = 0;
-        }
-        if (m_messagesFailed > 0) {
-            m_operation->log_handler->log("Messages failed", m_messagesFailed);
-            m_messagesFailed = 0;
-        }
+        int msgs = m_messagesSent;    m_messagesSent = 0;
+        int fails = m_messagesFailed; m_messagesFailed = 0;
+
+        QString statsMsg = QString("Tx Statistics:\n  Messages sent %1\n  Messages failed %2\n")
+                .arg(msgs).arg(fails);
+        m_operation->log_handler->log(statsMsg);
+        m_operation->postEvent(statsMsg, false);
+
     }
 
     void cleanUpDatabase();

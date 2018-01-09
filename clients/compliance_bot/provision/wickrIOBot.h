@@ -3,7 +3,7 @@
 
 #include <QCoreApplication>
 
-#include "wickrioclients.h"
+#include "wickrbotclients.h"
 #include "cmdProvisioning.h"
 #include "wickriodatabase.h"
 
@@ -11,7 +11,7 @@ class WickrIOBot
 {
 public:
     WickrIOBot(QCoreApplication *app, int argc, char **argv, WickrIOClientDatabase *ioDB);
-    WickrIOBot(QCoreApplication *app, WickrIOClients *client, WickrIOClientDatabase *ioDB);
+    WickrIOBot(QCoreApplication *app, WickrBotClients *client, WickrIOClientDatabase *ioDB);
 
     bool newBotCreate();
     bool botUpdate();
@@ -20,7 +20,7 @@ private:
     QCoreApplication        *m_app;
     int                     m_argc;
     char                    **m_argv;
-    WickrIOClients          m_client;
+    WickrBotClients         m_client;
     CmdProvisioning         m_provision;
     WickrIOClientDatabase   *m_ioDB;
 

@@ -4,13 +4,13 @@
 #include <QString>
 
 #include "wickriodatabase.h"
-#include "wickrioclients.h"
+#include "wickrbotclients.h"
 
 class WickrIOConsoleClientHandler
 {
 
 public:
-    static QString addClient(WickrIOClientDatabase *ioDB, WickrIOClients *newClient);
+    static QString addClient(WickrIOClientDatabase *ioDB, WickrBotClients *newClient);
     static QStringList getNetworkInterfaceList();
 
     static bool validateSSLKey(const QString &sslKeyFile);

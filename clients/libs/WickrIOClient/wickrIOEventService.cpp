@@ -178,7 +178,7 @@ void
 WickrIOEventThread::processEvents()
 {
     QList<WickrIOConsoleUser *> users;
-    QList<WickrIOClients *> clients;
+    QList<WickrBotClients *> clients;
     QList<WickrBotClientEvents *> events;
 
     WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);

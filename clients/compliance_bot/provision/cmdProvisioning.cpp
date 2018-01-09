@@ -7,7 +7,7 @@
 #include "wickrIOCommon.h"
 #include "wickriotokens.h"
 
-CmdProvisioning::CmdProvisioning(WickrIOClients *client) :
+CmdProvisioning::CmdProvisioning(WickrBotClients *client) :
     m_client(client)
 {
 }

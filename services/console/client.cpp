@@ -98,7 +98,7 @@ Client::Client(QWidget *parent) :
                     msg->exec();
                 }
 
-                WickrIOClients *updateClient = m_ioDB->getClientUsingName(name);
+                WickrBotClients *updateClient = m_ioDB->getClientUsingName(name);
                 if (updateClient) {
                     // Delete the process_state entry
                     QString processName = WBIOServerCommon::getClientProcessName(updateClient);
@@ -182,7 +182,7 @@ Client::Client(QWidget *parent) :
             QModelIndex mycell = model->index(m_clientsSelectedRow, CLIENT_MODEL_NAME_IDX);
             QString name = mycell.data().toString();
 
-            WickrIOClients *updateClient = m_ioDB->getClientUsingName(name);
+            WickrBotClients *updateClient = m_ioDB->getClientUsingName(name);
 
             // send the stop command to the client
             WickrBotProcessState state;
@@ -651,7 +651,7 @@ bool Client::openDatabase()
  * @return
  */
 bool
-Client::getClientSettings(WickrIOClients *client)
+Client::getClientSettings(WickrBotClients *client)
 {
     QString configFileName;
 
@@ -734,7 +734,7 @@ Client::updateClientsList()
     }
 
     if (m_ioDB != NULL && m_ioDB->isOpen()) {
-        QList<WickrIOClients *>clients = m_ioDB->getClients();
+        QList<WickrBotClients *>clients = m_ioDB->getClients();
 
         QStandardItemModel *model = new QStandardItemModel(clients.length(), CLIENT_MODEL_NUMCOLUMNS, this);
 
@@ -746,7 +746,7 @@ Client::updateClientsList()
 
         if (clients.length() > 0) {
             for (int i=0; i<clients.length(); i++) {
-                WickrIOClients *client = clients.at(i);
+                WickrBotClients *client = clients.at(i);
 
                 // Get the process state for the client
                 QString processName = WBIOServerCommon::getClientProcessName(client);
@@ -788,7 +788,7 @@ Client::updateClientsList()
 
         // Free the memory used by the clients
         while (clients.length() > 0) {
-            WickrIOClients *client = clients.first();
+            WickrBotClients *client = clients.first();
             clients.removeFirst();
             delete client;
         }

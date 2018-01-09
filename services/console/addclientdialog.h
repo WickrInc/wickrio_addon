@@ -4,7 +4,7 @@
 #include <QDialog>
 #include <QComboBox>
 
-#include "wickrioclients.h"
+#include "wickrbotclients.h"
 #include "wickriodatabase.h"
 #include "wickrIOAppSettings.h"
 
@@ -17,7 +17,7 @@ class AddClientDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit AddClientDialog(WickrIOClientDatabase *ioDB, WickrIOSSLSettings *sslSettings, WickrIOClients *client=NULL, QWidget *parent = 0);
+    explicit AddClientDialog(WickrIOClientDatabase *ioDB, WickrIOSSLSettings *sslSettings, WickrBotClients *client=NULL, QWidget *parent = 0);
     ~AddClientDialog();
 
 private:
@@ -33,7 +33,7 @@ private slots:
 
 private:
     Ui::AddClientDialog *ui;
-    WickrIOClients *m_client;
+    WickrBotClients *m_client;
     WickrIOClientDatabase *m_ioDB;
 
     QMap<int, int> consoleUserMap;

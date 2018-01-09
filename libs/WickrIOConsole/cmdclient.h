@@ -25,7 +25,7 @@ public:
     void status();
 
 private:
-    bool getClientValues(WickrIOClients *client);
+    bool getClientValues(WickrBotClients *client);
     void addClient();
     void deleteClient(int clientIndex);
     void listClients();
@@ -49,7 +49,7 @@ private:
     bool m_clientMsgSuccess;
     bool m_clientMsgInProcess;
 
-    QList<WickrIOClients *> m_clients;
+    QList<WickrBotClients *> m_clients;
 
     QProcess *m_exec;
 

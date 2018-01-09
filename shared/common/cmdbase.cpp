@@ -45,7 +45,7 @@ bool CmdBase::handleQuit(const QString& value, bool *quit)
  * @param check
  * @return
  */
-QString CmdBase::getNewValue(const QString& oldValue, const QString& prompt, CheckType check, QStringList choices)
+QString CmdBase::getNewValue(const QString& oldValue, const QString& prompt, CheckType check, QStringList choices, QString listDesc)
 {
     QString newValue("");
 
@@ -104,7 +104,34 @@ QString CmdBase::getNewValue(const QString& oldValue, const QString& prompt, Che
             }
             if (found)
                 break;
-            qDebug() << "CONSOLE:Please enter one of" << choices;
+            if (listDesc.isEmpty()) {
+                qDebug() << "CONSOLE:Please enter one of" << choices;
+            } else {
+                qDebug().noquote().nospace() << "CONSOLE:" << listDesc;
+            }
+        } else if (check == CHECK_MULTI_LIST) {
+            QStringList entries = lineInput.split(QRegExp("[\r\n\t ]+"), QString::SkipEmptyParts);
+            bool allChoicesGood=true;
+            for (QString entry : entries) {
+                bool goodChoices=false;
+                for (QString choice : choices) {
+                    if (entry.toLower() == choice.toLower()) {
+                        goodChoices=true;
+                        break;
+                    }
+                }
+                if (!goodChoices) {
+                    qDebug().noquote().nospace() << "CONSOLE:Entry " << entry << " not found!";
+                    allChoicesGood = false;
+                }
+            }
+            if (allChoicesGood)
+                break;
+            if (listDesc.isEmpty()) {
+                qDebug() << "CONSOLE:Please enter from list" << choices;
+            } else {
+                qDebug().noquote().nospace() << "CONSOLE:" << listDesc;
+            }
         } else {
             break;
         }

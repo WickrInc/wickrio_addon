@@ -120,11 +120,11 @@ bool CoreClientRxDetails::processMessage(WickrDBObject *item)
             }
 
             // If we do not know the user id or there is no console user then don't respond
-            if (userid.isEmpty() || !db->getConsoleUser(userid, &m_consoleUser)) {
+            if (userid.isEmpty() || !db->getUser(userid, m_operation->m_client->id, &m_user)) {
                 if (userid.isEmpty()) {
                     qDebug() << "Sender's userid NOT found!";
                 } else {
-                    qDebug() << "No Console user records found for " << userid;
+                    qDebug() << "No user records found for " << userid;
                 }
                 return true;
             } else {
@@ -171,7 +171,7 @@ bool CoreClientRxDetails::processMessage(WickrDBObject *item)
                     qDebug() << "Got command with 0 arguments";
                 } else {
                     if (commands[0] == "help") {
-                        if (m_consoleUser.isAdmin()) {
+                        if (m_user.isAdmin()) {
                             jsonHandler->m_message = "client list\nclient [getoutput|getlog|start|pause] <name>\nservice [status|start|stop]\n";
                         } else {
                             jsonHandler->m_message = "client list\nclient [getoutput|getlog|start|pause] <name>\n";
@@ -233,7 +233,7 @@ bool CoreClientRxDetails::processMessage(WickrDBObject *item)
                             jsonHandler->m_message = "Invalid command";
                         }
                     } else if (commands[0] == "service") {
-                        if (m_consoleUser.isAdmin() && commands.count() >= 2) {
+                        if (m_user.isAdmin() && commands.count() >= 2) {
                             if (commands[1] == "status") {
                                 WickrIOClientDatabase* ioDB = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
                                 QString clientState = WickrIOConsoleClientHandler::getActualProcessState(WBIO_CLIENTSERVER_TARGET, ioDB);
@@ -270,7 +270,7 @@ bool CoreClientRxDetails::processMessage(WickrDBObject *item)
 QString
 CoreClientRxDetails::getClientList()
 {
-    QList<WickrIOClients *> clients;
+    QList<WickrBotClients *> clients;
     QString clientsString;
 
     WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
@@ -279,10 +279,14 @@ CoreClientRxDetails::getClientList()
     }
 
     // Get the clients records.  If admin console user get all of the clients
-    if (m_consoleUser.isAdmin()) {
+    if (m_user.isAdmin()) {
         clients = db->getClients();
     } else {
-        clients = db->getConsoleClients(m_consoleUser.id);
+        QList<int> clientIDs = db->getUserClients(m_user.m_id);
+        for (int clientID : clientIDs) {
+            WickrBotClients *client = db->getClient(clientID);
+            clients.append(client);
+        }
     }
 
     int index=0;
@@ -325,7 +329,7 @@ CoreClientRxDetails::getClientList()
 QString
 CoreClientRxDetails::getClients()
 {
-    QList<WickrIOClients *> clients;
+    QList<WickrBotClients *> clients;
     QString clientsString;
 
     WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
@@ -334,10 +338,14 @@ CoreClientRxDetails::getClients()
     }
 
     // Get the clients records.  If admin console user get all of the clients
-    if (m_consoleUser.isAdmin()) {
+    if (m_user.isAdmin()) {
         clients = db->getClients();
     } else {
-        clients = db->getConsoleClients(m_consoleUser.id);
+        QList<int> clientIDs = db->getUserClients(m_user.m_id);
+        for (int clientID : clientIDs) {
+            WickrBotClients *client = db->getClient(clientID);
+            clients.append(client);
+        }
     }
 
     while (clients.length() > 0) {
@@ -451,7 +459,7 @@ CoreClientRxDetails::startClient(const QString& clientName)
         return "Internal error";
     }
 
-    WickrIOClients *client = db->getClientUsingName(clientName);
+    WickrBotClients *client = db->getClientUsingName(clientName);
     if (client == nullptr) {
         return "Cannot find client!";
     }

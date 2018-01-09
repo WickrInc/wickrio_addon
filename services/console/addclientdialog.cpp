@@ -6,7 +6,7 @@
 #include "wickrIOConsoleClientHandler.h"
 #include "wickrIOServerCommon.h"
 
-AddClientDialog::AddClientDialog(WickrIOClientDatabase *ioDB, WickrIOSSLSettings *sslSettings, WickrIOClients *client, QWidget *parent) :
+AddClientDialog::AddClientDialog(WickrIOClientDatabase *ioDB, WickrIOSSLSettings *sslSettings, WickrBotClients *client, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::AddClientDialog),
     m_client(client),
@@ -140,7 +140,7 @@ AddClientDialog::updateButtons()
 void
 AddClientDialog::addClient()
 {
-    WickrIOClients client;
+    WickrBotClients client;
     client.name = ui->nameLineEdit->text();
     client.port = ui->portLineEdit->text().toInt();
     client.iface = ui->interfaceComboBox->currentText();
@@ -291,10 +291,10 @@ bool AddClientDialog::chkClientsInterfaceExists(const QString& iface, int port)
     // TODO: Make sure not using the same port as the console server
 
     bool retVal = false;
-    QList <WickrIOClients *>clients;
+    QList <WickrBotClients *>clients;
     clients = m_ioDB->getClients();
 
-    for (WickrIOClients *client : clients) {
+    for (WickrBotClients *client : clients) {
         if (client->port == port && (client->iface == iface || client->iface == "localhost" || iface == "localhost" )) {
             retVal = true;
         }

@@ -33,7 +33,7 @@ WickrIOEClientMain *WickrIOEClientMain::theBot;
  * the m_logins list is set with those logins. Logging is started, counts initialized and SLOTS
  * are setup to receive specific SIGNALs
  */
-WickrIOEClientMain::WickrIOEClientMain(WickrIOClients *client, const QString& invite) :
+WickrIOEClientMain::WickrIOEClientMain(WickrBotClients *client, const QString& invite) :
     m_client(client),
     m_invite(invite)
 {

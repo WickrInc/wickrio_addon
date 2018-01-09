@@ -1,7 +1,6 @@
 HEADERS += \
     $${PWD}/wickriodatabase.h \
     $$PWD/wickrioconsoleuser.h \
-    $$PWD/wickrioclients.h \
     $$PWD/wickrioapi.h \
     $$PWD/wickriotokens.h \
     $$PWD/wickriomessage.h \

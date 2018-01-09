@@ -56,7 +56,7 @@ WickrIOBot::WickrIOBot(QCoreApplication *app, int argc, char **argv, WickrIOClie
     }
 }
 
-WickrIOBot::WickrIOBot(QCoreApplication *app, WickrIOClients *client, WickrIOClientDatabase *ioDB) :
+WickrIOBot::WickrIOBot(QCoreApplication *app, WickrBotClients *client, WickrIOClientDatabase *ioDB) :
     m_app(app),
     m_argc(0),
     m_argv(nullptr),

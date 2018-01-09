@@ -349,11 +349,11 @@ void WickrIOClientMain::slotDoTimerWork()
             return;
         m_seccount++;
         if (m_seccount > m_operation->duration) {
-            m_operation->log_handler->log("Duration time has been reached, exiting!");
-            QString output = QString("duration=%1, seccount=%2").arg(m_operation->duration).arg(m_seccount);
-            m_operation->log_handler->log("Duration time has been reached, exiting!");
-            emit signalExit();
             m_durationreached = true;
+            QString exitString("Duration time has been reached, exiting!");
+            m_operation->log_handler->log(exitString);
+            m_operation->postEvent(exitString, false);
+            emit signalExit();
             return;
         }
     }

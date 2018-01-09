@@ -8,16 +8,12 @@
 class DECLSPEC WickrBotClients
 {
 public:
-    WickrBotClients() :
-        id(0),
-        m_handleInbox(false),
-        onPrem(false)
-    {};
+    WickrBotClients() {};
 
     ~WickrBotClients() {};
 
 public:
-    int id;
+    int id=0;
 
     QString name;
     QString apiKey;
@@ -32,12 +28,16 @@ public:
     QString sslKeyFile;
     QString sslCertFile;
 
-    bool    m_handleInbox;      // true if client should handle inbox messages, depends on client
-    bool    onPrem;
+    bool    m_handleInbox=false; // true if client should handle inbox messages, depends on client
+    bool    onPrem=false;
+
+    int console_id=0;           // ID of the associated Console User or 0
 
 public:
     QString getIfaceTypeStr() { return isHttps ? QString("HTTPS") : QString("HTTP"); }
     QString getHandleInboxStr() { return m_handleInbox ? QString("true") : QString("false"); }
+
+    QString getProcessName() { return(QString("%1.%2").arg(binary).arg(name)); }
 };
 
 #endif

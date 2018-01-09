@@ -113,6 +113,44 @@ WickrIOClientDatabase::createRelationalTables()
         query.finish();
     }
 
+
+    /*
+     * These two tables will likely get moved to an encrypted table saved on the Wickr Server
+     * And associated with the Mother bot
+     */
+
+    // Check if the Users table exists already, if not create it
+    if (! m_db.tables().contains(QLatin1String(DB_USERS_TABLE))) {
+        QSqlQuery query(m_db);
+        if (!query.exec("CREATE TABLE users (id int primary key, "
+                        "user text UNIQUE NOT NULL, "
+                        "permissions int, "
+                        "max_clients int, "
+                        "mother_id int UNIQUE NOT NULL, "
+                        "FOREIGN KEY (mother_id) REFERENCES clients(id) ON DELETE CASCADE)")) {
+            qDebug() << "create users table failed, query error=" << query.lastError();
+            query.finish();
+            return false;
+        }
+        query.finish();
+    }
+
+    // Check if the User Clientss table exists already, if not create it
+    if (! m_db.tables().contains(QLatin1String(DB_USERCLIENTS_TABLE))) {
+        QSqlQuery query(m_db);
+        if (!query.exec("CREATE TABLE user_clients (id int primary key, "
+                        "user_id text NOT NULL, "
+                        "client_id int NOT NULL, "
+                        "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, "
+                        "FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE)")) {
+            QString errorstr = "create user_clients table failed, query error=" + query.lastError().text();
+            qDebug() << errorstr;
+            query.finish();
+            return false;
+        }
+        query.finish();
+    }
+
     return true;
 }
 
@@ -473,10 +511,10 @@ WickrIOClientDatabase::deleteConsoleUser(const QString &user) {
  * Functions to handle the extended clients table
  ***************************************************************************************************************/
 
-QList<WickrIOClients *>
+QList<WickrBotClients *>
 WickrIOClientDatabase::getClients()
 {
-    QList<WickrIOClients *> clients;
+    QList<WickrBotClients *> clients;
     if (!initialized)
         return clients;
 
@@ -488,7 +526,7 @@ WickrIOClientDatabase::getClients()
         qDebug() << "getClients: Could not retrieve, Error=" << query->lastError();
     } else {
         while (query->next()) {
-            WickrIOClients *client = new WickrIOClients();
+            WickrBotClients *client = new WickrBotClients();
             getClient(query, client);
             QSqlRecord rec = query->record();
             client->console_id = query->value(rec.indexOf("console_id")).toInt();
@@ -500,10 +538,10 @@ WickrIOClientDatabase::getClients()
     return clients;
 }
 
-WickrIOClients *
+WickrBotClients *
 WickrIOClientDatabase::getClientUsingName(QString name)
 {
-    WickrIOClients * client = NULL;
+    WickrBotClients * client = NULL;
 
     if (!initialized)
         return client;
@@ -517,7 +555,7 @@ WickrIOClientDatabase::getClientUsingName(QString name)
         qDebug() << "getClientUsingName: Could not retrieve, Error=" << query.lastError();
     } else {
         if (query.next()) {
-            client = new WickrIOClients();
+            client = new WickrBotClients();
             QSqlRecord rec = query.record();
             client->console_id = query.value(rec.indexOf("console_id")).toInt();
             getClient(&query, client);
@@ -555,10 +593,10 @@ WickrIOClientDatabase::getClientsConsoleID(int id)
  * @param console_id
  * @return
  */
-QList<WickrIOClients *>
+QList<WickrBotClients *>
 WickrIOClientDatabase::getConsoleClients(int console_id)
 {
-    QList<WickrIOClients *> clients;
+    QList<WickrBotClients *> clients;
     if (!initialized)
         return clients;
 
@@ -571,7 +609,7 @@ WickrIOClientDatabase::getConsoleClients(int console_id)
         qDebug() << "getConsoleClients: Could not retrieve, Error=" << query->lastError();
     } else {
         while (query->next()) {
-            WickrIOClients *client = new WickrIOClients();
+            WickrBotClients *client = new WickrBotClients();
             getClient(query, client);
             clients.append(client);
         }
@@ -696,7 +734,7 @@ WickrIOClientDatabase::clearClientsOfConsoleUser(int cUserID)
 }
 
 bool
-WickrIOClientDatabase::insertClientsRecord(WickrIOClients *client) {
+WickrIOClientDatabase::insertClientsRecord(WickrBotClients *client) {
     bool retval = false;
     if (initialized) {
         if (WickrBotDatabase::insertClientsRecord(client)) {
@@ -735,7 +773,7 @@ WickrIOClientDatabase::insertClientsRecord(WickrIOClients *client) {
  * @return
  */
 bool
-WickrIOClientDatabase::updateClientsRecord(WickrIOClients *client, bool insertIfNotExist) {
+WickrIOClientDatabase::updateClientsRecord(WickrBotClients *client, bool insertIfNotExist) {
     bool retval = false;
     if (WickrBotDatabase::updateClientsRecord(client, insertIfNotExist)) {
         QString queryString = "UPDATE clients SET console_id = ? WHERE id = ?";
@@ -1247,4 +1285,330 @@ WickrIOClientDatabase::getAttachments(int messageID) {
     query.finish();
     return files;
 }
+
+
+/****************************************************************************************************************
+ * User and user_clients handler functions
+ ***************************************************************************************************************/
+
+void WickrIODBUser::setAdmin(bool admin)
+{
+    if (admin) {
+        m_permission |= CUSER_PERM_ADMIN_FLAG;
+    } else {
+        m_permission &= ~CUSER_PERM_ADMIN_FLAG;
+    }
+}
+
+void WickrIODBUser::setEdit(bool edit)
+{
+    if (edit) {
+        m_permission |= CUSER_PERM_EDIT_FLAG;
+    } else {
+        m_permission &= ~CUSER_PERM_EDIT_FLAG;
+    }
+}
+
+void WickrIODBUser::setCreate(bool create)
+{
+    if (create) {
+        m_permission |= CUSER_PERM_CREATE_FLAG;
+    } else {
+        m_permission &= ~CUSER_PERM_CREATE_FLAG;
+    }
+}
+
+void WickrIODBUser::setRxEvents(bool rxEvents)
+{
+    if (rxEvents) {
+        m_permission |= CUSER_PERM_EVENTS_FLAG;
+    } else {
+        m_permission &= ~CUSER_PERM_EVENTS_FLAG;
+    }
+}
+
+int
+WickrIOClientDatabase::insertUser(const QString& user, int permissions, int maxClients, int motherID) {
+    int id = -1;
+    if (initialized) {
+        id = getNextID(DB_USERS_TABLE);
+
+        QSqlQuery query(m_db);
+        query.prepare("INSERT INTO users (id, user, permissions, max_clients, mother_id) VALUES (:id, :user, :permissions, :max_clients, :mother_id)");
+        query.bindValue(":id", id);
+        query.bindValue(":user", user);
+        query.bindValue(":permissions", permissions);
+        query.bindValue(":max_clients", maxClients);
+        query.bindValue(":mother_id", motherID);
+
+        if (!query.exec()) {
+            QSqlError error = query.lastError();
+            qDebug() << "insertUser: SQL error" << error;
+            id = -1;
+        } else if (query.numRowsAffected() == 0) {
+            id = -1;
+        }
+        query.finish();
+    }
+    return id;
+}
+
+int
+WickrIOClientDatabase::insertUser(WickrIODBUser *user) {
+    return insertUser(user->m_user, user->m_permission, user->m_clientCount, user->m_motherBotID);
+}
+
+bool
+WickrIOClientDatabase::deleteUser(int id) {
+    if (!initialized)
+        return false;
+
+    QString queryString = "DELETE FROM users WHERE id = ?";
+    QSqlQuery query(m_db);
+    query.prepare(queryString);
+    query.bindValue(0, id);
+
+    if ( !query.exec()) {
+        qDebug() << "deleteUser: Could not retrieve" << id << "last error=" << query.lastError();
+        query.finish();
+        return false;
+    }
+
+    int numRows = query.numRowsAffected();
+    query.finish();
+    return (numRows > 0);
+}
+
+/**
+ * @brief WickrIOClientDatabase::updateUser
+ * Update the contents of the users record.
+ * @param user
+ * @return
+ */
+bool
+WickrIOClientDatabase::updateUser(WickrIODBUser *user) {
+    bool retval = false;
+
+    if (initialized) {
+        QString queryString = "UPDATE users SET user=:user, permissions=:permissions, max_clients=:max_clients, mother_id=:mother_id WHERE id = :id";
+        QSqlQuery *query = new QSqlQuery(m_db);
+        query->prepare(queryString);
+        query->bindValue(":id", user->m_id);
+        query->bindValue(":user", user->m_user);
+        query->bindValue(":permissions", user->m_permission);
+        query->bindValue(":max_clients", user->m_clientCount);
+        query->bindValue(":mother_id", user->m_motherBotID);
+
+        if ( !query->exec()) {
+            qDebug() << "updateUser: Could not update users record, Error=" << query->lastError();
+        } else {
+            int numRows = query->numRowsAffected();
+            retval = (numRows > 0);
+        }
+        query->finish();
+        delete query;
+    }
+    return retval;
+}
+
+/**
+ * @brief WickrIOClientDatabase::getUsers
+ * Get all of the user records currently in the database
+ * @return
+ */
+QList<WickrIODBUser *>
+WickrIOClientDatabase::getUsers() {
+    QList<WickrIODBUser *> users;
+    if (initialized) {
+        QString queryString = QString("SELECT id, user, permissions, max_clients, mother_id FROM users");
+        QSqlQuery query(m_db);
+        query.prepare(queryString);
+
+        if ( !query.exec()) {
+            qDebug() << "getUsers: Could not retrieve users" << query.lastError();
+        } else {
+            while (query.next()) {
+                WickrIODBUser *user = new WickrIODBUser(query.value(0).toInt(),
+                                                        query.value(1).toString(),
+                                                        query.value(2).toInt(),
+                                                        query.value(3).toInt(),
+                                                        query.value(4).toInt()
+                                                        );
+                users.append(user);
+            }
+        }
+        query.finish();
+    }
+    return users;
+}
+
+/**
+ * @brief WickrIOClientDatabase::getMotherUsers
+ * Get all the user records associated with a speicific mother client id
+ * @param motherID
+ * @return
+ */
+QList<WickrIODBUser *>
+WickrIOClientDatabase::getMotherUsers(int motherID) {
+    QList<WickrIODBUser *> users;
+    if (initialized) {
+        QString queryString = QString("SELECT id, user, permissions, max_clients, mother_id FROM users WHERE mother_id=?");
+        QSqlQuery query(m_db);
+        query.prepare(queryString);
+        query.bindValue(0, motherID);
+
+        if ( !query.exec()) {
+            qDebug() << "getUsers: Could not retrieve users for " << motherID << query.lastError();
+        } else {
+            while (query.next()) {
+                WickrIODBUser *user = new WickrIODBUser(query.value(0).toInt(),
+                                                        query.value(1).toString(),
+                                                        query.value(2).toInt(),
+                                                        query.value(3).toInt(),
+                                                        query.value(4).toInt()
+                                                        );
+                users.append(user);
+            }
+        }
+        query.finish();
+    }
+    return users;
+}
+
+bool
+WickrIOClientDatabase::getUser(const QString& name, int motherID, WickrIODBUser *user)
+{
+    bool retVal=false;
+    if (initialized) {
+        QString queryString = QString("SELECT id, permissions, max_clients, mother_id FROM users WHERE user=? and mother_id=?");
+        QSqlQuery query(m_db);
+        query.prepare(queryString);
+        query.bindValue(0, name);
+        query.bindValue(1, motherID);
+
+        if ( !query.exec()) {
+            qDebug() << "getUsers: Could not retrieve users for " << name << query.lastError();
+        } else {
+            if (query.next()) {
+                user->m_id = query.value(0).toInt();
+                user->m_user = name;
+                user->m_permission = query.value(1).toInt();
+                user->m_clientCount = query.value(2).toInt();
+                user->m_motherBotID = query.value(3).toInt();
+                retVal = true;
+            }
+        }
+        query.finish();
+
+    }
+    return retVal;
+}
+
+/**
+ * @brief WickrIOClientDatabase::insertUserClient
+ * Create/insert a user client record
+ * @param userID
+ * @param clientID
+ * @return
+ */
+int
+WickrIOClientDatabase::insertUserClient(int userID, int clientID) {
+    int id = -1;
+    if (initialized) {
+        id = getNextID(DB_USERCLIENTS_TABLE);
+
+        QSqlQuery query(m_db);
+        query.prepare("INSERT INTO user_clients (id, user_id, client_id) VALUES (:id, :user_id, :client_id)");
+        query.bindValue(":id", id);
+        query.bindValue(":user_id", userID);
+        query.bindValue(":client_id", clientID);
+
+        if (!query.exec()) {
+            QSqlError error = query.lastError();
+            qDebug() << "insertUserClient: SQL error" << error;
+            id = -1;
+        } else if (query.numRowsAffected() == 0) {
+            id = -1;
+        }
+        query.finish();
+    }
+    return id;
+}
+
+/**
+ * @brief WickrIOClientDatabase::deleteUserClient
+ * Delete a user_clients records, using the record's id value
+ * @param id
+ * @return
+ */
+bool
+WickrIOClientDatabase::deleteUserClient(int id) {
+    if (!initialized)
+        return false;
+
+    QString queryString = "DELETE FROM user_clients WHERE id = ?";
+    QSqlQuery query(m_db);
+    query.prepare(queryString);
+    query.bindValue(0, id);
+
+    if ( !query.exec()) {
+        qDebug() << "deleteUserClient: Could not retrieve" << id << "last error=" << query.lastError();
+        query.finish();
+        return false;
+    }
+
+    int numRows = query.numRowsAffected();
+    query.finish();
+    return (numRows > 0);
+}
+
+/**
+ * @brief WickrIOClientDatabase::deleteUsersClients
+ * Delete the client id records associated with the input user id
+ * @param user_id
+ * @return
+ */
+bool
+WickrIOClientDatabase::deleteUsersClients(int user_id) {
+    if (!initialized)
+        return false;
+
+    QString queryString = "DELETE FROM user_clients WHERE user_id = ?";
+    QSqlQuery query(m_db);
+    query.prepare(queryString);
+    query.bindValue(0, user_id);
+
+    if ( !query.exec()) {
+        qDebug() << "deleteUsersClients: Could delete retrieve" << user_id << "last error=" << query.lastError();
+        query.finish();
+        return false;
+    }
+
+    int numRows = query.numRowsAffected();
+    query.finish();
+    return (numRows > 0);
+}
+
+QList<int>
+WickrIOClientDatabase::getUserClients(int user_id) {
+    QList<int> clients;
+    if (initialized) {
+        QString queryString = QString("SELECT client_id FROM user_clients WHERE user_id=?");
+        QSqlQuery query(m_db);
+        query.prepare(queryString);
+        query.bindValue(0, user_id);
+
+        if ( !query.exec()) {
+            qDebug() << "getUserClients: Could not retrieve user clients for " << user_id << query.lastError();
+        } else {
+            while (query.next()) {
+                int clientID = query.value(0).toInt();
+                clients.append(clientID);
+            }
+        }
+        query.finish();
+    }
+    return clients;
+}
+
 

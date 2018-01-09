@@ -4,18 +4,18 @@
 #include <QObject>
 #include <QString>
 #include "cmdbase.h"
-#include "wickrioclients.h"
+#include "wickrbotclients.h"
 
 class CmdProvisioning : public CmdBase
 {
     Q_OBJECT
 public:
-    explicit CmdProvisioning(WickrIOClients *client);
+    explicit CmdProvisioning(WickrBotClients *client);
 
     bool runCommands();
     void status();
 
-    WickrIOClients  *m_client;
+    WickrBotClients  *m_client;
 
     QString m_configFileName;
     QString m_configPassword;

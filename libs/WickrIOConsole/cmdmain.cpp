@@ -15,7 +15,8 @@ CmdMain::CmdMain() :
     m_cmdClient(&m_cmdOperation),
     m_cmdConsole(&m_cmdOperation),
     m_cmdAdvanced(&m_cmdOperation),
-    m_cmdServer(&m_cmdOperation)
+    m_cmdServer(&m_cmdOperation),
+    m_cmdUsers(&m_cmdOperation)
 {
 }
 
@@ -35,7 +36,7 @@ bool CmdMain::runCommands()
     }
 
     while (true) {
-        qDebug() << "CONSOLE:Enter group [client, advanced, server or console]:";
+        qDebug() << "CONSOLE:Enter group [client, advanced, server, console or users]:";
         QString line = input.readLine();
 
         line = line.trimmed();
@@ -54,6 +55,9 @@ bool CmdMain::runCommands()
             } else if (cmd == "console") {
                 if (!m_cmdConsole.runCommands())
                     break;
+            } else if (cmd == "users") {
+                if (!m_cmdUsers.runCommands())
+                    break;
             } else if (cmd == "quit") {
                 qDebug() << "CONSOLE:Good bye!";
                 break;
@@ -63,6 +67,7 @@ bool CmdMain::runCommands()
                 qDebug() << "CONSOLE:  advanced - to setup the advanced settings";
                 qDebug() << "CONSOLE:  server   - to setup the clients server settings";
                 qDebug() << "CONSOLE:  console  - to setup the console server settings";
+                qDebug() << "CONSOLE:  users    - to setup the mother bot users";
                 qDebug() << "CONSOLE:  quit     - to exit the program";
             } else {
                 qDebug() << "CONSOLE:" << cmd << "is not a known command!";

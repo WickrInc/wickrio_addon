@@ -34,7 +34,7 @@ class WickrIOEClientMain : public QThread
 
     friend class WickrIOConvoHdlr;
 public:
-    WickrIOEClientMain(WickrIOClients* client, const QString& invite);
+    WickrIOEClientMain(WickrBotClients* client, const QString& invite);
     ~WickrIOEClientMain();
 
     bool startTheClient();
@@ -46,7 +46,7 @@ public:
     bool loginSuccess() { return m_loginSuccess; }
 
 private:
-    WickrIOClients *m_client;
+    WickrBotClients *m_client;
     QString m_invite;
 
     WickrIOLoginHdlr m_loginHdlr;

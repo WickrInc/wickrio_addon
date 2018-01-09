@@ -30,8 +30,7 @@ public:
 private:
     bool                m_receiving;
     bool                m_processing;
-    WickrIOConsoleUser  m_consoleUser;
-
+    WickrIODBUser       m_user;
 
     // File Download definitions
     QMap<QString, WickrIORxDownloadFile *> m_activeDownloads;

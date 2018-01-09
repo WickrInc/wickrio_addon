@@ -405,16 +405,12 @@ void WickrIORxDetails::initCounts()
 
 void WickrIORxDetails::logCounts()
 {
-    if (m_messagesRecv > 0) {
-        m_operation->log_handler->log("Messages received", m_messagesRecv);
-        m_messagesRecv = 0;
-    }
-    if (m_messagesRecvFailed > 0) {
-        m_operation->log_handler->log("Messages received failed", m_messagesRecvFailed);
-        m_messagesRecvFailed = 0;
-    }
-    if (m_messagesRecvInvalid > 0) {
-        m_operation->log_handler->log("Messages received invalid", m_messagesRecvInvalid);
-        m_messagesRecvInvalid = 0;
-    }
+    int msgs = m_messagesRecv;            m_messagesRecv = 0;
+    int fails = m_messagesRecvFailed;     m_messagesRecvFailed = 0;
+    int invalids = m_messagesRecvInvalid; m_messagesRecvInvalid = 0;
+
+    QString statsMsg = QString("Rx Statistics:\n  Messages received %1\n  Messages failed %2\n  Messages invalid %3\n")
+            .arg(msgs).arg(fails).arg(invalids);
+    m_operation->log_handler->log(statsMsg);
+    m_operation->postEvent(statsMsg, false);
 }

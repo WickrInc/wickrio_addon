@@ -53,7 +53,7 @@ private:
 
     void updateServerInformation();
 
-    bool getClientSettings(WickrIOClients *client);
+    bool getClientSettings(WickrBotClients *client);
 
     bool eventFilter(QObject *object, QEvent *event);
 
@@ -72,7 +72,7 @@ private:
     WickrIOClientDatabase *m_ioDB;
 
     AddClientDialog *addClientDialog;
-    WickrIOClients *updateClient;
+    WickrBotClients *updateClient;
 
     AddConsoleUserDialog *addConsoleUserDialog;
     WickrIOConsoleUser updateConsoleUser;

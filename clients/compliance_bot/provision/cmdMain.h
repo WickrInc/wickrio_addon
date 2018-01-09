@@ -2,7 +2,7 @@
 #define CMDMAIN_H
 
 #include "cmdbase.h"
-#include "wickrioclients.h"
+#include "wickrbotclients.h"
 #include "wickriodatabase.h"
 #include "wickrbotipc.h"
 #include "wickrIOIPCService.h"
@@ -23,7 +23,7 @@ private:
     int                 m_argc;
     char                **m_argv;
 
-    QList<WickrIOClients *> m_clients;
+    QList<WickrBotClients *> m_clients;
     WickrBotIPC             m_txIPC;
     WickrIOIPCService       *m_rxIPC;
 

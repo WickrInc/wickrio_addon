@@ -51,9 +51,9 @@ private:
     bool pauseClient(WickrBotClients *client);
     bool startClient(WickrBotClients *client);
 
-    bool chkClientsNameExists(const QList<WickrIOClients *> &clients,const QString& name);
-    bool chkClientsUserExists(const QList<WickrIOClients *> &clients,const QString& name);
-    bool chkClientsInterfaceExists(const QList<WickrIOClients *> &clients,const QString& iface, int port);
+    bool chkClientsNameExists(const QList<WickrBotClients *> &clients,const QString& name);
+    bool chkClientsUserExists(const QList<WickrBotClients *> &clients,const QString& name);
+    bool chkClientsInterfaceExists(const QList<WickrBotClients *> &clients,const QString& iface, int port);
 
     bool addClientData(WickrBotClients *newClient);
 

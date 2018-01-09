@@ -298,7 +298,7 @@ CmdHandler::addClient(WickrIOConsoleUser *pCUser, stefanfrings::HttpRequest& req
         return;
     }
 
-    WickrIOClients client;
+    WickrBotClients client;
     client.name = QString(paramName);
     client.user = QString(paramUser);
     client.password = QString(paramPassword);
@@ -324,7 +324,7 @@ CmdHandler::addClient(WickrIOConsoleUser *pCUser, stefanfrings::HttpRequest& req
 
     // Get all of the clients so that we can verify names and such are not duplicated
     {
-        QList<WickrIOClients *> clients;
+        QList<WickrBotClients *> clients;
         clients = m_ioDB->getClients();
         bool failed = false;
 
@@ -340,7 +340,7 @@ CmdHandler::addClient(WickrIOConsoleUser *pCUser, stefanfrings::HttpRequest& req
         }
 
         // free the memory associated with the clients records, not needed now
-        for (WickrIOClients *client : clients) {
+        for (WickrBotClients *client : clients) {
             delete client;
         }
 
@@ -379,7 +379,7 @@ CmdHandler::addClient(WickrIOConsoleUser *pCUser, stefanfrings::HttpRequest& req
 void
 CmdHandler::deleteClient(WickrIOConsoleUser *pCUser, const QString& clientID, stefanfrings::HttpResponse& response)
 {
-    WickrIOClients *client = m_ioDB->getClientUsingName(clientID);
+    WickrBotClients *client = m_ioDB->getClientUsingName(clientID);
 
     // If the client does not exist then write appropriate response
     if (client == NULL) {
@@ -438,7 +438,7 @@ CmdHandler::getClients(WickrIOConsoleUser *pCUser, stefanfrings::HttpResponse& r
 #endif
 
     QJsonArray clientArrayValue;
-    QList<WickrIOClients *> clients;
+    QList<WickrBotClients *> clients;
 
     // Get the clients records.  If admin console user get all of the clients
     if (pCUser->isAdmin()) {
@@ -503,7 +503,7 @@ CmdHandler::getClients(WickrIOConsoleUser *pCUser, stefanfrings::HttpResponse& r
 void
 CmdHandler::getClient(WickrIOConsoleUser *pCUser, const QString& clientID, stefanfrings::HttpResponse& response)
 {
-    WickrIOClients * client = m_ioDB->getClientUsingName(clientID);
+    WickrBotClients * client = m_ioDB->getClientUsingName(clientID);
 
     // If the client does not exist then write appropriate response
     if (client == NULL) {
@@ -593,7 +593,7 @@ CmdHandler::updateClient(WickrIOConsoleUser *pCUser, const QString& clientID, st
     }
 
     // Get the client record
-    WickrIOClients * client = m_ioDB->getClientUsingName(clientID);
+    WickrBotClients * client = m_ioDB->getClientUsingName(clientID);
 
     // If the client does not exist then write appropriate response
     if (client == NULL) {
@@ -749,7 +749,7 @@ bool CmdHandler::sendClientCmd(int port, const QString& cmd)
  * @param name
  * @return
  */
-bool CmdHandler::chkClientsNameExists(const QList<WickrIOClients *> &clients, const QString& name)
+bool CmdHandler::chkClientsNameExists(const QList<WickrBotClients *> &clients, const QString& name)
 {
     for (WickrBotClients *client : clients) {
         if (client->name == name) {
@@ -766,7 +766,7 @@ bool CmdHandler::chkClientsNameExists(const QList<WickrIOClients *> &clients, co
  * @param name
  * @return
  */
-bool CmdHandler::chkClientsUserExists(const QList<WickrIOClients *> &clients,const QString& user)
+bool CmdHandler::chkClientsUserExists(const QList<WickrBotClients *> &clients,const QString& user)
 {
 #if 0
     for (WickrBotClients *client : clients) {
@@ -788,7 +788,7 @@ bool CmdHandler::chkClientsUserExists(const QList<WickrIOClients *> &clients,con
  * @param name
  * @return
  */
-bool CmdHandler::chkClientsInterfaceExists(const QList<WickrIOClients *> &clients,const QString& iface, int port)
+bool CmdHandler::chkClientsInterfaceExists(const QList<WickrBotClients *> &clients,const QString& iface, int port)
 {
     for (WickrBotClients *client : clients) {
         if (client->iface == iface && client->port == port) {

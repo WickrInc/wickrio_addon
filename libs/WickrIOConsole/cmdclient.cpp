@@ -136,7 +136,7 @@ void CmdClient::listClients()
     m_clients = m_operation->m_ioDB->getClients();
 
     int cnt=0;
-    for (WickrIOClients *client : m_clients) {
+    for (WickrBotClients *client : m_clients) {
         QString processName = WBIOServerCommon::getClientProcessName(client);
         QString clientState = WickrIOConsoleClientHandler::getActualProcessState(processName, m_operation->m_ioDB);
         WickrIOConsoleUser cUser;
@@ -169,7 +169,7 @@ void CmdClient::listClients()
  */
 bool CmdClient::chkClientsNameExists(const QString& name)
 {
-    for (WickrIOClients *client : m_clients) {
+    for (WickrBotClients *client : m_clients) {
         if (client->name == name) {
             qDebug() << "CONSOLE:The input name is NOT unique!";
             return true;
@@ -187,7 +187,7 @@ bool CmdClient::chkClientsNameExists(const QString& name)
 bool CmdClient::chkClientsUserExists(const QString& user)
 {
 #if 0
-    for (WickrIOClients *client : m_clients) {
+    for (WickrBotClients *client : m_clients) {
         if (client->user == user) {
             qDebug() << "CONSOLE:The input user name is NOT unique!";
             return true;
@@ -211,7 +211,7 @@ bool CmdClient::chkClientsInterfaceExists(const QString& iface, int port)
 {
     // TODO: Make sure not using the same port as the console server
 
-    for (WickrIOClients *client : m_clients) {
+    for (WickrBotClients *client : m_clients) {
         if (client->port == port && (client->iface == iface || client->iface == "localhost" || iface == "localhost" )) {
             qDebug() << "CONSOLE:The input interface and port are NOT unique!";
             return true;
@@ -220,7 +220,7 @@ bool CmdClient::chkClientsInterfaceExists(const QString& iface, int port)
     return false;
 }
 
-bool CmdClient::getClientValues(WickrIOClients *client)
+bool CmdClient::getClientValues(WickrBotClients *client)
 {
     bool quit = false;
     QString temp;
@@ -552,7 +552,7 @@ void CmdClient::slotCmdOutputRx()
  */
 void CmdClient::addClient()
 {
-    WickrIOClients *client = new WickrIOClients();
+    WickrBotClients *client = new WickrBotClients();
 
     while (true) {
         if (!getClientValues(client)) {
@@ -605,7 +605,7 @@ bool CmdClient::validateIndex(int clientIndex)
 void CmdClient::deleteClient(int clientIndex)
 {
     if (validateIndex(clientIndex)) {
-        WickrIOClients *client = m_clients.at(clientIndex);
+        WickrBotClients *client = m_clients.at(clientIndex);
 
         // Make sure the user wants to continue
         QString prompt = QString(tr("Do you really want to remove the client with the name %1")).arg(client->name);
@@ -656,7 +656,7 @@ void CmdClient::deleteClient(int clientIndex)
 void CmdClient::modifyClient(int clientIndex)
 {
     if (validateIndex(clientIndex)) {
-        WickrIOClients *client;
+        WickrBotClients *client;
         WickrBotProcessState state;
         client = m_clients.at(clientIndex);
 
@@ -739,7 +739,7 @@ bool CmdClient::sendClientCmd(int port, const QString& cmd)
 void CmdClient::pauseClient(int clientIndex)
 {
     if (validateIndex(clientIndex)) {
-        WickrIOClients *client = m_clients.at(clientIndex);
+        WickrBotClients *client = m_clients.at(clientIndex);
         WickrBotProcessState state;
         QString processName = WBIOServerCommon::getClientProcessName(client);
 
@@ -771,7 +771,7 @@ void CmdClient::pauseClient(int clientIndex)
 void CmdClient::startClient(int clientIndex)
 {
     if (validateIndex(clientIndex)) {
-        WickrIOClients *client = m_clients.at(clientIndex);
+        WickrBotClients *client = m_clients.at(clientIndex);
         WickrBotProcessState state;
         QString processName = WBIOServerCommon::getClientProcessName(client);
 

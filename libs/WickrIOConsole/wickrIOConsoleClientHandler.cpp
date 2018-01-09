@@ -13,16 +13,16 @@
 
 /**
  * @brief Client::addClient
- * This function will add a new client to the database. The input WickrIOClients class
+ * This function will add a new client to the database. The input WickrBotClients class
  * contains all of the necessary information to add the new client.  All of the necessary
  * database and settings files will be created. The new client will be created in the
  * paused state, so it should not be started until explicitly started.
- * @param newClient pointer to the WickrIOClients class for the new client
+ * @param newClient pointer to the WickrBotClients class for the new client
  * @return an error string is returned if an error occurs during processing. If no error then
  * the returned string is empty
  */
 QString
-WickrIOConsoleClientHandler::addClient(WickrIOClientDatabase *ioDB, WickrIOClients *newClient)
+WickrIOConsoleClientHandler::addClient(WickrIOClientDatabase *ioDB, WickrBotClients *newClient)
 {
     // If the db is open the proceed, otherwise return false
     if (! ioDB->isOpen()) {

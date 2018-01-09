@@ -15,6 +15,7 @@
 #include "cmdadvanced.h"
 #include "cmdconsole.h"
 #include "cmdserver.h"
+#include "cmdusers.h"
 
 class CmdMain : public CmdBase
 {
@@ -30,6 +31,7 @@ private:
     CmdConsole   m_cmdConsole;
     CmdAdvanced  m_cmdAdvanced;
     CmdServer    m_cmdServer;
+    CmdUsers     m_cmdUsers;
 };
 
 #endif // CMDMAIN_H

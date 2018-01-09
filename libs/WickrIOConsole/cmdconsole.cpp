@@ -590,7 +590,7 @@ void CmdConsole::modifyConsoleUser(int consoleUserIndex)
 bool CmdConsole::chkInterfaceExists(const QString& iface, int port)
 {
 #if 0
-    for (WickrIOClients *client : m_clients) {
+    for (WickrBotClients *client : m_clients) {
         if (client->iface == iface && client->port == port) {
             qDebug() << "CONSOLE:The input interface and port are NOT unique!";
             return true;

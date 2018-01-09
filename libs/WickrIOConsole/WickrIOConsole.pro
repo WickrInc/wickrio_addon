@@ -91,6 +91,7 @@ HEADERS += \
     cmdmain.h \
     cmdoperation.h \
     cmdserver.h \
+    cmdusers.h \
     consoleserver.h \
     webserver.h \
     wickrIOConsoleClientHandler.h
@@ -102,6 +103,7 @@ SOURCES += \
     cmdmain.cpp \
     cmdoperation.cpp \
     cmdserver.cpp \
+    cmdusers.cpp \
     consoleserver.cpp \
     webserver.cpp \
     wickrIOConsoleClientHandler.cpp
