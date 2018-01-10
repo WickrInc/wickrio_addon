@@ -66,7 +66,7 @@ public slots:
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 #define WICKRIO_AH_INVALID_ID           -1
-#define WICKRIO_AH_UPDATE_STATS_SECS    600
+#define WICKRIO_AH_UPDATE_STATS_SECS    3600
 #define WICKRIO_AH_UPDATE_PROCESS_SECS  1
 
 class WickrIOActionThread : public QObject
@@ -137,8 +137,6 @@ private:
         QString statsMsg = QString("Tx Statistics:\n  Messages sent %1\n  Messages failed %2\n")
                 .arg(msgs).arg(fails);
         m_operation->log_handler->log(statsMsg);
-        m_operation->postEvent(statsMsg, false);
-
     }
 
     void cleanUpDatabase();

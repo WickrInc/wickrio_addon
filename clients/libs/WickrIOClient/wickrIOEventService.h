@@ -64,7 +64,7 @@ public slots:
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 #define WICKRIO_AH_INVALID_ID           -1
-#define WICKRIO_AH_UPDATE_STATS_SECS    600
+#define WICKRIO_AH_UPDATE_STATS_SECS    3600
 #define WICKRIO_AH_UPDATE_PROCESS_SECS  1
 
 class WickrIOEventThread : public QObject

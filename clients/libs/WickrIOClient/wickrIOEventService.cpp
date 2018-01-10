@@ -177,7 +177,7 @@ void WickrIOEventThread::slotTimerExpire()
 void
 WickrIOEventThread::processEvents()
 {
-    QList<WickrIOConsoleUser *> users;
+    QList<WickrIODBUser *> users;
     QList<WickrBotClients *> clients;
     QList<WickrBotClientEvents *> events;
 
@@ -190,10 +190,10 @@ WickrIOEventThread::processEvents()
     events = db->getClientEvents(100);
 
     // Get all of the console users
-    users = db->getConsoleUsers();
+    users = db->getMotherUsers(m_operation->m_client->id);
 
     // Send the event to all users
-    for (WickrIOConsoleUser *user : users) {
+    for (WickrIODBUser *user : users) {
         // Make sure the user wants to receive events
         if (!user->rxEvents()) {
             continue;
@@ -203,7 +203,11 @@ WickrIOEventThread::processEvents()
         if (user->isAdmin()) {
             clients = db->getClients();
         } else {
-            clients = db->getConsoleClients(user->id);
+            QList<int> clientIDs = db->getUserClients(user->m_id);
+            for (int clientID : clientIDs) {
+                WickrBotClients *client = db->getClient(clientID);
+                clients.append(client);
+            }
         }
 
         while (clients.length() > 0) {
@@ -218,7 +222,7 @@ WickrIOEventThread::processEvents()
                     QDateTime dt = QDateTime::currentDateTime();
                     jsonHandler->m_runTime = dt;
                     jsonHandler->m_vgroupid = QString("");
-                    jsonHandler->m_userNames.append(user->user);
+                    jsonHandler->m_userNames.append(user->m_user);
                     jsonHandler->m_userIDs.clear();
                     jsonHandler->m_message = QString("%1: %2")
                                                 .arg(event->m_date.toString(DB_DATETIME_FORMAT))
@@ -228,7 +232,7 @@ WickrIOEventThread::processEvents()
                         qDebug() << "Failed to send event!";
                     } else {
                         // Delete this event
-                        db->deleteClientEvent(event->id);
+                        event->m_deleteFlag = true;
                     }
                 }
             }
@@ -237,6 +241,11 @@ WickrIOEventThread::processEvents()
 
     // Free the event memory
     for (WickrBotClientEvents *event : events) {
+        // Delete this event
+        if (event->m_deleteFlag && !event->m_isDeleted) {
+            db->deleteClientEvent(event->id);
+            event->m_isDeleted = true;
+        }
         delete event;
     }
 }

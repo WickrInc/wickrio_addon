@@ -18,7 +18,7 @@
 
 #include "common/wickrRuntime.h"
 
-#define WICKRBOT_UPDATE_STATS_SECS      600
+#define WICKRBOT_UPDATE_STATS_SECS      3600
 
 WickrIOReceiveThread::WickrIOReceiveThread() :
     WickrIOThread(),
@@ -54,7 +54,6 @@ void WickrIOReceiveThread::onTimerAction()
             QString statsMsg = QString("Statistics:\n  Messages received %1\n  Messages failed %2\n")
                     .arg(msgs).arg(fails);
             m_operation->log_handler->log(statsMsg);
-            m_operation->postEvent(statsMsg, false);
         }
     }
 }

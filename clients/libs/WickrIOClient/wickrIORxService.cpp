@@ -15,7 +15,7 @@
 
 #include "wickrIOClientRuntime.h"
 
-#define UPDATE_STATS_SECS      600
+#define UPDATE_STATS_SECS      3600
 
 WickrIORxService::WickrIORxService(OperationData *operation, WickrIORxDetails *details) : WickrIOServiceBase("WickrIORxThread"),
     m_lock(QReadWriteLock::Recursive),
@@ -412,5 +412,4 @@ void WickrIORxDetails::logCounts()
     QString statsMsg = QString("Rx Statistics:\n  Messages received %1\n  Messages failed %2\n  Messages invalid %3\n")
             .arg(msgs).arg(fails).arg(invalids);
     m_operation->log_handler->log(statsMsg);
-    m_operation->postEvent(statsMsg, false);
 }
