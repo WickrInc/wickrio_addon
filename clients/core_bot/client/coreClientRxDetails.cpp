@@ -172,9 +172,9 @@ bool CoreClientRxDetails::processMessage(WickrDBObject *item)
                 } else {
                     if (commands[0] == "help") {
                         if (m_user.isAdmin()) {
-                            jsonHandler->m_message = "client list\nclient [getoutput|getlog|start|pause] <name>\nservice [status|start|stop]\n";
+                            jsonHandler->m_message = "client list\nclient [getoutput|getlog|start|pause|statistics] <name>\nservice [status|start|stop]\n";
                         } else {
-                            jsonHandler->m_message = "client list\nclient [getoutput|getlog|start|pause] <name>\n";
+                            jsonHandler->m_message = "client list\nclient [getoutput|getlog|start|pause|statistics] <name>\n";
                         }
                     } else if (commands[0] == "client") {
                         if (commands.count() >= 2) {
@@ -226,6 +226,8 @@ bool CoreClientRxDetails::processMessage(WickrDBObject *item)
                                 } else {
                                     jsonHandler->m_message = "Invalid command: missing bot name";
                                 }
+                            } else if (commands[1] == "statistics") {
+                                jsonHandler->m_message = getStats(raw[2]);
                             } else {
                                 jsonHandler->m_message = "Invalid command";
                             }
@@ -480,4 +482,43 @@ CoreClientRxDetails::startClient(const QString& clientName)
     } else {
         return "Could not get the clients state!";
     }
+}
+
+QString
+CoreClientRxDetails::getStats(const QString& clientName)
+{
+    WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
+    if (db == NULL) {
+        return "Internal error";
+    }
+
+    WickrBotClients *client = db->getClientUsingName(clientName);
+    if (client == nullptr) {
+        return "Cannot find client!";
+    }
+
+    QString statValues;
+    statValues += QString("Pending Messages %1").arg(db->getClientsActionCount(client->id));
+
+    QList<WickrBotStatistics *> stats;
+    stats = db->getClientStatistics(client->id);
+    if (stats.length() > 0) {
+        for (WickrBotStatistics *stat : stats) {
+            switch (stat->statID) {
+            case DB_STATID_MSGS_TX:
+                statValues += QString("\nTx messages %1").arg(stat->statValue);
+                break;
+            case DB_STATID_MSGS_RX:
+                statValues += QString("\nRx messages %1").arg(stat->statValue);
+                break;
+            case DB_STATID_ERRORS_TX:
+                statValues += QString("\nTx errors %1").arg(stat->statValue);
+                break;
+            case DB_STATID_ERRORS_RX:
+                statValues += QString("\nRx errors %1").arg(stat->statValue);
+                break;
+            }
+        }
+    }
+    return statValues;
 }

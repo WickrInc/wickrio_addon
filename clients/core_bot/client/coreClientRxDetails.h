@@ -42,6 +42,7 @@ private:
     QString getClientFile(const QString& clientName, CoreClientFileType type);
     QString pauseClient(const QString& clientName);
     QString startClient(const QString& clientName);
+    QString getStats(const QString& clientName);
 
 };
 
