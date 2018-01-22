@@ -34,6 +34,9 @@ public:
     // Set the process state to set when shutting down
     void setShutdownProcState(int procState) { m_shutdownMode = procState; }
 
+    // Set the logged in state
+    void setLoggedIn(bool loggedIn) { emit signalLoggedIn(loggedIn); }
+
 private:
     // General purpose thread lock used for common threaded related queries/updates(hence ReadWrite).
     // NOTE: Other required service specific locks should be defined and managed by the specialized services.
@@ -52,6 +55,7 @@ signals:
     void signalRegisterService(WickrIOServiceBase *svc);
     void signalDeRegisterService(WickrIOServiceBase *svc);
     void signalServiceNotLoggedIn();
+    void signalLoggedIn(bool loggedIn);
 
 };
 
@@ -72,14 +76,14 @@ public:
     explicit WickrIOWatchdogThread(QThread *thread, WickrIOWatchdogService *svc);
     virtual ~WickrIOWatchdogThread();
 
-
 private:
     // General purpose thread lock used for common threaded related queries/updates(hence ReadWrite).
     // NOTE: Other required service specific locks should be defined and managed by the specialized services.
     mutable QReadWriteLock      m_lock;
 
     WickrIOWatchdogService  *m_parent;
-    bool                    m_running;
+    bool                    m_running = false;
+    bool                    m_loggedIn = false;
     OperationData           *m_operation;
 
     QTimer                  m_timer;
@@ -96,6 +100,8 @@ public slots:
 
     void slotRegisterService(WickrIOServiceBase *svc);
     void slotDeRegisterService(WickrIOServiceBase *svc);
+
+    void slotLoggedIn(bool loggedIn);
 
 };
 

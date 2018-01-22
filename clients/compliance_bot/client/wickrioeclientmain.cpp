@@ -218,6 +218,12 @@ void WickrIOEClientMain::slotDatabaseLoadDone(WickrDatabaseLoadContext *context)
 
     emit signalLoginSuccess();
 
+    // Tell the watchdog service that we are logged in
+    WickrIOWatchdogService *wdSvc = WickrIOClientRuntime::wdSvc();
+    if (wdSvc != nullptr) {
+        wdSvc->setLoggedIn(true);
+    }
+
     sendConsoleMsg(WBIO_IPCMSGS_STATE, "loggedin");
 
     // Update switchboard login credentials (login is performed only if not already logged in)

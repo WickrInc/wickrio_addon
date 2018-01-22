@@ -148,6 +148,16 @@ WickrIOClientMain::WickrIOClientMain(OperationData *operation, WickrIORxDetails 
     // Startup the event handler
     if (m_services & WICKRBOT_SERVICE_EVENTSVC)
         m_eventService = new WickrIOEventService(operation);
+
+    // Attached to the Watchdog service signal(s)
+    WickrIOWatchdogService *wdSvc = WickrIOClientRuntime::wdSvc();
+    if (wdSvc != nullptr) {
+        connect(wdSvc, &WickrIOWatchdogService::signalServiceNotLoggedIn,
+                this, &WickrIOClientMain::slotServiceNotLoggedIn,
+                Qt::QueuedConnection);
+    } else {
+        qDebug() << "WickrIOEClientMain(): Watchdog Service not initialized!";
+    }
 }
 
 
@@ -202,6 +212,12 @@ void WickrIOClientMain::slotDatabaseLoadDone(WickrDatabaseLoadContext *context)
     context->deleteLater();
 
     emit signalLoginSuccess();
+
+    // Tell the watchdog service that we are logged in
+    WickrIOWatchdogService *wdSvc = WickrIOClientRuntime::wdSvc();
+    if (wdSvc != nullptr) {
+        wdSvc->setLoggedIn(true);
+    }
 
     // Update switchboard login credentials (login is performed only if not already logged in)
     WickrCore::WickrRuntime::swbSvcLogin(WickrCore::WickrSession::getActiveSession()->getSwitchboardServer(),
@@ -371,6 +387,20 @@ void WickrIOClientMain::slotDoTimerWork()
     if (m_rxService != nullptr && !m_rxService->isHealthy()) {
         qDebug() << "Receive Service is NOT healthy!";
     }
+}
+
+/**
+ * @brief WickrIOClientRuntime::slotServiceNotLoggedIn
+ * This slot is called when a thread has been found to be unlogged
+ * in for longer than a good period, so we will stop the client to
+ * refresh things.
+ */
+void
+WickrIOClientMain::slotServiceNotLoggedIn()
+{
+    m_operation->postEvent("Thread has not been able to log in for extended period of time.", false);
+
+    stopAndExit(PROCSTATE_DOWN);
 }
 
 /**

@@ -105,7 +105,6 @@ void WickrIOWatchdogService::deRegisterService(WickrIOServiceBase *svc)
 WickrIOWatchdogThread::WickrIOWatchdogThread(QThread *thread, WickrIOWatchdogService *wdSvc) :
     m_lock(QReadWriteLock::Recursive),
     m_parent(wdSvc),
-    m_running(false),
     m_operation(nullptr)
 {
     thread->setObjectName("WickrIOWatchdogThread");
@@ -127,6 +126,7 @@ WickrIOWatchdogThread::WickrIOWatchdogThread(QThread *thread, WickrIOWatchdogSer
     // Catch the register and deregister signals
     connect(wdSvc, &WickrIOWatchdogService::signalRegisterService, this, &WickrIOWatchdogThread::slotRegisterService);
     connect(wdSvc, &WickrIOWatchdogService::signalDeRegisterService, this, &WickrIOWatchdogThread::slotDeRegisterService);
+    connect(wdSvc, &WickrIOWatchdogService::signalLoggedIn, this, &WickrIOWatchdogThread::slotLoggedIn);
 
     m_running = true;
 }
@@ -150,12 +150,15 @@ WickrIOWatchdogThread::slotTimerExpire()
     if (m_running) {
         doStatusUpdate(PROCSTATE_RUNNING, true);
 
-        // Check the Switchboard thread state
-        WickrSwitchboardService* swbSvc = WickrCore::WickrRuntime::swbSvc();
-        if (swbSvc != nullptr) {
-            if (swbSvc->downSeconds() > 60) {
-                qDebug() << "The SwitchBoard system is down for more than 60 seconds";
-                emit signalServiceNotLoggedIn();
+        // Only do these checks if we are logged in
+        if (m_loggedIn) {
+            // Check the Switchboard thread state
+            WickrSwitchboardService* swbSvc = WickrCore::WickrRuntime::swbSvc();
+            if (swbSvc != nullptr) {
+                if (swbSvc->downSeconds() > 60) {
+                    qDebug() << "The SwitchBoard system is down for more than 60 seconds";
+                    emit signalServiceNotLoggedIn();
+                }
             }
         }
     }
@@ -196,4 +199,9 @@ void WickrIOWatchdogThread::slotRegisterService(WickrIOServiceBase *svc)
 void WickrIOWatchdogThread::slotDeRegisterService(WickrIOServiceBase *svc)
 {
 
+}
+
+void WickrIOWatchdogThread::slotLoggedIn(bool loggedIn)
+{
+    m_loggedIn = loggedIn;
 }

@@ -111,6 +111,8 @@ private slots:
     void slotMessageDownloadStatusStart(int msgsToDownload);
     void slotMessageDownloadStatusUpdate(int msgsDownloaded);
 
+    void slotServiceNotLoggedIn();  // Received when Switchboard cannot login for period of time
+
 signals:
     void signalStarted();
     void signalExit();
