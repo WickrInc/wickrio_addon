@@ -162,7 +162,7 @@ void WickrIOEClientMain::processStarted()
     if (m_client->onPrem) {
         WickrIOClientRuntime::provHdlrBeginOnPrem(m_client->user, m_client->password, m_invite);
     } else {
-        WickrIOClientRuntime::provHdlrBeginCloud(m_client->user, m_invite);
+        WickrIOClientRuntime::provHdlrBeginCloud(m_client->user, m_client->password, m_invite);
     }
 }
 

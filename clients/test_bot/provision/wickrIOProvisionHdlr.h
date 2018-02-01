@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QTimer>
 #include "common/wickrNetworkUtil.h"
-#include "common/wickrRequests.h"
+#include "requests/wickrRequests.h"
 
 class WickrIOProvisionHdlr : public QObject
 {
@@ -281,7 +281,7 @@ public:
     void startNextStep(WickrProvisionUserContext *ctx);
 
     Q_INVOKABLE void onPremBegin(const QString username, const QString password, const QString regToken);
-    Q_INVOKABLE void cloudBegin(const QString &email, const QString &inviteCode);
+    Q_INVOKABLE void cloudBegin(const QString &email, const QString password, const QString &inviteCode);
     Q_INVOKABLE void forgotPasswordBegin(const QString &email);
 
     Q_INVOKABLE void sendPhoneVerification();

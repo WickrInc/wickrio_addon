@@ -20,6 +20,7 @@
 #include "wickrIOServerCommon.h"
 #include "wickrIOConsoleClientHandler.h"
 #include "consoleserver.h"
+#include "wickrIOCmdState.h"
 
 CoreClientRxDetails::CoreClientRxDetails(OperationData *operation) : WickrIORxDetails(operation)
 {
@@ -112,24 +113,26 @@ bool CoreClientRxDetails::processMessage(WickrDBObject *item)
             QString txt;
 
             WickrCore::WickrUser *sender = msg->getSenderUser();
-            QString userid;
             if (sender != nullptr) {
-                userid = sender->getUserID();
+                m_userid = sender->getUserID();
             } else {
 
             }
 
             // If we do not know the user id or there is no console user then don't respond
-            if (userid.isEmpty() || !db->getUser(userid, m_operation->m_client->id, &m_user)) {
-                if (userid.isEmpty()) {
+            if (m_userid.isEmpty() || !db->getUser(m_userid, m_operation->m_client->id, &m_user)) {
+                if (m_userid.isEmpty()) {
                     qDebug() << "Sender's userid NOT found!";
                 } else {
-                    qDebug() << "No user records found for " << userid;
+                    qDebug() << "No user records found for " << m_userid;
                 }
                 return true;
             } else {
-                qDebug() << "Sender's userid=" << userid;
+                qDebug() << "Sender's userid=" << m_userid;
             }
+
+            // See if there is a command state for this user
+            WickrIOCmdState *cmdState = getCmdState(m_userid);
 
 
             WickrMsgClass mclass = msg->getMsgClass();
@@ -164,17 +167,35 @@ bool CoreClientRxDetails::processMessage(WickrDBObject *item)
 
                 // TODO: Get client security level
 
-                QStringList commands = txt.toLower().split(" ");
-                QStringList raw = txt.split(" ");
+                QStringList commands;
+                QStringList raw;
+
+                if (cmdState != nullptr) {
+                    commands = cmdState->originalCommand().toLower().split(" ");
+                    raw = cmdState->originalCommand().split(" ");
+                } else {
+                    commands = txt.toLower().split(" ");
+                    raw = txt.split(" ");
+                }
 
                 if (commands.count() == 0) {
                     qDebug() << "Got command with 0 arguments";
                 } else {
                     if (commands[0] == "help") {
                         if (m_user.isAdmin()) {
-                            jsonHandler->m_message = "client list\nclient [getoutput|getlog|start|pause|statistics] <name>\nservice [status|start|stop]\n";
+                            jsonHandler->m_message = "client list\nclient [getoutput|getlog|start|pause|statistics] <name>\nservice [status|start|stop]\nintegrations list\n";
                         } else {
-                            jsonHandler->m_message = "client list\nclient [getoutput|getlog|start|pause|statistics] <name>\n";
+                            jsonHandler->m_message = "client list\nclient [getoutput|getlog|start|pause|statistics] <name>\nintegrations list\n";
+                        }
+                    } else if (commands[0] == "integrations") {
+                        if (commands.count() >= 2) {
+                            if (commands[1] == "list") {
+                                jsonHandler->m_message = getIntegrationsList();
+                            } else {
+                                jsonHandler->m_message = "Invalid command: missing invalid options";
+                            }
+                        } else {
+                            jsonHandler->m_message = "Invalid command: missing integrations option";
                         }
                     } else if (commands[0] == "client") {
                         if (commands.count() >= 2) {
@@ -254,6 +275,18 @@ bool CoreClientRxDetails::processMessage(WickrDBObject *item)
                         } else {
                             jsonHandler->m_message = "Invalid command";
                         }
+                    } else if (commands[0] == "send") {
+                        if (commands.count() >= 2) {
+                            if (commands[1] == "file") {
+                                jsonHandler->m_message = sendFile(txt, cmdState);
+                            } else if (commands[1] == "message") {
+                                jsonHandler->m_message = sendMessage(txt, cmdState);
+                            } else {
+                                jsonHandler->m_message = "Invalid send command";
+                            }
+                        } else {
+                            jsonHandler->m_message = "Invalid command";
+                        }
                     } else {
                         jsonHandler->m_message = "Invalid command";
                     }
@@ -262,6 +295,12 @@ bool CoreClientRxDetails::processMessage(WickrDBObject *item)
                 jsonHandler->m_action = "sendmessage";
                 if (!jsonHandler->postEntry4SendMessage()) {
                     qDebug() << "Failed to send message!";
+                }
+
+                // If the command is done then free the associated memory
+                if (cmdState && cmdState->done()) {
+                    deleteCmdState(m_userid);
+                    delete cmdState;
                 }
             }
         }
@@ -521,4 +560,185 @@ CoreClientRxDetails::getStats(const QString& clientName)
         }
     }
     return statValues;
+}
+
+QString
+CoreClientRxDetails::getIntegrationsList()
+{
+    QStringList integrationList;
+    QString fileName = QString("%1/integrations/integrations.json").arg(WBIO_DEFAULT_DBLOCATION);
+    QFile integrations(fileName);
+    if( integrations.exists() ) {
+        integrations.open( QFile::ReadOnly );
+        QByteArray integrationJson = integrations.readAll();
+        integrations.close();
+
+        QJsonDocument d;
+        d = d.fromJson(integrationJson);
+        QJsonObject jsonObject = d.object();
+
+        if (jsonObject.contains("integrations")) {
+            QJsonArray integrationsArray = jsonObject.value("integrations").toArray();
+            for (int i=0; i<integrationsArray.size(); i++) {
+                QJsonValue arrayValue;
+                arrayValue = integrationsArray[i];
+
+                if (arrayValue.isObject()) {
+                    // Get the title for this contact entry
+                    QJsonObject arrayObject = arrayValue.toObject();
+
+                    if (arrayObject.contains("name")) {
+                        QJsonValue nameObj = arrayObject["name"];
+                        QString name = nameObj.toString();
+                        QJsonValue existsObj = arrayObject["exists"];
+                        QString exists = existsObj.toString();
+                        if (exists.toLower() == "true") {
+                            integrationList.append(name);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    QString integrationString = integrationList.join("\n");
+    QString retString;
+    if (integrationString.isEmpty()) {
+        retString = "There are no integrations currently available!";
+    } else {
+        retString = QString("Available integrations:\n%1").arg(integrationString);
+    }
+    return retString;
+}
+
+
+/**
+ * @brief CoreClientRxDetails::sendFile
+ * Perform the send file command
+ * @param txt
+ * @param cmdState
+ * @return
+ */
+QString CoreClientRxDetails::sendFile(const QString& txt, WickrIOCmdState *cmdState)
+{
+    WickrIOCmdState *cs;
+
+    if (cmdState) {
+        cs = cmdState;
+        switch (cs->command()) {
+        case 0:
+            cs->setCommand(1);
+            cs->setOutput("to who?");
+            break;
+        case 1:
+            cs->setCommand(2);
+            cs->setOutput("when?");
+            break;
+        case 2:
+            cs->setCommand(3);
+            cs->setOutput("sending");
+            cs->setDone();
+            break;
+        default:
+            cs->setCommand(100);
+            cs->setOutput("Invalid command!");
+            cs->setDone();
+        }
+    } else {
+        WickrIOCmdState *cs = new WickrIOCmdState(m_userid, txt);
+        cs->setCommand(0);
+        cs->setOutput("post the file");
+        addCmdState(m_userid, cs);
+    }
+
+    return cs->output();
+}
+
+/**
+ * @brief CoreClientRxDetails::sendMessage
+ * Perofrm the send message command
+ * @param txt
+ * @param cmdState
+ * @return
+ */
+QString CoreClientRxDetails::sendMessage(const QString& txt, WickrIOCmdState *cmdState)
+{
+    WickrIOCmdState *cs;
+
+    if (cmdState) {
+        cs = cmdState;
+        switch (cs->command()) {
+        case 0:
+            cs->setCommand(1);
+            cs->setOutput("to who?");
+            break;
+        case 1:
+            cs->setCommand(2);
+            cs->setOutput("when?");
+            break;
+        case 2:
+            cs->setCommand(3);
+            cs->setOutput("sending");
+            cs->setDone();
+            break;
+        default:
+            cs->setCommand(100);
+            cs->setOutput("Invalid command!");
+            cs->setDone();
+        }
+    } else {
+        cs = new WickrIOCmdState(m_userid, txt);
+        cs->setCommand(0);
+        cs->setOutput("Enter message to send:");
+        addCmdState(m_userid, cs);
+    }
+
+    return cs->output();
+}
+
+
+
+/**
+ * @brief CoreClientRxDetails::getCmdState
+ * Get the current command state record for the input user id.
+ * @param userid
+ * @return
+ */
+WickrIOCmdState *CoreClientRxDetails::getCmdState(const QString& userid)
+{
+    if (m_cmdState.contains(userid)) {
+        return m_cmdState[userid];
+    }
+    return nullptr;
+}
+
+/**
+ * @brief CoreClientRxDetails::addCmdState
+ * Put the input command state record in the command state table.  If there is an
+ * existing entry it will be removed and the new one inserted.
+ * @param userid
+ * @param state
+ * @return
+ */
+bool CoreClientRxDetails::addCmdState(const QString& userid, WickrIOCmdState *state)
+{
+    if (m_cmdState.contains(userid)) {
+        m_cmdState.remove(userid);
+    }
+    m_cmdState.insert(userid, state);
+    return true;
+}
+
+/**
+ * @brief CoreClientRxDetails::deleteCmdState
+ * Remove a command state value for the input user
+ * @param userid
+ * @return
+ */
+bool CoreClientRxDetails::deleteCmdState(const QString& userid)
+{
+    if (m_cmdState.contains(userid)) {
+        m_cmdState.remove(userid);
+    }
+    return true;
 }

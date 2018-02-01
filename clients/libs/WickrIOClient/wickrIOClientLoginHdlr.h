@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QString>
 
-#include "common/wickrRequests.h"
+#include "requests/wickrRequests.h"
 #include "session/wickrPreRegistrationIface.h"
 
 #include "operationdata.h"

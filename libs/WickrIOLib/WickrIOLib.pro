@@ -85,6 +85,7 @@ DEPENDPATH += $$PWD
 HEADERS += \
     wickrIOAppSettings.h \
     wickrIOBootstrap.h \
+    wickrIOCmdState.h \
     wickrIOCommon.h \
     wickrIOIPCService.h \
     wickrIOParsers.h \
@@ -112,6 +113,7 @@ HEADERS += \
 SOURCES += \
     wickrIOAppSettings.cpp \
     wickrIOBootstrap.cpp \
+    wickrIOCmdState.cpp \
     wickrIOCommon.cpp \
     wickrIOIPCService.cpp \
     wickrIOServerCommon.cpp \

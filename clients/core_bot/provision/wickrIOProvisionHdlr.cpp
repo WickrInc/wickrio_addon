@@ -1,5 +1,5 @@
 #include "common/wickrRuntime.h"
-#include "common/wickrRequests.h"
+#include "requests/wickrRequests.h"
 #include "wickrIOProvisionHdlr.h"
 #include "Wickr/WickrProduct.h"
 
@@ -99,7 +99,7 @@ void WickrIOProvisionHdlr::startNextStep(WickrProvisionUserContext *ctx)
                 registerWithPassword(m_password);
             }
         } else if (m_mode == CloudMode) {
-            switchToPage(Page::enterPassword);
+            registerWithPassword(m_password);
         } else if (m_mode == ForgotPasswordMode) {
             switchToPage(Page::enterPassword);
         }
@@ -146,10 +146,10 @@ void WickrIOProvisionHdlr::onPremBegin(const QString username, const QString pas
     internalBegin(OnPremMode, QString(), QString(), username.trimmed(), password.trimmed(), regToken.trimmed());
 }
 
-void WickrIOProvisionHdlr::cloudBegin(const QString &email, const QString &inviteCode)
+void WickrIOProvisionHdlr::cloudBegin(const QString &email, const QString password, const QString &inviteCode)
 {
-    if (!email.isEmpty() && !inviteCode.isEmpty()) {
-        internalBegin(CloudMode, email.trimmed(), inviteCode.trimmed(), QString(), QString(), QString());
+    if (!email.isEmpty()) {
+        internalBegin(CloudMode, email.trimmed(), inviteCode.trimmed(), QString(), password.trimmed(), QString());
     }
 }
 
@@ -174,13 +174,14 @@ bool WickrIOProvisionHdlr::provisionBotUser(Mode mode)
         map.insert(WickrProvisionUserContext::USER_USERNAME, m_username);
         map.insert(WickrProvisionUserContext::USER_REGTOKEN, m_regToken);
     } else {
-        if (m_invitecode.isEmpty() || m_email.isEmpty()) {
+        if (m_email.isEmpty()) {
             return false;
         }
         map.insert(WickrProvisionUserContext::USER_STEP, 1);
         map.insert(WickrProvisionUserContext::USER_PRODUCT, wickrProductGetProductType());
         map.insert(WickrProvisionUserContext::USER_EMAIL, m_email);
-        map.insert(WickrProvisionUserContext::USER_ICODE, m_invitecode);
+        if (!m_invitecode.isEmpty())
+            map.insert(WickrProvisionUserContext::USER_ICODE, m_invitecode);
     }
 
     WickrProvisionUserContext *provUserSvc = new WickrProvisionUserContext(map);
@@ -236,7 +237,8 @@ void WickrIOProvisionHdlr::internalBegin(Mode mode, const QString &email, const 
 
     emit emailChanged();
     emit usernameChanged();
-    emit invitecodeChanged();
+    if (!inviteCode.isEmpty())
+        emit invitecodeChanged();
     emit regTokenChanged();
     emit passwordChanged();
 

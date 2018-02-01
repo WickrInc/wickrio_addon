@@ -291,27 +291,15 @@ WickrBotDatabase::insertAction(const QString &json, QDateTime runtime, int clien
     int id = getNextID(DB_ACTION_TABLE);
 
     QSqlQuery query(m_db);
-#if 0
-    QString queryString = QString("INSERT INTO action_cache (id, json, created, runtime, attempts, client_id) VALUES (%1, '%2', '%3', '%4', %5, %6)")
-            .arg(id)
-            .arg(json)
-            .arg(createTime)
-            .arg(runtime.toString(DB_DATETIME_FORMAT))
-            .arg(0)
-            .arg(clientID);
-    if (!query.exec(queryString)) {
-#else
-                query.prepare("INSERT INTO action_cache (id, json, created, runtime, attempts, client_id) "
-                              "VALUES (:id, :json, :created, :runtime, :attempts, :client_id)");
-                query.bindValue(":id", id);
-                query.bindValue(":json", json);
-                query.bindValue(":created", createTime);
-                query.bindValue(":runtime", runtime.toString(DB_DATETIME_FORMAT));
-                query.bindValue(":attempts", 0);
-                query.bindValue(":client_id", clientID);
-        if (!query.exec()) {
-#endif
-
+    query.prepare("INSERT INTO action_cache (id, json, created, runtime, attempts, client_id) "
+                  "VALUES (:id, :json, :created, :runtime, :attempts, :client_id)");
+    query.bindValue(":id", id);
+    query.bindValue(":json", json);
+    query.bindValue(":created", createTime);
+    query.bindValue(":runtime", runtime.toString(DB_DATETIME_FORMAT));
+    query.bindValue(":attempts", 0);
+    query.bindValue(":client_id", clientID);
+    if (!query.exec()) {
         QSqlError error = query.lastError();
         qDebug() << "insertAction: SQL error" << error;
         query.finish();
