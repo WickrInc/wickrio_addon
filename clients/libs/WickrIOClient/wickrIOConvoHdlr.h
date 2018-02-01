@@ -6,7 +6,7 @@
 #include <QCoreApplication>
 
 #include "messaging/wickrConvo.h"
-#include "common/wickrRequests.h"
+#include "requests/wickrRequests.h"
 
 class WickrIOConvoHdlr : public QObject {
     Q_OBJECT

@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
     QString appname = WBIO_PROVISION_TARGET;
     QString orgname = WBIO_ORGANIZATION;
 
-    wickrProductSetProductType(BOT_PRODUCT_TYPE);
+    wickrProductSetProductType(PRODUCT_TYPE_BOT);
     WickrURLs::setDefaultBaseURLs(ClientConfigurationInfo::DefaultBaseURL,
                                   ClientConfigurationInfo::DefaultDirSearchBaseURL);
 
@@ -149,15 +149,18 @@ int main(int argc, char *argv[])
 
     client.binary = WBIO_BOT_TARGET;
 
-    // Load the bootstrap file
-    QString bootstrapString = WickrIOBootstrap::readFile(provisioningInput.m_configFileName, provisioningInput.m_configPassword);
-    if (bootstrapString == nullptr) {
-        qDebug() << "CONSOLE:Cannot read the bootstrap file!";
-        exit(1);
-    }
+    // If this is on prem then get the configuration file
+    if (client.onPrem) {
+        // Load the bootstrap file
+        QString bootstrapString = WickrIOBootstrap::readFile(provisioningInput.m_configFileName, provisioningInput.m_configPassword);
+        if (bootstrapString == nullptr) {
+            qDebug() << "CONSOLE:Cannot read the bootstrap file!";
+            exit(1);
+        }
 
-    // Will need to save the bootstrap file once we get the real password
-    WickrIOEClientMain::loadBootstrapString(bootstrapString);
+        // Will need to save the bootstrap file once we get the real password
+        WickrIOEClientMain::loadBootstrapString(bootstrapString);
+    }
 
     if (clientDbPath.isEmpty()) {
         clientDbPath = QString("%1/clients/%2/client").arg(WBIO_DEFAULT_DBLOCATION).arg(client.name);
@@ -208,7 +211,7 @@ int main(int argc, char *argv[])
 
     // Wickr Runtime Environment (all applications include this line)
     WickrCore::WickrRuntime::init(argc, argv,
-                                  BOT_PRODUCT_TYPE,
+                                  PRODUCT_TYPE_BOT,
                                   ClientVersionInfo::getOrgName(),
                                   appname,
                                   ClientConfigurationInfo::DefaultBaseURL,
@@ -223,6 +226,7 @@ int main(int argc, char *argv[])
 
     QString logname = QString(WBIO_CLIENT_LOGFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client.name);
     QString attachDir = QString(WBIO_CLIENT_ATTACHDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client.name);
+    QString outputFile = QString(WBIO_CLIENT_OUTFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client.name);
 
     // save setup information to the settings file
     QSettings * settings = new QSettings(wbConfigFile, QSettings::NativeFormat, app);
@@ -239,6 +243,7 @@ int main(int argc, char *argv[])
 
     settings->beginGroup(WBSETTINGS_LOGGING_HEADER);
     settings->setValue(WBSETTINGS_LOGGING_FILENAME, logname);
+    settings->setValue(WBSETTINGS_LOGGING_OUTPUT_FILENAME, outputFile);
     settings->endGroup();
 
 #if 0
@@ -280,7 +285,7 @@ int main(int argc, char *argv[])
 
         WICKRBOT = new WickrIOEClientMain(&client, networkToken);
     } else {
-        WICKRBOT = new WickrIOEClientMain(&client, provisioningInput.m_invitation);
+        WICKRBOT = new WickrIOEClientMain(&client, QString());
     }
 
     /*

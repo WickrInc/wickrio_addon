@@ -1,5 +1,5 @@
 #include "common/wickrRuntime.h"
-#include "common/wickrRequests.h"
+#include "requests/wickrRequests.h"
 #include "wickrIOProvisionHdlr.h"
 #include "Wickr/WickrProduct.h"
 
@@ -146,7 +146,7 @@ void WickrIOProvisionHdlr::onPremBegin(const QString username, const QString pas
     internalBegin(OnPremMode, QString(), QString(), username.trimmed(), password.trimmed(), regToken.trimmed());
 }
 
-void WickrIOProvisionHdlr::cloudBegin(const QString &email, const QString &inviteCode)
+void WickrIOProvisionHdlr::cloudBegin(const QString &email, const QString password, const QString &inviteCode)
 {
     if (!email.isEmpty() && !inviteCode.isEmpty()) {
         internalBegin(CloudMode, email.trimmed(), inviteCode.trimmed(), QString(), QString(), QString());

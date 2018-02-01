@@ -8,6 +8,7 @@
 #include "wickrIORxService.h"
 #include "operationdata.h"
 #include "wickriodatabase.h"
+#include "wickrIOCmdState.h"
 
 #include "services/wickrMessageService.h"
 #include "services/wickrSwitchboardService.h"
@@ -31,6 +32,10 @@ private:
     bool                m_receiving;
     bool                m_processing;
     WickrIODBUser       m_user;
+    QString             m_userid;
+
+    // List of command state values
+    QMap<QString, WickrIOCmdState *>    m_cmdState;
 
     // File Download definitions
     QMap<QString, WickrIORxDownloadFile *> m_activeDownloads;
@@ -43,6 +48,16 @@ private:
     QString pauseClient(const QString& clientName);
     QString startClient(const QString& clientName);
     QString getStats(const QString& clientName);
+
+    QString sendFile(const QString& txt, WickrIOCmdState *cmdState);
+    QString sendMessage(const QString& txt, WickrIOCmdState *cmdState);
+
+    QString getIntegrationsList();
+
+
+    WickrIOCmdState *getCmdState(const QString& userid);
+    bool addCmdState(const QString& userid, WickrIOCmdState *state);
+    bool deleteCmdState(const QString& userid);
 
 };
 
