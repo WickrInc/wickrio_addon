@@ -21,10 +21,6 @@ build_cloud_alpha:
     - linux
     - alpha
     - cloud
-  artifacts:
-    expire_in: 1 week
-    paths:
-      - autobuild-output/wickrio_cloud_alpha/*.zip
 
 build_cloud_beta:
   stage: build
@@ -36,10 +32,6 @@ build_cloud_beta:
     - linux
     - beta
     - cloud
-  artifacts:
-    expire_in: 1 week
-    paths:
-      - autobuild-output/wickrio_cloud_beta/*.zip
 
 build_cloud_release:
   stage: build
