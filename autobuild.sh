@@ -191,7 +191,7 @@ build_number=`cat $abs/BUILD_NUMBER`
 $abs/services/installer/linux/scripts/deploy64 $binary_dir $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$deploy"
 
 echo "going to create Qt library package"
-$abs/platforms/linux/debian/wickrqt "$deploy"
+$abs/platforms/linux/debian/wickrqt/deploy64 "$deploy"
 
 (cd $deploy ; zip -r "$output/bots-${version}.zip" *.deb *.sha256)
 
