@@ -9,6 +9,7 @@
 #include "operationdata.h"
 #include "wickriodatabase.h"
 #include "wickrIOCmdState.h"
+#include "wickrIOSendMessageState.h"
 
 #include "services/wickrMessageService.h"
 #include "services/wickrSwitchboardService.h"
@@ -59,6 +60,11 @@ private:
     bool addCmdState(const QString& userid, WickrIOCmdState *state);
     bool deleteCmdState(const QString& userid);
 
+    bool updateAndValidateMembers(const QStringList& memberslist, QString& errorString);
+    bool postMessage(WickrIOSendMessageState *sendState);
+
+signals:
+    void signalMemberSearchDone();
 };
 
 #endif // CORECLIENTRXDETAILS_H

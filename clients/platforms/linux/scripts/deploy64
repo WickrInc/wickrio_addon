@@ -51,10 +51,12 @@ if [ "$release_flag" = "true" ]; then
 	bldtype=""
 	BldType=""
 	version="${maj}.${min}.${pat}-${bld}"
+	svcBldType=""
 else
 	bldtype="-${build_extension}"
 	BldType=$install_extension
 	version="${maj}.${min}.${pat}-${bld}~${build_extension}"
+	svcBldType="Debug"
 fi
 
 
@@ -77,7 +79,7 @@ plugins=$prefix/usr/lib/wickrio${bldtype}/plugins
 svcinitdir=$prefix/etc/init.d
 systemdlibdir=$prefix/lib/systemd/system
 
-optdir=$prefix/opt/WickrIO$BldType
+optdir=$prefix/opt/WickrIO$svcBldType
 scriptsdir=$optdir/scripts
 imagedir=$optdir/attachments/image
 

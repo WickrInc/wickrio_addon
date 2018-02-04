@@ -20,7 +20,7 @@
 #include "wickrIOServerCommon.h"
 #include "wickrIOConsoleClientHandler.h"
 #include "consoleserver.h"
-#include "wickrIOCmdState.h"
+#include "wickrIOSendMessageState.h"
 
 CoreClientRxDetails::CoreClientRxDetails(OperationData *operation) : WickrIORxDetails(operation)
 {
@@ -621,10 +621,15 @@ CoreClientRxDetails::getIntegrationsList()
  */
 QString CoreClientRxDetails::sendFile(const QString& txt, WickrIOCmdState *cmdState)
 {
-    WickrIOCmdState *cs;
+    WickrIOSendMessageState *cs;
 
     if (cmdState) {
-        cs = cmdState;
+        cs = static_cast<WickrIOSendMessageState *>(cmdState);
+        if (cs == nullptr) {
+            cmdState->setDone();
+            return "Internal failure!";
+        }
+
         switch (cs->command()) {
         case 0:
             cs->setCommand(1);
@@ -632,10 +637,21 @@ QString CoreClientRxDetails::sendFile(const QString& txt, WickrIOCmdState *cmdSt
             break;
         case 1:
             cs->setCommand(2);
-            cs->setOutput("when?");
+            cs->setOutput("Enter delay in minutes:");
             break;
         case 2:
+        {
+            // Process the runtime response
+            QDateTime dt = QDateTime::currentDateTime();
+            qint64 secs2add = txt.toInt(0) * 60;
+
+            cs->m_runTime = dt.addSecs(secs2add);
             cs->setCommand(3);
+            cs->setOutput("enter a bor value:");
+            break;
+        }
+        case 3:
+            cs->setCommand(4);
             cs->setOutput("sending");
             cs->setDone();
             break;
@@ -645,7 +661,7 @@ QString CoreClientRxDetails::sendFile(const QString& txt, WickrIOCmdState *cmdSt
             cs->setDone();
         }
     } else {
-        WickrIOCmdState *cs = new WickrIOCmdState(m_userid, txt);
+        cs = new WickrIOSendMessageState(m_userid, txt);
         cs->setCommand(0);
         cs->setOutput("post the file");
         addCmdState(m_userid, cs);
@@ -663,31 +679,78 @@ QString CoreClientRxDetails::sendFile(const QString& txt, WickrIOCmdState *cmdSt
  */
 QString CoreClientRxDetails::sendMessage(const QString& txt, WickrIOCmdState *cmdState)
 {
-    WickrIOCmdState *cs;
+    WickrIOSendMessageState *cs;
+
+    if (txt.toLower() == "quit") {
+        if (cmdState) {
+            cmdState->setDone();
+        }
+        return "Quitting message send!";
+    }
 
     if (cmdState) {
-        cs = cmdState;
+        cs = static_cast<WickrIOSendMessageState *>(cmdState);
+        if (cs == nullptr) {
+            cmdState->setDone();
+            return "Internal failure!";
+        }
+
         switch (cs->command()) {
         case 0:
+            cs->m_message = txt;
             cs->setCommand(1);
             cs->setOutput("to who?");
             break;
         case 1:
-            cs->setCommand(2);
-            cs->setOutput("when?");
+        {
+            QRegExp separator("(,| )");
+            cs->m_users = txt.split(separator);
+
+            // Need to check if all the users exist
+            QString errorString;
+            if (!updateAndValidateMembers(cs->m_users, errorString)) {
+                cs->setOutput(errorString);
+            } else {
+                // Send the response
+                cs->setCommand(2);
+                cs->setOutput("Enter delay in minutes:");
+            }
             break;
+        }
         case 2:
+        {
+            // Process the runtime response
+            QDateTime dt = QDateTime::currentDateTime();
+            qint64 secs2add = txt.toInt(0) * 60;
+
+            cs->m_runTime = dt.addSecs(secs2add);
             cs->setCommand(3);
+            cs->setOutput("enter a bor value:");
+            break;
+        }
+        case 3:
+        {
+            QRegExp re("\\d*");  // a digit (\d), zero or more times (*)
+            if (re.exactMatch(txt)) {
+                cs->m_bor = txt.toInt(0);
+                cs->m_has_bor = true;
+            } else {
+                cs->m_has_bor = false;
+            }
+            cs->setCommand(4);
             cs->setOutput("sending");
             cs->setDone();
+
+            postMessage(cs);
             break;
+        }
         default:
             cs->setCommand(100);
             cs->setOutput("Invalid command!");
             cs->setDone();
         }
     } else {
-        cs = new WickrIOCmdState(m_userid, txt);
+        cs = new WickrIOSendMessageState(m_userid, txt);
         cs->setCommand(0);
         cs->setOutput("Enter message to send:");
         addCmdState(m_userid, cs);
@@ -697,6 +760,104 @@ QString CoreClientRxDetails::sendMessage(const QString& txt, WickrIOCmdState *cm
 }
 
 
+bool
+CoreClientRxDetails::updateAndValidateMembers(const QStringList& memberslist, QString& errorString)
+{
+    QStringList memberSearchList;
+    foreach (QString member, memberslist) {
+        WickrCore::WickrUser *user = WickrCore::WickrUser::getUserWithAlias(member);
+        if (user == NULL) {
+            memberSearchList.append(member);
+            continue;
+        }
+        QString idHash = user->getServerIDHash();
+        if (idHash.isEmpty()) {
+            errorString = "Problem handling user record!";
+            return false;
+        }
+    }
+
+    // TODO: Need to check if is a master in the room
+    if (memberSearchList.size() > 0) {
+
+        // Post a request to th server for each member to search for
+        foreach (QString searchMember, memberSearchList) {
+            WickrUserValidateSearch *c = new WickrUserValidateSearch(WICKR_USERNAME_ALIAS,searchMember,0);
+            QObject::connect(c, &WickrUserValidateSearch::signalRequestCompleted, [=](WickrUserValidateSearch *context) {
+                emit signalMemberSearchDone();
+                context->deleteLater();
+            });
+            WickrCore::WickrRuntime::taskSvcMakeRequest(c);
+
+            QTimer timer;
+            QEventLoop loop;
+
+            loop.connect(this, SIGNAL(signalMemberSearchDone()), SLOT(quit()));
+            connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+
+            int loopCount = 10;
+
+            while (loopCount-- > 0) {
+                timer.start(1000);
+                loop.exec();
+
+                if (timer.isActive()) {
+                    timer.stop();
+                    break;
+                } else {
+                    errorString = "Failure waiting for user verification";
+                    return false;
+                }
+            }
+        }
+
+        // Now make sure that user records have been created for the searched members
+        foreach (QString searchMember, memberSearchList) {
+            WickrCore::WickrUser *user = WickrCore::WickrUser::getUserWithAlias(searchMember);
+            if (user == NULL) {
+                errorString = "Cannot find user record for " + searchMember;
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+#include "createjson.h"
+
+bool
+CoreClientRxDetails::postMessage(WickrIOSendMessageState *sendState)
+{
+    for (int i=0; i< sendState->m_users.size(); i++) {
+        QString user = sendState->m_users.at(i);
+        if (sendState->m_message.size() > 0) {
+
+            // TODO: FOr now create list of users, size of one
+            QStringList users;
+            users.append(user);
+
+            // put the command into the database
+            CreateJsonAction *action = new CreateJsonAction("sendmessage", users, sendState->m_ttl, sendState->m_message, QStringList());
+            if (sendState->m_has_bor)
+                action->setBOR(sendState->m_bor);
+            QByteArray json = action->toByteArray();
+            delete action;
+
+            int clientID;
+            if (m_operation->m_client == NULL) {
+                clientID = 0;
+            } else {
+                clientID = m_operation->m_client->id;
+            }
+
+            m_operation->m_botDB->insertAction(json, sendState->m_runTime, clientID);
+
+        } else {
+
+        }
+    }
+    return true;
+}
 
 /**
  * @brief CoreClientRxDetails::getCmdState

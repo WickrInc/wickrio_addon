@@ -147,12 +147,14 @@ RESOURCES += \
 SOURCES += \
     main.cpp \
     requesthandler.cpp \
-    coreClientRxDetails.cpp
+    coreClientRxDetails.cpp \
+    wickrIOSendMessageState.cpp
 
 HEADERS += \
     coreClientConfigInfo.h \
     coreClientRxDetails.h \
-    requesthandler.h
+    requesthandler.h \
+    wickrIOSendMessageState.h
 
 # qsqlcipher_wickr
 

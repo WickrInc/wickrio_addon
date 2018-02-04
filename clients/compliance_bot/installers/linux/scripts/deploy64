@@ -83,7 +83,7 @@ plugins=$prefix/usr/lib/wio_compliance_bot${bldtype}/plugins
 svcinitdir=$prefix/etc/init.d
 systemdlibdir=$prefix/lib/systemd/system
 
-optdir=$prefix/opt/WickrIO$BldType
+optdir=$prefix/opt/WickrIO$svcBldType
 scriptsdir=$optdir/scripts
 imagedir=$optdir/attachments/image
 
