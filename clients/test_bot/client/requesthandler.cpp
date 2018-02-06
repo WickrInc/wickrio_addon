@@ -223,7 +223,13 @@ RequestHandler::processSendMessage(stefanfrings::HttpRequest& request, stefanfri
         QStringList userNames = jsonHandler->getUserNames();
         QString vGroupID = jsonHandler->getVGroupID();
 
-        if (userNames.isEmpty() && vGroupID.isEmpty()) {
+        // If there is a message and the length is too long return error
+        if (!jsonHandler->m_message.isEmpty() &&
+                (jsonHandler->m_message.length() > WickrCore::WickrRuntime::getEnvironmentMgr()->maxMessageSize())) {
+            sendFailure(400, "Message length too long", response);
+            m_operation->log_handler->log("Message length too long");
+        }
+        else if (userNames.isEmpty() && vGroupID.isEmpty()) {
             sendFailure(400, "No users identified", response);
             m_operation->log_handler->log("No users identified!");
         } else if (!userNames.isEmpty()){
