@@ -43,10 +43,6 @@ build_cloud_release:
     - linux
     - release
     - cloud
-  artifacts:
-    expire_in: 1 week
-    paths:
-      - autobuild-output/wickrio_cloud_release/*.zip
 
 #
 # Enterprise builds
@@ -62,10 +58,6 @@ build_enterprise_alpha:
     - linux
     - alpha
     - enterprise
-  artifacts:
-    expire_in: 1 week
-    paths:
-      - autobuild-output/wickrio_enterprise_alpha/*.zip
 
 build_enterprise_release:
   stage: build
@@ -77,10 +69,6 @@ build_enterprise_release:
     - linux
     - release
     - enterprise
-  artifacts:
-    expire_in: 1 week
-    paths:
-      - autobuild-output/wickrio_enterprise_release/*.zip
 
 #
 # Messenger builds
@@ -95,10 +83,6 @@ build_messenger_alpha:
     - linux
     - alpha
     - messenger
-  artifacts:
-    expire_in: 1 week
-    paths:
-      - autobuild-output/wickrio_messenger_alpha/*.zip
 
 build_messenger_release:
   stage: build
@@ -110,10 +94,6 @@ build_messenger_release:
     - linux
     - release
     - messenger
-  artifacts:
-    expire_in: 1 week
-    paths:
-      - autobuild-output/wickrio_messenger_release/*.zip
 
 #
 # Tests

@@ -106,8 +106,17 @@ case "$product-$btype" in
     cloud-beta)
         lin_appid="37d0f566718d43148155c9370c06ca12"
         ;;
+    cloud-release)
+        lin_appid="f103c55c06af44559256019b1c73412b"
+        ;;
+    messenger-alpha)
+        lin_appid="97bd02efd50d4eeca41aa82acac745d6"
+        ;;
     messenger-release)
-        lin_appid=""
+        lin_appid="3affc0dd77b249e492c8cea29441ee60"
+        ;;
+    entrprise-alpha)
+        lin_appid="7723eb32e3434bf6b724c4b04dd35306"
         ;;
     entrprise-release)
         lin_appid="fe01942f8e394217a6d6e4d594738152"
