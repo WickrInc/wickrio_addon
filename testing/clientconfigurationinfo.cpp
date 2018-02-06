@@ -31,7 +31,7 @@ const QString ClientConfigurationInfo::BugsnagAPI = "";
     const QString ClientConfigurationInfo::DefaultBaseURL = "https://messaging-qa4.secmv.net/117/src";
     const QString ClientConfigurationInfo::DefaultDirSearchBaseURL = "https://directory-dev.secmv.net";
 #elif defined(WICKR_ALPHA)
-    const QString ClientConfigurationInfo::DefaultBaseURL = "https://messaging-dev.secmv.net/117/src";
+    const QString ClientConfigurationInfo::DefaultBaseURL = "https://messaging-pro-alpha.secmv.net/117/src";
     const QString ClientConfigurationInfo::DefaultDirSearchBaseURL = "https://directory-dev.secmv.net";
 #endif
 

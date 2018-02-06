@@ -133,10 +133,12 @@ void WickrBotJsonData::processAttachment(QJsonObject *object)
 bool WickrBotJsonData::processAttachmentURL(QString filename, QString url)
 {
     if (m_operation->attachmentsDir.size() == 0) {
+        m_operation->log_handler->error("Internal error (attachments dir size is 0)!");
         return false;
     }
 
     if (filename == "") {
+        m_operation->log_handler->error("Error filename is empty");
         return false;
     }
 
@@ -163,6 +165,7 @@ bool WickrBotJsonData::processAttachmentURL(QString filename, QString url)
             m_operation->m_botDB->insertAttachment(url, fullPath, (int)fi.size());
         } else {
             //TODO: Attachment not saved successfully
+            m_operation->log_handler->error("Internal Error: could not save attachment");
             return false;
         }
     }
@@ -359,7 +362,10 @@ bool WickrBotJsonData::processSendMessageJsonDoc(const QJsonObject &operationObj
         m_runTime = dt;
     }
 
-    processAttachments(operationObject);
+    // If we fail to process attachments the return
+    if (!processAttachments(operationObject)) {
+        return false;
+    }
 
     // Parse out any message
     if (operationObject.contains("message")) {
@@ -467,7 +473,8 @@ bool WickrBotJsonData::processAttachments(const QJsonObject &operationObject)
             } else if (filename.length() > 0) {
                 processAttachmentFile(filename);
             } else {
-                m_operation->log_handler->error("THERE IS NO FILENAME or URL FOR THIS ATTACHMENT!");
+                m_operation->log_handler->error("Error: there is no filename or URL for this attachment!");
+                return false;
             }
         }
     } else if (operationObject.contains("attachment")) {
@@ -512,13 +519,15 @@ bool WickrBotJsonData::processAttachments(const QJsonObject &operationObject)
                 }
             } else {
                 // NO ATTACHMENT DIRECTORY, WHERE TO PUT THE ATTACHMENTS
+                m_operation->log_handler->error("Internal Error: no attachment directory");
+                return false;
             }
         } else {
             if (attachment.contains("url")) {
                 value = attachment["url"];
                 QString valString = value.toString();
 
-                processAttachmentURL(filename, valString);
+                return processAttachmentURL(filename, valString);
             }
         }
     }
@@ -533,15 +542,7 @@ int WickrBotJsonData::processSendMessage() {
 
     for (int i=0; i<m_userIDs.size(); i++) {
         QString user = m_userIDs.at(i);
-        if (m_message.size() > 0) {
-
-            // output the script command to perform
-            if (m_attachments.size() > 0) {
-                // TODO: need to handle multiple attachments
-//                qDebug() << "cronsendmsgwithattachment " << user << " " << m_ttl << " \"" << m_message << "\"" << " \"" << m_attachments << "\"\n";
-            } else {
-                qDebug() << "cronsendmsg " << user << " " << m_ttl << " \"" << m_message << "\"\n";
-            }
+        if (m_message.size() > 0 || m_attachments.size() > 0) {
 
             // put the command into the database
             CreateJsonAction *action = new CreateJsonAction("sendmessage", user, m_ttl, m_message, m_attachments);
@@ -560,7 +561,7 @@ int WickrBotJsonData::processSendMessage() {
 
     for (int i=0; i<m_userNames.size(); i++) {
         QString user = m_userNames.at(i);
-        if (m_message.size() > 0) {
+        if (m_message.size() > 0 || m_attachments.size() > 0) {
 
             // output the script command to perform
             if (m_attachments.size() > 0) {
@@ -595,7 +596,7 @@ int WickrBotJsonData::processSendMessage() {
     }
 
     if (! m_vgroupid.isEmpty()) {
-        if (m_message.size() > 0) {
+        if (m_message.size() > 0 || m_attachments.size() > 0) {
             // put the command into the database
             CreateJsonAction *action = new CreateJsonAction("sendmessage", m_vgroupid, m_ttl, m_message, m_attachments, true);
             if (m_has_bor)

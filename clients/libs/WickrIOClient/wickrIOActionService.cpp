@@ -273,10 +273,9 @@ WickrIOActionThread::sendMessageTo1To1(WickrCore::WickrConvo *convo)
     /*
      * Setup and send the message
      */
-//    QList<WickrCore::WickrAttachment> attachments;
-
     // TODO: Handle the attachment
     QList<QString> attachmentFiles = m_jsonHandler->getAttachments();
+#if 0
     if (attachmentFiles.size() > 0) {
         for (QString attachmentFile : attachmentFiles) {
             QFile att(attachmentFile);
@@ -292,6 +291,7 @@ WickrIOActionThread::sendMessageTo1To1(WickrCore::WickrConvo *convo)
             }
         }
     }
+#endif
 
     long ttl = m_jsonHandler->getTTL();
     if (ttl == 0) {

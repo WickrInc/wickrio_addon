@@ -40,9 +40,9 @@ bool CmdMain::runCommands()
 
     while (true) {
         if (hasMotherBotBinary) {
-            qDebug() << "CONSOLE:Enter group [client, advanced, server, console or users]:";
+            qDebug() << "CONSOLE:Enter one of [client, advanced, server, console or users]:";
         } else {
-            qDebug() << "CONSOLE:Enter group [client, advanced, server or console]:";
+            qDebug() << "CONSOLE:Enter one of [client, advanced, server or console]:";
         }
         QString line = input.readLine();
 
