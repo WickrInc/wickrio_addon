@@ -528,6 +528,8 @@ bool WickrBotJsonData::processAttachments(const QJsonObject &operationObject)
                 QString valString = value.toString();
 
                 return processAttachmentURL(filename, valString);
+            } else if (filename.length() > 0) {
+                return processAttachmentFile(filename);
             }
         }
     }

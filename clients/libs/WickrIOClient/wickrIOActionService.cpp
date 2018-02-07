@@ -674,7 +674,6 @@ bool WickrIOActionThread::sendFile(WickrCore::WickrConvo *targetConvo, const QLi
     QString name = files.at(0);
 
     WickrCore::FetchInformation fetchInfo;
-
     QByteArray encryptionKeyAES = convertCFDataToByteArray( ::randomGCMKey(), false );
 
     QUuid uuid = QUuid::createUuid();
@@ -684,11 +683,8 @@ bool WickrIOActionThread::sendFile(WickrCore::WickrConvo *targetConvo, const QLi
     //qDebug() << "guid:" << fetchInfo.guid << "key:" << encryptionKeyAES.toHex();
 
     QMimeDatabase db;
-
     QUrl fileAsUrl = QUrl::fromLocalFile(name);
-
     QString metaDataMimeType = db.mimeTypeForUrl(fileAsUrl).name();
-
     qint64 fileSize = 0;
 
     QFileInfo primaryFile(name);
@@ -699,9 +695,7 @@ bool WickrIOActionThread::sendFile(WickrCore::WickrConvo *targetConvo, const QLi
 
     QList <WickrCore::FetchInformation> fetchInfoList;
     fetchInfoList.append(fetchInfo);
-
     QString fileNameBeforeEncryption = name;
-
     QString fileNameAfterEncryption = WickrAppContext::getFilesDir() + fetchInfo.guid;
 
     // ENCRYPT FILE HERE
