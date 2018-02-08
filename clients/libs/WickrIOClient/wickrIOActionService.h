@@ -113,6 +113,7 @@ private:
     bool sendMessageToConvo(WickrCore::WickrConvo *convo);
 
     bool sendFile(WickrCore::WickrConvo *targetConvo, const QList<QString> files, const QString& comments);
+    void cleanup(const QString& uuid);
 
     // Message sending definitions
     QList<WickrCore::WickrUser *> m_wickrUsers;

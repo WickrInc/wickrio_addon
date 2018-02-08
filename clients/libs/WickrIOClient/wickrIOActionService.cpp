@@ -680,7 +680,7 @@ bool WickrIOActionThread::sendFile(WickrCore::WickrConvo *targetConvo, const QLi
     QList <WickrCore::FetchInformation> fetchInfoList;
     fetchInfoList.append(fetchInfo);
     QString fileNameBeforeEncryption = name;
-    QString fileNameAfterEncryption = WickrAppContext::getFilesDir() + fetchInfo.guid;
+    QString fileNameAfterEncryption = WickrAppContext::getAttachmentsDir().absoluteFilePath(fetchInfo.guid);
 
     // ENCRYPT FILE HERE
     // This copy operation should be replaced by encryption function that saves to the file
@@ -732,6 +732,22 @@ bool WickrIOActionThread::sendFile(WickrCore::WickrConvo *targetConvo, const QLi
     return true;
 }
 
+#include "wickrIOClientRuntime.h"
+void
+WickrIOActionThread::cleanup(const QString& uuid)
+{
+    if (!uuid.isEmpty() && WickrIOClientRuntime::getFileSendCleanup()) {
+        // Perform some cleanup, remove the encrypted file
+        QString fileNameAfterEncryption = WickrAppContext::getAttachmentsDir().absoluteFilePath(uuid);
+        QFile encFile(fileNameAfterEncryption);
+        if (encFile.exists()) {
+            if (!encFile.remove()) {
+                qDebug() << "Cannot remove sent encrypted file:" << uuid;
+            }
+        }
+    }
+}
+
 void
 WickrIOActionThread::slotSendFileStatusChange(const QString& uuid, const QString& status, float progress, const QString& finalFileName)
 {
@@ -744,10 +760,12 @@ WickrIOActionThread::slotSendFileStatusChange(const QString& uuid, const QString
 
     if (status == "complete") {
         setProcessAction(false);
+        cleanup(uuid);
         emit signalStartProcessDatabase(m_curActionID);
     } else if (status == "uploadinterrupted" ||
                status == "canceled") {
         setProcessAction(false);
+        cleanup(uuid);
         emit signalStartProcessDatabase(m_curActionID);
     } else {
         qDebug() << "not signaling signalStartProcessDatabase()";

@@ -328,6 +328,7 @@ int main(int argc, char *argv[])
      * Start the wickrIO Client Runtime
      */
     WickrIOClientRuntime::init(operation);
+    WickrIOClientRuntime::setFileSendCleanup(true);
 
     // Create the receive details object
     TestClientRxDetails *rxDetails = new TestClientRxDetails(operation);

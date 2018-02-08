@@ -58,6 +58,11 @@ public:
     static WickrIOWatchdogService* wdSvc();
     static void wdSetShutdownState(int procState);
 
+    /*
+     * cleanup of sending files, remove encrypted files
+     */
+    static bool getFileSendCleanup() { return get().m_removeSentEncryptedFiles; }
+    static void setFileSendCleanup(bool flag) { get().m_removeSentEncryptedFiles = flag; }
 
     // Component accessors
     static OperationData *operationData();
@@ -73,6 +78,9 @@ private:
     WickrIOFileDownloadService  *m_fileDownloadSvc;
     WickrIOIPCService           *m_ipcSvc;
     WickrIOWatchdogService      *m_watchdogSvc;
+
+    // Client runtime flags
+    bool    m_removeSentEncryptedFiles = false;
 
     // Map service names to dynamic services
     QMap<QString, WickrIOServiceBase *> w_dynamicServices;
