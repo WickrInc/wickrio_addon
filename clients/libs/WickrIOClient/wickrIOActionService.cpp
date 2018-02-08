@@ -275,23 +275,6 @@ WickrIOActionThread::sendMessageTo1To1(WickrCore::WickrConvo *convo)
      */
     // TODO: Handle the attachment
     QList<QString> attachmentFiles = m_jsonHandler->getAttachments();
-#if 0
-    if (attachmentFiles.size() > 0) {
-        for (QString attachmentFile : attachmentFiles) {
-            QFile att(attachmentFile);
-            if( att.exists() ) {
-                att.open( QFile::ReadOnly );
-                QByteArray contents = att.readAll();
-                att.close();
-
-//                WickrCore::WickrAttachment a = WickrCore::WickrAttachment(contents);
-//                attachments.append(a);
-            } else {
-                m_operation->log_handler->error("Cannot open attachment file: "+attachmentFile);
-            }
-        }
-    }
-#endif
 
     long ttl = m_jsonHandler->getTTL();
     if (ttl == 0) {
@@ -671,7 +654,8 @@ bool WickrIOActionThread::sendFile(WickrCore::WickrConvo *targetConvo, const QLi
     if (files.size() == 0)
         return false;
 
-    QString name = files.at(0);
+    QString name = files.at(0); // Orig file name
+    QString finalFileName = QFileInfo(name).fileName();
 
     WickrCore::FetchInformation fetchInfo;
     QByteArray encryptionKeyAES = convertCFDataToByteArray( ::randomGCMKey(), false );
@@ -723,22 +707,22 @@ bool WickrIOActionThread::sendFile(WickrCore::WickrConvo *targetConvo, const QLi
                 QString resourceName = QUuid::createUuid().toString().mid(1,36).toUpper();
 
 //                imageServer->addImage(resourceName, orig);
-                WickrCore::FileMetaData imageFileMetaData(metaDataMimeType, fileSize, fetchInfoList, hashResult, comments);
-                WickrCore::FileInfo fileToUpload(name, imageFileMetaData);
+                WickrCore::FileMetaData imageFileMetaData(metaDataMimeType, fileSize, fetchInfoList, hashResult, fileDim, comments);
+                WickrCore::FileInfo fileToUpload(finalFileName, imageFileMetaData);
                 WickrCore::WickrRuntime::ftScheduleUpload(targetConvo, fileNameAfterEncryption, fileToUpload);
             }
             else
             {
                 qDebug() << "can't seem to read image";
                 WickrCore::FileMetaData fileMetaData(metaDataMimeType, fileSize, fetchInfoList, hashResult, comments);
-                WickrCore::FileInfo fileToUpload(name, fileMetaData);
+                WickrCore::FileInfo fileToUpload(finalFileName, fileMetaData);
                 WickrCore::WickrRuntime::ftScheduleUpload(targetConvo, fileNameAfterEncryption, fileToUpload);
             }
         }
         else
         {
             WickrCore::FileMetaData fileMetaData(metaDataMimeType, fileSize, fetchInfoList, hashResult, comments);
-            WickrCore::FileInfo fileToUpload(name, fileMetaData);
+            WickrCore::FileInfo fileToUpload(finalFileName, fileMetaData);
             WickrCore::WickrRuntime::ftScheduleUpload(targetConvo, fileNameAfterEncryption, fileToUpload);
         }
         encryptionWatcher->deleteLater();
