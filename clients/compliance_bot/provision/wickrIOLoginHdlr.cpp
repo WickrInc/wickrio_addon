@@ -77,7 +77,7 @@ void WickrIOLoginHdlr::slotRegisterOnPrem(const QString &username, const QString
         preRegData = NULL;
     }
 
-    WickrRegisterUserContext *c = new WickrRegisterUserContext(username, newPassword, QString(), WickrUtil::getDeviceIdentifier(), WickrUtil::getDeviceHost(), newUser, sync, false, regParams, preRegData);
+    WickrRegisterUserContext *c = new WickrRegisterUserContext(username, newPassword, QString(), WickrUtil::getDeviceIdentifier(), WickrUtil::getDeviceHost(), newUser, sync, false, false, regParams, preRegData);
     c->putArg(arg_USERID,    username );
     c->putArg(arg_PASSWORD,  newPassword );
     if (!hash.isEmpty()) {
@@ -107,7 +107,7 @@ void WickrIOLoginHdlr::slotRegisterUser(const QString &wickrid, const QString &p
         preRegData = NULL;
     }
 
-    WickrRegisterUserContext *c = new WickrRegisterUserContext(wickrid, password, QString(), WickrUtil::getDeviceIdentifier(), WickrUtil::getDeviceHost(), newUser, sync, isRekey, regParams, preRegData);
+    WickrRegisterUserContext *c = new WickrRegisterUserContext(wickrid, password, QString(), WickrUtil::getDeviceIdentifier(), WickrUtil::getDeviceHost(), newUser, sync, isRekey, false, regParams, preRegData);
     c->putArg(arg_USERID,   wickrid );
     c->putArg(arg_PASSWORD, password );
     connect(c, &WickrRegisterUserContext::signalRequestCompleted,

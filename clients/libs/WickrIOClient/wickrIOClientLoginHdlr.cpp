@@ -2,6 +2,7 @@
 
 #include "filetransfer/wickrCloudTransferMgr.h"
 #include "session/wickrRegistrationCtx.h"
+#include "requests/wickrSessionRequests.h"
 #include "common/wickrRuntime.h"
 
 WickrIOClientLoginHdlr::WickrIOClientLoginHdlr(OperationData *operation, int loginVersion) :
@@ -78,7 +79,7 @@ void WickrIOClientLoginHdlr::registerUser(const QString &wickrid, const QString 
         preRegData = NULL;
     }
 
-    WickrRegisterUserContext *c = new WickrRegisterUserContext(wickrid, password, QString(), WickrUtil::getDeviceIdentifier(), WickrUtil::getDeviceHost(), newUser, sync, isRekey, regParams, preRegData);
+    WickrRegisterUserContext *c = new WickrRegisterUserContext(wickrid, password, QString(), WickrUtil::getDeviceIdentifier(), WickrUtil::getDeviceHost(), newUser, sync, isRekey, false, regParams, preRegData);
     c->putArg(arg_USERID,   wickrid );
     c->putArg(arg_PASSWORD, password );
     connect(c, &WickrRegisterUserContext::signalRequestCompleted,

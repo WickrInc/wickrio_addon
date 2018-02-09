@@ -5,6 +5,7 @@
 #include <QTimer>
 #include "common/wickrNetworkUtil.h"
 #include "requests/wickrRequests.h"
+#include "requests/wickrSessionRequests.h"
 
 class WickrIOProvisionHdlr : public QObject
 {

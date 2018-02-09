@@ -5,6 +5,7 @@
 #include <QString>
 
 #include "requests/wickrRequests.h"
+#include "requests/wickrSessionRequests.h"
 #include "session/wickrPreRegistrationIface.h"
 
 #include "operationdata.h"
