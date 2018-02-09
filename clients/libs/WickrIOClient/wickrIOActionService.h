@@ -150,7 +150,7 @@ private:
 
 signals:
     void signalSendMessageDoneGetUsers();
-    void signalStartProcessDatabase(int actionID);
+    void signalStartProcessDatabase(int actionID, bool success);
     void signalExit();
     void signalNotRunning();
     void signalProcessAction(bool state);
@@ -159,8 +159,10 @@ private slots:
     // Message Send slots
     void slotMessageDone(WickrSendContext *context);
 
-    void processDatabase(int deleteID);
+    void processDatabase(int deleteID, bool success);
     void slotSendMessagePostGetUsers();
+
+    void sendStatusMessage(WickrBotJson *jsonHandler, bool success);
 
     void slotValidateUserUpdateDone(WickrUserValidateUpdate *context);
     void slotValidateUserCheckDone(WickrUserValidateSearch *context);

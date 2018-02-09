@@ -837,7 +837,7 @@ CoreClientRxDetails::postMessage(WickrIOSendMessageState *sendState)
             users.append(user);
 
             // put the command into the database
-            CreateJsonAction *action = new CreateJsonAction("sendmessage", users, sendState->m_ttl, sendState->m_message, QStringList());
+            CreateJsonAction *action = new CreateJsonAction("sendmessage", users, sendState->m_ttl, sendState->m_message, QStringList(), QString());
             if (sendState->m_has_bor)
                 action->setBOR(sendState->m_bor);
             QByteArray json = action->toByteArray();

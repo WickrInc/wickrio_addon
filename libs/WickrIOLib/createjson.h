@@ -8,8 +8,8 @@ class DECLSPEC CreateJsonAction
 {
 public:
     CreateJsonAction();
-    CreateJsonAction(QString action, QStringList users, long ttl, QString message, QList<QString> attachment);
-    CreateJsonAction(QString action, QString name, long ttl, QString message, QList<QString> attachment, bool isVGroupID = false);
+    CreateJsonAction(QString action, QStringList users, long ttl, QString message, QList<QString> attachment, QString statusUser);
+    CreateJsonAction(QString action, QString name, long ttl, QString message, QList<QString> attachment, QString statusUser, bool isVGroupID = false);
     ~CreateJsonAction();
 
     void setBOR(int bor);
@@ -24,6 +24,7 @@ public:
     bool m_has_bor;
     QString message;
     QList<QString> attachments;
+    QString m_statususer;
 
 public:
     QByteArray toByteArray();

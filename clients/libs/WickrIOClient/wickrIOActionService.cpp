@@ -242,7 +242,7 @@ void WickrIOActionThread::slotTimerExpire()
     // Else if we are not processing an action and not cleaning up then signal to start an action
     else if (! processActionState()) {
         if (! m_processCleanUp)
-            emit signalStartProcessDatabase(WICKRIO_AH_INVALID_ID);
+            emit signalStartProcessDatabase(WICKRIO_AH_INVALID_ID, true);
     }
 
 }
@@ -564,7 +564,7 @@ void WickrIOActionThread::slotSendMessagePostGetUsers()
 
         setProcessAction(false);
 
-        emit signalStartProcessDatabase(m_curActionID);
+        emit signalStartProcessDatabase(m_curActionID, false);
     }
 }
 
@@ -761,12 +761,12 @@ WickrIOActionThread::slotSendFileStatusChange(const QString& uuid, const QString
     if (status == "complete") {
         setProcessAction(false);
         cleanup(uuid);
-        emit signalStartProcessDatabase(m_curActionID);
+        emit signalStartProcessDatabase(m_curActionID, true);
     } else if (status == "uploadinterrupted" ||
                status == "canceled") {
         setProcessAction(false);
         cleanup(uuid);
-        emit signalStartProcessDatabase(m_curActionID);
+        emit signalStartProcessDatabase(m_curActionID, false);
     } else {
         qDebug() << "not signaling signalStartProcessDatabase()";
     }
@@ -799,7 +799,7 @@ void WickrIOActionThread::slotMessageDone(WickrSendContext *context)
         outMsg->dodelete();
 #endif
         context->deleteLater();
-        emit signalStartProcessDatabase(m_curActionID);
+        emit signalStartProcessDatabase(m_curActionID, true);
     } else {
         qDebug() << "IN slotMessageDone(): failed";
 //        m_operation->log_handler->error(QString("Message send error: " + context->getResult()));
@@ -837,9 +837,9 @@ void WickrIOActionThread::slotMessageDone(WickrSendContext *context)
 
         // TODO: Depending on the error do different things
         if (deleteMsg) {
-            emit signalStartProcessDatabase(m_curActionID);
+            emit signalStartProcessDatabase(m_curActionID, false);
         } else {
-            emit signalStartProcessDatabase(WICKRIO_AH_INVALID_ID);
+            emit signalStartProcessDatabase(WICKRIO_AH_INVALID_ID, false);
         }
     }
 }
@@ -876,6 +876,38 @@ void WickrIOActionThread::cleanUpConvoList()
     }
 }
 
+#include "createjson.h"
+
+void WickrIOActionThread::sendStatusMessage(WickrBotJson *jsonHandler, bool success)
+{
+    // Create the message to send
+    QString message2send;
+    QString successMsg = success ? "successfully" : "NOT successfully";
+    if (jsonHandler->getAttachments().length() > 0) {
+        message2send = QString("File (%1) was %2 sent to %3").arg(jsonHandler->getAttachments()[0])
+                .arg(successMsg)
+                .arg(jsonHandler->getUserNames().join(","));
+    } else {
+        message2send = QString("Message was %2 sent to %3")
+                .arg(successMsg)
+                .arg(jsonHandler->getUserNames().join(","));
+    }
+
+    // Create the json to initiate the sending of this message
+    QStringList users;
+    users.append(jsonHandler->getStatusUser());
+    CreateJsonAction action("sendmessage",
+                            users,
+                            0,
+                            message2send,
+                            QList<QString>(),
+                            QString());
+
+    QByteArray json = action.toByteArray();
+    QDateTime dt = QDateTime::currentDateTime();
+
+    m_operation->m_botDB->insertAction(json, dt, m_operation->m_client->id);
+}
 
 /**
  * @brief WickrIOMain::processDatabase
@@ -886,7 +918,7 @@ void WickrIOActionThread::cleanUpConvoList()
  * must be performed in order.
  * @param deleteID Id of the action to delete, or WICKRBOT_INALID_ID
  */
-void WickrIOActionThread::processDatabase(int deleteID)
+void WickrIOActionThread::processDatabase(int deleteID, bool success)
 {
     if (m_operation->m_botDB == NULL) {
         m_operation->m_botDB = new WickrIOClientDatabase(m_operation->databaseDir);
@@ -902,6 +934,17 @@ void WickrIOActionThread::processDatabase(int deleteID)
      * If the input ID is valid then delete that entry from the database
      */
     if (deleteID != WICKRIO_AH_INVALID_ID) {
+        WickrBotActionCache action;
+
+        if (m_operation->m_botDB->getAction(deleteID, &action)) {
+            WickrBotJson jsonHandler;
+            if (jsonHandler.parseJsonString(action.json)) {
+                // If there is a status user then send a message to that user
+                if (!jsonHandler.getStatusUser().isEmpty()) {
+                    sendStatusMessage(&jsonHandler, success);
+                }
+            }
+        }
         m_operation->m_botDB->deleteAction(deleteID);
     }
 

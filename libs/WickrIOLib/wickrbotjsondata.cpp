@@ -195,7 +195,9 @@ bool WickrBotJsonData::processAttachmentFile(QString filename)
     if (exists) {
         m_attachments.append(fullPath);
     } else {
-        m_operation->log_handler->error("Attachment does not exist: " + fullPath);
+        QString errStr = QString("Attachment does not exist: %1").arg(fullPath);
+        m_operation->log_handler->error(errStr);
+        setLastError(errStr);
     }
 
     return exists;
@@ -295,9 +297,7 @@ bool WickrBotJsonData::processSendMessageJsonDocV3(const QJsonObject &operationO
     }
 
     // Parse out any attachments that may be part of this message
-    processAttachments(operationObject);
-
-    return true;
+    return processAttachments(operationObject);
 }
 
 bool WickrBotJsonData::processSendMessageJsonDoc(const QJsonObject &operationObject)
@@ -350,6 +350,12 @@ bool WickrBotJsonData::processSendMessageJsonDoc(const QJsonObject &operationObj
     } else {
         m_operation->log_handler->error("Does not contain users or vgroupid!");
         return false;
+    }
+
+    // If there is a status user then get the value
+    if (operationObject.contains("statususer")) {
+        value = operationObject["statususer"];
+        m_statususer = value.toString();
     }
 
     if (operationObject.contains("runtime")) {
@@ -471,7 +477,8 @@ bool WickrBotJsonData::processAttachments(const QJsonObject &operationObject)
 
                 processAttachmentURL(filename, valString);
             } else if (filename.length() > 0) {
-                processAttachmentFile(filename);
+                if (!processAttachmentFile(filename))
+                    return false;
             } else {
                 m_operation->log_handler->error("Error: there is no filename or URL for this attachment!");
                 return false;
@@ -547,7 +554,7 @@ int WickrBotJsonData::processSendMessage() {
         if (m_message.size() > 0 || m_attachments.size() > 0) {
 
             // put the command into the database
-            CreateJsonAction *action = new CreateJsonAction("sendmessage", user, m_ttl, m_message, m_attachments);
+            CreateJsonAction *action = new CreateJsonAction("sendmessage", user, m_ttl, m_message, m_attachments, m_statususer);
             if (m_has_bor)
                 action->setBOR(m_bor);
             QByteArray json = action->toByteArray();
@@ -576,7 +583,7 @@ int WickrBotJsonData::processSendMessage() {
             users.append(user);
 
             // put the command into the database
-            CreateJsonAction *action = new CreateJsonAction("sendmessage", users, m_ttl, m_message, m_attachments);
+            CreateJsonAction *action = new CreateJsonAction("sendmessage", users, m_ttl, m_message, m_attachments, m_statususer);
             if (m_has_bor)
                 action->setBOR(m_bor);
             QByteArray json = action->toByteArray();
@@ -600,7 +607,7 @@ int WickrBotJsonData::processSendMessage() {
     if (! m_vgroupid.isEmpty()) {
         if (m_message.size() > 0 || m_attachments.size() > 0) {
             // put the command into the database
-            CreateJsonAction *action = new CreateJsonAction("sendmessage", m_vgroupid, m_ttl, m_message, m_attachments, true);
+            CreateJsonAction *action = new CreateJsonAction("sendmessage", m_vgroupid, m_ttl, m_message, m_attachments, m_statususer, true);
             if (m_has_bor)
                 action->setBOR(m_bor);
             QByteArray json = action->toByteArray();
@@ -665,13 +672,21 @@ WickrBotJsonData::parseJson4SendMessage(QByteArray jsonString) {
     QJsonParseError jsonError;
     QJsonDocument jsonResponse = QJsonDocument().fromJson(jsonString, &jsonError);
 
+    clearLastError();
+
     if (jsonError.error != jsonError.NoError) {
-        m_operation->log_handler->log("Error with JSON document" + jsonError.errorString());
+        QString errStr = QString("Error with JSON document %1").arg(jsonError.errorString());
+        m_operation->log_handler->log(errStr);
+        setLastError(errStr);
         return false;
     }
 
     if (! processSendMessageJsonDoc(jsonResponse.object())) {
-        m_operation->log_handler->log("Error reading json data!");
+        if (getLastError().isEmpty()) {
+            QString errStr = "Error reading json data!";
+            m_operation->log_handler->log(errStr);
+            setLastError(errStr);
+        }
         return false;
     }
 

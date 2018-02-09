@@ -23,6 +23,10 @@ public:
     QStringList getUserNames() { return m_userNames; }
     QString getVGroupID() { return m_vgroupid; }
 
+    void clearLastError() { m_lastError.clear(); }
+    void setLastError(const QString errstr) { m_lastError = errstr; }
+    QString getLastError() { return m_lastError; }
+
 public:
     int m_ttl;
     int m_bor;
@@ -35,6 +39,9 @@ public:
     bool m_rmAttachmentWhenDone;
     QString m_message;
     QDateTime m_runTime;
+    QString m_statususer;
+
+    QString m_lastError;
 
 private:
     OperationData   *m_operation;

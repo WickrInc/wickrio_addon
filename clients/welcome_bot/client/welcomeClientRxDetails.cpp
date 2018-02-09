@@ -160,6 +160,7 @@ bool WelcomeClientRxDetails::processMessage(WickrDBObject *item)
                                                                 msg->getDestructTime(),
                                                                 responseMessageText(msg->getSenderUserID()),
                                                                 attachments,
+                                                                QString(),
                                                                 true);
                 QByteArray json = action->toByteArray();
                 delete action;

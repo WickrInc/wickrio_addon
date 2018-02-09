@@ -219,6 +219,14 @@ WickrBotJson::parseJsonString(QByteArray jsonString)
         has_bor = false;
     }
 
+    // See if there is a status user in the json
+    if (operationObject.contains(JSON_OBJECT_STATUSUSER)) {
+        value = operationObject[JSON_OBJECT_STATUSUSER];
+        m_statusUser = value.toString();
+        m_hasStatusUser = !m_statusUser.isEmpty();
+    } else {
+        m_hasStatusUser = false;
+    }
     return true;
 }
 

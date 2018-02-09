@@ -19,6 +19,7 @@
 #define JSON_OBJECT_TTL             "ttl"
 #define JSON_OBJECT_BOR             "bor"
 #define JSON_OBJECT_VGROUPID        "vgroupid"
+#define JSON_OBJECT_STATUSUSER      "statususer"
 
 #define JSON_ACTION_SEND_MESSAGE    "sendmessage"
 #define JSON_ACTION_ADD_FRIEND      "addfriend"
@@ -49,6 +50,8 @@ private:
     QString message;
     QDateTime runTime;
     QString m_vgroupid;
+    QString m_statusUser;
+    bool m_hasStatusUser = false;
 
 public:
     void setTTL(long ttl) { this->ttl = ttl; }
@@ -67,6 +70,8 @@ public:
     QList<QString> getAttachments() { return attachments; }
     QString getMessage() { return message; }
     QString getVGroupID() { return m_vgroupid; }
+
+    QString getStatusUser() { return m_statusUser; }
 };
 
 #endif // WICKRIOJSON_H

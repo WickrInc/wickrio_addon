@@ -217,9 +217,24 @@ RequestHandler::processSendMessage(stefanfrings::HttpRequest& request, stefanfri
     WickrBotJsonData *jsonHandler = new WickrBotJsonData(m_operation);
 
     if (! jsonHandler->parseJson4SendMessage(body)) {
-        sendFailure(400, "Failed parsing message JSON", response);
+        QString errStr;
+        if (!jsonHandler->getLastError().isEmpty())
+            errStr = jsonHandler->getLastError();
+        else
+            errStr = "Failed parsing message JSON";
+        sendFailure(400, errStr.toLatin1(), response);
         m_operation->log_handler->log("Message JSON parsing failed!");
     } else {
+        // Check if there is a status user and if it is a valid user
+        if (!jsonHandler->m_statususer.isEmpty()) {
+            QStringList statusUList;
+            statusUList.append(jsonHandler->m_statususer);
+            if (!updateAndValidateMembers(response, statusUList)) {
+                delete jsonHandler;
+                return;
+            }
+        }
+
         QStringList userNames = jsonHandler->getUserNames();
         QString vGroupID = jsonHandler->getVGroupID();
 
@@ -513,15 +528,18 @@ RequestHandler::updateAndValidateMembers(stefanfrings::HttpResponse& response, c
         WickrCore::WickrUser *user = WickrCore::WickrUser::getUserWithAlias(member);
         if (user == NULL) {
             memberSearchList.append(member);
-            continue;
+        } else {
+            int networkflag = user->getUserNetworkFlag();
+            qDebug() << "Networkflag for " << member << " is " << networkflag;
+
+            QString idHash = user->getServerIDHash();
+            if (idHash.isEmpty()) {
+                sendFailure(500, "Problem handling user record!", response);
+                return false;
+            }
+            if (memberHashes != nullptr)
+                memberHashes->append(idHash);
         }
-        QString idHash = user->getServerIDHash();
-        if (idHash.isEmpty()) {
-            sendFailure(500, "Problem handling user record!", response);
-            return false;
-        }
-        if (memberHashes != nullptr)
-            memberHashes->append(idHash);
     }
 
     // TODO: Need to check if is a master in the room
@@ -567,6 +585,10 @@ RequestHandler::updateAndValidateMembers(stefanfrings::HttpResponse& response, c
                 sendFailure(400, errMsg.toLatin1(), response);
                 return false;
             }
+
+            int networkflag = user->getUserNetworkFlag();
+            qDebug() << "Networkflag for " << searchMember << " is " << networkflag;
+
             if (memberHashes != nullptr) {
                 QString idHash = user->getServerIDHash();
                 if (idHash.isEmpty()) {

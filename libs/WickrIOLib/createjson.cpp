@@ -17,8 +17,9 @@ CreateJsonAction::CreateJsonAction() :
     attachments.clear();
 }
 
-CreateJsonAction::CreateJsonAction(QString action, QStringList users, long ttl, QString message, QList<QString> attachments) :
-    m_has_bor(false)
+CreateJsonAction::CreateJsonAction(QString action, QStringList users, long ttl, QString message, QList<QString> attachments, QString statusUser) :
+    m_has_bor(false),
+    m_statususer(statusUser)
 {
     this->action = action;
     this->users = users;
@@ -33,8 +34,9 @@ CreateJsonAction::CreateJsonAction(QString action, QStringList users, long ttl, 
 }
 
 
-CreateJsonAction::CreateJsonAction(QString action, QString name, long ttl, QString message, QList<QString> attachments, bool isVGroupID) :
-    m_has_bor(false)
+CreateJsonAction::CreateJsonAction(QString action, QString name, long ttl, QString message, QList<QString> attachments, QString statusUser, bool isVGroupID) :
+    m_has_bor(false),
+    m_statususer(statusUser)
 {
     this->action = action;
     if (isVGroupID) {
@@ -66,11 +68,14 @@ CreateJsonAction::setBOR(int bor)
 QByteArray
 CreateJsonAction::toByteArray()
 {
-    QList<QString> ids;
-
     QJsonObject jsonObject;
 
     jsonObject.insert("action", this->action);
+
+    // If there is a status user then add it to the json
+    if (!m_statususer.isEmpty()) {
+        jsonObject.insert("statususer", m_statususer);
+    }
 
     if (users.size() > 0) {
         QJsonArray usersArray;
