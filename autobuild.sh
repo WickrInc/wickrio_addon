@@ -208,7 +208,11 @@ echo "ZIP File: $output/bots-${version}.zip"
 
 APP_OUT="$output/bots-${version}.zip"
 SYM_OUT=""
-relnotes="no release notes yet"
+set -e
+sed -e 's/\*/-/g' -e 's/[\"'\'']//g' release.txt > rel2.txt
+relnotes=`cat rel2.txt`
+rm rel2.txt
+set +e
 
 if test ! -z "$lin_appid" ; then
     APP_ID="$lin_appid"
