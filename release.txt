@@ -1,4 +1,4 @@
-Release Notes from v4.0-release to v4.25.7-2:
+Release Notes from v4.0-release to v4.25.8-2:
   * Use the bot product type for the bots that are created.
   * Paul cleanup corebot
   * reducing some redundancy in the clientconfigurationinfo
