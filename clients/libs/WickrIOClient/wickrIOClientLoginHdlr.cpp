@@ -1,4 +1,5 @@
 #include "wickrIOClientLoginHdlr.h"
+#include "wickrbotsettings.h"
 
 #include "filetransfer/wickrCloudTransferMgr.h"
 #include "session/wickrRegistrationCtx.h"
@@ -171,6 +172,7 @@ void WickrIOClientLoginHdlr::slotLoginStart(const QString& username, const QStri
 {
     // Close database if already open
     WickrDBAdapter::closeDB();
+    QString usePassword;
 
     //qDebug() << "********* slotLoginStart(), called, before db check";
     if (!WickrDBAdapter::doesDBExist()) {
@@ -192,8 +194,12 @@ void WickrIOClientLoginHdlr::slotLoginStart(const QString& username, const QStri
         return;
     }
 
+    if (WickrCore::WickrSession::retrieveCachedDBKey().isEmpty()) {
+        usePassword = password;
+    }
+
     QString otp="";
-    WickrLoginContext *c = new WickrLoginContext(username,password,otp,m_loginVersion);
+    WickrLoginContext *c = new WickrLoginContext(username, usePassword, otp, m_loginVersion);
     connect(c, &WickrLoginContext::signalRequestCompleted, this, &WickrIOClientLoginHdlr::slotLoginDone, Qt::QueuedConnection);
     WickrCore::WickrRuntime::taskSvcMakeRequest(c);
 }
@@ -252,6 +258,18 @@ void WickrIOClientLoginHdlr::slotLoginDone(WickrLoginContext *ls)
 
         // Store networkId (in WickrSession)
         WickrCore::WickrSession::getActiveSession()->setNetworkIdFromLogin(ls->networkId());
+
+        // Cache the database storage keys
+        QString dbKey = WickrCore::WickrSession::getActiveSession()->cacheKeys();
+        if (WickrCore::WickrSession::cacheDBKey(dbKey)) {
+            // Remove the password in the settings file
+            if (m_operation->m_settings != nullptr) {
+                m_operation->m_settings->beginGroup(WBSETTINGS_USER_HEADER);
+                m_operation->m_settings->setValue(WBSETTINGS_USER_PASSWORD, "");
+                m_operation->m_settings->endGroup();
+                m_operation->m_settings->sync();
+            }
+        }
 
         emit signalLoginSuccess();
     } else {

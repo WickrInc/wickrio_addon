@@ -646,8 +646,8 @@ bool WickrIOClientMain::parseSettings(QSettings *settings)
     QString password = settings->value(WBSETTINGS_USER_PASSWORD, "").toString();
     QString username = settings->value(WBSETTINGS_USER_USERNAME, "").toString();
 
-    if (user.isEmpty() || password.isEmpty()) {
-        qDebug() << "User or password is not set";
+    if (user.isEmpty()) {
+        qDebug() << "User name is not set";
         return false;
     }
     m_loginHdlr.addLogin(user, password, username);
