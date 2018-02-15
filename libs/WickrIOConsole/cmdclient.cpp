@@ -51,6 +51,7 @@ bool CmdClient::runCommands()
     while (true) {
         qDebug() << "CONSOLE:Enter client command:";
         QString line = input.readLine();
+        bool bForce = false;
 
         line = line.trimmed();
         if (line.length() > 0) {
@@ -65,6 +66,13 @@ bool CmdClient::runCommands()
                 if (!ok) {
                     qDebug() << "CONSOLE:Client Index is not a number!";
                     continue;
+                }
+
+                // See if the force option is set
+                if (args.size() == 3) {
+                    if (args.at(2) == "-force" || args.at(2) == "force") {
+                        bForce = true;
+                    }
                 }
             } else {
                 clientIndex = -1;
@@ -103,7 +111,7 @@ bool CmdClient::runCommands()
                 if (clientIndex == -1) {
                     qDebug() << "CONSOLE:Usage: pause <index>";
                 } else {
-                    pauseClient(clientIndex);
+                    pauseClient(clientIndex, bForce);
                 }
             } else if (cmd == "quit") {
                 return false;
@@ -111,7 +119,7 @@ bool CmdClient::runCommands()
                 if (clientIndex == -1) {
                     qDebug() << "CONSOLE:Usage: start <index>";
                 } else {
-                    startClient(clientIndex);
+                    startClient(clientIndex, bForce);
                 }
             } else {
                 qDebug() << "CONSOLE:" << cmd << "is not a known command!";
@@ -736,7 +744,7 @@ bool CmdClient::sendClientCmd(int port, const QString& cmd)
  * This function is used to pause a running client
  * @param clientIndex
  */
-void CmdClient::pauseClient(int clientIndex)
+void CmdClient::pauseClient(int clientIndex, bool force)
 {
     if (validateIndex(clientIndex)) {
         WickrBotClients *client = m_clients.at(clientIndex);
@@ -755,7 +763,16 @@ void CmdClient::pauseClient(int clientIndex)
                     }
                 }
             } else {
-                qDebug() << "CONSOLE:Client must be running to pause it!";
+                if (!force) {
+                    qDebug() << "CONSOLE:Client must be running to pause it!";
+                } else {
+                    if (! m_operation->m_ioDB->updateProcessState(processName, 0, PROCSTATE_PAUSED)) {
+                        qDebug() << "CONSOLE:Failed to change start of client in database!";
+                    } else {
+                        qDebug() << "CONSOLE:Client state was force set to paused.";
+                        qDebug() << "CONSOLE:Please verify the client process is not running.";
+                    }
+                }
             }
         } else {
             qDebug() << "CONSOLE:Could not get the clients state!";
@@ -768,7 +785,7 @@ void CmdClient::pauseClient(int clientIndex)
  * This function is used to start a stopped or paused client
  * @param clientIndex
  */
-void CmdClient::startClient(int clientIndex)
+void CmdClient::startClient(int clientIndex, bool force)
 {
     if (validateIndex(clientIndex)) {
         WickrBotClients *client = m_clients.at(clientIndex);
@@ -776,16 +793,44 @@ void CmdClient::startClient(int clientIndex)
         QString processName = WBIOServerCommon::getClientProcessName(client);
 
         if (m_operation->m_ioDB->getProcessState(processName, &state)) {
-            if (state.state == PROCSTATE_PAUSED) {
+            if (state.state == PROCSTATE_PAUSED || force) {
                 QString prompt = QString(tr("Do you really want to start the client with the name %1")).arg(client->name);
                 QString response = getNewValue("", prompt);
                 if (response.toLower() == "y" || response.toLower() == "yes") {
+                    // Check if the database password has been created.
+                    // If not then will need the client's password to start.
+                    QString clientDbDir = QString(WBIO_CLIENT_DBDIR_FORMAT).arg(m_operation->m_dbLocation).arg(client->name);
+                    QString dbKeyFileName = QString("%1/dkd.wic").arg(clientDbDir);
+                    QFile dbKeyFile(dbKeyFileName);
+                    if (!dbKeyFile.exists()) {
+                        QString configFileName = QString(WBIO_CLIENT_SETTINGS_FORMAT).arg(m_operation->m_dbLocation).arg(client->name);
+                        QFile file(configFileName);
+                        if (!file.exists()) {
+                            qDebug() << "CONSOLE:Configuration file does not exist!";
+                            return;
+                        }
+
+                        QString password;
+                        do {
+                            password = getNewValue("", "Enter password for this client:");
+                            if (response == "quit") {
+                                return;
+                            }
+                        } while (password.isEmpty());
+
+                        QSettings * settings = new QSettings(configFileName, QSettings::NativeFormat);
+                        settings->beginGroup(WBSETTINGS_USER_HEADER);
+                        settings->setValue(WBSETTINGS_USER_PASSWORD, password);
+                        settings->endGroup();
+                        settings->sync();
+                    }
+
                     if (! m_operation->m_ioDB->updateProcessState(processName, 0, PROCSTATE_DOWN)) {
                         qDebug() << "CONSOLE:Failed to change start of client in database!";
                     }
                 }
             } else if (state.state == PROCSTATE_DOWN){
-                qDebug() << "CONSOLE:Client is in Down state. The WickrIO Client Server should change the state to running.";
+                qDebug() << "CONSOLE:Client is already waiting to start. The WickrIO Client Server should change the state to running.";
                 qDebug() << "CONSOLE:If this is not happening, please check that the WickrIOSvr process is running!";
                 //TODO: Check on the state of the WickrIO Server!
             } else {

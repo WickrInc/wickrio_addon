@@ -6,6 +6,7 @@
 #include <QFile>
 #include <QByteArray>
 #include <QObject>
+#include <QSettings>
 
 #include "wickrbotlib.h"
 #ifndef DO_WICKRBOT
@@ -57,6 +58,8 @@ public:
 
     // Set this to true to clean the messaging database when logging out
     bool m_cleanDBOnLogout = false;
+
+    QSettings *m_settings = nullptr;
 
 private:
 #ifndef DO_WICKRBOT

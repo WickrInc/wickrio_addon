@@ -247,6 +247,9 @@ int main(int argc, char *argv[])
     // get the settings file
     QSettings * settings = new QSettings(wbConfigFile, QSettings::NativeFormat, app);
 
+    // Save the settings to the operation data
+    operation->m_settings = settings;
+
     if (username.isEmpty()) {
         settings->beginGroup(WBSETTINGS_USER_HEADER);
         username = settings->value(WBSETTINGS_USER_USER, "").toString();

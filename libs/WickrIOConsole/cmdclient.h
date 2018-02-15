@@ -30,8 +30,8 @@ private:
     void deleteClient(int clientIndex);
     void listClients();
     void modifyClient(int clientIndex);
-    void pauseClient(int clientIndex);
-    void startClient(int clientIndex);
+    void pauseClient(int clientIndex, bool force);
+    void startClient(int clientIndex, bool force);
 
     bool chkClientsNameExists(const QString& name);
     bool chkClientsUserExists(const QString& name);

@@ -246,6 +246,9 @@ int main(int argc, char *argv[])
     // get the settings file
     QSettings * settings = new QSettings(wbConfigFile, QSettings::NativeFormat, app);
 
+    // Save the settings to the operation data
+    operation->m_settings = settings;
+
     // Get the appropriate database location
     if (operation->databaseDir.isEmpty()) {
         settings->beginGroup(WBSETTINGS_DATABASE_HEADER);
