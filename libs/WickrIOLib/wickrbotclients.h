@@ -21,6 +21,7 @@ public:
     QString password;
     QString status;
     QString binary;
+    QString botType;
 
     bool isHttps;
     int port = 0;

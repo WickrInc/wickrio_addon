@@ -253,7 +253,7 @@ bool CmdClient::getClientValues(WickrBotClients *client)
     QStringList possibleClientTypes = WBIOServerCommon::getAvailableClientApps();
     QString binary;
     if (possibleClientTypes.length() > 1) {
-        temp = getNewValue(client->binary, tr("Enter the bot type"), CHECK_LIST, possibleClientTypes);
+        temp = getNewValue(client->binary, tr("Enter the client type"), CHECK_LIST, possibleClientTypes);
         // Check if the user wants to quit the action
         if (handleQuit(temp, &quit) && quit) {
             return false;
@@ -264,12 +264,34 @@ bool CmdClient::getClientValues(WickrBotClients *client)
     }
     client->binary = binary;
 
+    QList<WBIOBotTypes *>botTypes = WBIOServerCommon::getBotsSupported(binary);
+    if (botTypes.length() > 0) {
+        // If the user wants to connect the client to an integration bot
+        temp = getNewValue("no", tr("Do you want to connect to a integration bot?"), CHECK_BOOL);
+        if (temp == "yes") {
+            QStringList possibleBotTypes;
+            for (WBIOBotTypes *bt : botTypes) {
+                possibleBotTypes.append(bt->m_name);
+            }
+            possibleBotTypes.append("none");
+
+            temp = getNewValue(client->botType, tr("Enter the bot type"), CHECK_LIST, possibleBotTypes);
+            // Check if the user wants to quit the action
+            if (handleQuit(temp, &quit) && quit) {
+                return false;
+            }
+            if (temp != "none")
+                client->botType = temp;
+            else
+                client->botType = QString();
+        }
+    }
+
     // Time to configure the BOT's username
 
     // Determine if the BOT has an executable that will create/provision the user
 
     QString provisionApp = WBIOServerCommon::getProvisionApp(binary);
-
     if (provisionApp != nullptr) {
         QString clientDbDir;
         QString command = client->binary;
@@ -495,42 +517,129 @@ bool CmdClient::getClientValues(WickrBotClients *client)
     }
 
 
+    /*
+     * Need to configure the bot if one was selected
+     */
+    if (! client->botType.isEmpty()) {
+        // Get the software into the appropriate location
+        QString swPath = WBIOServerCommon::getBotSoftwarePath(client->botType);
+        if (!swPath.isEmpty()) {
+            QString destPath = QString(WBIO_CLIENT_BOTDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
 
-#if 0
-    // Get the binary to use
-    QStringList binaries = WBIOServerCommon::getAvailableClientApps();
-    if (binaries.length() == 1) {
-        client->binary = binaries.at(0);
-    } else {
-        while (true) {
-            QString selected;
-            selected = getNewValue(client->binary, tr("Enter the binary"));
-            // Check if the user wants to quit the action
-            if (handleQuit(selected, &quit) && quit) {
-                return false;
-            }
-
-            if (selected.toLower() == "list" || selected == "?") {
-                foreach (QString binary, binaries) {
-                    qDebug() << "CONSOLE:" << binary;
-                }
-                continue;
-            }
-
-            for (QString binary : binaries) {
-                if (selected == binary) {
-                    client->binary = binary;
-                    break;
+            // Create the directory for the integration software
+            QDir destDir(destPath);
+            if (!destDir.exists()) {
+                if (!destDir.mkpath(destPath)) {
+                    qDebug() << "Failed to create directory for integration bot software!";
+                    return false;
                 }
             }
 
-            qDebug() << "CONSOLE:Invalid binary, enter one of" << binaries;
-            continue;
+            // First copy the software to the client directory
+            {
+                // Create a process to extract the software
+                QProcess *unarchive = new QProcess(this);
+
+                QString command = QString("tar -xf %1 -C %2").arg(swPath).arg(destPath);
+                unarchive->setProcessChannelMode(QProcess::MergedChannels);
+                unarchive->start(command, QIODevice::ReadWrite);
+
+                // Wait for it to start
+                if(!unarchive->waitForStarted()) {
+                    qDebug() << QString("CONSOLE:Failed to install %1 software!").arg(client->botType);
+                    return false;
+                }
+
+                // Continue reading the data until EOF reached
+                QByteArray data;
+
+                while(unarchive->waitForReadyRead())
+                    data.append(unarchive->readAll());
+
+                // Output the data
+                qDebug().noquote().nospace() << "CONSOLE:" << data;
+            }
+
+            // Second peform the installer if one does exist
+            QString installer = WBIOServerCommon::getBotInstaller(client->botType);
+            if (!installer.isEmpty()){
+                // Create a process to run the installer
+                QProcess *runInstaller = new QProcess(this);
+                runInstaller->setProcessChannelMode(QProcess::MergedChannels);
+                runInstaller->setWorkingDirectory(destPath);
+                runInstaller->start(installer, QIODevice::ReadWrite);
+
+                while(runInstaller->waitForReadyRead()) {
+                    QString bytes = QString(runInstaller->readAll());
+                    if (!bytes.isEmpty()) {
+                        qDebug().noquote().nospace() << "CONSOLE:" << bytes;
+                    }
+                }
+            }
+
+            // Thirs peform the configure if one does exist
+            QString configure = WBIOServerCommon::getBotConfigure(client->botType);
+            if (!configure.isEmpty()){
+                QString configureFullpath = QString("%1/%2").arg(destPath).arg(configure);
+                if (!runBotScript(destPath, configureFullpath)) {
+                    qDebug().noquote().nospace() << "CONSOLE:Failed to configure " << client->botType;
+                    return false;
+                }
+            }
+
         }
     }
-#endif
+
 
     return !quit;
+}
+
+/**
+ * @brief CmdClient::runBotScript
+ * This function will run the input script. The script has commands in it to identify if input
+ * is required.
+ * @param destPath
+ * @param configure
+ * @return
+ */
+bool
+CmdClient::runBotScript(const QString& destPath, const QString& configure)
+{
+    // Create a process to run the configure
+    QProcess *runScript = new QProcess(this);
+
+    connect(runScript, &QProcess::errorOccurred, [=](QProcess::ProcessError error) {
+        qDebug() << "CONSOLE:error enum val = " << error;
+    });
+    runScript->setProcessChannelMode(QProcess::MergedChannels);
+    runScript->setWorkingDirectory(destPath);
+    runScript->start(configure, QIODevice::ReadWrite);
+
+    // Wait for it to start
+    if(!runScript->waitForStarted()) {
+        qDebug() << QString("CONSOLE:Failed to run %1").arg(configure);
+        return false;
+    }
+
+    while(runScript->waitForReadyRead(-1)) {
+        while(runScript->canReadLine()) {
+            QString bytes = QString(runScript->readLine());
+            if (!bytes.isEmpty()) {
+                if (bytes.startsWith("PROMPT:")) {
+                    QString prompt = bytes.right(bytes.length()-7);     // size of string - sizeof "PROMPT:"
+                    QString curVal;
+                    prompt = prompt.remove(QRegExp("[\\n\\t\\r]"));
+                    QString input = getNewValue(curVal, prompt);
+                    input.append("\n");
+                    runScript->write(input.toLatin1());
+                } else {
+                    bytes = bytes.remove(QRegExp("[\\n\\t\\r]"));
+                    qDebug().noquote().nospace() << "CONSOLE:" << bytes;
+                }
+            }
+        }
+    }
+    return true;
 }
 
 void CmdClient::slotCmdFinished(int, QProcess::ExitStatus)

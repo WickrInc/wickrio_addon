@@ -41,6 +41,8 @@ private:
 
     bool sendClientCmd(int port, const QString& cmd);
 
+    bool runBotScript(const QString& destPath, const QString& configure);
+
 private:
     CmdOperation *m_operation;
     WickrIOSSLSettings m_sslSettings;
