@@ -6,6 +6,7 @@
 
 #include "requests/wickrRequests.h"
 #include "requests/wickrSessionRequests.h"
+#include "requests/wickrUserRequests.h"
 #include "session/wickrPreRegistrationIface.h"
 
 #include "operationdata.h"

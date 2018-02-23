@@ -10,7 +10,8 @@
 #include "wickrIOServiceBase.h"
 
 #include "user/wickrUser.h"
-#include "requests//wickrRequests.h"
+#include "requests/wickrRequests.h"
+#include "requests/wickrUserRequests.h"
 
 #include "wickriodatabase.h"
 #include "wickrIOJson.h"
