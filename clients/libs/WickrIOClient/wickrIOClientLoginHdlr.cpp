@@ -4,6 +4,7 @@
 #include "filetransfer/wickrCloudTransferMgr.h"
 #include "session/wickrRegistrationCtx.h"
 #include "requests/wickrSessionRequests.h"
+#include "requests/wickrUserRequests.h"
 #include "common/wickrRuntime.h"
 
 WickrIOClientLoginHdlr::WickrIOClientLoginHdlr(OperationData *operation, int loginVersion) :

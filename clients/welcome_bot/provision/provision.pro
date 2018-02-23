@@ -112,6 +112,8 @@ include($${DEPTH}/shared/common_http/common_http.pri)
 INCLUDEPATH += $$DEPTH/wickr-sdk/export
 INCLUDEPATH += $$DEPTH/wickr-sdk/src
 INCLUDEPATH += $$DEPTH/wickr-sdk/export/Wickr
+INCLUDEPATH += $$DEPTH/wickr-sdk/libs/qbson
+INCLUDEPATH += $$DEPTH/wickr-sdk/libs/libbson
 
 #
 # Include the Wickr IO library
