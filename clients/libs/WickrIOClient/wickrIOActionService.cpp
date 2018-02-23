@@ -6,6 +6,7 @@
 #include "Wickr/aes/AESHelper.h"
 #include "filetransfer/wickrCloudTransferMgr.h"
 #include "common/wickrRuntime.h"
+#include "requests/wickrUserRequests.h"
 #include "wickrbotactiondatabase.h"
 
 WickrIOActionService::WickrIOActionService(OperationData *operation) : WickrIOServiceBase("WickrIOActionThread"),
@@ -405,7 +406,8 @@ bool WickrIOActionThread::processActionSendMessage(WickrBotJson *jsonHandler, in
                                                    0,
                                                    QString(),
                                                    false,
-                                                   0);
+                                                   0,
+                                                   QString());
         if (!user) {
             m_operation->log_handler->error("cannot find/create user with ID = " + userID);
             m_messagesFailed++;

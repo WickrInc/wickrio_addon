@@ -83,6 +83,7 @@ include(../../libs/WickrIOClient/WickrIOClient.pri)
 INCLUDEPATH += $$DEPTH/wickr-sdk/export
 INCLUDEPATH += $$DEPTH/wickr-sdk/src
 INCLUDEPATH += $$DEPTH/wickr-sdk/export/Wickr
+INCLUDEPATH += $$DEPTH/wickr-sdk/libs/qbson
 
 #
 # Include the Wickr IO library

@@ -104,6 +104,8 @@ INCLUDEPATH += $$DEPTH/wickr-sdk/export
 INCLUDEPATH += $$DEPTH/wickr-sdk/src
 INCLUDEPATH += $$DEPTH/wickr-sdk/export/Wickr
 INCLUDEPATH += $$DEPTH/services/common
+INCLUDEPATH += $$DEPTH/wickr-sdk/libs/qbson
+INCLUDEPATH += $$DEPTH/wickr-sdk/libs/libbson
 
 #
 # Include the Wickr IO Console library
