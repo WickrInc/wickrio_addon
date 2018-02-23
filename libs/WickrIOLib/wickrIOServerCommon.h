@@ -17,24 +17,32 @@
 class WBIOBotTypes
 {
 public:
-    WBIOBotTypes(const QString& name, const QString& type, const QString& swLoc, const QString& installer, const QString& configure) :
+    WBIOBotTypes(const QString& name, const QString& type, const QString& swLoc,
+                 const QString& installer, const QString& configure,
+                 const QString& startCmd, const QString& stopCmd) :
         m_name(name),
         m_type(type),
         m_swLocation(swLoc),
         m_installer(installer),
-        m_configure(configure) {}
+        m_configure(configure),
+        m_startCmd(startCmd),
+        m_stopCmd(stopCmd) {}
 
     QString m_name;
     QString m_type;
     QString m_swLocation;
     QString m_installer;
     QString m_configure;
+    QString m_startCmd;
+    QString m_stopCmd;
 
     QString name()       { return m_name; }
     QString type()       { return m_type; }
     QString swLocation() { return m_swLocation; }
     QString installer()  { return m_installer; }
     QString configure()  { return m_configure; }
+    QString startCmd()   { return m_startCmd; }
+    QString stopCmd()    { return m_stopCmd; }
 };
 
 

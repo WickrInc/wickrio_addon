@@ -39,7 +39,7 @@
 
 #define WBIO_PARSER_SETTINGS_FORMAT     "%1/%2.ini"
 
-#define WBIO_CLIENT_BOTDIR_FORMAT       "%1/clients/%2/integration"
+#define WBIO_CLIENT_BOTDIR_FORMAT       "%1/clients/%2/integration/%3"
 
 #ifdef Q_OS_WIN
 #define WBIO_DEFAULT_DBLOCATION         TBD

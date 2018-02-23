@@ -21,7 +21,7 @@ CmdAdvanced::CmdAdvanced(CmdOperation *operation) :
  * statistics and status information about the running processes. SSL settings are used
  * for HTTPS connections, and are required to be setup.
  */
-bool CmdAdvanced::runCommands()
+bool CmdAdvanced::runCommands(QString commands)
 {
     QTextStream input(stdin);
 

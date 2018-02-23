@@ -27,7 +27,7 @@ CmdConsole::~CmdConsole()
  * @brief CmdConsole::runConsoleCommands
  * This function will handle user input associated with the Console commands.
  */
-bool CmdConsole::runCommands()
+bool CmdConsole::runCommands(QString commands)
 {
     if (m_consoleServer == NULL) {
         m_consoleServer = new ConsoleServer(m_operation->m_ioDB);

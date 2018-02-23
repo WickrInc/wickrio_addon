@@ -23,7 +23,7 @@ CmdUsers::~CmdUsers()
  * @brief CmdUsers::runConsoleCommands
  * This function will handle user input associated with the Users commands.
  */
-bool CmdUsers::runCommands()
+bool CmdUsers::runCommands(QString commands)
 {
     QTextStream input(stdin);
 

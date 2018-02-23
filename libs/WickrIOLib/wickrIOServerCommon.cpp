@@ -86,8 +86,10 @@ WBIOServerCommon::initClientApps()
 {
     if (!m_initialized) {
 
-        WBIOBotTypes *hubot      = new WBIOBotTypes("hubot",      "hubot",      "integrations/software/hubot/software.tar.gz",      "install.sh", "configure.sh");
-        WBIOBotTypes *supportBot = new WBIOBotTypes("supportBot", "supportbot", "integrations/software/supportbot/software.tar.gz", "install.sh", "configure.sh");
+        WBIOBotTypes *hubot      = new WBIOBotTypes("hubot",      "hubot",      "integrations/software/hubot/software.tar.gz",
+                                                    "install.sh", "configure.sh", "start.sh", "stop.sh" );
+        WBIOBotTypes *supportBot = new WBIOBotTypes("supportBot", "supportbot", "integrations/software/supportbot/software.tar.gz",
+                                                    "install.sh", "configure.sh", "start.sh", "stop.sh" );
         WBIOServerCommon::m_supportedBots.append(hubot);
         WBIOServerCommon::m_supportedBots.append(supportBot);
 

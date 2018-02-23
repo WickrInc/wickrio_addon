@@ -49,6 +49,7 @@ private:
     QString pauseClient(const QString& clientName);
     QString startClient(const QString& clientName);
     QString getStats(const QString& clientName);
+    QString addClient(const QString& txt, WickrIOCmdState *cmdState);
 
     QString sendFile(const QString& txt, WickrIOCmdState *cmdState);
     QString sendMessage(const QString& txt, WickrIOCmdState *cmdState);

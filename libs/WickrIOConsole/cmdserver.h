@@ -20,7 +20,7 @@ public:
     explicit CmdServer(CmdOperation *operation);
     ~CmdServer() {}
 
-    bool runCommands();
+    bool runCommands(QString commands=QString());
     void status();
 
 private:

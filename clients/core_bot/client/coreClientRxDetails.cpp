@@ -21,6 +21,7 @@
 #include "wickrIOConsoleClientHandler.h"
 #include "consoleserver.h"
 #include "wickrIOSendMessageState.h"
+#include "wickrIOAddClientState.h"
 
 CoreClientRxDetails::CoreClientRxDetails(OperationData *operation) : WickrIORxDetails(operation)
 {
@@ -249,6 +250,8 @@ bool CoreClientRxDetails::processMessage(WickrDBObject *item)
                                 }
                             } else if (commands[1] == "statistics") {
                                 jsonHandler->m_message = getStats(raw[2]);
+                            } else if (commands[1] == "add") {
+                                jsonHandler->m_message = addClient(txt, cmdState);
                             } else {
                                 jsonHandler->m_message = "Invalid command";
                             }
@@ -522,6 +525,50 @@ CoreClientRxDetails::startClient(const QString& clientName)
         return "Could not get the clients state!";
     }
 }
+
+QString CoreClientRxDetails::addClient(const QString& txt, WickrIOCmdState *cmdState)
+{
+    WickrIOAddClientState *cs;
+
+    if (cmdState) {
+        cs = static_cast<WickrIOAddClientState *>(cmdState);
+        if (cs == nullptr) {
+            cmdState->setDone();
+            return "Internal failure!";
+        }
+
+        cs->m_process.write(txt.toLatin1());
+    } else {
+        cs = new WickrIOAddClientState(m_userid, txt);
+        cs->setCommand(0);
+
+        QString command = "WickrIOConsoleCmd \"client,add\"";
+
+        cs->m_process.setProcessChannelMode(QProcess::MergedChannels);
+        cs->m_process.start(command, QIODevice::ReadWrite);
+        addCmdState(m_userid, cs);
+    }
+
+    if (!cs->m_process.waitForStarted()) {
+        delete cs;
+        return "Failed to start create client software!";
+    }
+
+    bool gotaline = false;
+    while (cs->m_process.waitForReadyRead(-1)) {
+        while (cs->m_process.canReadLine()) {
+            QString bytes = QString(cs->m_process.readLine());
+            cs->setOutput(bytes);
+            gotaline = true;
+            break;
+        }
+        if (gotaline)
+            break;
+    }
+
+    return cs->output();
+}
+
 
 QString
 CoreClientRxDetails::getStats(const QString& clientName)

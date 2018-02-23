@@ -20,7 +20,7 @@ CmdServer::CmdServer(CmdOperation *cmdOperation) :
  * @brief CmdServer::runCommands
  * This function will handle user input associated with the Client Server commands.
  */
-bool CmdServer::runCommands()
+bool CmdServer::runCommands(QString commands)
 {
     if (m_consoleServer == NULL) {
         m_consoleServer = new ConsoleServer(m_cmdOperation->m_ioDB);

@@ -20,7 +20,7 @@ public:
     explicit CmdUsers(CmdOperation *operation);
     ~CmdUsers();
 
-    bool runCommands();
+    bool runCommands(QString commands=QString());
     void status();
 
 private:

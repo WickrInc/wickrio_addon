@@ -154,7 +154,8 @@ HEADERS += \
     coreClientConfigInfo.h \
     coreClientRxDetails.h \
     requesthandler.h \
-    wickrIOSendMessageState.h
+    wickrIOSendMessageState.h \
+    wickrIOAddClientState.h
 
 # qsqlcipher_wickr
 
