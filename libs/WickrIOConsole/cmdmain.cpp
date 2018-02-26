@@ -42,10 +42,10 @@ bool CmdMain::processCommand(QString cmd, QString args)
         qDebug() << "CONSOLE:  client   - to setup the clients";
         qDebug() << "CONSOLE:  advanced - to setup the advanced settings";
         qDebug() << "CONSOLE:  server   - to setup the clients server settings";
+        qDebug() << "CONSOLE:  console  - to setup the console server settings";
         if (m_hasMotherBotBinary) {
-            qDebug() << "CONSOLE:  console  - to setup the console server settings";
+            qDebug() << "CONSOLE:  users    - to setup the mother bot users";
         }
-        qDebug() << "CONSOLE:  users    - to setup the mother bot users";
         qDebug() << "CONSOLE:  quit     - to exit the program";
     } else {
         qDebug() << "CONSOLE:" << cmd << "is not a known command!";

@@ -708,6 +708,10 @@ CmdClient::getAuthToken(WickrBotClients *client, QString& authToken)
 bool
 CmdClient::runBotScript(const QString& destPath, const QString& configure, WickrBotClients *client)
 {
+    // Values associated with the CallbackURL
+    QString cbackEndPoint;
+    QString cbackPort;
+
     // Create a process to run the configure
     QProcess *runScript = new QProcess(this);
 
@@ -728,28 +732,54 @@ CmdClient::runBotScript(const QString& destPath, const QString& configure, Wickr
         while(runScript->canReadLine()) {
             QString bytes = QString(runScript->readLine());
             if (!bytes.isEmpty()) {
-                if (bytes.toLower().startsWith("prompt:")) {
-                    QString prompt = bytes.right(bytes.length()-7).remove(QRegExp("[\\n\\t\\r]")).replace(" ", "");     // size of string - sizeof "PROMPT:"
-                    if (prompt == "AUTH_TOKEN") {
-                        QString authToken;
-                        if (!getAuthToken(client, authToken)) {
-                            runScript->close();
-                            return false;
-                        }
+                QStringList inputList = bytes.split(":");
 
-                        authToken.append("\n");
-                        runScript->write(authToken.toLatin1());
-                    } else if (prompt == "BOT_SERVER") {
-                        QString server = QString("%1://%2:%3/Apps/%5\n")
-                                .arg(client->isHttps ? "https" : "http")
-                                .arg(client->iface)
-                                .arg(client->port)
-                                .arg(client->apiKey);
-                        runScript->write(server.toLatin1());
+                if (inputList.size() > 1 && inputList[0].toLower() == "prompt") {
+                    bool promptForValue = false;
+                    if (inputList.size() == 3) {
+                        QString prompt = inputList[2].remove(QRegExp("[\\n\\t\\r]")).replace(" ", "");
+
+                        if (prompt == "WICKRIO_AUTH_TOKEN") {
+                            QString authToken;
+                            if (!getAuthToken(client, authToken)) {
+                                runScript->close();
+                                return false;
+                            }
+
+                            authToken.append("\n");
+                            runScript->write(authToken.toLatin1());
+                        } else if (prompt == "WICKRIO_SERVER") {
+                            QString server = QString("%1://%2:%3/Apps/%5\n")
+                                    .arg(client->isHttps ? "https" : "http")
+                                    .arg(client->iface)
+                                    .arg(client->port)
+                                    .arg(client->apiKey);
+                            runScript->write(server.toLatin1());
+                        } else if (prompt == "HUBOT_NAME") {
+                            QString botName = QString("%1_hubot\n").arg(client->name);
+                            runScript->write(botName.toLatin1());
+                        } else if (prompt == "HUBOT_URL_ENDPOINT") {
+                            cbackEndPoint = QString("Apps/%1").arg(client->port);
+                            QString endpoint = QString("%1\n").arg(cbackEndPoint);
+                            runScript->write(endpoint.toLatin1());
+                        } else if (prompt == "HUBOT_URL_PORT") {
+                            QString cbackPortPrompt = QString("Enter the port the %1 integration will listen on").arg(client->botType);
+                            cbackPort = getNewValue(cbackPort, cbackPortPrompt);
+                            QString outString = QString("%1\n").arg(cbackPort);
+                            runScript->write(outString.toLatin1());
+                        } else {
+                            promptForValue = true;
+                        }
                     } else {
+                        promptForValue = true;
+                    }
+
+                    // If there was no known token asked for then prompt to the user
+                    if (promptForValue) {
+                        QString prompt = bytes.right(bytes.length()-7).remove(QRegExp("[\\n\\t\\r]"));     // size of string - sizeof "PROMPT:"
                         QString curVal;
                         prompt = prompt.remove(QRegExp("[\\n\\t\\r]"));
-                        prompt = QString("Enter value for %1").arg(prompt.toLower());
+//                        prompt = QString("Enter value for %1").arg(prompt.toLower());
                         QString input = getNewValue(curVal, prompt);
                         input.append("\n");
                         runScript->write(input.toLatin1());
@@ -760,6 +790,11 @@ CmdClient::runBotScript(const QString& destPath, const QString& configure, Wickr
                 }
             }
         }
+    }
+
+    // If the callback valuee are set then create the callback url for this client
+    if (!cbackEndPoint.isEmpty() && !cbackPort.isEmpty()) {
+        client->m_callbackString = QString("http://localhost:%1/%2").arg(cbackPort).arg(cbackEndPoint);
     }
     return true;
 }
@@ -801,6 +836,15 @@ void CmdClient::addClient()
         // Add the new record to the database
         QString errorMsg = WickrIOConsoleClientHandler::addClient(m_operation->m_ioDB, client);
         if (errorMsg.isEmpty()) {
+            if (!client->m_callbackString.isEmpty()) {
+                WickrIOAppSettings appSetting;
+                appSetting.clientID = client->id;
+                appSetting.type = DB_APPSETTINGS_TYPE_MSGRECVCALLBACK;
+                appSetting.value = client->m_callbackString;
+                if (!m_operation->m_ioDB->updateAppSetting(&appSetting)) {
+                    qDebug() << "CONSOLE:Failed to create callback connection!";
+                }
+            }
             qDebug() << "CONSOLE:Successfully added record to the database!";
             break;
         } else {
