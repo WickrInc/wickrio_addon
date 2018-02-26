@@ -172,7 +172,12 @@ void CmdClient::listClients()
             consoleUser = "Not set";
         }
 
-        QString data = QString("CONSOLE: client[%1] %2, APIKey=%3, User=%4, Port=%5, Binary=%6, State=%7, ConsoleUser=%8")
+        QString botTypeString;
+        if (!client->botType.isEmpty()) {
+            botTypeString = QString(", Integration=%1").arg(client->botType);
+        }
+
+        QString data = QString("CONSOLE: client[%1] %2, APIKey=%3, User=%4, Port=%5, Binary=%6, State=%7, ConsoleUser=%8%9")
             .arg(cnt++)
             .arg(client->name)
             .arg(client->apiKey)
@@ -180,7 +185,8 @@ void CmdClient::listClients()
             .arg(client->port)
             .arg(client->binary)
             .arg(clientState)
-            .arg(consoleUser);
+            .arg(consoleUser)
+            .arg(botTypeString);
         qDebug() << qPrintable(data);
     }
 }
@@ -514,9 +520,13 @@ bool CmdClient::getClientValues(WickrBotClients *client)
      * setup an integration bot, if the users desires to use one
      */
     QList<WBIOBotTypes *>botTypes = WBIOServerCommon::getBotsSupported(binary);
+    QString rmBotType;
     if (botTypes.length() > 0) {
+        QString hasIntBot;
+        hasIntBot = client->botType.isEmpty() ? "no" : "yes";
+
         // If the user wants to connect the client to an integration bot
-        temp = getNewValue("no", tr("Do you want to connect to a integration bot?"), CHECK_BOOL);
+        temp = getNewValue(hasIntBot, tr("Do you want to connect to a integration bot?"), CHECK_BOOL);
         if (temp == "yes") {
             QStringList possibleBotTypes;
             for (WBIOBotTypes *bt : botTypes) {
@@ -529,10 +539,35 @@ bool CmdClient::getClientValues(WickrBotClients *client)
             if (handleQuit(temp, &quit) && quit) {
                 return false;
             }
-            if (temp != "none")
+            if (temp != "none") {
+                // if the bottype has changed then remove the old software
+                if (client->botType != temp)
+                    rmBotType = client->botType;
+
                 client->botType = temp;
-            else
+            } else {
+                rmBotType = client->botType;
                 client->botType = QString();
+            }
+        } else {
+            rmBotType = client->botType;
+        }
+    }
+
+    // If there is a integration bot software to remove then do so
+    if (!rmBotType.isEmpty()) {
+        // Getting rid of the integration bot, will have to remove the current installation directory
+        QString destPath = QString(WBIO_CLIENT_BOTDIR_FORMAT)
+                .arg(WBIO_DEFAULT_DBLOCATION)
+                .arg(client->name)
+                .arg(rmBotType);
+        if (!destPath.isEmpty()) {
+            qDebug().noquote().nospace() << "CONSOLE:Removing software installation for previous integration " << rmBotType;
+            QDir destDir(destPath);
+            if (destDir.exists()) {
+                if (!destDir.removeRecursively())
+                    qDebug().noquote().nospace() << "CONSOLE:Could not remove " << destPath;
+            }
         }
     }
 
