@@ -107,6 +107,8 @@ public:
     static QString getBotSoftwarePath(const QString& botType);
     static QString getBotInstaller(const QString& botType);
     static QString getBotConfigure(const QString& botType);
+    static QString getBotStartCmd(const QString& botType);
+    static QString getBotStopCmd(const QString& botType);
 
 private:
     static bool                     m_initialized;

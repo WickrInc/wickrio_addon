@@ -448,13 +448,20 @@ bool CmdClient::getClientValues(WickrBotClients *client)
 
     QList<WickrIOConsoleUser *> cusers = m_operation->m_ioDB->getConsoleUsers();
     if (cusers.length() > 0) {
-        int curindex;
+        int curindex = -1;
+        QString temp;
         if (client->console_id != 0) {
-
+            int cnt=0;
+            for (WickrIOConsoleUser *cuser : cusers) {
+                if (cuser->id == client->console_id) {
+                    curindex = cnt;
+                    break;
+                }
+                cnt++;
+            }
         } else {
             curindex = -1;
         }
-        QString temp;
         temp = getNewValue(curindex == -1 ? "n" : "y", tr("Associate with a console user?"));
         if (handleQuit(temp, &quit) && quit) {
         } else if (temp == "y") {
@@ -551,6 +558,7 @@ bool CmdClient::getClientValues(WickrBotClients *client)
             }
         } else {
             rmBotType = client->botType;
+            client->botType = QString();
         }
     }
 
@@ -1060,6 +1068,43 @@ void CmdClient::pauseClient(int clientIndex, bool force)
         WickrBotClients *client = m_clients.at(clientIndex);
         WickrBotProcessState state;
         QString processName = WBIOServerCommon::getClientProcessName(client);
+
+        // check if there is a integration bot set, if so stop it from running
+        if (!client->botType.isEmpty()) {
+            QString stopCmd = WBIOServerCommon::getBotStopCmd(client->botType);
+            if (!stopCmd.isEmpty()) {
+                QString destPath = QString(WBIO_CLIENT_BOTDIR_FORMAT)
+                        .arg(WBIO_DEFAULT_DBLOCATION)
+                        .arg(client->name)
+                        .arg(client->botType);
+                QString stopFullPath = QString("%1/%2").arg(destPath).arg(stopCmd);
+
+                qDebug() << "**********************************";
+                qDebug() << QString("Stopping %1").arg(stopFullPath);
+
+                // Create a process to run the installer
+                QProcess *runBotStopCmd = new QProcess(this);
+                runBotStopCmd->setProcessChannelMode(QProcess::MergedChannels);
+                runBotStopCmd->setWorkingDirectory(destPath);
+                runBotStopCmd->start(stopFullPath, QIODevice::ReadWrite);
+
+                // Wait for it to start
+                if(!runBotStopCmd->waitForStarted()) {
+                    qDebug() << "Failed to run %1";
+                } else {
+                    QStringList stopOutput;
+
+                    while(runBotStopCmd->waitForReadyRead()) {
+                        QString bytes = QString(runBotStopCmd->readAll());
+                        stopOutput.append(bytes);
+                    }
+                }
+
+                qDebug() << "Done stopping the integration bot!";
+                qDebug() << "**********************************";
+            }
+        }
+
 
         if (m_operation->m_ioDB->getProcessState(processName, &state)) {
             if (state.ipc_port == 0) {

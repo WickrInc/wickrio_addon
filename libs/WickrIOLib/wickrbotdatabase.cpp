@@ -897,7 +897,7 @@ WickrBotDatabase::getClients()
     if (!initialized)
         return clients;
 
-    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile,binary FROM clients";
+    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile,binary,integration_type FROM clients";
     QSqlQuery *query = new QSqlQuery(m_db);
     query->prepare(queryString);
 

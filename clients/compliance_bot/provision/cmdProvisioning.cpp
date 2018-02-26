@@ -22,27 +22,15 @@ bool CmdProvisioning::runCommands()
 
     // Need to have a valid compliance bot running
 
-
-#if 1
+#if defined(WICKR_ENTERPRISE)
     // Force client type to onprem for now
     m_client->onPrem = true;
+#elif defined(WICKR_MESSENGER)
+    // Force client type to onprem for now
+    m_client->onPrem = false;
 #else
-    // Get the client type
-    while (true) {
-        QString clienttype;
-        clienttype = getNewValue(m_clientType, tr("CONSOLE:Enter the client type"));
-        if (clienttype.toLower() == "cloud") {
-            m_clientType = clienttype;
-            m_client->onPrem = false;
-        } else if (clienttype.toLower() == "onprem") {
-            m_clientType = clienttype;
-            m_client->onPrem = true;
-        } else {
-            qDebug() << "CONSOLE:Invalid client type, enter either cloud or onprem";
-            continue;
-        }
-        break;
-    }
+    // Force client type to onprem for now
+    m_client->onPrem = false;
 #endif
 
     // Some default WIO stuff
@@ -76,7 +64,7 @@ bool CmdProvisioning::runCommands()
 
     } else {
         m_client->user = CmdBase::getNewValue(m_client->user, "Enter user name", CHECK_NONE);
-        m_client->password = CmdBase::getNewValue(m_client->password, "Enter user name", CHECK_NONE);
+        m_client->password = CmdBase::getNewValue(m_client->password, "Enter password name", CHECK_NONE);
         m_invitation = CmdBase::getNewValue(m_invitation, "Enter invitation", CHECK_NONE);
     }
 

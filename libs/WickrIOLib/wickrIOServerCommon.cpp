@@ -295,3 +295,29 @@ WBIOServerCommon::getBotConfigure(const QString& botType)
     }
     return QString();
 }
+
+QString
+WBIOServerCommon::getBotStartCmd(const QString& botType)
+{
+    WBIOServerCommon::initClientApps();
+
+    for (WBIOBotTypes *bottypes : WBIOServerCommon::m_supportedBots) {
+        if (bottypes->m_name == botType) {
+            return bottypes->m_startCmd;
+        }
+    }
+    return QString();
+}
+
+QString
+WBIOServerCommon::getBotStopCmd(const QString& botType)
+{
+    WBIOServerCommon::initClientApps();
+
+    for (WBIOBotTypes *bottypes : WBIOServerCommon::m_supportedBots) {
+        if (bottypes->m_name == botType) {
+            return bottypes->m_stopCmd;
+        }
+    }
+    return QString();
+}

@@ -631,6 +631,42 @@ bool WickrIOClientServerService::startClient(WickrBotClients *client)
 #endif
         return false;
     }
+
+    // Check if there is an integration to start for this client
+    if (!client->botType.isEmpty()) {
+        QString startCmd = WBIOServerCommon::getBotStartCmd(client->botType);
+        if (!startCmd.isEmpty()) {
+            QString destPath = QString(WBIO_CLIENT_BOTDIR_FORMAT)
+                    .arg(WBIO_DEFAULT_DBLOCATION)
+                    .arg(client->name)
+                    .arg(client->botType);
+            QString startFullPath = QString("%1/%2").arg(destPath).arg(startCmd);
+
+            m_operation->log_handler->log("**********************************");
+            m_operation->log_handler->log(QString("Starting %1").arg(startFullPath));
+
+            // Create a process to run the installer
+            QProcess *runBotStartCmd = new QProcess(this);
+            runBotStartCmd->setProcessChannelMode(QProcess::MergedChannels);
+            runBotStartCmd->setWorkingDirectory(destPath);
+            runBotStartCmd->start(startFullPath, QIODevice::ReadWrite);
+
+            // Wait for it to start
+            if(!runBotStartCmd->waitForStarted()) {
+                qDebug() << "Failed to run %1";
+            } else {
+                QStringList startOutput;
+
+                while(runBotStartCmd->waitForReadyRead()) {
+                    QString bytes = QString(runBotStartCmd->readAll());
+                    startOutput.append(bytes);
+                }
+            }
+
+            m_operation->log_handler->log("Done starting!");
+            m_operation->log_handler->log("**********************************");
+        }
+    }
 #ifdef DEBUG_TRACE
     qDebug() << "Leaving startClient";
 #endif
