@@ -1,0 +1,67 @@
+{"tests": 
+	[
+		{"tag":"greeting",
+		"question": "Hello there"
+		},
+		{"tag":"verificationDot",
+		"question": "What is the spot by my avatar?"
+		},
+		{"tag": "verification",
+		"question": "How do I verify?"
+		},
+		{"tag":"thanks",
+		"question": "thanks for the help"
+		},
+		{"tag":"goodbye",
+		"question":"bye for now"
+		},
+		{"tag":"moreInfo",
+		"question": "How do I find more info about wickr?"
+		},
+		{"tag":"findFriend",
+		"question":"Where can I find people I know?"
+		},
+		{"tag":"findFriend",
+		"question":"I want to add new friends"
+		}, 
+		{"tag":"decryptionError",
+		"question": "Why can't I open my messages?"
+		},
+		{"tag":"wickr",
+		"question": "What is wickr?"
+		},
+		{"tag":"suspendedAccount",
+		"question": "Can you reactivate my account?"
+		},
+		{"tag":"version",
+		"question":"version number"
+		},
+		{"tag":"version",
+		"question": "Which version of wickr am I on?"
+		},
+		{"tag":"messageDestruct",
+		"question": "How can I remove message?"
+		},
+		{"tag":"unlock",
+		"question":"How to unlock new reply?"
+		},
+		{"tag":"verificationVideo",
+		"question":"How can I confirm my friend's identity?"
+		},
+		{"tag":"deleteAccount",
+		"question":"I want to delete my account"
+		},
+		{"tag":"verification",
+		"question":"Can I authenticate friends?"
+		},
+		{"tag":"deleteContact",
+		"question": "How do I delete someone?"
+		},
+		{"tag":"changeUsername",
+		"question":"I want to change my username"
+		},
+		{"tag":"media",
+		"question":"Send my friend a photo"
+		}
+	]
+}
