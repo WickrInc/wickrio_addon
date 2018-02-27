@@ -679,9 +679,10 @@ bool CmdClient::getClientValues(WickrBotClients *client)
 }
 
 bool
-CmdClient::getAuthToken(WickrBotClients *client, QString& authToken)
+CmdClient::getAuthValue(WickrBotClients *client, bool basic, QString& authValue)
 {
     WickrIOTokens token;
+    QString basicAuthString;
 
     // get the id of the console user to use for authentication
     if (client->console_id == 0) {
@@ -723,20 +724,36 @@ CmdClient::getAuthToken(WickrBotClients *client, QString& authToken)
         if (quit || curindex == -1)
             return false;
 
-        client->console_id = cusers.at(curindex)->id;
+        WickrIOConsoleUser *cuser = cusers.at(curindex);
+        client->console_id = cuser->id;
+
+        basicAuthString = QString("%1:%2").arg(cuser->user).arg(cuser->password);
 
         // Cleanup the allocated memory
         for (WickrIOConsoleUser *cuser : cusers) {
             delete cuser;
         }
+    } else if (basic) {
+        WickrIOConsoleUser cuser;
+
+        if (!m_operation->m_ioDB->getConsoleUser(client->console_id, &cuser)) {
+            qDebug() << "CONSOLE:There was a problem retrieving the console user!";
+            return false;
+        }
+        basicAuthString = QString("%1:%2").arg(cuser.user).arg(cuser.password);
     }
 
-    if (! m_operation->m_ioDB->getConsoleUserToken(client->console_id, &token)) {
-        qDebug() << "CONSOLE:There is no token associated with that console user!";
-        return false;
-    }
+    if (basic) {
+        authValue = basicAuthString;
+    } else {
+        if (! m_operation->m_ioDB->getConsoleUserToken(client->console_id, &token)) {
+            qDebug() << "CONSOLE:There is no token associated with that console user!";
+            return false;
+        }
 
-    authToken = token.token;
+        // Should set the actual authentication type!
+        authValue = token.token;
+    }
     return true;
 }
 
@@ -783,14 +800,15 @@ CmdClient::runBotScript(const QString& destPath, const QString& configure, Wickr
                         QString prompt = inputList[2].remove(QRegExp("[\\n\\t\\r]")).replace(" ", "");
 
                         if (prompt == "WICKRIO_AUTH_TOKEN") {
-                            QString authToken;
-                            if (!getAuthToken(client, authToken)) {
+                            QString authValue;
+                            // Get the basic authentication value (user:pw), should use token though
+                            if (!getAuthValue(client, true, authValue)) {
                                 runScript->close();
                                 return false;
                             }
 
-                            authToken.append("\n");
-                            runScript->write(authToken.toLatin1());
+                            authValue.append("\n");
+                            runScript->write(authValue.toLatin1());
                         } else if (prompt == "WICKRIO_SERVER") {
                             QString server = QString("%1://%2:%3/Apps/%5\n")
                                     .arg(client->isHttps ? "https" : "http")
@@ -802,7 +820,7 @@ CmdClient::runBotScript(const QString& destPath, const QString& configure, Wickr
                             QString botName = QString("%1_hubot\n").arg(client->name);
                             runScript->write(botName.toLatin1());
                         } else if (prompt == "HUBOT_URL_ENDPOINT") {
-                            cbackEndPoint = QString("Apps/%1").arg(client->port);
+                            cbackEndPoint = QString("/Apps/%1").arg(client->port);
                             QString endpoint = QString("%1\n").arg(cbackEndPoint);
                             runScript->write(endpoint.toLatin1());
                         } else if (prompt == "HUBOT_URL_PORT") {
@@ -837,7 +855,7 @@ CmdClient::runBotScript(const QString& destPath, const QString& configure, Wickr
 
     // If the callback valuee are set then create the callback url for this client
     if (!cbackEndPoint.isEmpty() && !cbackPort.isEmpty()) {
-        client->m_callbackString = QString("http://localhost:%1/%2").arg(cbackPort).arg(cbackEndPoint);
+        client->m_callbackString = QString("http://localhost:%1%2").arg(cbackPort).arg(cbackEndPoint);
     }
     return true;
 }

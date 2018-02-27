@@ -45,7 +45,7 @@ private:
 
     bool runBotScript(const QString& destPath, const QString& configure, WickrBotClients *client);
 
-    bool getAuthToken(WickrBotClients *client, QString& authToken);
+    bool getAuthValue(WickrBotClients *client, bool basic, QString& authValue);
 
 private:
     CmdOperation *m_operation;
