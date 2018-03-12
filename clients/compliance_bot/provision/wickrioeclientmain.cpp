@@ -256,10 +256,18 @@ void WickrIOEClientMain::slotLoginFailure()
  * @brief slotAdminUserSuspend (SWITCHBOARD SIGNAL)
  * Administrator forced logout received via switchboard.
  */
-void WickrIOEClientMain::slotAdminUserSuspend(const QString& reason)
+void WickrIOEClientMain::slotAdminUserSuspend(SBSessionError code, const QString& reason)
 {
-    // Display Informational Message
-    qDebug() << "Your account has been suspended!\nREASON: " << reason;
+    switch (code) {
+    case SBSessionError::SBS_SSO_EXPIRED:
+        break;
+    default:
+        // Display Informational Message
+        qDebug() << "Your account has been suspended!\nREASON: " << reason;
+
+        // TODO: Need to send a notification to an admin
+
+    }
 
 #if 0
     // Force logout

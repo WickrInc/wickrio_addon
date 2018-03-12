@@ -90,7 +90,7 @@ private slots:
 
     void slotOnLoginMsgSynchronizationComplete();
 
-    void slotAdminUserSuspend(const QString& reason);
+    void slotAdminUserSuspend(SBSessionError code, const QString& reason);
     void slotAdminDeviceSuspend();
     void slotSetSuspendError();
     void slotMessageDownloadStatusStart(int msgsToDownload);
