@@ -1,0 +1,85 @@
+{"intents": [
+	{"tag": "greeting",
+	"patterns": ["Hello", "Hi", "Good Morning", "Hey"],
+	"responses":["Hi there!", "Hey!"]
+	},
+	{"tag": "goodbye",
+	"patterns": ["Bye", "goodbye", "See you later"],
+	"responses": ["Goodbye!", "Hope to talk to you again soon"]
+	},
+	{"tag": "thanks",
+	"patterns": ["Thanks", "Thank you", "That was helpful"],
+	"responses": ["Glad I could help :)", "You're welcome!"]
+	},
+	{"tag": "verificationDot",
+	"patterns":["What are the dots next to name?", "What is the small circle by avatar?", "What is the orange point?", "My friend has a yellow dot", "There's a new red circle on image"],
+ 	"responses": ["The dot next to the user's name indicates the user is unverified. A yellow dot means you have not verified the user, while a red dot means the something has happen to cause the user to become unverified for you (usually due to having no active devices)."]
+	},
+	{"tag": "verification",
+	"patterns": ["What do you mean by verified?", "How do I verify a user?","What are verification videos?", "How do I confirm another user's identity?"],
+	"responses":["Verification happens by exchanging an Identity Verification Video with another user."]
+	},
+	{"tag":	"verificationVideo",
+	"patterns": ["How do I make verification video?", "How do I confirm who my friend is?", "how do I check identity of other users?", "Do you have any way to authenticate users?"],
+	"responses": [ "Identity confirmation can be done by exchanging Verification Videos. On Desktop, click the down arrow and select Identity Verification Video to make a video."]
+	},	
+	{"tag": "suspendedAccount",
+	"patterns": ["My account was suspended", "Help me reactivate my account", "Can I reactivate a suspended account"],
+	"responses":["Suspended accounts may only be reactivated in certain networks"],
+	"context": "application",
+	"enterprise":["You have a Wickr Enterprise Account. To reactivate your suspended account you need to talk with your system administrator."],
+	"messenger":["Reactivating a suspended Wickr Me account is not possible. You should create a new account."]
+	},
+	{"tag":"decryptionError",
+	"patterns":["I can't open my messages", "I am getting a decrytion error", "I can't unlock texts", "Why can't I open messages?"],
+	"responses":["Decrytion errors are situations when one receives a message but can't open, unlock or view it. This could be due to low signal strenght when sending or receiving. You should ask sended to retransmit the message from an area with higher signal strength."]
+	},
+	{"tag":"findFriend",
+	"patterns": ["How do I find more people I know?", "I am searching for person I know", "Looking up new friends", "Where can I find contacts?", "Finding someone I know"],
+	"responses": ["Finding friends is done by entering the menu and selecting Contact Finder"]
+	},
+	{"tag":"messageDestruct",
+	"patterns":["What is the message destruct?", "How do I change when texts get deleted?", "I want to keep messages longer", "Remove text I sent", "Help me set auto-destuct"],
+	"responses":["Click on the i to access message settings. The slide the timer to the expiration. You can also set a burn on read timer which will delete the message a set time after the receiver opens it."]
+	},
+	{"tag":"wickr",
+	"patterns":["What is wickr?", "tell me about your company", "tell me more about wickr"],
+	"responses":["Wickr is a platform for private ephemeral collaborations."],
+	"context": "application",
+	"messenger": ["Wickr Me is a platform for private ephemeral collaborations."],
+	"enterprise":["Wickr Pro is a platform for private ephemeral collaborations within your organizations."]
+	},
+	{"tag":"moreInfo",
+	"patterns":["Is there a website?","Where can I find more about the platform?", "Do you have a website for the app?", "I want to know more about wickr", "Where can I get more information about wickr?"],
+	"responses":["You can get more informations about Wickr on our website, wickr.com"]
+	},
+	{"tag":"version",
+	"patterns":["How do I check which version I am using?", "What version of wickr do I have?", "Where is the version number?"],
+	"responses":["On Desktop the version number is listing in the lower left. On mobile, clicking the menu in the upper right opens a screen with the version number at the bottom"]
+	},
+	{"tag":"unlock",
+	"patterns": ["How do I unlock messages?", "What is the lock icon covering messages?", "Can I lock replies?"],
+	"responses": ["Locking messages is done by going into the menu under settings andselecting whether you want the lock on or off"]
+	},
+	{"tag":"deleteAccount",
+	"patterns":["How can I delete wickr id?", "I want to remove my account", "delete wickrID", "help me delete wickr"],
+	"responses":["To delete your wickr me account, go to setting and click Terminate Account. Once you delete your account, the account will be irrevocably suspended to prevent impersonation"]
+	},
+	{"tag":"deleteContact",
+	"patterns":["Is there a way to remove contact?" ,"delete my contact", "I want to delete a friend", "Can I block someone?", "How can I block another user?"],
+	"responses":["To remove a contact, click on their profile icon and select the 'BLOCK' option"]
+	},
+	{"tag":"changeUsername",
+	"patterns":["Can I change my username?", "I want a new wickr id", "How do I change name?", "Is there a way to change username?"],
+	"responses":["Unfortunately you cannot change a WickrID once created. However, you are more than welcome to create a new onw"]
+	},
+	{"tag":"media",
+	"patterns":["How can I save files on wickr?", "Want to send a photo", "Can I send video?"],
+	"responses":[" Photos, videos and other files can be sent by Wickr Me. If you do not trust the person you're talking to, do not open files coming from them or send them photos/files you do not want to be saved."]
+	},
+	{"tag":"screenshot",
+	"patterns":["Can I take a screenshot in wickr?", "Can you disable screen capture?"],
+	"responses":["Screen capture is allowed in wickr as iPhone does not allow developers to disable screen capture."]
+	}
+	]
+}
