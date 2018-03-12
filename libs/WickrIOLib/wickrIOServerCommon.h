@@ -17,11 +17,13 @@
 class WBIOBotTypes
 {
 public:
-    WBIOBotTypes(const QString& name, const QString& type, const QString& swLoc,
+    WBIOBotTypes(const QString& name, const QString& type, const QString& msgIface,
+                 const QString& swLoc,
                  const QString& installer, const QString& configure,
                  const QString& startCmd, const QString& stopCmd) :
         m_name(name),
         m_type(type),
+        m_msgIface(msgIface),
         m_swLocation(swLoc),
         m_installer(installer),
         m_configure(configure),
@@ -30,6 +32,7 @@ public:
 
     QString m_name;
     QString m_type;
+    QString m_msgIface;
     QString m_swLocation;
     QString m_installer;
     QString m_configure;
@@ -109,6 +112,7 @@ public:
     static QString getBotConfigure(const QString& botType);
     static QString getBotStartCmd(const QString& botType);
     static QString getBotStopCmd(const QString& botType);
+    static QString getBotMsgIface(const QString& botType);
 
 private:
     static bool                     m_initialized;

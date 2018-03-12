@@ -7,6 +7,7 @@
 #define APIURL_APPS             "apps"
 #define APIURL_MESSAGES         "messages"
 #define APIURL_MSGRECVCBACK     "msgrecvcallback"
+#define APIURL_MSGRECVLIB       "msgrecvlibrary"
 #define APIURL_ROOMS            "rooms"
 #define APIURL_GROUPCONVO       "groupconvo"
 #define APIURL_MSGRECVEMAIL     "msgrecvemail"

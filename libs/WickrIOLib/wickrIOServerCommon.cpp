@@ -5,6 +5,7 @@
 #include "wickrIOCommon.h"
 #include "wickrIOServerCommon.h"
 #include "wickrbotsettings.h"
+#include "../../shared/common/wickrioapi.h"
 
 bool WBIOServerCommon::m_initialized = false;
 QList<WBIOClientApps *>  WBIOServerCommon::m_botApps;
@@ -86,9 +87,11 @@ WBIOServerCommon::initClientApps()
 {
     if (!m_initialized) {
 
-        WBIOBotTypes *hubot      = new WBIOBotTypes("hubot",      "hubot",      "integrations/software/hubot/software.tar.gz",
+        WBIOBotTypes *hubot      = new WBIOBotTypes("hubot",      "hubot",      APIURL_MSGRECVCBACK,
+                                                    "integrations/software/hubot/software.tar.gz",
                                                     "install.sh", "configure.sh", "start.sh", "stop.sh" );
-        WBIOBotTypes *supportBot = new WBIOBotTypes("supportBot", "supportbot", "integrations/software/supportbot/software.tar.gz",
+        WBIOBotTypes *supportBot = new WBIOBotTypes("supportBot", "supportbot", APIURL_MSGRECVLIB,
+                                                    "integrations/software/supportbot/software.tar.gz",
                                                     "install.sh", "configure.sh", "start.sh", "stop.sh" );
         WBIOServerCommon::m_supportedBots.append(hubot);
         WBIOServerCommon::m_supportedBots.append(supportBot);
@@ -317,6 +320,19 @@ WBIOServerCommon::getBotStopCmd(const QString& botType)
     for (WBIOBotTypes *bottypes : WBIOServerCommon::m_supportedBots) {
         if (bottypes->m_name == botType) {
             return bottypes->m_stopCmd;
+        }
+    }
+    return QString();
+}
+
+QString
+WBIOServerCommon::getBotMsgIface(const QString& botType)
+{
+    WBIOServerCommon::initClientApps();
+
+    for (WBIOBotTypes *bottypes : WBIOServerCommon::m_supportedBots) {
+        if (bottypes->m_name == botType) {
+            return bottypes->m_msgIface;
         }
     }
     return QString();
