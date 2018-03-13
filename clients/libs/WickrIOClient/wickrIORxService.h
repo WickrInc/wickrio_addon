@@ -47,6 +47,7 @@ private:
     mutable QReadWriteLock  m_lock;
     WickrIORxThread         *m_rxThread;
     bool                    m_isHealthy = true;
+    bool                    m_isReceiving = false;
 
     void startThreads(OperationData *operation, WickrIORxDetails *details);
     void stopThreads();

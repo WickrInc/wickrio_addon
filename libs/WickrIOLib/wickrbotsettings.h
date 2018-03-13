@@ -21,6 +21,7 @@
 #define WBSETTINGS_USER_USER            "user"
 #define WBSETTINGS_USER_PASSWORD        "password"
 #define WBSETTINGS_USER_USERNAME        "username"
+#define WBSETTINGS_USER_TRANSACTIONID   "transactionID"
 
 #define WBSETTINGS_CONFIG_HEADER        "configuration"
 #define WBSETTINGS_CONFIG_DORECEIVE     "doreceive"

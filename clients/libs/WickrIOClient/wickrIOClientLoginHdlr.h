@@ -10,21 +10,22 @@
 #include "session/wickrPreRegistrationIface.h"
 
 #include "operationdata.h"
+#include "wickrIOProvisionHdlr.h"
 
 class WickrBotLogin {
 public:
     QString m_name;
     QString m_pass;
     QString m_userName;
-    int m_sent;
-    int m_failedLogin;
-    bool m_creating;
+    QString m_transID;
+    int m_failedLogin = 0;
+    bool m_creating = false;
 
-    WickrBotLogin(QString name, QString pass, QString userName) :
+    WickrBotLogin(const QString& name, const QString& pass, const QString& userName, const QString& transID) :
         m_name(name),
         m_pass(pass),
-        m_userName(userName),
-        m_creating(false) {}
+        m_transID(transID),
+        m_userName(userName) {}
 };
 
 typedef enum { LoggedOut, InProcess, LoggedIn, LoggingOut, LoginsFailed } WickrIOClientLoginState;
@@ -47,8 +48,8 @@ public:
      * @param user The username of the new userSS
      * @param pass The password for the new user
      */
-    void addLogin(const QString& user, const QString& pass, const QString& userName) {
-        m_logins.append(new WickrBotLogin(user, pass, userName));
+    void addLogin(const QString& user, const QString& pass, const QString& userName, const QString& transID) {
+        m_logins.append(new WickrBotLogin(user, pass, userName, transID));
     }
 
 
@@ -66,13 +67,17 @@ private:
     long m_backupVersion;
     int  m_loginVersion;
 
+    WickrIOProvisionHdlr *m_provhdlr = nullptr;
+
     void loginNextUser();
     void refreshDirectory();
 
     WickrCore::WickrPreRegistrationIface *m_preRegDataIface;
 
 
-    void registerUser(const QString &wickrid, const QString &password, const QString &transactionid, bool newUser, bool sync, bool isRekey);
+    // Provisioning of new users
+    void startProvisionUser(const QString &wickrid, const QString &password, const QString &transactionid);
+
 
 signals:
     void signalExit();
@@ -90,6 +95,11 @@ private slots:
 
     void slotLoginStart(const QString& username, const QString& password);
 
+    void slotRegisterUser(const QString &wickrid, const QString &password, const QString &transactionid, bool newUser, bool sync, bool isRekey);
+    void slotRegisterOnPrem(const QString &username, const QString &password, const QString &newPassword, const QString &salt, const QString &transactionid, bool newUser, bool sync);
+
+    void slotProvisionFailed(const QString& errorString);
+    void slotProvisionPageChanged(WickrIOProvisionHdlr::Page page);
 };
 
 #endif // WICKRIOCLIENTLOGINHDLR_H

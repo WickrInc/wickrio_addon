@@ -11,6 +11,7 @@ WickrIOClientRuntime::WickrIOClientRuntime() {
     m_fileDownloadSvc = new WickrIOFileDownloadService();
     m_ipcSvc = new WickrIOIPCService();
     m_watchdogSvc = new WickrIOWatchdogService();
+    m_provisionHdlr = new WickrIOProvisionHdlr();
 
     m_initialized = true;
 }
@@ -125,6 +126,25 @@ WickrIOClientRuntime::wdSetShutdownState(int procState)
     WickrIOClientRuntime::get().m_watchdogSvc->setShutdownProcState(procState);
 }
 
+/**
+ * @brief WickrIO Message Callback Service API
+ */
+WickrIOProvisionHdlr*
+WickrIOClientRuntime::provHdlr() {
+    return WickrIOClientRuntime::get().m_provisionHdlr;
+}
+
+void
+WickrIOClientRuntime::provHdlrBeginOnPrem(const QString username, const QString password, const QString regToken)
+{
+    provHdlr()->onPremBegin(username, password, regToken);
+}
+
+void
+WickrIOClientRuntime::provHdlrBeginCloud(const QString &email, const QString password, const QString &inviteCode)
+{
+    provHdlr()->cloudBegin(email, password, inviteCode);
+}
 
 /**
  * @brief get (PRIVATE STATIC)
@@ -148,9 +168,10 @@ void WickrIOClientRuntime::cleanupResources() {
     }
     w_dynamicServices.clear();
 
-    delete m_watchdogSvc;       m_watchdogSvc = nullptr;
-    delete m_callbackSvc;       m_callbackSvc = nullptr;
-    delete m_fileDownloadSvc;   m_fileDownloadSvc = nullptr;
+    delete m_watchdogSvc;           m_watchdogSvc = nullptr;
+    delete m_callbackSvc;           m_callbackSvc = nullptr;
+    delete m_fileDownloadSvc;       m_fileDownloadSvc = nullptr;
+    m_provisionHdlr->deleteLater(); m_provisionHdlr = nullptr;
     m_initialized = false;
 }
 

@@ -673,6 +673,7 @@ Client::getClientSettings(WickrBotClients *client)
 
     settings->beginGroup(WBSETTINGS_USER_HEADER);
     client->password = settings->value(WBSETTINGS_USER_PASSWORD, QString("")).toString();
+    client->transactionID = settings->value(WBSETTINGS_USER_TRANSACTIONID, QString("")).toString();
     settings->endGroup();
 
     return true;

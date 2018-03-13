@@ -68,8 +68,8 @@ private:
 
     WickrIOIPCService *m_wickrIPC = nullptr;
 
-    WickrIORxService    *m_rxService;
-    WickrIORxDetails    *m_rxDetails;
+    WickrIORxService    *m_rxService = nullptr;
+    WickrIORxDetails    *m_rxDetails = nullptr;
 
     // Timer definitions
     void startTimer()

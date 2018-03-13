@@ -45,7 +45,7 @@ private:
 
     /**
      * @brief get
-     * Will return reference to singleton instance. Instantiated on first use (recommended from init() in main.cpp).
+     * Will return refereWickrIOProvisionHdlrnce to singleton instance. Instantiated on first use (recommended from init() in main.cpp).
      * Guaranteed to be destroyed.
      * @return
      */

@@ -8,6 +8,7 @@
 #include "wickrIOFileDownloadService.h"
 #include "wickrIOIPCService.h"
 #include "wickrIOWatchdogService.h"
+#include "wickrIOProvisionHdlr.h"
 
 #include "operationdata.h"
 
@@ -58,6 +59,14 @@ public:
     static WickrIOWatchdogService* wdSvc();
     static void wdSetShutdownState(int procState);
 
+    /**
+     * @brief provHdlr
+     * @return
+     */
+    static WickrIOProvisionHdlr* provHdlr();
+    static void provHdlrBeginOnPrem(const QString username, const QString password, const QString regToken);
+    static void provHdlrBeginCloud(const QString &email, const QString password, const QString &inviteCode);
+
     /*
      * cleanup of sending files, remove encrypted files
      */
@@ -78,6 +87,7 @@ private:
     WickrIOFileDownloadService  *m_fileDownloadSvc;
     WickrIOIPCService           *m_ipcSvc;
     WickrIOWatchdogService      *m_watchdogSvc;
+    WickrIOProvisionHdlr        *m_provisionHdlr;
 
     // Client runtime flags
     bool    m_removeSentEncryptedFiles = false;

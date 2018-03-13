@@ -117,12 +117,16 @@ void WickrIORxService::slotIsHealthy(bool health)
 
 void WickrIORxService::startReceive()
 {
+    m_isReceiving = true;
     emit signalStartReceive();
 }
 
 void WickrIORxService::stopReceive()
 {
-    emit signalStopReceive();
+    if (m_isReceiving) {
+        m_isReceiving = false;
+        emit signalStopReceive();
+    }
 }
 
 

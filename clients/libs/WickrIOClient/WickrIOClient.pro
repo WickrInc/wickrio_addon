@@ -102,6 +102,7 @@ HEADERS += \
     wickrIOFileDownloadService.h \
     wickrIOJson.h \
     wickrIOMessageCounter.h \
+    wickrIOProvisionHdlr.h \
     wickrIORxService.h \
     wickrIOWatchdogService.h \
     wickrIOServiceBase.h
@@ -118,6 +119,7 @@ SOURCES += \
     wickrIOEventService.cpp \
     wickrIOFileDownloadService.cpp \
     wickrIOJson.cpp \
+    wickrIOProvisionHdlr.cpp \
     wickrIORxService.cpp \
     wickrIOWatchdogService.cpp \
     wickrIOServiceBase.cpp
