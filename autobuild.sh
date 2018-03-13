@@ -115,10 +115,10 @@ case "$product-$btype" in
     messenger-release)
         lin_appid="3affc0dd77b249e492c8cea29441ee60"
         ;;
-    entrprise-alpha)
+    enterprise-alpha)
         lin_appid="7723eb32e3434bf6b724c4b04dd35306"
         ;;
-    entrprise-release)
+    enterprise-release)
         lin_appid="fe01942f8e394217a6d6e4d594738152"
         ;;
 esac
