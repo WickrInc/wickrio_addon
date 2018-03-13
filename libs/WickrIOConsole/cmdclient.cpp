@@ -353,6 +353,18 @@ bool CmdClient::getClientValues(WickrBotClients *client)
                 break;
             }
         }
+
+        // Get the transaction ID
+        while (true) {
+            client->transactionID = getNewValue(client->transactionID, tr("Enter the transaction ID (for new client)"));
+
+            // Check if the user wants to quit the action
+            if (handleQuit(client->transactionID, &quit) && quit) {
+                return false;
+            }
+            break;
+        }
+
     }
 
     // Get the API Key value.  Does not currently have to be unique

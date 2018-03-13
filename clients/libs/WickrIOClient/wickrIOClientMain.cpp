@@ -432,10 +432,12 @@ void WickrIOClientMain::stopAndExit(int procState)
 //    WickrService::requestLogoff();
 
     // shutdown the receive service. will not return till it is down
-    m_rxService->stopReceive();
-    m_rxService->shutdown();
-    m_rxService->deleteLater();
-    m_rxDetails->deleteLater();
+    if (m_rxService != nullptr) {
+        m_rxService->stopReceive();
+        m_rxService->shutdown();
+        m_rxService->deleteLater();
+        m_rxDetails->deleteLater();
+    }
 
     // shutdown the event handler service.  Will not return till it is down.
     if (m_eventService != nullptr) {
@@ -650,12 +652,13 @@ bool WickrIOClientMain::parseSettings(QSettings *settings)
     QString user = settings->value(WBSETTINGS_USER_USER, "").toString();
     QString password = settings->value(WBSETTINGS_USER_PASSWORD, "").toString();
     QString username = settings->value(WBSETTINGS_USER_USERNAME, "").toString();
+    QString transactionID = settings->value(WBSETTINGS_USER_TRANSACTIONID, "").toString();
 
     if (user.isEmpty()) {
         qDebug() << "User name is not set";
         return false;
     }
-    m_loginHdlr.addLogin(user, password, username);
+    m_loginHdlr.addLogin(user, password, username, transactionID);
 
     settings->endGroup();
 

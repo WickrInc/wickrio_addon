@@ -1,4 +1,5 @@
 #include "wickrIOClientLoginHdlr.h"
+#include "wickrIOClientRuntime.h"
 #include "wickrbotsettings.h"
 
 #include "filetransfer/wickrCloudTransferMgr.h"
@@ -71,7 +72,7 @@ QStringList WickrIOClientLoginHdlr::preRegistrationGetKeyStrings()
  * @param sync
  * @param isRekey
  */
-void WickrIOClientLoginHdlr::registerUser(const QString &wickrid, const QString &password, const QString &transactionid, bool newUser, bool sync, bool isRekey)
+void WickrIOClientLoginHdlr::slotRegisterUser(const QString &wickrid, const QString &password, const QString &transactionid, bool newUser, bool sync, bool isRekey)
 {
     WickrEnterpriseRegistrationParameters regParams(wickrid, transactionid, NULL);
     WickrPreRegistrationData *preRegData;
@@ -88,6 +89,34 @@ void WickrIOClientLoginHdlr::registerUser(const QString &wickrid, const QString 
             this, &WickrIOClientLoginHdlr::slotRegistrationDone, Qt::QueuedConnection);
     WickrCore::WickrRuntime::taskSvcMakeRequest(c);
 }
+
+void WickrIOClientLoginHdlr::slotRegisterOnPrem(const QString &username, const QString &password, const QString &newPassword, const QString &salt, const QString &transactionid, bool newUser, bool sync)
+{
+    QString hash = !salt.isEmpty() ? cryptoGetHash(password, salt) : QString();
+    qDebug() << "Password Hash=" << hash;
+
+    WickrEnterpriseRegistrationParameters regParams(username, transactionid, hash);
+    WickrPreRegistrationData *preRegData;
+    if (m_preRegDataIface != NULL) {
+        preRegData = m_preRegDataIface->getPreRegData();
+    } else {
+        preRegData = NULL;
+    }
+
+    WickrRegisterUserContext *c = new WickrRegisterUserContext(username, newPassword, QString(), WickrUtil::getDeviceIdentifier(), WickrUtil::getDeviceHost(), newUser, sync, false, false, regParams, preRegData);
+    c->putArg(arg_USERID,    username );
+    c->putArg(arg_PASSWORD,  newPassword );
+    if (!hash.isEmpty()) {
+        c->putArg(arg_CHALLENGE, hash);
+    }
+
+    connect(c, &WickrRegisterUserContext::signalRequestCompleted,
+            this, &WickrIOClientLoginHdlr::slotRegistrationDone, Qt::QueuedConnection);
+    WickrCore::WickrRuntime::taskSvcMakeRequest(c);
+}
+
+
+
 
 /**
  * @brief WickrIOClientLoginHdlr::initiateLogin
@@ -106,6 +135,7 @@ void WickrIOClientLoginHdlr::initiateLogin()
         QString userid = m_logins.at(m_curLoginIndex)->m_name;
         QString password = m_logins.at(m_curLoginIndex)->m_pass;
         QString userName = m_logins.at(m_curLoginIndex)->m_userName;
+        QString transactionID = m_logins.at(m_curLoginIndex)->m_transID;
         bool creatingUser = m_logins.at(m_curLoginIndex)->m_creating;
 
         if (m_operation->m_botDB->isOpen()) {
@@ -126,9 +156,11 @@ void WickrIOClientLoginHdlr::initiateLogin()
                 emit signalExit();
             } else {
                 m_operation->log_handler->log(QString("Starting registration to create user " + userid));
-
-                QString transID;
-                registerUser(userid, password, transID, true, false, false);
+#if 0
+                slotRegisterUser(userid, password, transactionID, true, false, false);
+#else
+                startProvisionUser(userid, password, transactionID);
+#endif
             }
         } else {
             // If the database exists then just login
@@ -137,12 +169,114 @@ void WickrIOClientLoginHdlr::initiateLogin()
 
                 slotLoginStart(userid, password);
             } else {
-                QString transID;
-                registerUser(userid, password, transID, false, true, false);
+                slotRegisterUser(userid, password, transactionID, false, true, false);
             }
         }
     }
 }
+
+/**
+ * @brief WickrIOClientLoginHdlr::startProvisionUser
+ * This slot is called when the thread starts up
+ */
+void WickrIOClientLoginHdlr::startProvisionUser(const QString &wickrid, const QString &password, const QString &transactionid)
+{
+    // connect to signals from the provisioning handler
+    if (m_provhdlr == nullptr) {
+        m_provhdlr = WickrIOClientRuntime::provHdlr();
+        if (m_provhdlr != nullptr) {
+            connect(m_provhdlr,
+                    &WickrIOProvisionHdlr::signalPageChanged,
+                    this,
+                    &WickrIOClientLoginHdlr::slotProvisionPageChanged);
+
+            connect(m_provhdlr,
+                    &WickrIOProvisionHdlr::signalRegisterOnPrem,
+                    this,
+                    &WickrIOClientLoginHdlr::slotRegisterOnPrem);
+            connect(m_provhdlr,
+                    &WickrIOProvisionHdlr::signalRegisterCloud,
+                    this,
+                    &WickrIOClientLoginHdlr::slotRegisterUser);
+
+            connect(m_provhdlr,
+                    &WickrIOProvisionHdlr::signalFailed,
+                    this,
+                    &WickrIOClientLoginHdlr::slotProvisionFailed);
+        }
+    }
+
+    // Start the provisioning here
+#ifdef WICKR_ENTERPRISE
+        WickrIOClientRuntime::provHdlrBeginOnPrem(wickrid, password, transactionid);
+#else
+        WickrIOClientRuntime::provHdlrBeginCloud(wickrid, password, transactionid);
+#endif
+}
+
+void WickrIOClientLoginHdlr::slotProvisionFailed(const QString& errorString)
+{
+    qDebug().noquote().nospace() << "CONSOLE:" << errorString;
+    m_operation->log_handler->log(QString("Provisioning user failed!"));
+    emit signalExit();
+}
+
+void WickrIOClientLoginHdlr::slotProvisionPageChanged(WickrIOProvisionHdlr::Page page)
+{
+    WickrIOProvisionHdlr *provhdlr = WickrIOClientRuntime::provHdlr();
+    if (!provhdlr)
+        return;
+
+    switch (page)
+    {
+    case WickrIOProvisionHdlr::enterEmail:
+        qDebug() << "enterEmail";
+        break;
+    case WickrIOProvisionHdlr::verifyEmail:
+        qDebug() << "verifyEmail";
+        break;
+    case WickrIOProvisionHdlr::enterPhone:
+        qDebug() << "enterPhone";
+        break;
+    case WickrIOProvisionHdlr::verifyPhone:
+        qDebug() << "verifyPhone";
+        break;
+    case WickrIOProvisionHdlr::askVideoPermission:
+        qDebug() << "askVideoPermission";
+        break;
+    case WickrIOProvisionHdlr::recordVideo:
+        qDebug() << "recordVideo";
+        break;
+    case WickrIOProvisionHdlr::enterPassword:
+        qDebug() << "enterPassword";
+
+#ifdef WICKR_ENTERPRISE
+        // TODO: Generate password?
+        provhdlr->registerWithPassword(m_logins.at(m_curLoginIndex)->m_pass));
+#else
+        provhdlr->setPassword(m_logins.at(m_curLoginIndex)->m_pass);
+
+        // At this point login
+#if 1
+        slotRegisterUser(m_logins.at(m_curLoginIndex)->m_name,
+                     m_logins.at(m_curLoginIndex)->m_pass,
+                     provhdlr->transactionID(),
+                     false, true, false);
+#else
+        addLogin(m_client->user, m_client->password, provhdlr->transactionID(), true);
+        initiateLogin();
+#endif
+#endif
+        break;
+    case WickrIOProvisionHdlr::askContactsPermission:
+        qDebug() << "askContactsPermission";
+        break;
+    case WickrIOProvisionHdlr::askJoinNetwork:
+        qDebug() << "askJoinNetwork";
+        break;
+    }
+}
+
 
 /**
  * @brief WickrIOClientLoginHdlr::slotRegistrationDone
@@ -158,7 +292,14 @@ void WickrIOClientLoginHdlr::slotRegistrationDone(WickrRegisterUserContext *c)
         // If we failed because of something other than bad credentials then show the result
         if (c->apiCode().getValue() != BAD_SYNC_CREDENTIALS) {
             m_operation->log_handler->log(c->errorString());
-            emit signalOnlineFlag(false);
+
+            if (m_logins.at(m_curLoginIndex)->m_creating) {
+                emit signalOnlineFlag(false);
+            } else {
+                // The initial login failed, lets try to create the user
+                m_logins.at(m_curLoginIndex)->m_creating = true;
+                initiateLogin();
+            }
         }
     } else {
         // GET Arguments: <wickrid> <password>
@@ -190,7 +331,7 @@ void WickrIOClientLoginHdlr::slotLoginStart(const QString& username, const QStri
             QString unused = "UNUSED";
             QString user = username;
             QString pass = password;
-            registerUser(user, pass, unused, false, true, false);
+            slotRegisterUser(user, pass, unused, false, true, false);
         }
         return;
     }

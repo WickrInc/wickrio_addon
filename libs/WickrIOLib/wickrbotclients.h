@@ -19,6 +19,7 @@ public:
     QString apiKey;
     QString user;
     QString password;
+    QString transactionID;
     QString status;
     QString binary;
     QString botType;

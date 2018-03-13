@@ -9,7 +9,7 @@ current=$PWD
 
 target=wickr-qt
 baseversion=5.9
-version=5.9.1
+version=5.9.4
 QTDIR=/usr/local/wickr/Qt-5.9
 
 output_dir="$1"
