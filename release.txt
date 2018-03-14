@@ -1,4 +1,4 @@
-Release Notes from v4.0-release to v4.30.2-3:
+Release Notes from v4.0-release to v4.30.2-4:
   * Add new directory
   * Hardening of the bot clients
   * Use the bot product type for the bots that are created.
