@@ -225,6 +225,8 @@ bool CmdClient::chkClientsUserExists(const QString& user)
     }
     return false;
 #else
+    Q_UNUSED(user);
+
     // Allow duplicates for now
     return false;
 #endif

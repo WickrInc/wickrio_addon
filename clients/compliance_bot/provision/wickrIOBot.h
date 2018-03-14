@@ -24,7 +24,7 @@ private:
     CmdProvisioning         m_provision;
     WickrIOClientDatabase   *m_ioDB;
 
-    bool        m_dbEncrypt;
+    bool        m_dbEncrypt = true;
 
     QString     m_clientDbPath;
     QString     m_wbConfigFile;
