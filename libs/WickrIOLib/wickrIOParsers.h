@@ -18,12 +18,8 @@
 #define WBIO_PARSER_PROCESS         "WelcomeBotParserAlpha"
 
 #elif defined(WICKR_PRODUCTION)
-#define WELCOMEBOT_PARSER_TARGET  "welcome_parser"
-#define WELCOMEBOT_PARSER_PROCESS "WelcomeBotParser"
-
-#elif defined(WICKR_QA)
-#define WELCOMEBOT_PARSER_TARGET  "provisioningQA"
-#define WELCOMEBOT_PARSER_PROCESS "WelcomeBotParserQA"
+#define WBIO_PARSER_TARGET          "welcome_parser"
+#define WBIO_PARSER_PROCESS         "WelcomeBotParser"
 
 #endif
 
