@@ -52,4 +52,26 @@
 #define WBSETTINGS_SERVICES_HANDLEINBOX "handleinbox"           // True if handling inbox messages, otherwise drop
 #define WBSETTINGS_SERVICES_DURATION    "duration"              // How long to run the client for, before restarting
 
+//Configuration information for parser ini file
+#define WBSETTINGS_PARSER_RABBIT        "rabbitqueue"
+#define WBSETTINGS_PARSER_ALPHA_HOST    "alphahost"
+#define WBSETTINGS_PARSER_BETA_HOST     "betahost"
+#define WBSETTINGS_PARSER_IF            "host"
+#define WBSETTINGS_PARSER_BETA          "bet2host"
+#define WBSETTINGS_PARSER_USER          "user"
+#define WBSETTINGS_PARSER_PORT          "port"
+#define WBSETTINGS_PARSER_PASSWORD      "password"
+#define WBSETTINGS_PARSER_OLD_PASSWORD  "oldpassword"
+#define WBSETTINGS_PARSER_EXCHANGE      "exchangename"
+#define WBSETTINGS_PARSER_QUEUE         "queuename"
+#define WBSETTINGS_PARSER_VIRTUAL_HOST  "virtualhost"
+
+#define WBSETTINGS_PARSER_HEADER        "basicsettings"
+#define WBSETTINGS_PARSER_LOGFILE       "log"
+#define WBSETTINGS_PARSER_DATABASE      "dbdir"
+#define WBSETTINGS_PARSER_NAME          "name"
+#define WBSETTINGS_PARSER_DURATION      "duration"
+
+
+
 #endif // WICKRBOTSETTINGS

@@ -112,6 +112,7 @@ WickrIOClientRuntime::startIPC() {
 }
 
 
+
 /**
  * @brief WickrIO Watchdog Service API
  */

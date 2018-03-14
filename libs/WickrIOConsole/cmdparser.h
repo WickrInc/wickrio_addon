@@ -2,11 +2,9 @@
 #define CMDPARSER_H
 
 #include <QObject>
-
 #include <QString>
 #include <QSettings>
 
-#include "wickrbotipc.h"
 #include "wickriodatabase.h"
 #include "wickrIOAppSettings.h"
 #include "wickrIOParsers.h"
@@ -15,6 +13,7 @@
 #include "cmdconsole.h"
 
 #include <QProcess>
+
 
 class CmdParser : public CmdBase
 {
@@ -32,7 +31,6 @@ private:
     bool m_parserMsgSuccess;
     bool m_parserMsgInProcess;
 
-    QProcess *m_exec;
 
     QList<WickrIOParsers *> m_parsers;
 
@@ -46,14 +44,11 @@ private:
     void startParser(int parserIndex);
 
     bool chkParsersNameExists(const QString& name);
+    bool chkParsersInterfaceExists(const QString &name, int port);
 
     bool validateIndex(int parserIndex);
 
     bool sendParserCmd(int port, const QString& cmd);
-
-private slots:
-    void slotCmdFinished(int, QProcess::ExitStatus);
-    void slotCmdOutputRx();
 
 };
 

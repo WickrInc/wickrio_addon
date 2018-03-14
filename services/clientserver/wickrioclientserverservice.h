@@ -33,8 +33,10 @@ private:
     void usage();
     bool getClients(bool start);
     bool clientNeedsStart(WickrBotClients *client);
+    bool parserNeedsStart(WickrBotProcessState *process);
     bool startClient(WickrBotClients *client);
     bool stopClient(const WickrBotProcessState& state);
+    bool startParser(QString processName, QString appName);
 
     bool sendClientCmd(int port, const QString& cmd);
 

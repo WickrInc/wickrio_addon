@@ -38,6 +38,7 @@
 #define WBIO_CLIENT_ATTACHDIR_FORMAT    "%1/clients/%2/attachments"
 
 #define WBIO_PARSER_SETTINGS_FORMAT     "%1/%2.ini"
+#define WBIO_PARSER_LOGFILE_FORMAT      "%1/logs/%2.log"
 
 #ifdef Q_OS_WIN
 #define WBIO_DEFAULT_DBLOCATION         TBD

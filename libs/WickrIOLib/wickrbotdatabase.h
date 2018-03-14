@@ -53,6 +53,9 @@ public:
     QList<int> getClientIDFromType(const QString& clientType);
     int numberOfActionsForClient(int clientid);
 
+    QList<WickrBotProcessState *> getProcessStates();
+    void getProcess(QSqlQuery *query, WickrBotProcessState *processState);
+
     bool getClientEvent(int id, WickrBotClientEvents *event);
     void getClientEventFromQuery(QSqlQuery *query, WickrBotClientEvents *event);
     QList<WickrBotClientEvents *> getClientEvents(int maxCount);
