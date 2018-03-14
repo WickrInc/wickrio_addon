@@ -2,7 +2,6 @@
 #include "cmdMain.h"
 
 WickrIOConsoleService::WickrIOConsoleService(QCoreApplication *app, int argc, char **argv, OperationData *operation, WickrIOIPCService *rxIPC) :
-    m_consoleThread(nullptr),
     m_app(app),
     m_argc(argc),
     m_argv(argv),

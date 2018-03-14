@@ -12,7 +12,7 @@ class CmdBase : public QObject
 {
     Q_OBJECT
 public:
-    explicit CmdBase(QObject *parent = 0) {}
+    explicit CmdBase(QObject *parent = 0) : QObject(parent) {}
 
     virtual void status() {}
     virtual bool runCommands() { return true; }

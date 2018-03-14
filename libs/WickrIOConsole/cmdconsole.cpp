@@ -596,6 +596,9 @@ bool CmdConsole::chkInterfaceExists(const QString& iface, int port)
             return true;
         }
     }
+#else
+    Q_UNUSED(iface);
+    Q_UNUSED(port);
 #endif
     return false;
 }

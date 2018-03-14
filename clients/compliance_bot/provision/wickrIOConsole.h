@@ -28,7 +28,7 @@ public:
 
 private:
     QThread                m_thread;
-    WickrIOConsoleThread   *m_consoleThread;
+    WickrIOConsoleThread   *m_consoleThread = nullptr;
 
     void startThreads();
     void stopThreads();

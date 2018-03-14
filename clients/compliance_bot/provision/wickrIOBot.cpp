@@ -27,7 +27,6 @@ WickrIOBot::WickrIOBot(QCoreApplication *app, int argc, char **argv, WickrIOClie
     m_app(app),
     m_argc(argc),
     m_argv(argv),
-    m_dbEncrypt(true),
     m_provision(&m_client),
     m_ioDB(ioDB)
 {
