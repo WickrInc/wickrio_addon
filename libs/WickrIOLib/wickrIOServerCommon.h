@@ -98,10 +98,12 @@ public:
     static QStringList getAvailableClientApps();
     static QString getProvisionApp(const QString& clientApp);
     static QString getParserApp(const QString& clientApp);
+    static QString getParserApp();
     static bool isValidClientApp(const QString& binaryName);
     static bool isPasswordRequired(const QString& binaryName);
 
     static QString getParserProcessName(WickrIOParsers * parser);
+    static QString getParserProcessName();
     static QStringList getAvailableParserApps();
 
     static QStringList getAvailableMotherClients();

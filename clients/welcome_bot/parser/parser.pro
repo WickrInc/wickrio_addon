@@ -80,7 +80,6 @@ else {
 include($${DEPTH}/libs/WickrIOLib/WickrIOLib.pri)
 
 INCLUDEPATH += ../client
-
 QT  += core sql
 QT  += network
 QT  -= gui
@@ -126,3 +125,10 @@ HEADERS += \
     wbparse_qamqpqueue.h \
     wickrbotmain.h \
     parseroperationdata.h
+
+INCLUDEPATH +=$${DEPTH}/wickr-sdk/src
+INCLUDEPATH +=$${DEPTH}/wickr-sdk
+INCLUDEPATH +=$${DEPTH}/wickr-sdk/export
+INCLUDEPATH +=$${DEPTH}/wickr-sdk/wickr-core-c/include
+INCLUDEPATH +=$${DEPTH}/wickr-sdk/libs/qbson
+INCLUDEPATH +=$${DEPTH}/wickr-sdk/libs/libbson

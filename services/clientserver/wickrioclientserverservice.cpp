@@ -162,8 +162,8 @@ WickrIOClientServerService::slotRxIPCMessage(QString type, QString value)
 
 /**
  * @brief WickrIOClientServerService::slotTimeoutProcess
- * This function is called when the service timer expires, which is every
- * second. This is only when the service has been started.  When called this
+ * This function is called when the service timer expires every
+ * second after service has been started.  When called this
  * function will only perform actions if the service has been configured. For
  * Windows this means the registry has been setup, for Linux this requires the
  * settings INI file to be setup. If everything is configured then the list of
@@ -314,7 +314,9 @@ void WickrIOClientServerService::processCommand(int code)
 /**
  * @brief WickrIOClientServerService::clientNeedsStart
  * Checks if the client needs to be started. If the client is running already or is
- * in the paused state then it does not need to be started.
+ * in the paused state then it does not need to be started and this will return false.
+ * If client stopped or running with old timestamp then will return true to indicated
+ * client should be restarted
  * @param name the name of the client found in the process_state table
  * @return
  */
@@ -347,19 +349,20 @@ bool WickrIOClientServerService::clientNeedsStart(WickrBotClients *client)
 #ifdef DEBUG_TRACE
             m_operation->log_handler->log(QString("Seconds since last status:%1").arg(QString::number(secs)));
 #endif
-            // If less than 2 minutes then return failed, since the process is still running
-            if (!m_operation->force && secs < 120) {
-                // Return true to identify that it is already active
+            // If less than timeout (3 minutes) then return failed, since the process is still running
+            if (!m_operation->force && secs < m_operation->m_appTimeOut) {
+                // Return false to identify that it is already active and does not need to be started
 #ifdef DEBUG_TRACE
                 qDebug() << "Leaving clientNeedsStart: secs is < 120 or no force!";
 #endif
                 return false;
             }
 
-            // Else it has been longer than 10 minutes, kill the old process and continue
+            // Else it has been longer than timeout (3 minutes), kill the old process and continue
             if (WickrBotUtils::isRunning(client->binary, procState.process_id)) {
                 m_operation->log_handler->log(QString("Killing old process, id=%1").arg(procState.process_id));
                 WickrBotUtils::killProcess(procState.process_id);
+                return true;
             }
         } else if (procState.state == PROCSTATE_PAUSED) {
 #ifdef DEBUG_TRACE
@@ -369,7 +372,7 @@ bool WickrIOClientServerService::clientNeedsStart(WickrBotClients *client)
         }
     }
 
-    // Return false to identify that the process is not running already
+    // Return true to identify that the process needs to be started
 #ifdef DEBUG_TRACE
     qDebug() << "Leaving clientNeedsStart";
 #endif
@@ -489,7 +492,6 @@ bool WickrIOClientServerService::startClient(WickrBotClients *client)
 #endif
         return true;
     }
-
 #ifdef Q_OS_WIN
     configFileName = QString(WBIO_CLIENT_SETTINGS_FORMAT).arg(WBIO_ORGANIZATION).arg(WBIO_GENERAL_TARGET).arg(client->name);
     clientDbDir = QString("%1\\clients\\%2\\client").arg(m_operation->databaseDir).arg(client->name);
@@ -529,7 +531,7 @@ bool WickrIOClientServerService::startClient(WickrBotClients *client)
 #endif
 
     // Check that the User name is configured
-    QSettings* settings=new QSettings(configFileName, QSettings::NativeFormat);
+    QSettings* settings = new QSettings(configFileName, QSettings::NativeFormat);
     settings->beginGroup(WBSETTINGS_USER_HEADER);
     QString user = settings->value(WBSETTINGS_USER_USER, "").toString();
     if (user.isEmpty()) {
@@ -681,7 +683,11 @@ bool WickrIOClientServerService::startClient(WickrBotClients *client)
 bool WickrIOClientServerService::getClients(bool start)
 {
     bool allClientsStart = true;
+    bool checkForParser = false;
     QList<WickrBotClients *> clients;
+    QString parserExecutable;
+    QString parserName;
+    QList <WickrBotProcessState*> processes;
 
     clients = m_operation->m_botDB->getClients();
 
@@ -701,8 +707,156 @@ bool WickrIOClientServerService::getClients(bool start)
             } else {
                 stopClient(state);
             }
+            //check whether type is welcome_bot to see if need to find parser
+            if(client->binary.startsWith( "welcome_bot")){
+                checkForParser = true;
+            }
+        }
+        if( checkForParser == true){
+            processes = m_operation->m_botDB->getProcessStates();
+            for(WickrBotProcessState* process :processes)
+            {
+                if(process->process.startsWith("WelcomeBotParser")){
+                    parserExecutable=WBIOServerCommon::getParserApp();
+                    parserName = process->process;
+                    if(start){
+                        if(parserNeedsStart(process)){
+                            m_operation->log_handler->log(QString("process=%1, id=%2, state=%3").arg(process->process).arg(process->id).arg(process->state));
+                            if(startParser(parserName,parserExecutable)== false)
+                                allClientsStart= false;
+                        }
+                    }
+                    else{
+                        //If start is false, shutdown parsers
+                        stopClient(*process);
+                    }
+                    process->deleteLater();
+                }
+                else{
+                    process->deleteLater();
+                }
+            }
         }
     }
     return allClientsStart;
 }
 
+
+
+/**
+ * @brief WickrIOClientServerService::startParser
+ * Starts Parser with QProcess
+ */
+bool WickrIOClientServerService::startParser(QString processName, QString appName)
+{
+    QString configFileName;
+    QString outputFile;
+
+
+#ifdef Q_OS_WIN
+//need to find the values for config File and output file on windows
+    configFileName="";
+    outputFile="";
+#else
+    configFileName = QString(WBIO_PARSER_SETTINGS_FORMAT).arg(m_operation->m_botDB->m_dbDir).arg(processName);
+    outputFile = QString(WBIO_PARSER_LOGFILE_FORMAT).arg(m_operation->m_botDB->m_dbDir).arg(processName);
+
+#endif
+
+    m_operation->log_handler->log("**********************************");
+    m_operation->log_handler->log(QString("startParser: command line arguments for %1").arg(processName));
+    m_operation->log_handler->log(QString("Config File=%1").arg(configFileName));
+    m_operation->log_handler->log(QString("Executable name: %1").arg(appName));
+    m_operation->log_handler->log("**********************************");
+
+    QFile configFile(configFileName);
+    if(!configFile.exists()){
+        m_operation->log_handler->log(QString("Error: config file does not exist for %1").arg(processName));
+#ifdef DEBUG_TRACE
+        qDebug() << "Leaving startParser: config file does not exist";
+#endif
+        return false;
+    }
+
+
+    QProcess exec;
+    QStringList arguments;
+    arguments.append(QString("-appName=%1").arg(processName));
+    connect(&exec, &QProcess::errorOccurred, [=](QProcess::ProcessError error)
+    {
+        qDebug() << "Error enum value = " << error;
+    });
+    exec.setStandardOutputFile(outputFile, QIODevice::Append);
+    exec.setStandardErrorFile(outputFile, QIODevice::Append);
+    exec.setProcessChannelMode(QProcess::MergedChannels);
+    if (exec.startDetached(appName, arguments)) {
+        m_operation->log_handler->log(QString("Started parser %1").arg(processName));
+     return true;
+    }
+    else {
+           m_operation->log_handler->log(QString("Could NOT start client for %1").arg(processName));
+   #ifdef DEBUG_TRACE
+           qDebug() << "Leaving startParser: could not start!";
+   #endif
+           return false;
+       }
+}
+
+/**
+ * @brief WickrIOClientServerService::parserNeedsStart
+ * Checks if the parser needs to be started. If it is running already with recent
+ * last update or is in the paused state then it does not need to be started and
+ * this will return false. If it is paused with old timestamp, will kill process
+ * and return true, as the process should be restarted.
+ * @param name the name of the client found in the process_state table
+ * @return
+ */
+bool WickrIOClientServerService::parserNeedsStart(WickrBotProcessState *process)
+{
+#ifdef DEBUG_TRACE
+    qDebug() << "Entering parserNeedsStart";
+#endif
+    if (m_operation->m_botDB == NULL) {
+#ifdef DEBUG_TRACE
+        qDebug() << "Leaving parserNeedsStart: no DB!";
+#endif
+        return false;
+    }
+    //If state is running, check that it has not silently failed
+    if (process->state == PROCSTATE_RUNNING) {
+#ifdef DEBUG_TRACE
+        m_operation->log_handler->log(QString("Process is still running, date=%1").arg(process.last_update.toString(DB_DATETIME_FORMAT)));
+#endif
+        const QDateTime dt = QDateTime::currentDateTime();
+        int secs = process->last_update.secsTo(dt);
+#ifdef DEBUG_TRACE
+            m_operation->log_handler->log(QString("Seconds since last status:%1").arg(QString::number(secs)));
+#endif
+            // If less than 3 minutes then return failed, since the process is still running
+            if (!m_operation->force && secs < m_operation->m_appTimeOut) {
+                // Return false to identify that it is already active and does not need to be restarted
+#ifdef DEBUG_TRACE
+                qDebug() << "Leaving parserNeedsStart: Has been less than 3 minutes and not forcing!";
+#endif
+                return false;
+            }
+    QString binary = process->process;
+    // Else it has been longer than timeout (3 minutes), kill the old process and continue
+    //binary not be correct. Could need to use executable name
+    if (WickrBotUtils::isRunning(binary, process->process_id)) {
+        m_operation->log_handler->log(QString("Killing old process, id=%1").arg(process->process_id));
+        WickrBotUtils::killProcess(process->process_id);
+        return true;
+    }
+       } else if (process->state == PROCSTATE_PAUSED) {
+#ifdef DEBUG_TRACE
+            qDebug() << "Leaving parserNeedsStart: proc state is paused already!";
+#endif
+            return false;
+        }
+
+#ifdef DEBUG_TRACE
+    qDebug() << "Leaving parserNeedsStart";
+#endif
+    return true;
+}

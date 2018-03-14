@@ -39,7 +39,7 @@ WickrBotDatabase::~WickrBotDatabase()
 /**
  * @brief WickrBotDatabase::createRelationalTables
  * This method will create the tables for the WickrBot database.
- * @return True is returned if created successfully and fals if not
+ * @return True is returned if created successfully and false if not
  */
 bool
 WickrBotDatabase::createRelationalTables()
@@ -535,6 +535,7 @@ WickrBotDatabase::getProcessState(const QString &process, WickrBotProcessState *
         } else {
             break;
         }
+
     } while (--retryCnt > 0);
 
     if (query != NULL) {
@@ -660,6 +661,8 @@ WickrBotDatabase::deleteProcessState(const QString& process) {
     return (numRows > 0);
 }
 
+
+
 bool
 WickrBotDatabase::setProcessIPC(const QString &process, int ipc_port) {
     if (!initialized)
@@ -679,6 +682,7 @@ WickrBotDatabase::setProcessIPC(const QString &process, int ipc_port) {
     query.finish();
     return (numRows > 0);
 }
+
 
 
 /****************************************************************************************************************
@@ -914,6 +918,47 @@ WickrBotDatabase::getClients()
     delete query;
     return clients;
 }
+
+
+QList<WickrBotProcessState *>
+WickrBotDatabase::getProcessStates()
+{
+  QList<WickrBotProcessState *> processes;
+  if (!initialized)
+    return processes;
+
+  QString queryString = "SELECT id,process,process_id, state, ipc_port, last_update FROM process_state";
+  QSqlQuery *query = new QSqlQuery(m_db);
+  query->prepare(queryString);
+
+  if ( !query->exec()) {
+    qDebug() << "getProcessStates: Could not retrieve, Error=" << query->lastError();
+  } else {
+    while (query->next()) {
+      WickrBotProcessState *process = new WickrBotProcessState();
+      getProcess(query, process);
+      processes.append(process);
+    }
+  }
+  query->finish();
+  delete query;
+  return processes;
+}
+
+void
+WickrBotDatabase::getProcess(QSqlQuery *query, WickrBotProcessState* processState)
+{
+  QSqlRecord rec = query->record();
+
+  processState->id            = query->value(rec.indexOf("id")).toInt();
+  processState->process       = query->value(rec.indexOf("process")).toString();
+  processState->process_id    = query->value(rec.indexOf("process_id")).toInt();
+  processState->state         = query->value(rec.indexOf("state")).toInt();
+  processState->ipc_port      = query->value(rec.indexOf("ipc_port")).toInt();
+  processState->last_update   = query->value(rec.indexOf("last_update")).toDateTime();
+
+}
+
 
 QSqlQueryModel *
 WickrBotDatabase::getClientsModel() {

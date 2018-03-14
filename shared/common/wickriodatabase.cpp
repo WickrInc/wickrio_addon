@@ -16,7 +16,7 @@ WickrIOClientDatabase::WickrIOClientDatabase(const QString &dirPath) : WickrBotC
 /**
  * @brief WickrBotDatabase::createRelationalTables
  * This method will create the tables for the WickrBot database.
- * @return True is returned if created successfully and fals if not
+ * @return True is returned if created successfully and false if not
  */
 bool
 WickrIOClientDatabase::createRelationalTables()
@@ -853,10 +853,21 @@ QList<WickrIOParsers *>
 WickrIOClientDatabase::getParsers()
 {
     QList<WickrIOParsers *> parsers;
-    if (!initialized)
-        return parsers;
+    WickrIOParsers* parser;
+    QList<WickrBotProcessState *> processes;
+    QString binaryName = QString(WBIO_PARSER_TARGET);
 
-    qDebug() << "TODO: implement getParsers()";
+
+    processes = getProcessStates();
+    if (processes.isEmpty())
+        return parsers;
+    for( int i =0; i < processes.size(); i++){
+        if(processes[i]->process.startsWith("WelcomeBotParser")){
+            parser = new WickrIOParsers(processes[i]->id,processes[i]->process, binaryName);
+            parsers.append(parser);
+        }
+    }
+
     return parsers;
 }
 

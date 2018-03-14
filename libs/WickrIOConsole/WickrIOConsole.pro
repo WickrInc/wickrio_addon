@@ -96,7 +96,9 @@ HEADERS += \
     cmdusers.h \
     consoleserver.h \
     webserver.h \
-    wickrIOConsoleClientHandler.h
+    wickrIOConsoleClientHandler.h \
+    cmdparser.h \
+    wickrIOConsoleParserHandler.h
 
 SOURCES += \
     cmdadvanced.cpp \
@@ -108,4 +110,6 @@ SOURCES += \
     cmdusers.cpp \
     consoleserver.cpp \
     webserver.cpp \
-    wickrIOConsoleClientHandler.cpp
+    wickrIOConsoleClientHandler.cpp \
+    cmdparser.cpp \
+    wickrIOConsoleParserHandler.cpp
