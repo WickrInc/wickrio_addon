@@ -344,7 +344,7 @@ void WickrIOEClientMain::stopAndExitSlot()
  * Call this slot to put the state of the client into the paused state,
  * and exit the client application.
  */
-void WickrIOEClientMain::WickrIOEClientMain::pauseAndExitSlot()
+void WickrIOEClientMain::pauseAndExitSlot()
 {
     stopAndExit(PROCSTATE_PAUSED);
 }
@@ -458,8 +458,8 @@ WickrIOEClientMain::slotServiceNotLoggedIn()
 
 /**
  * @brief WickrIOEClientMain::stopAndExit
- * This is called to exit the application. The application state is put into the input
- * state, in the database process_state table.
+ * This is called to exit the application. The application state is set to the input
+ * state in the process_state table in the database.
  */
 void WickrIOEClientMain::stopAndExit(int procState)
 {
@@ -507,7 +507,7 @@ void WickrIOEClientMain::stopAndExit(int procState)
         }
     }
 
-    // If the logins have failed, make sure tbhe DB is open so the state can be changed
+    // If the logins have failed, make sure the DB is open so the state can be changed
     if (m_loginHdlr.getLoginState() == LoginsFailed) {
         if (m_operation->m_botDB == NULL)
             m_operation->m_botDB = new WickrIOClientDatabase(m_operation->databaseDir);

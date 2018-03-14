@@ -12,14 +12,35 @@ WickrBotMain::WickrBotMain(ParserOperationData *operation) :
     m_seccount(0),
     m_qfailures(0)
 {
+    this->connect(this, &WickrBotMain::started, this, &WickrBotMain::processStarted);
     connect(&timer, SIGNAL(timeout()), this, SLOT(doTimerWork()));
     timer.start(1000);
 }
 
 WickrBotMain::~WickrBotMain()
 {
+    qDebug() << "Parser deletion";
     timer.stop();
     timer.deleteLater();
+}
+
+bool WickrBotMain::startTheClient(){
+    qDebug() << "Entering startTheClient with parser";
+
+    // Open the database if needed
+    if (m_operation->m_botDB == NULL) {
+        m_operation->m_botDB = new WickrBotDatabase(m_operation->databaseDir);
+    }
+    emit signalStarted();
+    return true;
+}
+
+void WickrBotMain::processStarted()
+{
+    qDebug() << "Started WickrBotParser main";
+
+    if (! startTheClient())
+        stopAndExit(PROCSTATE_DOWN);
 }
 
 void WickrBotMain::doTimerWork()
@@ -39,12 +60,15 @@ void WickrBotMain::doTimerWork()
         QCoreApplication::exit(1);
     }
 
-
+    if (m_rxIPC != NULL && m_rxIPC->isRunning()) {
+        m_rxIPC->check();
+    }
     if (m_qamqp == NULL) {
         m_qamqp = new WBParse_QAMQPQueue(m_operation);
     } else {
         // If the Queue handler fails then delete the queue handler.
         // It will be recreated on the next iteration.
+
         if (! m_qamqp->timerCall()) {
             m_operation->log_handler->log("Message queue handler failed.  Deleting handler.");
             delete  m_qamqp;
@@ -67,3 +91,121 @@ void WickrBotMain::doTimerWork()
     }
 }
 
+/**
+ * @brief setIPC
+ * Save the IPC object.  Make a connection to receive the stop and pause signals for
+ * when the applicaiton is to be closed.
+ * @param ipc
+ */
+void WickrBotMain::setIPC(WickrIOIPCService *ipc)
+{
+    m_rxIPC = ipc;
+    connect(ipc, &WickrIOIPCService::signalGotStopRequest, this, &WickrBotMain::stopAndExitSlot);
+    connect(ipc, &WickrIOIPCService::signalGotPauseRequest, this, &WickrBotMain::pauseAndExitSlot);
+}
+
+/**
+ * @brief WickrBotMain::pauseAndExitSlot
+ * Call this slot to put the state of the parser in the database to the DOWN state,
+ * and exit the parser application.
+ */
+void WickrBotMain::stopAndExitSlot()
+{
+    stopAndExit(PROCSTATE_DOWN);
+}
+
+/**
+ * @brief WickrBotMain::pauseAndExitSlot
+ * Call this slot to put the state of the parser in the database to the PAUSED state,
+ * and exit the parser application.
+ */
+void WickrBotMain::pauseAndExitSlot()
+{
+    stopAndExit(PROCSTATE_PAUSED);
+}
+
+/**
+ * @brief WickrBotMain::stopAndExit
+ * This is called to exit the application. The application state is set to the input
+ * state, in the process_state table in the database.
+ */
+void WickrBotMain::stopAndExit(int procState)
+{
+    m_operation->updateProcessState(procState, false);
+    QCoreApplication::quit();
+}
+
+
+// WickrBotParserIPC handles the a IPC for the parser WickrBot using WickrIOIPCService
+
+WickrBotParserIPC::WickrBotParserIPC()
+{
+    m_IPC = new WickrIOIPCService();
+}
+
+WickrBotParserIPC::~WickrBotParserIPC()
+{
+    qDebug() << "IPC handler deletion";
+    if(m_IPC != nullptr){
+        delete m_IPC;
+        m_IPC = nullptr;
+    }
+}
+
+/**
+ * @brief WickrBotParserIPC::init
+ * Will initialize runtime singleton via get()
+ * @param operation
+ */
+void WickrBotParserIPC::init(ParserOperationData* operation) {
+    WickrBotParserIPC& me = WickrBotParserIPC::get();
+    me.m_operation = operation;
+}
+
+/**
+ * @brief WickrBotParserIPC::shutdown
+ * Call IPCService shutdown which emits signalShutdown which is connected with slotShutdown
+ * to stop the IPC Thread
+ */
+void WickrBotParserIPC::shutdown() {
+    qDebug() << "Shutting down IPC handler";
+    WickrBotParserIPC::get().ipcSvc()->shutdown();
+}
+
+/**
+ * @brief WickrBotParserIPC::startIPC
+ * Calls startIPC for the IPCService. This emits SignalStartIPC which is connected with slotStartIPC
+ * which starts the IPC Thread
+ */
+void WickrBotParserIPC::startIPC() {
+    qDebug() << "Setting the IPC for parser";
+    ipcSvc()->startIPC(operationData());
+}
+/**
+ * @brief WickrBotParserIPC::ipcSvc
+ * Returns pointed to the IPCService of the ParserIPC object
+ * @return
+ */
+WickrIOIPCService*
+WickrBotParserIPC::ipcSvc() {
+    return WickrBotParserIPC::get().m_IPC;
+}
+
+/**
+ * @brief WickrBotParserIPC::get (PRIVATE STATIC)
+ * Returns reference to singleton instance
+ * @return WickrBotParserIPC&
+ */
+WickrBotParserIPC& WickrBotParserIPC::get() {
+    static WickrBotParserIPC instance;
+    return instance;
+}
+
+/**
+ * @brief WickrBotParserIPC::operationData
+ * getter for OperationDate of the ParserIPC
+ * @return ParserOperationData*
+ */
+ParserOperationData *WickrBotParserIPC::operationData() {
+    return WickrBotParserIPC::get().m_operation;
+}

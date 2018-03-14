@@ -51,7 +51,7 @@ public:
 
     int cleanUpSecs;
     int startRcvSecs;
-    int m_appTimeOut;   // number of seconds to wait for potentiall hung application
+    int m_appTimeOut;   // number of seconds to wait for potentially hung application
     int m_pid;          // The process ID of this application
 
     bool m_handleInbox; // True if the client should handle inbox messaging

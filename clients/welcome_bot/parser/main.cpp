@@ -28,7 +28,9 @@
 #include "wickrbotmain.h"
 #include "wickrbotsettings.h"
 
-WickrBotMain  *m_wbmain;
+
+
+WickrBotMain        *m_wbmain;
 
 bool makeDirectory(QString dirname)
 {
@@ -42,12 +44,14 @@ bool makeDirectory(QString dirname)
     return true;
 }
 
+
 static void
 usage()
 {
     qDebug() << "Usage:";
     qDebug() << "parse_command [-d] [-force] [-dbdir=<db directory>] [-attachdir=<attachment directory>] [-log=<logs directory>]" <<
-                "[-qconfig=<config file>] [-qhost=<host:port>|<host>] [-quser=<queue username>] [-qpassword=<queue password>] [-duration=<secs to run>]";
+                "[-qconfig=<config file>] [-qhost=<host:port>|<host>] [-quser=<queue username>] [-qpassword=<queue password>]" <<
+                " [-duration=<secs to run>] [-appName=<name of parser>]";
     qDebug() << "The parse_command program will parse the input JSON file and send output to the designed location.";
     exit(0);
 }
@@ -152,11 +156,13 @@ int main(int argc, char *argv[])
 
     QCoreApplication a(argc, argv);
     ParserOperationData *operation;
-
+    QString appName;
     operation = new ParserOperationData();
-    operation->processName = WELCOMEBOT_PARSER_PROCESS;
 
-    a.setApplicationName(WELCOMEBOT_PARSER_PROCESS);
+    //old default name of the parser
+    //operation->processName = WELCOMEBOT_PARSER_PROCESS;
+    //a.setApplicationName(WELCOMEBOT_PARSER_PROCESS);
+
     a.setOrganizationName("Wickr, LLC");
 
     // Determine the location where application data files are to be stored
@@ -247,8 +253,12 @@ int main(int argc, char *argv[])
         } else if (cmd.startsWith("-config=")) {
             wbConfigFile = cmd.remove("-config=");
         }
+        else if(cmd.startsWith("-appName")){
+            appName = cmd.remove("-appName=");
+        }
     }
-
+    a.setApplicationName(appName);
+    operation->processName = appName;
     // If the config file was not specified on command line then try to find it
     if (wbConfigFile.isEmpty()) {
         wbConfigFile = searchConfigFile();
@@ -275,6 +285,7 @@ int main(int argc, char *argv[])
     } else {
         QString logsDir = operation->appDataDir + "/logs";
         if (!makeDirectory(logsDir)) {
+
             qDebug() << "WickrBot Parser cannot make attachments directory, finished";
             return 1;
         }
@@ -303,18 +314,32 @@ int main(int argc, char *argv[])
         qDebug() << "Failed to open the database!";
         return 1;
     }
-
-
-    if (operation->alreadyActive()) {
+    //check if process state for parser is running already and sets the process state to running
+    if (operation->alreadyActive(false)) {
         qDebug() << "ALREADY ACTIVE, exiting!";
         return 1;
     }
 
     WICKRBOT = new WickrBotMain(operation);
+    WickrBotParserIPC::init(operation);
+
+    QObject::connect(WICKRBOT, &WickrBotMain::signalStarted, [=]() {
+        WickrBotParserIPC::startIPC();
+        WICKRBOT->setIPC(WickrBotParserIPC::ipcSvc());
+    });
 
     operation->log_handler->log("Database size", operation->m_botDB->size());
     operation->log_handler->log("Generated messages", operation->messageCount);
-    operation->log_handler->log("WickrBot Parser normal finish");
+    WICKRBOT->start();
+    int retval = a.exec();
 
-    return a.exec();
+    //clean up resources
+    WickrBotParserIPC::shutdown();
+    WICKRBOT->deleteLater();
+
+
+    operation->log_handler->log("WickrBot Parser normal finish");
+    operation->deleteLater();
+    return retval;
 }
+

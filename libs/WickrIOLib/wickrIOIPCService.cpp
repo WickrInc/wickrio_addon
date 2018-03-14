@@ -46,7 +46,7 @@ void WickrIOIPCService::startThreads()
 
     // connect the thread signals to the service signals
     connect(m_ipcThread, &WickrIOIPCThread::signalGotPauseRequest, this, &WickrIOIPCService::signalGotPauseRequest);
-    connect(m_ipcThread, &WickrIOIPCThread::signalGotStopRequest, this, &WickrIOIPCService::signalGotStopRequest);
+    connect(m_ipcThread, &WickrIOIPCThread::signalGotStopRequest,  this, &WickrIOIPCService::signalGotStopRequest);
     connect(m_ipcThread, &WickrIOIPCThread::signalReceivedMessage, this, &WickrIOIPCService::signalReceivedMessage);
 
     // Perform startup here, creating and configuring ressources.
@@ -65,6 +65,7 @@ void WickrIOIPCService::startIPC(OperationData *operation)
 {
     emit signalStartIPC(operation);
 }
+
 
 /**
  * @brief WickrIOIPCService::stopThreads

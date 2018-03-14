@@ -218,7 +218,14 @@ bool CmdClient::chkClientsUserExists(const QString& user)
 bool CmdClient::chkClientsInterfaceExists(const QString& iface, int port)
 {
     // TODO: Make sure not using the same port as the console server
-
+    if( port < 0){
+        qDebug() << "CONSOLE:Port number too small. Must be greater than or equal to zero";
+        return false;
+    }
+    if( port > 65536){
+        qDebug() << "CONSOLE:Port number too large. Must be less than 65536";
+        return false;
+    }
     for (WickrBotClients *client : m_clients) {
         if (client->port == port && (client->iface == iface || client->iface == "localhost" || iface == "localhost" )) {
             qDebug() << "CONSOLE:The input interface and port are NOT unique!";
@@ -270,7 +277,7 @@ bool CmdClient::getClientValues(WickrBotClients *client)
 
     QString provisionApp = WBIOServerCommon::getProvisionApp(binary);
 
-    if (provisionApp != nullptr) {
+    if (provisionApp != "") {
         QString clientDbDir;
         QString command = client->binary;
         QStringList arguments;
@@ -287,6 +294,7 @@ bool CmdClient::getClientValues(WickrBotClients *client)
         connect(m_exec, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(slotCmdFinished));
         connect(m_exec, SIGNAL(finished(int, QProcess::readyReadStandardOutput)), this, SLOT(slotCmdOutputRx));
 
+        //Tests that process starts and closes alright
         m_exec->start(command, arguments);
 
         if (m_exec->waitForStarted(-1)) {
@@ -630,7 +638,7 @@ void CmdClient::deleteClient(int clientIndex)
         // Make sure the user wants to continue
         QString prompt = QString(tr("Do you really want to remove the client with the name %1")).arg(client->name);
         QString response = getNewValue("", prompt);
-        if (response.toLower() == "n") {
+        if (response.toLower() == "n" || response.toLower() == "no") {
             return;
         }
 

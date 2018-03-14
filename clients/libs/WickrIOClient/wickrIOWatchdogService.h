@@ -92,7 +92,7 @@ private:
 
 signals:
     void signalNotRunning();
-    void signalServiceNotLoggedIn();    // Emitted when a service is not logged in for aperiod of time
+    void signalServiceNotLoggedIn();    // Emitted when a service is not logged in for a period of time
 
 public slots:
     void slotTimerExpire();

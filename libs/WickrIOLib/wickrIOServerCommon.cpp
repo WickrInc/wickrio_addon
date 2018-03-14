@@ -75,9 +75,29 @@ WBIOServerCommon::getClientProcessName(WickrBotClients * client)
 QString
 WBIOServerCommon::getParserProcessName(WickrIOParsers * parser)
 {
-    qDebug() << "TODO: Implement getParserProcessName()";
-    QString processName;
+    QString processName(parser->name);
     return processName;
+}
+/**
+ * @brief WBIOServerCommon::getParserProcessName
+ * Gets name of the parser. Currently allows only one parser per system
+ * @return
+ */
+QString
+WBIOServerCommon::getParserProcessName()
+{
+    QString processName = WBIO_PARSER_PROCESS;
+    return processName;
+}
+/**
+ * @brief WBIOServerCommon::getParserApp
+ * Gets the parser executable name. Curretnly allows only ony parser per system
+ * @return
+ */
+QString
+WBIOServerCommon::getParserApp(){
+QString appName = WBIO_PARSER_TARGET;
+    return appName;
 }
 
 void
@@ -170,7 +190,7 @@ WBIOServerCommon::getAvailableMotherClients()
 QString
 WBIOServerCommon::getProvisionApp(const QString& clientApp)
 {
-    // Assuming that the apps are initialized
+    initClientApps();
 
     for (WBIOClientApps *botapp : WBIOServerCommon::m_botApps) {
         if (botapp->bot() == clientApp) {
@@ -183,7 +203,7 @@ WBIOServerCommon::getProvisionApp(const QString& clientApp)
 QString
 WBIOServerCommon::getParserApp(const QString& clientApp)
 {
-    // Assuming that the apps are initialized
+    initClientApps();
 
     for (WBIOClientApps *botapp : WBIOServerCommon::m_botApps) {
         if (botapp->bot() == clientApp) {

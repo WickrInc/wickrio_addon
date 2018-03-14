@@ -3,10 +3,12 @@
 
 #include <QDateTime>
 #include <QString>
+#include <QObject>
 #include "wickrbotlib.h"
 
-class DECLSPEC WickrBotProcessState
+class DECLSPEC WickrBotProcessState : public QObject
 {
+    Q_OBJECT
 public:
     WickrBotProcessState();
     ~WickrBotProcessState();

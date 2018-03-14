@@ -166,7 +166,7 @@ bool OperationData::alreadyActive(bool closeDbOnExit)
             qDebug() << "Seconds since last status:" << QString::number(secs);
 
 
-            // If less than 3 minutes then return failed, since the process is still running
+            // If less than m_appTimeOut (3 minutes) then return failed, since the process is still running
             if (secs < m_appTimeOut) {
                 m_botDB->close();
                 m_botDB->deleteLater();
@@ -176,7 +176,7 @@ bool OperationData::alreadyActive(bool closeDbOnExit)
                 return !force;
             }
 
-            // Else it has been longer than 10 minutes, kill the old process and continue
+            // Else it has been longer than m_appTimeOut, kill the old process and continue
             QString appName = QFileInfo(QCoreApplication::arguments().at(0)).fileName();
             if (WickrBotUtils::isRunning(appName, procState.process_id)) {
                 log_handler->log(QString("Killing old process, id=%1").arg(procState.process_id));

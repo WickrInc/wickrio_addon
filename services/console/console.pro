@@ -111,8 +111,7 @@ HEADERS += \
     addclientdialog.h \
     advanceddialog.h \
     addconsoleuserdialog.h \
-    configureconsoleserverdialog.h \
-    cmdparser.h
+    configureconsoleserverdialog.h
 
 SOURCES += \
     $${COMMON}/cmdbase.cpp \
@@ -121,8 +120,7 @@ SOURCES += \
     addclientdialog.cpp \
     advanceddialog.cpp \
     addconsoleuserdialog.cpp \
-    configureconsoleserverdialog.cpp \
-    cmdparser.cpp
+    configureconsoleserverdialog.cpp
 
 TEMPLATE = app
 

@@ -4,6 +4,7 @@
 #include <QString>
 
 #include "wickriodatabase.h"
+#include "wickrbotprocessstate.h"
 #include "wickrbotclients.h"
 
 class WickrIOConsoleClientHandler
