@@ -252,7 +252,7 @@ void WickrIOClientLoginHdlr::slotProvisionPageChanged(WickrIOProvisionHdlr::Page
 
 #ifdef WICKR_ENTERPRISE
         // TODO: Generate password?
-        provhdlr->registerWithPassword(m_logins.at(m_curLoginIndex)->m_pass));
+        provhdlr->registerWithPassword(m_logins.at(m_curLoginIndex)->m_pass);
 #else
         provhdlr->setPassword(m_logins.at(m_curLoginIndex)->m_pass);
 
