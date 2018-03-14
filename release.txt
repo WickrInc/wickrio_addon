@@ -1,17 +1,3 @@
-Release Notes from v4.0-release to v4.30.2-4:
+Release Notes from v4.26-release to v4.30.3-2:
+  * Parser Restart Handling
   * Add new directory
-  * Hardening of the bot clients
-  * Use the bot product type for the bots that are created.
-  * Paul cleanup corebot
-  * reducing some redundancy in the clientconfigurationinfo
-  * Create receive service and extend in each of the clients [ci skip]
-  * Changes to move the actionhandler to the service/thread model we are using [ci skip]
-  * Reliability fixes
-  * Backoff for Daemon when starting client fails
-  * Changes to work with the 117 server API, and switchboard changes [ci skip]
-  * Changing logging for daemons to keep files small
-  * Changes to fix issues with Wickr IO
-  * Fixes for uber
-  * Integrate the 4.9 changes from desktop other major changes as well
-  * Cleanup code for the bots.  Move watchdog to its own service.
-  * use version 5.9.1 of Qt [ci skip]
