@@ -74,3 +74,5 @@ BUILDDIR=${current}/../../../../../build-wickr-wickrio-Desktop_Qt_${QTVER}_GCC_6
 build_number=`cat ../../../../BUILD_NUMBER`
 
 $current/deploy64 $BUILDDIR $build_number "${bldExtStr}" "${bldInsStr}" ${relBldFlag} "${outputdir}"
+
+$current/consoleCmd_deploy64 $BUILDDIR $build_number "${bldExtStr}" "${bldInsStr}" ${relBldFlag} "${outputdir}"
