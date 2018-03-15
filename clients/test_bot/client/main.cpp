@@ -219,6 +219,7 @@ int main(int argc, char *argv[])
     clientType = WickrCore::WickrRuntime::PROFESSIONAL;
 #endif
 
+
     // Wickr Runtime Environment (all applications include this line)
     WickrCore::WickrRuntime::init(argc, argv,
                                   PRODUCT_TYPE_BOT,
