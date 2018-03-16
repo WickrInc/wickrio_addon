@@ -105,42 +105,49 @@ case "$product-$btype" in
         doComplianceBot="true"
         doBroadcastBot="true"
         doWelcomeBot=""
+        doCoreBot="true"
         ;;
     cloud-beta)
         lin_appid="37d0f566718d43148155c9370c06ca12"
         doComplianceBot="true"
         doBroadcastBot="true"
         doWelcomeBot=""
+        doCoreBot="true"
         ;;
     cloud-release)
         lin_appid="f103c55c06af44559256019b1c73412b"
         doComplianceBot="true"
         doBroadcastBot="true"
         doWelcomeBot=""
+        doCoreBot="true"
         ;;
     messenger-alpha)
         lin_appid="97bd02efd50d4eeca41aa82acac745d6"
         doComplianceBot=""
         doBroadcastBot="true"
         doWelcomeBot="true"
+        doCoreBot="true"
         ;;
     messenger-release)
         lin_appid="3affc0dd77b249e492c8cea29441ee60"
         doComplianceBot=""
         doBroadcastBot="true"
         doWelcomeBot="true"
+        doCoreBot="true"
         ;;
     enterprise-alpha)
         lin_appid="7723eb32e3434bf6b724c4b04dd35306"
         doComplianceBot="true"
         doBroadcastBot="true"
         doWelcomeBot=""
+        doCoreBot=""
         ;;
     enterprise-release)
         lin_appid="fe01942f8e394217a6d6e4d594738152"
         doComplianceBot="true"
         doBroadcastBot="true"
         doWelcomeBot=""
+        doCoreBot=""
         ;;
 esac
 
@@ -220,6 +227,13 @@ if test ! -z "$doWelcomeBot" ; then
     build_number=`cat $abs/BUILD_NUMBER`
     binary_dir="$abs/$build"
     $abs/clients/welcome_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
+fi
+
+if test ! -z "$doCoreBot" ; then
+    echo "Create core_bot for $product $btype"
+    build_number=`cat $abs/BUILD_NUMBER`
+    binary_dir="$abs/$build"
+    $abs/clients/core_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
 fi
 
 echo "going to create $btype for services"
