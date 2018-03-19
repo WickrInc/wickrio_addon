@@ -20,7 +20,7 @@ prefix=~/tmp/${target}_${version}-deb
 debian=~/tmp/${target}_${version}-deb/DEBIAN
 
 libdir=${prefix}${QTDIR}/lib
-#plugins=${prefix}${QTDIR}/plugins
+plugins=${prefix}${QTDIR}/plugins
 #qmldir=${prefix}${QTDIR}/qml
 
 echo $libdir
@@ -28,7 +28,7 @@ echo $libdir
 rm -rf $prefix
 mkdir -p $debian
 mkdir -p $libdir
-#mkdir -p $plugins
+mkdir -p $plugins
 #mkdir -p $qmldir
 
 sed -e "s/PACKAGE/${target}-${baseversion}/; s/VERSION/$version/" <./${target}.control64 >$debian/control
@@ -44,7 +44,7 @@ cp -a $QTDIR/lib/libQt5Widgets.* $libdir/
 
 
 #cp -a $QTDIR/lib/*.so $QTDIR/lib/*.so.* $libdir/
-#cp -a $QTDIR/plugins/* $plugins/
+cp -a $QTDIR/plugins/* $plugins/
 #cp -a $QTDIR/qml/* $qmldir
 
 cd $prefix
