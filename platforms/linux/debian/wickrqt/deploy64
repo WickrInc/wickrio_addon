@@ -20,22 +20,32 @@ prefix=~/tmp/${target}_${version}-deb
 debian=~/tmp/${target}_${version}-deb/DEBIAN
 
 libdir=${prefix}${QTDIR}/lib
-plugins=${prefix}${QTDIR}/plugins
-qmldir=${prefix}${QTDIR}/qml
+#plugins=${prefix}${QTDIR}/plugins
+#qmldir=${prefix}${QTDIR}/qml
 
 echo $libdir
 
 rm -rf $prefix
 mkdir -p $debian
 mkdir -p $libdir
-mkdir -p $plugins
-mkdir -p $qmldir
+#mkdir -p $plugins
+#mkdir -p $qmldir
 
 sed -e "s/PACKAGE/${target}-${baseversion}/; s/VERSION/$version/" <./${target}.control64 >$debian/control
 
-cp -a $QTDIR/lib/*.so $QTDIR/lib/*.so.* $libdir/
-cp -a $QTDIR/plugins/* $plugins/
-cp -a $QTDIR/qml/* $qmldir
+
+
+cp -a $QTDIR/lib/libQt5Core.* $libdir/
+cp -a $QTDIR/lib/libQt5Gui.* $libdir/
+cp -a $QTDIR/lib/libQt5Network.* $libdir/
+cp -a $QTDIR/lib/libQt5Sql.* $libdir/
+cp -a $QTDIR/lib/libQt5WebSockets.* $libdir/
+cp -a $QTDIR/lib/libQt5Widgets.* $libdir/
+
+
+#cp -a $QTDIR/lib/*.so $QTDIR/lib/*.so.* $libdir/
+#cp -a $QTDIR/plugins/* $plugins/
+#cp -a $QTDIR/qml/* $qmldir
 
 cd $prefix
 find . -type f ! -regex '.*?debian-binary.*' ! -regex '.*?DEBIAN.*' -printf '%P ' | xargs md5sum > DEBIAN/md5sums
