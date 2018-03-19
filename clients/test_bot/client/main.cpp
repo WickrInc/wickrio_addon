@@ -219,6 +219,8 @@ int main(int argc, char *argv[])
     clientType = WickrCore::WickrRuntime::PROFESSIONAL;
 #endif
 
+    // Set the path where the Device ID will be set
+    WickrUtil::botDeviceDir = clientDbPath;
 
     // Wickr Runtime Environment (all applications include this line)
     WickrCore::WickrRuntime::init(argc, argv,
