@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if [[ $# -ne 1]]
+then
+  FileName=`basename $0`
+  echo "usage: $FileName <user name>"
+  exit 1
+fi
+
+username=$1
+
+BOTEXECUTABLE -force -clientname=${username}

@@ -1,0 +1,31 @@
+FROM ubuntu:16.04
+
+MAINTAINER "wickr" <info@wickr.com>
+# Variables
+ENV HOME /home/ubuntu
+
+WORKDIR $HOME
+
+# Make port 4001 available: used for API requests
+EXPOSE 4001
+# Make port 5001 available: used for connections from core or services
+EXPOSE 5001
+
+COPY packages/QTDEBFILE ./QTDEBFILE
+COPY packages/BOTDEBFILE ./BOTDEBFILE
+COPY packages/CONSOLEDEBFILE ./CONSOLEDEBFILE
+
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends apt-utils \
+  && apt-get -y install gdebi \
+  && apt-get -y install libsqlcipher.dev \
+  && gdebi -n QTDEBFILE \
+  && gdebi -n BOTDEBFILE \
+  && gdebi -n CONSOLEDEBFILE
+ARG DEBIAN_FRONTEND=readline
+
+COPY start.sh ./start.sh
+
+# Start the processes
+CMD ["./start.sh"]
