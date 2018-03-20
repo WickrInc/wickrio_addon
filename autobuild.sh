@@ -385,20 +385,28 @@ fi
 #
 # Handle the generation of Docker containers
 #
+mkdir -p docker/packages
+cp ${deploy}/${wickrQTDeb} docker/packages
+cp ${deploy}/${consoleDeb} docker/packages
 
 if test ! -z "$complianceDeb" ; then
-    (cd docker; ./dockerSetup "${deploy}" "${wickrQTDeb}" "${consoleDeb}" "${complianceDeb}" "${complianceExe}" "${complianceImage}" "${versionForDocker}")
+    cp ${deploy}/${complianceDeb} docker/packages
+    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${complianceDeb}" "${complianceExe}" "${complianceImage}" "${versionForDocker}")
 fi
 
 if test ! -z "$broadcastDeb" ; then
-    (cd docker; ./dockerSetup "${deploy}" "${wickrQTDeb}" "${consoleDeb}" "${broadcastDeb}" "${broadcastExe}" "${broadcastImage}" "${versionForDocker}")
+    cp ${deploy}/${broadcastDeb} docker/packages
+    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${broadcastDeb}" "${broadcastExe}" "${broadcastImage}" "${versionForDocker}")
 fi
 
 if test ! -z "$welcomeDeb" ; then
-    (cd docker; ./dockerSetup "${deploy}" "${wickrQTDeb}" "${consoleDeb}" "${welcomeDeb}" "${welcomeExe}" "${welcomeImage}" "${versionForDocker}")
+    cp ${deploy}/${welcomeDeb} docker/packages
+    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${welcomeDeb}" "${welcomeExe}" "${welcomeImage}" "${versionForDocker}")
 fi
 
 #if test ! -z "$coreDeb" ; then
-#    (cd docker; ./dockerSetup "${deploy}" "${wickrQTDeb}" "${consoleDeb}" "${coreDeb}" "${coreExe}" "${coreImage}" "${versionForDocker}")
+#    cp ${deploy}/${coreDeb} docker/packages
+#    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${coreDeb}" "${coreExe}" "${coreImage}" "${versionForDocker}")
 #fi
 
+rm -rf docker/packages
