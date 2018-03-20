@@ -387,18 +387,18 @@ fi
 #
 
 if test ! -z "$complianceDeb" ; then
-    (cd docker; dockerSetup "${deploy}" "${wickrQTDeb}" "${consoleDeb}" "${complianceDeb}" "${complianceExe}" "${complianceImage}" "${versionForDocker}")
+    (cd docker; ./dockerSetup "${deploy}" "${wickrQTDeb}" "${consoleDeb}" "${complianceDeb}" "${complianceExe}" "${complianceImage}" "${versionForDocker}")
 fi
 
 if test ! -z "$broadcastDeb" ; then
-    (cd docker; dockerSetup "${deploy}" "${wickrQTDeb}" "${consoleDeb}" "${broadcastDeb}" "${broadcastExe}" "${broadcastImage}" "${versionForDocker}")
+    (cd docker; ./dockerSetup "${deploy}" "${wickrQTDeb}" "${consoleDeb}" "${broadcastDeb}" "${broadcastExe}" "${broadcastImage}" "${versionForDocker}")
 fi
 
 if test ! -z "$welcomeDeb" ; then
-    (cd docker; dockerSetup "${deploy}" "${wickrQTDeb}" "${consoleDeb}" "${welcomeDeb}" "${welcomeExe}" "${welcomeImage}" "${versionForDocker}")
+    (cd docker; ./dockerSetup "${deploy}" "${wickrQTDeb}" "${consoleDeb}" "${welcomeDeb}" "${welcomeExe}" "${welcomeImage}" "${versionForDocker}")
 fi
 
 #if test ! -z "$coreDeb" ; then
-#    (cd docker; dockerSetup "${deploy}" "${wickrQTDeb}" "${consoleDeb}" "${coreDeb}" "${coreExe}" "${coreImage}" "${versionForDocker}")
+#    (cd docker; ./dockerSetup "${deploy}" "${wickrQTDeb}" "${consoleDeb}" "${coreDeb}" "${coreExe}" "${coreImage}" "${versionForDocker}")
 #fi
 
