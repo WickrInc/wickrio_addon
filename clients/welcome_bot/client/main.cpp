@@ -161,6 +161,14 @@ int main(int argc, char *argv[])
             QString temp = cmd.remove("-duration=");
             operation->duration = temp.toLong();
             setDuration = true;
+        } else if (cmd.startsWith("-clientname")) {
+            QString clientName = cmd.remove("-clientname=");
+            wbConfigFile = QString(WBIO_CLIENT_SETTINGS_FORMAT)
+                    .arg(WBIO_DEFAULT_DBLOCATION)
+                    .arg(clientName);
+            clientDbPath = QString(WBIO_CLIENT_DBDIR_FORMAT)
+                    .arg(WBIO_DEFAULT_DBLOCATION)
+                    .arg(clientName);
         }
     }
 
