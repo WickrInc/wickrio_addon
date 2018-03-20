@@ -42,6 +42,12 @@ min=`expr $num / 10000`
 num=`expr $num - ${min}0000`
 pat=`expr $num / 100`
 bld=`expr $num % 100`
+if test "$min" -lt "10" ; then
+    min="0$min"
+fi
+if test "$pat" -lt "10" ; then
+    pat="0$pat"
+fi
 if test "$bld" -lt "10" ; then
     bld="0$bld"
 fi
