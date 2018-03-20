@@ -21,6 +21,7 @@ build_cloud_alpha:
     - linux
     - alpha
     - cloud
+    - docker
 
 build_cloud_beta:
   stage: build
@@ -32,6 +33,7 @@ build_cloud_beta:
     - linux
     - beta
     - cloud
+    - docker
 
 build_cloud_release:
   stage: build
@@ -43,6 +45,7 @@ build_cloud_release:
     - linux
     - release
     - cloud
+    - docker
 
 #
 # Enterprise builds
@@ -58,6 +61,7 @@ build_enterprise_alpha:
     - linux
     - alpha
     - enterprise
+    - docker
 
 build_enterprise_release:
   stage: build
@@ -69,6 +73,7 @@ build_enterprise_release:
     - linux
     - release
     - enterprise
+    - docker
 
 #
 # Messenger builds
@@ -83,6 +88,7 @@ build_messenger_alpha:
     - linux
     - alpha
     - messenger
+    - docker
 
 build_messenger_release:
   stage: build
@@ -94,6 +100,7 @@ build_messenger_release:
     - linux
     - release
     - messenger
+    - docker
 
 #
 # Tests

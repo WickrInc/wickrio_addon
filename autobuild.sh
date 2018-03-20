@@ -50,9 +50,11 @@ fi
 release=`expr $num - ${pat}00`
 version="${maj}.${min}.${pat}"
 buildout="${version} ${bld}"
+versionForDocker="${maj}.${min}.${pat}.${bld}"
 
 echo "release=$release"
 echo "version=$version"
+echo "versionForDocker=$versionForDocker"
 
 btype="$2"
 product="$1"
@@ -98,28 +100,63 @@ case "$product" in
         ;;
 esac
 
+wickrQTDeb="wickr-qt_5.9.4_amd64.deb"
+
 lin_appid=""
 case "$product-$btype" in
     cloud-alpha)
         lin_appid="d4fb30fa00bb481ba75f356572890aee"
-        doComplianceBot="true"
+        doComplianceBot=""
         doBroadcastBot="true"
         doWelcomeBot=""
         doCoreBot="true"
+        consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
+        complianceDeb=""
+        complianceExe=""
+        broadcastDeb="wio_test_bot-alpha_${version}-${bld}~alpha_amd64.deb"
+        broadcastExe="test_botAlpha"
+        broadcastImage="bot-cloud-broadcast-alpha"
+        welcomeDeb=""
+        welcomeExe="welcome_botAlpha"
+        coreDeb="wio_core_bot-alpha_${version}-${bld}~alpha_amd64.deb"
+        coreExe="core_botAlpha"
+        coreImage="bot-cloud-core-alpha"
         ;;
     cloud-beta)
         lin_appid="37d0f566718d43148155c9370c06ca12"
-        doComplianceBot="true"
+        doComplianceBot=""
         doBroadcastBot="true"
         doWelcomeBot=""
         doCoreBot="true"
+        consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
+        complianceDeb=""
+        complianceExe=""
+        broadcastDeb="wio_test_bot-beta_${version}-${bld}~beta_amd64.deb"
+        broadcastExe="test_botBeta"
+        broadcastImage="bot-cloud-broadcast-beta"
+        welcomeDeb=""
+        welcomeExe=""
+        coreDeb="wio_core_bot-beta_${version}-${bld}~beta_amd64.deb"
+        coreExe="core_botBeta"
+        coreImage="bot-cloud-core-beta"
         ;;
     cloud-release)
         lin_appid="f103c55c06af44559256019b1c73412b"
-        doComplianceBot="true"
+        doComplianceBot=""
         doBroadcastBot="true"
         doWelcomeBot=""
         doCoreBot="true"
+        consoleDeb="wio_console_${version}-${bld}_amd64.deb"
+        complianceDeb=""
+        complianceExe=""
+        broadcastDeb="wio_test_bot_${version}-${bld}_amd64.deb"
+        broadcastExe="test_bot"
+        broadcastImage="bot-cloud-broadcast"
+        welcomeDeb=""
+        welcomeExe=""
+        coreDeb="wio_core_bot_${version}-${bld}_amd64.deb"
+        coreExe="core_bot"
+        coreImage="bot-cloud-core"
         ;;
     messenger-alpha)
         lin_appid="97bd02efd50d4eeca41aa82acac745d6"
@@ -127,6 +164,18 @@ case "$product-$btype" in
         doBroadcastBot="true"
         doWelcomeBot="true"
         doCoreBot="true"
+        consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
+        complianceDeb=""
+        complianceExe=""
+        broadcastDeb=""
+        broadcastExe=""
+        broadcastImage=""
+        welcomeDeb="wio_welcome_bot-alpha_${version}-${bld}~alpha_amd64.deb"
+        welcomeExe="welcome_botAlpha"
+        welcomeImage="bot-messenger-welcome-alpha"
+        coreDeb="wio_core_bot-alpha_${version}-${bld}~alpha_amd64.deb"
+        coreExe="core_botAlpha"
+        coreImage="bot-messenger-core-alpha"
         ;;
     messenger-release)
         lin_appid="3affc0dd77b249e492c8cea29441ee60"
@@ -134,6 +183,17 @@ case "$product-$btype" in
         doBroadcastBot="true"
         doWelcomeBot="true"
         doCoreBot="true"
+        consoleDeb="wio_console_${version}-${bld}_amd64.deb"
+        complianceDeb=""
+        broadcastDeb=""
+        broadcastExe=""
+        broadcastImage=""
+        welcomeDeb="wio_welcome_bot_${version}-${bld}_amd64.deb"
+        welcomeExe="welcome_bot"
+        welcomeImage="bot-messenger-welcome"
+        coreDeb="wio_core_bot_${version}-${bld}_amd64.deb"
+        coreExe="core_bot"
+        coreImage="bot-messenger-core"
         ;;
     enterprise-alpha)
         lin_appid="7723eb32e3434bf6b724c4b04dd35306"
@@ -141,6 +201,17 @@ case "$product-$btype" in
         doBroadcastBot="true"
         doWelcomeBot=""
         doCoreBot=""
+        consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
+        complianceDeb="wio_compliance_bot-alpha_${version}-${bld}~alpha_amd64.deb"
+        complianceExe="compliance_botAlpha"
+        complianceImage="bot-enterprise-compliance-alpha"
+        broadcastDeb="wio_test_bot-alpha_${version}-${bld}~alpha_amd64.deb"
+        broadcastExe="test_botAlpha"
+        broadcastImage="bot-enterprise-broadcast-alpha"
+        welcomeDeb=""
+        welcomeExe=""
+        coreDeb=""
+        coreExe=""
         ;;
     enterprise-release)
         lin_appid="fe01942f8e394217a6d6e4d594738152"
@@ -148,6 +219,17 @@ case "$product-$btype" in
         doBroadcastBot="true"
         doWelcomeBot=""
         doCoreBot=""
+        consoleDeb="wio_console_${version}-${bld}_amd64.deb"
+        complianceDeb="wio_compliance_bot_${version}-${bld}_amd64.deb"
+        complianceExe="compliance_bot"
+        complianceImage="bot-enterprise-compliance"
+        broadcastDeb="wio_test_bot_${version}-${bld}_amd64.deb"
+        broadcastExe="test_bot"
+        broadcastImage="bot-enterprise-broadcast"
+        welcomeDeb=""
+        welcomeExe=""
+        coreDeb=""
+        coreExe=""
         ;;
 esac
 
@@ -245,7 +327,6 @@ build_number=`cat $abs/BUILD_NUMBER`
 $abs/services/installer/linux/scripts/consoleCmd_deploy64 $binary_dir $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$deploy"
 
 echo "going to create Qt library package"
-echo "going to create Qt library package"
 $abs/platforms/linux/debian/wickrqt/deploy64 "$deploy"
 
 (cd $deploy ; zip -r "$output/bots-${version}.zip" *.deb *.sha256)
@@ -300,4 +381,24 @@ if test ! -z "$lin_appid" ; then
         exit 1
     fi
 fi
+
+#
+# Handle the generation of Docker containers
+#
+
+if test ! -z "$complianceDeb" ; then
+    docker/dockerSetup "${deploy}" "${wickrQTDeb}" "${consoleDeb}" "${complianceDeb}" "${complianceExe}" "${complianceImage}" "${versionForDocker}"
+fi
+
+if test ! -z "$broadcastDeb" ; then
+    docker/dockerSetup "${deploy}" "${wickrQTDeb}" "${consoleDeb}" "${broadcastDeb}" "${broadcastExe}" "${broadcastImage}" "${versionForDocker}"
+fi
+
+if test ! -z "$welcomeDeb" ; then
+    docker/dockerSetup "${deploy}" "${wickrQTDeb}" "${consoleDeb}" "${welcomeDeb}" "${welcomeExe}" "${welcomeImage}" "${versionForDocker}"
+fi
+
+#if test ! -z "$coreDeb" ; then
+#    docker/dockerSetup "${deploy}" "${wickrQTDeb}" "${consoleDeb}" "${coreDeb}" "${coreExe}" "${coreImage}" "${versionForDocker}"
+#fi
 
