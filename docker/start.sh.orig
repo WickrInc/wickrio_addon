@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ $# -ne 1]]
+if [[ $# -ne 1 ]]
 then
   FileName=`basename $0`
   echo "usage: $FileName <user name>"
