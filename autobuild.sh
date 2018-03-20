@@ -43,8 +43,6 @@ num=`expr $num - ${min}0000`
 pat=`expr $num / 100`
 bld=`expr $num % 100`
 if test "$bld" -lt "10" ; then
-    bld="00$bld"
-else
     bld="0$bld"
 fi
 release=`expr $num - ${pat}00`
