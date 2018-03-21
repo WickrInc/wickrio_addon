@@ -1,0 +1,45 @@
+#!/bin/bash
+
+if [[ $# -ne 6 ]]
+then
+  FileName=`basename $0`
+  echo "usage: $FileName <WickrQT> <console deb> <bot deb> <bot binary> <docker image> <image tag>"
+  exit 1
+fi
+
+set -e
+current=`dirname $0`
+cd $current
+set +e
+
+qtdebfile=$1
+consoledebfile=$2
+botdebfile=$3
+botexe=$4
+dockerImage="wickr/$5"
+dockerService="wickrio-$5"
+dockerTag=$6
+
+echo "********************************************************************"
+echo "Beginning to create docker image:
+echo "  botexe=$botexe
+echo "  dockerImage=$dockerImage"
+echo "  dockerService=$dockerService"
+echo "  dockerTag=$dockerTag"
+
+#
+# set the values within the Dockerfile and the start.sh
+#
+sed -e "s/QTDEBFILE/${qtdebfile}/g" -e "s/BOTDEBFILE/${botdebfile}/g" -e "s/CONSOLEDEBFILE/${consoledebfile}/g" <$current/Dockerfile.orig > $current/Dockerfile
+sed -e "s/BOTEXECUTABLE/${botexe}/g" <$current/start.sh.orig > $current/start.sh
+
+#
+# docker-compose build, tag, and push image to docker hub
+#
+docker-compose -f build.docker build ${dockerService}
+docker tag "$dockerImage" "${dockerImage}:${dockerTag}"
+docker push "${dockerImage}:${dockerTag}"
+docker rmi "${dockerImage}:${dockerTag}"
+
+echo "Finished creating docker image"
+echo "********************************************************************"

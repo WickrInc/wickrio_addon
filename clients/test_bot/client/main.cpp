@@ -152,6 +152,14 @@ int main(int argc, char *argv[])
         } else if (cmd.startsWith("-processname")) {
             operation->processName = cmd.remove("-processname=");
             setProcessName = true;
+        } else if (cmd.startsWith("-clientname")) {
+            QString clientName = cmd.remove("-clientname=");
+            wbConfigFile = QString(WBIO_CLIENT_SETTINGS_FORMAT)
+                    .arg(WBIO_DEFAULT_DBLOCATION)
+                    .arg(clientName);
+            clientDbPath = QString(WBIO_CLIENT_DBDIR_FORMAT)
+                    .arg(WBIO_DEFAULT_DBLOCATION)
+                    .arg(clientName);
         }
     }
 
@@ -219,6 +227,8 @@ int main(int argc, char *argv[])
     clientType = WickrCore::WickrRuntime::PROFESSIONAL;
 #endif
 
+    // Set the path where the Device ID will be set
+    WickrUtil::botDeviceDir = clientDbPath;
 
     // Wickr Runtime Environment (all applications include this line)
     WickrCore::WickrRuntime::init(argc, argv,

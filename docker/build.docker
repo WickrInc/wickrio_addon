@@ -1,0 +1,38 @@
+version: "2"
+services:
+    wickrio-bot-cloud-broadcast-alpha:
+      image: wickr/bot-cloud-broadcast-alpha
+      build: .
+    wickrio-bot-cloud-broadcast-beta:
+      image: wickr/bot-cloud-broadcast-beta
+      build: .
+    wickrio-bot-cloud-broadcast:
+      image: wickr/bot-cloud-broadcast
+      build: .
+    wickrio-bot-cloud-core-alpha:
+      image: wickr/bot-cloud-core-alpha
+      build: .
+    wickrio-bot-cloud-core-beta:
+      image: wickr/bot-cloud-core-beta
+      build: .
+    wickrio-bot-cloud-core:
+      image: wickr/bot-cloud-core
+      build: .
+    wickrio-bot-enterprise-compliance-alpha:
+      image: wickr/bot-enterprise-compliance-alpha
+      build: .
+    wickrio-bot-enterprise-compliance:
+      image: wickr/bot-enterprise-compliance
+      build: .
+    wickrio-bot-messenger-welcome-alpha:
+      image: wickr/bot-messenger-welcome-alpha
+      build: .
+    wickrio-bot-messenger-welcome:
+      image: wickr/bot-messenger-welcome
+      build: .
+    wickrio-bot-messenger-core-alpha:
+      image: wickr/bot-messenger-core-alpha
+      build: .
+    wickrio-bot-messenger-core:
+      image: wickr/bot-messenger-core
+      build: .
