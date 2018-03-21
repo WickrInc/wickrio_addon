@@ -33,6 +33,7 @@ echo "**   dockerTag=$dockerTag"
 #
 sed -e "s/QTDEBFILE/${qtdebfile}/g" -e "s/BOTDEBFILE/${botdebfile}/g" -e "s/CONSOLEDEBFILE/${consoledebfile}/g" <$current/Dockerfile.orig > $current/Dockerfile
 sed -e "s/BOTEXECUTABLE/${botexe}/g" <$current/start.sh.orig > $current/start.sh
+chmod 777 $current/start.sh
 
 #
 # docker-compose build, tag, and push image to docker hub
