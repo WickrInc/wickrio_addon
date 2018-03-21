@@ -408,9 +408,9 @@ if test ! -z "$welcomeDeb" ; then
     (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${welcomeDeb}" "${welcomeExe}" "${welcomeImage}" "${versionForDocker}")
 fi
 
-#if test ! -z "$coreDeb" ; then
-#    cp ${deploy}/${coreDeb} docker/packages
-#    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${coreDeb}" "${coreExe}" "${coreImage}" "${versionForDocker}")
-#fi
+if test ! -z "$coreDeb" ; then
+    cp ${deploy}/${coreDeb} docker/packages
+    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${coreDeb}" "${coreExe}" "${coreImage}" "${versionForDocker}")
+fi
 
 rm -rf docker/packages
