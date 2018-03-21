@@ -20,7 +20,8 @@ dockerImage="wickr/$5"
 dockerService="wickrio-$5"
 dockerTag=$6
 
-echo "\n********************************************************************"
+echo ""
+echo "********************************************************************"
 echo "** Beginning to create docker image:"
 echo "**   botexe=$botexe"
 echo "**   dockerImage=$dockerImage"
@@ -41,5 +42,5 @@ docker tag "$dockerImage" "${dockerImage}:${dockerTag}"
 docker push "${dockerImage}:${dockerTag}"
 docker rmi "${dockerImage}:${dockerTag}"
 
-echo "\n** Finished creating docker image: ${dockerImage}:${dockerTag}"
+echo "** Finished creating docker image: ${dockerImage}:${dockerTag}"
 echo "********************************************************************"
