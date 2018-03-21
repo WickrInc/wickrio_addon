@@ -501,11 +501,11 @@ bool WickrIOClientServerService::startClient(WickrBotClients *client)
     QString outputFile = QString("%1\\clients\\%2\\logs\\WickrIO%2.output").arg(m_operation->databaseDir).arg(client->name);
 #else
     configFileName = QString(WBIO_CLIENT_SETTINGS_FORMAT).arg(m_operation->databaseDir).arg(client->name);
-    clientDbDir = QString("%1/clients/%2/client").arg(m_operation->databaseDir).arg(client->name);
-    logname = QString("%1/clients/%2/logs/WickrIO%2.log").arg(m_operation->databaseDir).arg(client->name);
-    workingDir = QString("%1/clients/%2").arg(m_operation->databaseDir).arg(client->name);
+    clientDbDir = QString(WBIO_CLIENT_DBDIR_FORMAT).arg(m_operation->databaseDir).arg(client->name);
+    logname = QString(WBIO_CLIENT_LOGFILE_FORMAT).arg(m_operation->databaseDir).arg(client->name);
+    workingDir = QString(WBIO_CLIENT_WORKINGDIR_FORMAT).arg(m_operation->databaseDir).arg(client->name);
 
-    QString outputFile = QString("%1/clients/%2/logs/WickrIO%2.output").arg(m_operation->databaseDir).arg(client->name);
+    QString outputFile = QString(WBIO_CLIENT_OUTFILE_FORMAT).arg(m_operation->databaseDir).arg(client->name);
 #endif
 
 

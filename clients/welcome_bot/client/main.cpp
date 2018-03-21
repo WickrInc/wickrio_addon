@@ -127,6 +127,7 @@ int main(int argc, char *argv[])
     QString clientDbPath("");
     QString suffix;
     QString wbConfigFile("");
+    QString argOutputFile;
     bool setProcessName = false;
     bool setDuration = false;
 
@@ -169,6 +170,7 @@ int main(int argc, char *argv[])
             clientDbPath = QString(WBIO_CLIENT_DBDIR_FORMAT)
                     .arg(WBIO_DEFAULT_DBLOCATION)
                     .arg(clientName);
+            argOutputFile = QString(WBIO_CLIENT_WORKINGDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(clientName);
         }
     }
 
@@ -324,12 +326,16 @@ int main(int argc, char *argv[])
     }
 
     // Set the output file if it is set
-    settings->beginGroup(WBSETTINGS_LOGGING_HEADER);
-    QString curOutputFilename = settings->value(WBSETTINGS_LOGGING_OUTPUT_FILENAME, "").toString();
-    if (! curOutputFilename.isEmpty()) {
-        operation->log_handler->logSetOutput(curOutputFilename);
+    if (!argOutputFile.isEmpty()) {
+        operation->log_handler->logSetOutput(argOutputFile);
+    } else {
+        settings->beginGroup(WBSETTINGS_LOGGING_HEADER);
+        QString curOutputFilename = settings->value(WBSETTINGS_LOGGING_OUTPUT_FILENAME, "").toString();
+        if (! curOutputFilename.isEmpty()) {
+            operation->log_handler->logSetOutput(curOutputFilename);
+        }
+        settings->endGroup();
     }
-    settings->endGroup();
 
     /*
      * Get the user name associated with this account. This is needed for the
