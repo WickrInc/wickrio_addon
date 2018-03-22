@@ -365,6 +365,11 @@ int main(int argc, char *argv[])
         requestHandler = new RequestHandler(operation, app);
         httpListener = new stefanfrings::HttpListener(settings,requestHandler,app);
         settings->endGroup();
+
+
+        /*
+         * Start the Integration software if there is any configured
+         */
     });
     WICKRBOT->start();
 
