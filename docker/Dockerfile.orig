@@ -21,6 +21,7 @@ RUN apt-get update \
   && apt-get -y install gdebi \
   && apt-get -y install libsqlcipher.dev \
   && apt-get -y install npm \
+  && npm install -g coffeescript pm2 coffee-script axios \
   && gdebi -n QTDEBFILE \
   && gdebi -n BOTDEBFILE \
   && gdebi -n CONSOLEDEBFILE
