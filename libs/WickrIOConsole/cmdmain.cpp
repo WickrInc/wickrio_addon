@@ -82,21 +82,16 @@ bool CmdMain::runCommands(QString commands)
     if (commands.isEmpty()) {
         while (true) {
             if (m_hasMotherBotBinary) {
-                qDebug() << "CONSOLE:Enter one of [client, advanced, server, console or users]:";
-            } else {
-                qDebug() << "CONSOLE:Enter one of [client, advanced, server or console]:";
-            }
-            if (m_hasMotherBotBinary) {
                 if(m_hasParserBinary){
-                    qDebug() << "CONSOLE:Enter group [client, advanced, server, console, parser or users]:";
+                    qDebug() << "CONSOLE:Enter one of [client, advanced, server, console, parser or users]:";
                 } else {
-                    qDebug() << "CONSOLE:Enter group [client, advanced, server, console or users]:";
+                    qDebug() << "CONSOLE:Enter one of [client, advanced, server, console or users]:";
                 }
             } else {
                 if(m_hasParserBinary){
-                    qDebug() << "CONSOLE:Enter group [client, advanced, server, console or parser]:";
+                    qDebug() << "CONSOLE:Enter one of [client, advanced, server, console or parser]:";
                 } else {
-                    qDebug() << "CONSOLE:Enter group [client, advanced, server or console]:";
+                    qDebug() << "CONSOLE:Enter one of [client, advanced, server or console]:";
                 }
             }
 
