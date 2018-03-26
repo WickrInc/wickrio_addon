@@ -395,22 +395,22 @@ cp ${deploy}/${consoleDeb} docker/packages
 
 if test ! -z "$complianceDeb" ; then
     cp ${deploy}/${complianceDeb} docker/packages
-    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${complianceDeb}" "${complianceExe}" "${complianceImage}" "${versionForDocker}")
+    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${complianceDeb}" "${complianceExe}" "${complianceImage}" "${versionForDocker}" "false")
 fi
 
 if test ! -z "$broadcastDeb" ; then
     cp ${deploy}/${broadcastDeb} docker/packages
-    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${broadcastDeb}" "${broadcastExe}" "${broadcastImage}" "${versionForDocker}")
+    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${broadcastDeb}" "${broadcastExe}" "${broadcastImage}" "${versionForDocker}" "true")
 fi
 
 if test ! -z "$welcomeDeb" ; then
     cp ${deploy}/${welcomeDeb} docker/packages
-    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${welcomeDeb}" "${welcomeExe}" "${welcomeImage}" "${versionForDocker}")
+    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${welcomeDeb}" "${welcomeExe}" "${welcomeImage}" "${versionForDocker}" "false")
 fi
 
 if test ! -z "$coreDeb" ; then
     cp ${deploy}/${coreDeb} docker/packages
-    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${coreDeb}" "${coreExe}" "${coreImage}" "${versionForDocker}")
+    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${coreDeb}" "${coreExe}" "${coreImage}" "${versionForDocker}" "false")
 fi
 
 rm -rf docker/packages
