@@ -108,10 +108,10 @@ WBIOServerCommon::initClientApps()
     if (!m_initialized) {
 
         WBIOBotTypes *hubot      = new WBIOBotTypes("hubot",      "hubot",      APIURL_MSGRECVCBACK,
-                                                    "integrations/software/hubot/software.tar.gz",
+                                                    "/usr/lib/wickr/integrations/software/hubot/software.tar.gz",
                                                     "install.sh", "configure.sh", "start.sh", "stop.sh" );
         WBIOBotTypes *supportBot = new WBIOBotTypes("supportBot", "supportbot", APIURL_MSGRECVLIB,
-                                                    "integrations/software/supportbot/software.tar.gz",
+                                                    "/usr/lib/wickr/integrations/software/supportbot/software.tar.gz",
                                                     "install.sh", "configure.sh", "start.sh", "stop.sh" );
         WBIOServerCommon::m_supportedBots.append(hubot);
         WBIOServerCommon::m_supportedBots.append(supportBot);
@@ -281,12 +281,7 @@ WBIOServerCommon::getBotSoftwarePath(const QString& botType)
             if (bottypes->m_swLocation.isEmpty())
                 return QString();
 
-            QString path ;
-            if (bottypes->swLocation().startsWith("/"))
-                path = QString("%1%2").arg(WBIO_DEFAULT_DBLOCATION).arg(bottypes->swLocation());
-            else
-                path = QString("%1/%2").arg(WBIO_DEFAULT_DBLOCATION).arg(bottypes->swLocation());
-
+            QString path = bottypes->swLocation();
             return path;
         }
     }
