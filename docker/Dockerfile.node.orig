@@ -20,7 +20,7 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends apt-utils \
   && apt-get -y install gdebi \
   && apt-get -y install libsqlcipher.dev \
-  && curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash - \
+  && curl -sL https://deb.nodesource.com/setup_9.x | bash - \
   && apt-get -y install nodejs \
   && apt-get -y install npm \
   && npm install -g coffeescript pm2 coffee-script axios \
