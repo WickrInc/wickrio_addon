@@ -47,6 +47,7 @@ docker-compose -f build.docker build ${dockerService}
 docker tag "$dockerImage" "${dockerImage}:${dockerTag}"
 docker push "${dockerImage}:${dockerTag}"
 docker rmi "${dockerImage}:${dockerTag}"
+docker system prune -a
 
 echo "** Finished creating docker image: ${dockerImage}:${dockerTag}"
 echo "********************************************************************"
