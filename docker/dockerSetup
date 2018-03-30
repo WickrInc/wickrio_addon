@@ -33,9 +33,9 @@ echo "**   dockerTag=$dockerTag"
 # set the values within the Dockerfile and the start.sh
 #
 if [ "$needsNode" == "true" ] ; then
-  sed -e "s/QTDEBFILE/${qtdebfile}/g" -e "s/BOTDEBFILE/${botdebfile}/g" -e "s/CONSOLEDEBFILE/${consoledebfile}/g" <$current/Dockerfile.orig > $current/Dockerfile
-else
   sed -e "s/QTDEBFILE/${qtdebfile}/g" -e "s/BOTDEBFILE/${botdebfile}/g" -e "s/CONSOLEDEBFILE/${consoledebfile}/g" <$current/Dockerfile.node.orig > $current/Dockerfile
+else
+  sed -e "s/QTDEBFILE/${qtdebfile}/g" -e "s/BOTDEBFILE/${botdebfile}/g" -e "s/CONSOLEDEBFILE/${consoledebfile}/g" <$current/Dockerfile.orig > $current/Dockerfile
 fi
 sed -e "s/BOTEXECUTABLE/${botexe}/g" <$current/start.sh.orig > $current/start.sh
 chmod 777 $current/start.sh
