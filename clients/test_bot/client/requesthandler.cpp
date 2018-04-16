@@ -1211,11 +1211,17 @@ RequestHandler::processAddGroupConvo(stefanfrings::HttpRequest& request, stefanf
 
     QStringList memberslist;
     int ttl = 0;
+    int bor = 0;
 
     // Get the TTL / Destruct time
     if (grpConvoObject.contains(APIJSON_ROOMTTL)) {
         value = grpConvoObject[APIJSON_ROOMTTL];
         ttl = value.toInt(0);
+    }
+    // Get the BOR / Burn on Read
+    if (grpConvoObject.contains(APIJSON_ROOMBOR)) {
+        value = grpConvoObject[APIJSON_ROOMBOR];
+        bor = value.toInt(0);
     }
 
     // Get the members
@@ -1302,6 +1308,7 @@ RequestHandler::processGetGroupConvos(const QString &clientID, stefanfrings::Htt
 
                 grpConvoValue.insert(APIJSON_VGROUPID, currentConvo->getVGroupID());
                 grpConvoValue.insert(APIJSON_ROOMTTL, QString::number(currentConvo->getDestruct()));
+                grpConvoValue.insert(APIJSON_ROOMBOR, QString::number(currentConvo->getBOR()));
 
                 // Setup the users array
                 QStringList userslist = currentConvo->getUsernameStringArray();
@@ -1322,7 +1329,7 @@ RequestHandler::processGetGroupConvos(const QString &clientID, stefanfrings::Htt
     }
 
     QJsonObject jsonObject;
-    jsonObject.insert(APIJSON_ROOMS, grpConvoArrayValue);
+    jsonObject.insert(APIJSON_GROUPCONVOS, grpConvoArrayValue);
     QJsonDocument saveDoc(jsonObject);
     QByteArray byteArray = saveDoc.toJson();
 

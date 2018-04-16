@@ -470,6 +470,9 @@ WickrIOReceiverMgr::processFileMsg(QJsonObject& jsonObject,  WickrCore::WickrInb
     fileJsonObject.insert(APIJSON_FILE_LOCALFILE, attachmentFileName);
     fileJsonObject.insert(APIJSON_FILE_FILENAME, dLoadFileName);
     fileJsonObject.insert(APIJSON_FILE_GUID, file_guid);
+    if (fileInfo.metaData().isScreenshot()) {
+        fileJsonObject.insert(APIJSON_FILE_ISSCRSHOT, true);
+    }
     jsonObject.insert(APIJSON_FILE_HEADER, fileJsonObject);
 
     rxDownload = new WickrIORxDownloadFile(msg, fileInfo, attachmentFileName, realFileName, jsonObject);

@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
             clientDbPath = QString(WBIO_CLIENT_DBDIR_FORMAT)
                     .arg(WBIO_DEFAULT_DBLOCATION)
                     .arg(clientName);
-            argOutputFile = QString(WBIO_CLIENT_WORKINGDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(clientName);
+            argOutputFile = QString(WBIO_CLIENT_OUTFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(clientName);
         }
     }
 

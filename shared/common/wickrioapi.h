@@ -90,6 +90,7 @@
 #define APIJSON_ROOMBOR         "bor"
 #define APIJSON_ROOMDESC        "description"
 #define APIJSON_GROUPCONVO      "groupconvo"
+#define APIJSON_GROUPCONVOS     "groupconvos"
 #define APIJSON_VGROUPID        "vgroupid"
 #define APIJSON_MAXCLIENTS      "maxclients"
 #define APIJSON_USERTYPE        "usertype"
@@ -139,6 +140,7 @@
 #define APIJSON_FILE_FILENAME   "filename"
 #define APIJSON_FILE_LOCALFILE  "localfilename"
 #define APIJSON_FILE_GUID       "guid"
+#define APIJSON_FILE_ISSCRSHOT  "isscreenshot"
 
 #define APIJSON_UTYPE_ADMIN     "admin"
 #define APIJSON_UTYPE_USER      "user"
