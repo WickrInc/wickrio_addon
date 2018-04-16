@@ -751,7 +751,7 @@ Client::updateClientsList()
 
                 // Get the process state for the client
                 QString processName = WBIOServerCommon::getClientProcessName(client);
-                client->status = WickrIOConsoleClientHandler::getActualProcessState(processName, m_ioDB);
+                client->status = WickrIOConsoleClientHandler::getActualProcessState(processName, client->name, m_ioDB);
 
                 QString cUserName;
                 cUserName = m_ioDB->getClientsConsoleUser(client->id);

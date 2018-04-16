@@ -81,6 +81,6 @@ bool CmdServer::runCommands(QString commands)
 
 void CmdServer::status()
 {
-    QString clientState = WickrIOConsoleClientHandler::getActualProcessState(WBIO_CLIENTSERVER_TARGET, m_cmdOperation->m_ioDB);
+    QString clientState = WickrIOConsoleClientHandler::getActualProcessState(WBIO_CLIENTSERVER_TARGET, WBIO_CLIENTSERVER_TARGET, m_cmdOperation->m_ioDB);
     qDebug() << "CONSOLE:The Clients Server state is" << clientState;
 }

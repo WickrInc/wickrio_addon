@@ -17,10 +17,11 @@ CmdClient::CmdClient(CmdOperation *operation) :
 {
 }
 
-bool CmdClient::processCommand(QStringList cmdList)
+bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
 {
     bool retVal = true;
     bool bForce = false;
+    isquit = false;
 
     QString cmd = cmdList.at(0).toLower();
     int clientIndex;
@@ -81,6 +82,7 @@ bool CmdClient::processCommand(QStringList cmdList)
         }
     } else if (cmd == "quit") {
         retVal = false;
+        isquit = true;
     } else if (cmd == "start") {
         if (clientIndex == -1) {
             qDebug() << "CONSOLE:Usage: start <index>";
@@ -123,6 +125,7 @@ bool CmdClient::runCommands(QString commands)
 
     // Get the data from the database
     m_clients = m_operation->m_ioDB->getClients();
+    bool isQuit;
 
     if (commands.isEmpty()) {
         while (true) {
@@ -132,7 +135,7 @@ bool CmdClient::runCommands(QString commands)
             line = line.trimmed();
             if (line.length() > 0) {
                 QStringList args = line.split(" ");
-                if (!processCommand(args)) {
+                if (!processCommand(args, isQuit)) {
                     break;
                 }
 
@@ -140,9 +143,9 @@ bool CmdClient::runCommands(QString commands)
         }
     } else {
         QStringList cmds = commands.trimmed().split(" ");
-        processCommand(cmds);
+        processCommand(cmds, isQuit);
     }
-    return true;
+    return !isQuit;
 }
 
 void CmdClient::status()
@@ -162,7 +165,7 @@ void CmdClient::listClients()
     int cnt=0;
     for (WickrBotClients *client : m_clients) {
         QString processName = WBIOServerCommon::getClientProcessName(client);
-        QString clientState = WickrIOConsoleClientHandler::getActualProcessState(processName, m_operation->m_ioDB);
+        QString clientState = WickrIOConsoleClientHandler::getActualProcessState(processName, client->name, m_operation->m_ioDB);
         WickrIOConsoleUser cUser;
         QString consoleUser;
 
@@ -1184,8 +1187,18 @@ void CmdClient::pauseClient(int clientIndex, bool force)
 void CmdClient::startClient(int clientIndex, bool force)
 {
     if (validateIndex(clientIndex)) {
-        WickrBotClients *client = m_clients.at(clientIndex);
         WickrBotProcessState state;
+
+        // Get the process state for the Client Server
+        if (m_operation->m_ioDB->getProcessState(WBIO_CLIENTSERVER_TARGET, &state)) {
+            if (state.state != PROCSTATE_RUNNING) {
+                qDebug() << "CONSOLE:WARNING: The Client Server is not currently running!";
+            }
+        } else {
+            qDebug() << "CONSOLE:WARNING: The Client Server state is unknown!";
+        }
+
+        WickrBotClients *client = m_clients.at(clientIndex);
         QString processName = WBIOServerCommon::getClientProcessName(client);
 
         if (m_operation->m_ioDB->getProcessState(processName, &state)) {

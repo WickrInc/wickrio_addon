@@ -24,7 +24,7 @@ public:
     void status();
 
 private:
-    bool processCommand(QStringList cmdList);
+    bool processCommand(QStringList cmdList, bool &isquit);
 
     bool getClientValues(WickrBotClients *client);
     void addClient();

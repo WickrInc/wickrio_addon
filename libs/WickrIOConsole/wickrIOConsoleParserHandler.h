@@ -17,7 +17,7 @@ public:
     static QString handleSettings(WickrIOClientDatabase *ioDB, WickrIOParsers *newParser);
     static QStringList getNetworkInterfaceList();
 
-    static QString getActualProcessState(const QString &processName, WickrIOClientDatabase* ioDB, int timeout=60);
+    static QString getActualProcessState(const QString &processName, const QString &searchString, WickrIOClientDatabase* ioDB, int timeout=60);
 
 };
 

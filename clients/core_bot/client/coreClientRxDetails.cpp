@@ -262,7 +262,7 @@ bool CoreClientRxDetails::processMessage(WickrDBObject *item)
                         if (m_user.isAdmin() && commands.count() >= 2) {
                             if (commands[1] == "status") {
                                 WickrIOClientDatabase* ioDB = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
-                                QString clientState = WickrIOConsoleClientHandler::getActualProcessState(WBIO_CLIENTSERVER_TARGET, ioDB);
+                                QString clientState = WickrIOConsoleClientHandler::getActualProcessState(WBIO_CLIENTSERVER_TARGET, WBIO_CLIENTSERVER_TARGET, ioDB);
                                 jsonHandler->m_message = clientState;
                             } else if (commands[1] == "start") {
                                 WickrIOClientDatabase* ioDB = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);

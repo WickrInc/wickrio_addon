@@ -17,7 +17,9 @@ public:
     static bool validateSSLKey(const QString &sslKeyFile);
     static bool validateSSLCert(const QString &sslCertFile);
 
-    static QString getActualProcessState(const QString &processName, WickrIOClientDatabase* ioDB, int timeout=60);
+    static QString getActualProcessState(const QString &processName,
+                                         const QString &searchString,
+                                         WickrIOClientDatabase* ioDB, int timeout=60);
 
 };
 

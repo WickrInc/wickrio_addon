@@ -28,10 +28,11 @@ QString WickrBotUtils::fileInList(const QString &filename, const QStringList &se
 /**
  * @brief WickrBotUtils::isRunning
  * This function will check if the input process is running.
- * @param process
+ * @param matchString
+ * @param pid
  * @return
  */
-bool WickrBotUtils::isRunning(const QString &appName, int pid)
+bool WickrBotUtils::isRunning(const QString &matchString, int pid)
 {
     QProcess exec;
 
@@ -42,22 +43,25 @@ bool WickrBotUtils::isRunning(const QString &appName, int pid)
                              << "/FI" << QString("PID eq %1").arg(pid));
     exec.waitForFinished();
     QString pstdout = exec.readAllStandardOutput();
-    if (pstdout.contains(appName)) {
+    if (pstdout.contains(matchString)) {
         return true;
     }
 #else
     // Else it has been longer than 10 minutes, kill the old process and continue
     QStringList arguments;
     QString pidString = QString::number(pid);
-    QString command = QString("ps -ae -o pid,command | grep %1").arg(appName);
+    QString command = QString("ps -ae -o pid,command | grep %1").arg(matchString);
     exec.start("bash", QStringList() << "-c" << command);
     exec.waitForFinished(-1);
 
     exec.setReadChannel(QProcess::StandardOutput);
     while (exec.canReadLine()) {
        QString line = QString(exec.readLine());
-       if (line.contains(pidString))
+
+       QStringList list = line.trimmed().split(" ");
+       if (list.length() > 0 && list[0] == pidString) {
            return true;
+       }
     }
 
 #endif
