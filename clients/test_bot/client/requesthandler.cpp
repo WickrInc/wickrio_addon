@@ -1210,6 +1210,7 @@ RequestHandler::processAddGroupConvo(stefanfrings::HttpRequest& request, stefanf
     }
 
     QStringList memberslist;
+    QStringList memberHashes;
     int ttl = 0;
     int bor = 0;
 
@@ -1232,34 +1233,86 @@ RequestHandler::processAddGroupConvo(stefanfrings::HttpRequest& request, stefanf
         return;
     }
 
-    QStringList memberHashes;
-    foreach (QString member, memberslist) {
-        WickrCore::WickrUser *user = WickrCore::WickrUser::getUserWithAlias(member);
-        if (user == NULL) {
-            sendFailure(400, "Cannot find user record for member", response);
-            return;
-        }
-        QString idHash = user->getServerIDHash();
-        if (idHash.isEmpty()) {
-            sendFailure(500, "Problem handling user record for member", response);
-            return;
-        }
-        memberHashes.append(idHash);
+    // Update and validate the input list of members.  If false is returned then
+    // there was an error processing the list, or the member was invalid!
+    if (!updateAndValidateMembers(response, memberslist, &memberHashes)) {
+        return;
     }
-
     // Create the room
 
     // Create convo (create if not found, no group name, secure room)
     QString membersString = memberHashes.join(',');
 
-#if 0
-    WickrCore::WickrSecureRoomMgr *roomMgr = WickrCore::WickrRuntime::getRoomMgr();
-    if (roomMgr) {
-        roomMgr->createSecureRoomConvoStart(membersString, mastersString, ttl, title, description);
+    QSet<WickrCore::WickrUser *> validateUsers;
+
+    // Need to make sure this convo does not exist already
+    QList<WickrCore::WickrUser*>users;
+
+    for (int i=0; i < memberslist.size(); i++) {
+        WickrCore::WickrUser *user = WickrCore::WickrUser::getUserWithAlias(memberslist.at(i));
+//        WickrCore::WickrUser *user = WickrCore::WickrUser::getUserByServerID(memberslist.at(i));
+        if (user) {
+            users.append(user);
+            validateUsers.insert(user);
+        } else {
+            QString errMsg = "Cannot find user record for " + memberslist.at(i);
+            sendFailure(400, errMsg.toLatin1(), response);
+            return;
+        }
+    }
+    // If group already exists, simply redirect
+    QString vgroupID = WickrCore::WickrConvo::groupConvoExists(users);
+    if (!vgroupID.isEmpty()) {
+        sendFailure(400, "Group conversation already exists", response);
+        return;
     }
 
-#endif
-    sendSuccess(response);
+    WickrCore::WickrSecureRoomMgr *roomMgr = WickrCore::WickrRuntime::getRoomMgr();
+    if (!roomMgr) {
+        sendFailure(400, "Failed to create group conversation", response);
+        return;
+    }
+
+    vgroupID = roomMgr->createSecureRoomConvoStart(membersString,
+                                                   membersString,
+                                                   ttl,
+                                                   "",
+                                                   "",
+                                                   bor,
+                                                   false);
+    if (vgroupID.isEmpty()) {
+        sendFailure(400, "Failed to create group conversation", response);
+        return;
+    }
+
+    // no will wait for the room to be created or timeout due to an error
+
+    QTimer timer;
+    QEventLoop loop;
+
+    loop.connect(roomMgr, SIGNAL(roomCreatedServerSuccess()), SLOT(quit()));
+//        loop.connect(roomMgr, SIGNAL(signalError()), SLOT(quit()));
+    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+
+    int loopCount = 10;
+
+    while (loopCount-- > 0) {
+        timer.start(1000);
+        loop.exec();
+
+        if (timer.isActive()) {
+            timer.stop();
+            break;
+        } else {
+            qDebug() << "CONSOLE:Timed out waiting for create group conversation response!";
+            sendFailure(400, "Failed to create group conversation", response);
+            return;
+        }
+    }
+
+    // Return the vGroupID
+    QString body = QString("{ \"vgroupid\" : \"%1\" }").arg(vgroupID);
+    sendSuccess(body.toLatin1(), response);
 }
 
 void
