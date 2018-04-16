@@ -1028,8 +1028,12 @@ RequestHandler::deleteConvo(bool isSecureConvo, const QString& vgroupID)
                 return false;
             }
         } else {
-            // If 1-To-1 convo
-            WICKRBOT->m_convoHdlr.deleteConvo(convo);
+            WickrCore::WickrOneToOneMgr *one2oneMgr = WickrCore::WickrRuntime::getConvoMgr();
+            if (one2oneMgr) {
+                one2oneMgr->deleteOneToOneStart(vgroupID);
+            } else {
+                return false;
+            }
         }
     }
     return true;
@@ -1040,7 +1044,9 @@ RequestHandler::processDeleteRoom(const QString &clientID, stefanfrings::HttpRes
 {
     WickrCore::WickrConvo *convo = WickrCore::WickrConvo::getConvoWithvGroupID(clientID);
     if (convo) {
-        if (!convo->getIsRoomMaster()) {
+        if (convo->getConvoType() != CONVO_SECURE_ROOM) {
+            sendFailure(400, "Must be secure room", response);
+        } else if (!convo->getIsRoomMaster()) {
             sendFailure(400, "Must be room master", response);
         } else {
             if (RequestHandler::deleteConvo(true, clientID)) {
@@ -1273,8 +1279,17 @@ RequestHandler::processAddGroupConvo(stefanfrings::HttpRequest& request, stefanf
         return;
     }
 
+    WickrCore::WickrUser *self = WickrCore::WickrUser::getSelfUser();
+    QString mastersString;
+    if (self) {
+        mastersString = membersString + "," + self->getServerIDHash();
+    } else {
+        sendFailure(400, "Failed to create group conversation", response);
+        return;
+    }
+
     vgroupID = roomMgr->createSecureRoomConvoStart(membersString,
-                                                   membersString,
+                                                   mastersString,
                                                    ttl,
                                                    "",
                                                    "",
@@ -1320,7 +1335,9 @@ RequestHandler::processDeleteGroupConvo(const QString &clientID, stefanfrings::H
 {
     WickrCore::WickrConvo *convo = WickrCore::WickrConvo::getConvoWithvGroupID(clientID);
     if (convo) {
-        if (RequestHandler::deleteConvo(true, clientID)) {
+        if (convo->getConvoType() != CONVO_GROUP_CONVO) {
+            sendFailure(400, "Must be group conversation", response);
+        } else if (RequestHandler::deleteConvo(false, clientID)) {
             sendSuccess(response);
         } else {
             sendFailure(400, "Failed to delete Group Convo", response);
