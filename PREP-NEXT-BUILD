@@ -2,7 +2,7 @@
 echo This script should run to advance the build number
 echo Following this, clean everything and build everything!
 
-WICKRIOTOPBRANCH="paul-integrationinstall"
+WICKRIOTOPBRANCH="master"
 WICKRSDKBRANCH="master"
 WICKRCOREBRANCH="master"
 
