@@ -1,0 +1,25 @@
+This is a test library to show how to create a dynamic library that will be the basis for a library interface to the WickrIO bots.  
+
+The following are the function signatures that must be included in the dynamic library:
+
+The following is a sample of what must be used to access the library from the WickrIO bot:
+
+    QLibrary library("/opt/WickrIODebug/integrations/software/testIntegration/libtestIntegration.so");
+    if (!library.load()) {
+        qDebug() << "Could not load testintegration library";
+    } else {
+        qDebug() << "testintegration library loaded";
+        typedef QString (*TestInputfunction)(QString input);
+        TestInputfunction tf = (TestInputfunction)library.resolve("processInput");
+        if (tf) {
+            QString output = tf("This is a test message");
+            if (output.isEmpty()) {
+                qDebug() << "CONSOLE:received empty string";
+            } else {
+                qDebug() << "CONSOLE:Received:" << output;
+            }
+        }
+    }
+
+
+

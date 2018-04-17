@@ -849,6 +849,7 @@ WickrBotDatabase::getClient(QSqlQuery *query, WickrBotClients *client)
     client->sslKeyFile = query->value(rec.indexOf("sslKeyFile")).toString();
     client->sslCertFile = query->value(rec.indexOf("sslCertFile")).toString();
     client->binary = query->value(rec.indexOf("binary")).toString();
+    client->botType = query->value(rec.indexOf("integration_type")).toString();
 }
 
 int
@@ -900,7 +901,7 @@ WickrBotDatabase::getClients()
     if (!initialized)
         return clients;
 
-    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile,binary FROM clients";
+    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile,binary,integration_type FROM clients";
     QSqlQuery *query = new QSqlQuery(m_db);
     query->prepare(queryString);
 
@@ -994,7 +995,7 @@ WickrBotDatabase::insertClientsRecord(WickrBotClients *client) {
     query.bindValue(9, client->sslCertFile);
 #else
     QSqlQuery query(m_db);
-    QString queryString = QString("INSERT INTO clients (id, name, port, interface, api_key, user, password, isHttps, sslKeyFile, sslCertFile, binary) VALUES (%1, '%2', %3, '%4', '%5', '%6', '%7', %8, '%9', '%10', '%11')")
+    QString queryString = QString("INSERT INTO clients (id, name, port, interface, api_key, user, password, isHttps, sslKeyFile, sslCertFile, binary, integration_type) VALUES (%1, '%2', %3, '%4', '%5', '%6', '%7', %8, '%9', '%10', '%11', '%12')")
             .arg(id)
             .arg(client->name)
             .arg(client->port)
@@ -1005,7 +1006,8 @@ WickrBotDatabase::insertClientsRecord(WickrBotClients *client) {
             .arg(client->isHttps ? 1 : 0)
             .arg(client->sslKeyFile)
             .arg(client->sslCertFile)
-            .arg(client->binary);
+            .arg(client->binary)
+            .arg(client->botType);
 #endif
     if (!query.exec(queryString)) {
         qDebug() << query.lastQuery();
@@ -1056,7 +1058,7 @@ WickrBotDatabase::updateClientsRecord(WickrBotClients *client, bool insertIfNotE
 #else
 
     QSqlQuery query(m_db);
-    QString queryString = QString("UPDATE clients SET name='%1', port=%2, interface='%3', api_key='%4', user='%5', password='%6', isHttps=%7, sslKeyFile='%8', sslCertFile='%9', binary='%11' WHERE id='%10'")
+    QString queryString = QString("UPDATE clients SET name='%1', port=%2, interface='%3', api_key='%4', user='%5', password='%6', isHttps=%7, sslKeyFile='%8', sslCertFile='%9', binary='%11', integration_type='%12' WHERE id='%10'")
             .arg(client->name)
             .arg(client->port)
             .arg(client->iface)
@@ -1067,7 +1069,8 @@ WickrBotDatabase::updateClientsRecord(WickrBotClients *client, bool insertIfNotE
             .arg(client->sslKeyFile)
             .arg(client->sslCertFile)
             .arg(client->id)
-            .arg(client->binary);
+            .arg(client->binary)
+            .arg(client->botType);
 #endif
     if (!query.exec(queryString)) {
         QSqlError error = query.lastError();

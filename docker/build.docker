@@ -24,6 +24,12 @@ services:
     wickrio-bot-enterprise-compliance:
       image: wickr/bot-enterprise-compliance
       build: .
+    wickrio-bot-enterprise-core-alpha:
+      image: wickr/bot-enterprise-core-alpha
+      build: .
+    wickrio-bot-enterprise-core:
+      image: wickr/bot-enterprise-core
+      build: .
     wickrio-bot-messenger-welcome-alpha:
       image: wickr/bot-messenger-welcome-alpha
       build: .

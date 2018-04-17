@@ -24,7 +24,7 @@ class CmdMain : public CmdBase
 public:
     explicit CmdMain();
 
-    bool runCommands();
+    bool runCommands(QString commands=QString());
 
 private:
     CmdOperation m_cmdOperation;
@@ -34,6 +34,11 @@ private:
     CmdServer    m_cmdServer;
     CmdParser    m_cmdParser;
     CmdUsers     m_cmdUsers;
+
+    bool         m_hasMotherBotBinary = false;
+    bool         m_hasParserBinary = false;
+
+    bool processCommand(QString cmd, QString args);
 };
 
 #endif // CMDMAIN_H

@@ -17,6 +17,84 @@ CmdClient::CmdClient(CmdOperation *operation) :
 {
 }
 
+bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
+{
+    bool retVal = true;
+    bool bForce = false;
+    isquit = false;
+
+    QString cmd = cmdList.at(0).toLower();
+    int clientIndex;
+
+    // Convert the second argument to an integer, for the client index commands
+    if (cmdList.size() > 1) {
+        bool ok;
+        clientIndex = cmdList.at(1).toInt(&ok);
+        if (!ok) {
+            qDebug() << "CONSOLE:Client Index is not a number!";
+            return true;
+        }
+
+        // See if the force option is set
+        if (cmdList.size() == 3) {
+            if (cmdList.at(2) == "-force" || cmdList.at(2) == "force") {
+                bForce = true;
+            }
+        }
+    } else {
+        clientIndex = -1;
+    }
+
+    if (cmd == "?" || cmd == "help") {
+        qDebug() << "CONSOLE:Commands:";
+        qDebug() << "CONSOLE:  add        - adds a new client";
+        qDebug() << "CONSOLE:  back       - leave the clients setup";
+        qDebug() << "CONSOLE:  delete <#> - deletes client with the specific index";
+        qDebug() << "CONSOLE:  help or ?  - shows supported commands";
+        qDebug() << "CONSOLE:  list       - shows a list of clients";
+        qDebug() << "CONSOLE:  modify <#> - modifies a client with the specified index";
+        qDebug() << "CONSOLE:  pause <#>  - pauses the client with the specified index";
+        qDebug() << "CONSOLE:  start <#>  - starts the client with the specified index";
+        qDebug() << "CONSOLE:  quit       - leaves this program";
+    } else if (cmd == "add") {
+        addClient();
+    } else if (cmd == "back") {
+        retVal = false;
+    } else if (cmd == "delete") {
+        if (clientIndex == -1) {
+            qDebug() << "CONSOLE:Usage: delete <index>";
+        } else {
+            deleteClient(clientIndex);
+        }
+    } else if (cmd == "list") {
+        listClients();
+    } else if (cmd == "modify") {
+        if (clientIndex == -1) {
+            qDebug() << "CONSOLE:Usage: modify <index>";
+        } else {
+            modifyClient(clientIndex);
+        }
+    } else if (cmd == "pause") {
+        if (clientIndex == -1) {
+            qDebug() << "CONSOLE:Usage: pause <index>";
+        } else {
+            pauseClient(clientIndex, bForce);
+        }
+    } else if (cmd == "quit") {
+        retVal = false;
+        isquit = true;
+    } else if (cmd == "start") {
+        if (clientIndex == -1) {
+            qDebug() << "CONSOLE:Usage: start <index>";
+        } else {
+            startClient(clientIndex, bForce);
+        }
+    } else {
+        qDebug() << "CONSOLE:" << cmd << "is not a known command!";
+    }
+    return retVal;
+}
+
 /**
  * @brief CmdClient::runCommands
  * This function handles the setup of the different clients running on the system.
@@ -24,7 +102,7 @@ CmdClient::CmdClient(CmdOperation *operation) :
  * the configuration of existing clients.  Only clients in the paused state can be
  * modified. The user can start or pause a client as well from this function.
  */
-bool CmdClient::runCommands()
+bool CmdClient::runCommands(QString commands)
 {
     QTextStream input(stdin);
 
@@ -47,86 +125,27 @@ bool CmdClient::runCommands()
 
     // Get the data from the database
     m_clients = m_operation->m_ioDB->getClients();
+    bool isQuit;
 
-    while (true) {
-        qDebug() << "CONSOLE:Enter client command:";
-        QString line = input.readLine();
-        bool bForce = false;
+    if (commands.isEmpty()) {
+        while (true) {
+            qDebug() << "CONSOLE:Enter client command:";
+            QString line = input.readLine();
 
-        line = line.trimmed();
-        if (line.length() > 0) {
-            QStringList args = line.split(" ");
-            QString cmd = args.at(0).toLower();
-            int clientIndex;
-
-            // Convert the second argument to an integer, for the client index commands
-            if (args.size() > 1) {
-                bool ok;
-                clientIndex = args.at(1).toInt(&ok);
-                if (!ok) {
-                    qDebug() << "CONSOLE:Client Index is not a number!";
-                    continue;
+            line = line.trimmed();
+            if (line.length() > 0) {
+                QStringList args = line.split(" ");
+                if (!processCommand(args, isQuit)) {
+                    break;
                 }
 
-                // See if the force option is set
-                if (args.size() == 3) {
-                    if (args.at(2) == "-force" || args.at(2) == "force") {
-                        bForce = true;
-                    }
-                }
-            } else {
-                clientIndex = -1;
-            }
-
-            if (cmd == "?" || cmd == "help") {
-                qDebug() << "CONSOLE:Commands:";
-                qDebug() << "CONSOLE:  add        - adds a new client";
-                qDebug() << "CONSOLE:  back       - leave the clients setup";
-                qDebug() << "CONSOLE:  delete <#> - deletes client with the specific index";
-                qDebug() << "CONSOLE:  help or ?  - shows supported commands";
-                qDebug() << "CONSOLE:  list       - shows a list of clients";
-                qDebug() << "CONSOLE:  modify <#> - modifies a client with the specified index";
-                qDebug() << "CONSOLE:  pause <#>  - pauses the client with the specified index";
-                qDebug() << "CONSOLE:  start <#>  - starts the client with the specified index";
-                qDebug() << "CONSOLE:  quit       - leaves this program";
-            } else if (cmd == "add") {
-                addClient();
-            } else if (cmd == "back") {
-                break;
-            } else if (cmd == "delete") {
-                if (clientIndex == -1) {
-                    qDebug() << "CONSOLE:Usage: delete <index>";
-                } else {
-                    deleteClient(clientIndex);
-                }
-            } else if (cmd == "list") {
-                listClients();
-            } else if (cmd == "modify") {
-                if (clientIndex == -1) {
-                    qDebug() << "CONSOLE:Usage: modify <index>";
-                } else {
-                    modifyClient(clientIndex);
-                }
-            } else if (cmd == "pause") {
-                if (clientIndex == -1) {
-                    qDebug() << "CONSOLE:Usage: pause <index>";
-                } else {
-                    pauseClient(clientIndex, bForce);
-                }
-            } else if (cmd == "quit") {
-                return false;
-            } else if (cmd == "start") {
-                if (clientIndex == -1) {
-                    qDebug() << "CONSOLE:Usage: start <index>";
-                } else {
-                    startClient(clientIndex, bForce);
-                }
-            } else {
-                qDebug() << "CONSOLE:" << cmd << "is not a known command!";
             }
         }
+    } else {
+        QStringList cmds = commands.trimmed().split(" ");
+        processCommand(cmds, isQuit);
     }
-    return true;
+    return !isQuit;
 }
 
 void CmdClient::status()
@@ -146,7 +165,7 @@ void CmdClient::listClients()
     int cnt=0;
     for (WickrBotClients *client : m_clients) {
         QString processName = WBIOServerCommon::getClientProcessName(client);
-        QString clientState = WickrIOConsoleClientHandler::getActualProcessState(processName, m_operation->m_ioDB);
+        QString clientState = WickrIOConsoleClientHandler::getActualProcessState(processName, client->name, m_operation->m_ioDB);
         WickrIOConsoleUser cUser;
         QString consoleUser;
 
@@ -156,7 +175,12 @@ void CmdClient::listClients()
             consoleUser = "Not set";
         }
 
-        QString data = QString("CONSOLE: client[%1] %2, APIKey=%3, User=%4, Port=%5, Binary=%6, State=%7, ConsoleUser=%8")
+        QString botTypeString;
+        if (!client->botType.isEmpty()) {
+            botTypeString = QString(", Integration=%1").arg(client->botType);
+        }
+
+        QString data = QString("CONSOLE: client[%1] %2, APIKey=%3, User=%4, Port=%5, Binary=%6, State=%7, ConsoleUser=%8%9")
             .arg(cnt++)
             .arg(client->name)
             .arg(client->apiKey)
@@ -164,7 +188,8 @@ void CmdClient::listClients()
             .arg(client->port)
             .arg(client->binary)
             .arg(clientState)
-            .arg(consoleUser);
+            .arg(consoleUser)
+            .arg(botTypeString);
         qDebug() << qPrintable(data);
     }
 }
@@ -262,7 +287,7 @@ bool CmdClient::getClientValues(WickrBotClients *client)
     QStringList possibleClientTypes = WBIOServerCommon::getAvailableClientApps();
     QString binary;
     if (possibleClientTypes.length() > 1) {
-        temp = getNewValue(client->binary, tr("Enter the bot type"), CHECK_LIST, possibleClientTypes);
+        temp = getNewValue(client->binary, tr("Enter the client type"), CHECK_LIST, possibleClientTypes);
         // Check if the user wants to quit the action
         if (handleQuit(temp, &quit) && quit) {
             return false;
@@ -449,13 +474,20 @@ bool CmdClient::getClientValues(WickrBotClients *client)
 
     QList<WickrIOConsoleUser *> cusers = m_operation->m_ioDB->getConsoleUsers();
     if (cusers.length() > 0) {
-        int curindex;
+        int curindex = -1;
+        QString temp;
         if (client->console_id != 0) {
-
+            int cnt=0;
+            for (WickrIOConsoleUser *cuser : cusers) {
+                if (cuser->id == client->console_id) {
+                    curindex = cnt;
+                    break;
+                }
+                cnt++;
+            }
         } else {
             curindex = -1;
         }
-        QString temp;
         temp = getNewValue(curindex == -1 ? "n" : "y", tr("Associate with a console user?"));
         if (handleQuit(temp, &quit) && quit) {
         } else if (temp == "y") {
@@ -517,42 +549,341 @@ bool CmdClient::getClientValues(WickrBotClients *client)
     }
 
 
+    /*
+     * setup an integration bot, if the users desires to use one
+     */
+    QList<WBIOBotTypes *>botTypes = WBIOServerCommon::getBotsSupported(binary);
+    QString rmBotType;
+    if (botTypes.length() > 0) {
+        QString hasIntBot;
+        hasIntBot = client->botType.isEmpty() ? "no" : "yes";
 
-#if 0
-    // Get the binary to use
-    QStringList binaries = WBIOServerCommon::getAvailableClientApps();
-    if (binaries.length() == 1) {
-        client->binary = binaries.at(0);
-    } else {
-        while (true) {
-            QString selected;
-            selected = getNewValue(client->binary, tr("Enter the binary"));
+        // If the user wants to connect the client to an integration bot
+        temp = getNewValue(hasIntBot, tr("Do you want to connect to a integration bot?"), CHECK_BOOL);
+        if (temp == "yes") {
+            QStringList possibleBotTypes;
+            for (WBIOBotTypes *bt : botTypes) {
+                possibleBotTypes.append(bt->m_name);
+            }
+            possibleBotTypes.append("none");
+
+            temp = getNewValue(client->botType, tr("Enter the bot type"), CHECK_LIST, possibleBotTypes);
             // Check if the user wants to quit the action
-            if (handleQuit(selected, &quit) && quit) {
+            if (handleQuit(temp, &quit) && quit) {
                 return false;
             }
+            if (temp != "none") {
+                // if the bottype has changed then remove the old software
+                if (client->botType != temp)
+                    rmBotType = client->botType;
 
-            if (selected.toLower() == "list" || selected == "?") {
-                foreach (QString binary, binaries) {
-                    qDebug() << "CONSOLE:" << binary;
-                }
-                continue;
+                client->botType = temp;
+            } else {
+                rmBotType = client->botType;
+                client->botType = QString();
             }
-
-            for (QString binary : binaries) {
-                if (selected == binary) {
-                    client->binary = binary;
-                    break;
-                }
-            }
-
-            qDebug() << "CONSOLE:Invalid binary, enter one of" << binaries;
-            continue;
+        } else {
+            rmBotType = client->botType;
+            client->botType = QString();
         }
     }
-#endif
+
+    // If there is a integration bot software to remove then do so
+    if (!rmBotType.isEmpty()) {
+        // Getting rid of the integration bot, will have to remove the current installation directory
+        QString destPath = QString(WBIO_CLIENT_BOTDIR_FORMAT)
+                .arg(WBIO_DEFAULT_DBLOCATION)
+                .arg(client->name)
+                .arg(rmBotType);
+        if (!destPath.isEmpty()) {
+            qDebug().noquote().nospace() << "CONSOLE:Removing software installation for previous integration " << rmBotType;
+            QDir destDir(destPath);
+            if (destDir.exists()) {
+                if (!destDir.removeRecursively())
+                    qDebug().noquote().nospace() << "CONSOLE:Could not remove " << destPath;
+            }
+        }
+    }
+
+
+    /*
+     * Need to configure the bot if one was selected
+     */
+    if (! client->botType.isEmpty()) {
+        // Get the software into the appropriate location
+        QString swPath = WBIOServerCommon::getBotSoftwarePath(client->botType);
+        if (!swPath.isEmpty()) {
+            qDebug() << "CONSOLE:**********************************************************************";
+            qDebug().noquote().nospace() << "CONSOLE:Begin setup of " << client->botType << " software for " << client->name;
+
+            QString destPath = QString(WBIO_CLIENT_BOTDIR_FORMAT)
+                    .arg(WBIO_DEFAULT_DBLOCATION)
+                    .arg(client->name)
+                    .arg(client->botType);
+
+            // Create the directory for the integration software
+            QDir destDir(destPath);
+            if (!destDir.exists()) {
+                if (!destDir.mkpath(destPath)) {
+                    qDebug() << "CONSOLE:Failed to create directory for integration bot software!";
+                    return false;
+                }
+            }
+
+            // First copy the software to the client directory
+            qDebug().noquote().nospace() << "CONSOLE:Copying " << client->botType << " software for " << client->name;
+
+            {
+                // Create a process to extract the software
+                QProcess *unarchive = new QProcess(this);
+
+                QString command = QString("tar -xf %1 -C %2").arg(swPath).arg(destPath);
+                unarchive->setProcessChannelMode(QProcess::MergedChannels);
+                unarchive->start(command, QIODevice::ReadWrite);
+
+                // Wait for it to start
+                if(!unarchive->waitForStarted()) {
+                    qDebug() << QString("CONSOLE:Failed to install %1 software!").arg(client->botType);
+                    return false;
+                }
+
+                // Continue reading the data until EOF reached
+                QByteArray data;
+
+                while(unarchive->waitForReadyRead())
+                    data.append(unarchive->readAll());
+
+                // Output the data
+                qDebug().noquote().nospace() << "CONSOLE:" << data;
+            }
+
+            // Second peform the installer if one does exist
+            qDebug().noquote().nospace() << "CONSOLE:Installing " << client->botType << " software for " << client->name;
+            {
+                QStringList installOutput;
+                QString installer = WBIOServerCommon::getBotInstaller(client->botType);
+                if (!installer.isEmpty()){
+                    QString installerFullPath = QString("%1/%2").arg(destPath).arg(installer);
+                    // Create a process to run the installer
+                    QProcess *runInstaller = new QProcess(this);
+                    runInstaller->setProcessChannelMode(QProcess::MergedChannels);
+                    runInstaller->setWorkingDirectory(destPath);
+                    runInstaller->start(installerFullPath, QIODevice::ReadWrite);
+
+                    // Wait for it to start
+                    if(!runInstaller->waitForStarted()) {
+                        qDebug() << QString("CONSOLE:Failed to run %1").arg(installer);
+                        return false;
+                    }
+
+                    while(runInstaller->waitForReadyRead()) {
+                        QString bytes = QString(runInstaller->readAll());
+                        installOutput.append(bytes);
+                    }
+                }
+            }
+
+            // Third peform the configure if one does exist
+            qDebug().noquote().nospace() << "CONSOLE:Begin configuration of " << client->botType << " software for " << client->name;
+            QString configure = WBIOServerCommon::getBotConfigure(client->botType);
+            if (!configure.isEmpty()){
+                QString configureFullpath = QString("%1/%2").arg(destPath).arg(configure);
+                if (!runBotScript(destPath, configureFullpath, client)) {
+                    qDebug().noquote().nospace() << "CONSOLE:Failed to configure " << client->botType;
+                    return false;
+                }
+            }
+
+            qDebug().noquote().nospace() << "CONSOLE:End of setup of " << client->botType << " software for " << client->name;
+            qDebug() << "CONSOLE:**********************************************************************";
+
+        }
+    }
+
 
     return !quit;
+}
+
+bool
+CmdClient::getAuthValue(WickrBotClients *client, bool basic, QString& authValue)
+{
+    WickrIOTokens token;
+    QString basicAuthString;
+
+    // get the id of the console user to use for authentication
+    if (client->console_id == 0) {
+        QList<WickrIOConsoleUser *> cusers;
+        cusers = m_operation->m_ioDB->getConsoleUsers();
+
+        if (cusers.length() == 0) {
+            qDebug() << "CONSOLE:There are not console users defined.  Please create a console user and a token.";
+            return false;
+        }
+
+        qDebug() << "CONSOLE:You will need to select a console user to use their authentication token";
+        qDebug() << "CONSOLE:Please select from the following list of console users:";
+
+        int curindex = -1;
+        QString temp;
+        bool quit=false;
+        // Associate with a console user
+        while (true) {
+            qDebug() << "CONSOLE:Possible console user choices:";
+            int cnt=0;
+            for (WickrIOConsoleUser *cuser : cusers) {
+                QString data = QString("CONSOLE:  index=%1, Name=%2").arg(cnt++).arg(cuser->user);
+                qDebug() << qPrintable(data);
+            }
+            temp = getNewValue(curindex == -1 ? "" : QString::number(curindex), tr("Enter the index of the console user"), CHECK_INT);
+            if (handleQuit(temp, &quit) && quit) {
+                break;
+            }
+            int inputIndex = temp.toInt();
+            if (inputIndex < 0 || inputIndex >= cusers.length()) {
+                qDebug() << "CONSOLE:Invalid index value entered!";
+            } else {
+                curindex = inputIndex;
+                break;
+            }
+        }
+
+        if (quit || curindex == -1)
+            return false;
+
+        WickrIOConsoleUser *cuser = cusers.at(curindex);
+        client->console_id = cuser->id;
+
+        basicAuthString = QString("%1:%2").arg(cuser->user).arg(cuser->password);
+
+        // Cleanup the allocated memory
+        for (WickrIOConsoleUser *cuser : cusers) {
+            delete cuser;
+        }
+    } else if (basic) {
+        WickrIOConsoleUser cuser;
+
+        if (!m_operation->m_ioDB->getConsoleUser(client->console_id, &cuser)) {
+            qDebug() << "CONSOLE:There was a problem retrieving the console user!";
+            return false;
+        }
+        basicAuthString = QString("%1:%2").arg(cuser.user).arg(cuser.password);
+    }
+
+    if (basic) {
+        authValue = basicAuthString;
+    } else {
+        if (! m_operation->m_ioDB->getConsoleUserToken(client->console_id, &token)) {
+            qDebug() << "CONSOLE:There is no token associated with that console user!";
+            return false;
+        }
+
+        // Should set the actual authentication type!
+        authValue = token.token;
+    }
+    return true;
+}
+
+/**
+ * @brief CmdClient::runBotScript
+ * This function will run the input script. The script has commands in it to identify if input
+ * is required.
+ * @param destPath
+ * @param configure
+ * @return
+ */
+bool
+CmdClient::runBotScript(const QString& destPath, const QString& configure, WickrBotClients *client)
+{
+    // Values associated with the CallbackURL
+    QString cbackEndPoint;
+    QString cbackPort;
+
+    // Create a process to run the configure
+    QProcess *runScript = new QProcess(this);
+
+    connect(runScript, &QProcess::errorOccurred, [=](QProcess::ProcessError error) {
+        qDebug() << "CONSOLE:error enum val = " << error;
+    });
+    runScript->setProcessChannelMode(QProcess::MergedChannels);
+    runScript->setWorkingDirectory(destPath);
+    runScript->start(configure, QIODevice::ReadWrite);
+
+    // Wait for it to start
+    if(!runScript->waitForStarted()) {
+        qDebug() << QString("CONSOLE:Failed to run %1").arg(configure);
+        return false;
+    }
+
+    while(runScript->waitForReadyRead(-1)) {
+        while(runScript->canReadLine()) {
+            QString bytes = QString(runScript->readLine());
+            if (!bytes.isEmpty()) {
+                QStringList inputList = bytes.split(":");
+
+                if (inputList.size() > 1 && inputList[0].toLower() == "prompt") {
+                    bool promptForValue = false;
+                    if (inputList.size() == 3) {
+                        QString prompt = inputList[2].remove(QRegExp("[\\n\\t\\r]")).replace(" ", "");
+
+                        if (prompt == "WICKRIO_AUTH_TOKEN") {
+                            QString authValue;
+                            // Get the basic authentication value (user:pw), should use token though
+                            if (!getAuthValue(client, true, authValue)) {
+                                runScript->close();
+                                return false;
+                            }
+
+                            authValue.append("\n");
+                            runScript->write(authValue.toLatin1());
+                        } else if (prompt == "WICKRIO_SERVER") {
+                            QString server = QString("%1://%2:%3/Apps/%5\n")
+                                    .arg(client->isHttps ? "https" : "http")
+                                    .arg(client->iface)
+                                    .arg(client->port)
+                                    .arg(client->apiKey);
+                            runScript->write(server.toLatin1());
+                        } else if (prompt == "HUBOT_NAME") {
+                            QString botName = QString("%1_hubot\n").arg(client->name);
+                            runScript->write(botName.toLatin1());
+                        } else if (prompt == "HUBOT_URL_ENDPOINT") {
+                            cbackEndPoint = QString("/Apps/%1").arg(client->port);
+                            QString endpoint = QString("%1\n").arg(cbackEndPoint);
+                            runScript->write(endpoint.toLatin1());
+                        } else if (prompt == "HUBOT_URL_PORT") {
+                            QString cbackPortPrompt = QString("Enter the port the %1 integration will listen on").arg(client->botType);
+                            cbackPort = getNewValue(cbackPort, cbackPortPrompt);
+                            QString outString = QString("%1\n").arg(cbackPort);
+                            runScript->write(outString.toLatin1());
+                        } else {
+                            promptForValue = true;
+                        }
+                    } else {
+                        promptForValue = true;
+                    }
+
+                    // If there was no known token asked for then prompt to the user
+                    if (promptForValue) {
+                        QString prompt = bytes.right(bytes.length()-7).remove(QRegExp("[\\n\\t\\r]"));     // size of string - sizeof "PROMPT:"
+                        QString curVal;
+                        prompt = prompt.remove(QRegExp("[\\n\\t\\r]"));
+//                        prompt = QString("Enter value for %1").arg(prompt.toLower());
+                        QString input = getNewValue(curVal, prompt);
+                        input.append("\n");
+                        runScript->write(input.toLatin1());
+                    }
+                } else {
+                    bytes = bytes.remove(QRegExp("[\\n\\t\\r]"));
+                    qDebug().noquote().nospace() << "CONSOLE:" << bytes;
+                }
+            }
+        }
+    }
+
+    // If the callback valuee are set then create the callback url for this client
+    if (!cbackEndPoint.isEmpty() && !cbackPort.isEmpty()) {
+        client->m_callbackString = QString("http://localhost:%1%2").arg(cbackPort).arg(cbackEndPoint);
+    }
+    return true;
 }
 
 void CmdClient::slotCmdFinished(int, QProcess::ExitStatus)
@@ -592,6 +923,15 @@ void CmdClient::addClient()
         // Add the new record to the database
         QString errorMsg = WickrIOConsoleClientHandler::addClient(m_operation->m_ioDB, client);
         if (errorMsg.isEmpty()) {
+            if (!client->m_callbackString.isEmpty()) {
+                WickrIOAppSettings appSetting;
+                appSetting.clientID = client->id;
+                appSetting.type = DB_APPSETTINGS_TYPE_MSGRECVCALLBACK;
+                appSetting.value = client->m_callbackString;
+                if (!m_operation->m_ioDB->updateAppSetting(&appSetting)) {
+                    qDebug() << "CONSOLE:Failed to create callback connection!";
+                }
+            }
             qDebug() << "CONSOLE:Successfully added record to the database!";
             break;
         } else {
@@ -773,6 +1113,43 @@ void CmdClient::pauseClient(int clientIndex, bool force)
         WickrBotProcessState state;
         QString processName = WBIOServerCommon::getClientProcessName(client);
 
+        // check if there is a integration bot set, if so stop it from running
+        if (!client->botType.isEmpty()) {
+            QString stopCmd = WBIOServerCommon::getBotStopCmd(client->botType);
+            if (!stopCmd.isEmpty()) {
+                QString destPath = QString(WBIO_CLIENT_BOTDIR_FORMAT)
+                        .arg(WBIO_DEFAULT_DBLOCATION)
+                        .arg(client->name)
+                        .arg(client->botType);
+                QString stopFullPath = QString("%1/%2").arg(destPath).arg(stopCmd);
+
+                qDebug() << "**********************************";
+                qDebug() << QString("Stopping %1").arg(stopFullPath);
+
+                // Create a process to run the installer
+                QProcess *runBotStopCmd = new QProcess(this);
+                runBotStopCmd->setProcessChannelMode(QProcess::MergedChannels);
+                runBotStopCmd->setWorkingDirectory(destPath);
+                runBotStopCmd->start(stopFullPath, QIODevice::ReadWrite);
+
+                // Wait for it to start
+                if(!runBotStopCmd->waitForStarted()) {
+                    qDebug() << "Failed to run %1";
+                } else {
+                    QStringList stopOutput;
+
+                    while(runBotStopCmd->waitForReadyRead()) {
+                        QString bytes = QString(runBotStopCmd->readAll());
+                        stopOutput.append(bytes);
+                    }
+                }
+
+                qDebug() << "Done stopping the integration bot!";
+                qDebug() << "**********************************";
+            }
+        }
+
+
         if (m_operation->m_ioDB->getProcessState(processName, &state)) {
             if (state.ipc_port == 0) {
                 qDebug() << "CONSOLE:Client does not have an IPC port defined, cannot pause!";
@@ -810,8 +1187,18 @@ void CmdClient::pauseClient(int clientIndex, bool force)
 void CmdClient::startClient(int clientIndex, bool force)
 {
     if (validateIndex(clientIndex)) {
-        WickrBotClients *client = m_clients.at(clientIndex);
         WickrBotProcessState state;
+
+        // Get the process state for the Client Server
+        if (m_operation->m_ioDB->getProcessState(WBIO_CLIENTSERVER_TARGET, &state)) {
+            if (state.state != PROCSTATE_RUNNING) {
+                qDebug() << "CONSOLE:WARNING: The Client Server is not currently running!";
+            }
+        } else {
+            qDebug() << "CONSOLE:WARNING: The Client Server state is unknown!";
+        }
+
+        WickrBotClients *client = m_clients.at(clientIndex);
         QString processName = WBIOServerCommon::getClientProcessName(client);
 
         if (m_operation->m_ioDB->getProcessState(processName, &state)) {

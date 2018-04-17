@@ -99,13 +99,10 @@ int main(int argc, char *argv[])
 
     // Setup appropriate library values based on Beta or Production client
     QByteArray secureJson;
-    bool isDebug;
     if (isVERSIONDEBUG()) {
         secureJson = "secex_json2:Fq3&M1[d^,2P";
-        isDebug = true;
     } else {
         secureJson = "secex_json:8q$&M4[d^;2R";
-        isDebug = false;
     }
 
     QString username;
@@ -118,16 +115,12 @@ int main(int argc, char *argv[])
 
     qDebug() <<  appname << "System was booted" << WickrUtil::formatTimestamp(WickrAppClock::getBootTime());
 
-    bool dbEncrypt = true;
-
     operation = new OperationData();
-    operation->processName = WBIO_CLIENT_TARGET;
     operation->m_cleanDBOnLogout = true;
 
     QString clientDbPath("");
-    QString suffix;
     QString wbConfigFile("");
-    bool setProcessName = false;
+    QString argOutputFile;
     bool setDuration = false;
 
     for( int argidx = 1; argidx < argc; argidx++ ) {
@@ -142,9 +135,6 @@ int main(int argc, char *argv[])
             clientDbPath = cmd.remove("-clientdbdir=");
         } else if (cmd.startsWith("-config=")) {
             wbConfigFile = cmd.remove("-config=");
-        } else if (cmd.startsWith("-suffix")) {
-            suffix = cmd.remove("-suffix=");
-            WickrUtil::setTestAccountMode(suffix);
         } else if (cmd.startsWith("-force") ) {
             // Force the WickBot Client to run, regardless of the state in the database
             operation->force = true;
@@ -156,7 +146,6 @@ int main(int argc, char *argv[])
             }
         } else if (cmd.startsWith("-processname")) {
             operation->processName = cmd.remove("-processname=");
-            setProcessName = true;
         } else if (cmd.startsWith("-duration")) {
             QString temp = cmd.remove("-duration=");
             operation->duration = temp.toLong();
@@ -169,6 +158,7 @@ int main(int argc, char *argv[])
             clientDbPath = QString(WBIO_CLIENT_DBDIR_FORMAT)
                     .arg(WBIO_DEFAULT_DBLOCATION)
                     .arg(clientName);
+            argOutputFile = QString(WBIO_CLIENT_WORKINGDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(clientName);
         }
     }
 
@@ -179,13 +169,7 @@ int main(int argc, char *argv[])
             if( cmd == "-?" || cmd == "-help" || cmd == "--help" )
                 usage();
 
-            if( cmd == "-crypt" ) {
-                dbEncrypt = true;
-            }
-            else if( cmd == "-nocrypt" ) {
-                dbEncrypt = false;
-            }
-            else if( cmd.startsWith("-user=") ) {
+            if( cmd.startsWith("-user=") ) {
                 username = cmd.remove("-user=");
                 WickrUtil::setTestAccountMode(username);
             }
@@ -324,18 +308,22 @@ int main(int argc, char *argv[])
     }
 
     // Set the output file if it is set
-    settings->beginGroup(WBSETTINGS_LOGGING_HEADER);
-    QString curOutputFilename = settings->value(WBSETTINGS_LOGGING_OUTPUT_FILENAME, "").toString();
-    if (! curOutputFilename.isEmpty()) {
-        operation->log_handler->logSetOutput(curOutputFilename);
+    if (!argOutputFile.isEmpty()) {
+        operation->log_handler->logSetOutput(argOutputFile);
+    } else {
+        settings->beginGroup(WBSETTINGS_LOGGING_HEADER);
+        QString curOutputFilename = settings->value(WBSETTINGS_LOGGING_OUTPUT_FILENAME, "").toString();
+        if (! curOutputFilename.isEmpty()) {
+            operation->log_handler->logSetOutput(curOutputFilename);
+        }
+        settings->endGroup();
     }
-    settings->endGroup();
 
     /*
      * Get the user name associated with this account. This is needed for the
      * clients record for the run of this program.
      */
-    if (! setProcessName) {
+    if (operation->processName.isEmpty()) {
         settings->beginGroup(WBSETTINGS_USER_HEADER);
         QString username = settings->value(WBSETTINGS_USER_USERNAME, "").toString();
         settings->endGroup();

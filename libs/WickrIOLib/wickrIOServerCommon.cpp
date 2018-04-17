@@ -5,11 +5,13 @@
 #include "wickrIOCommon.h"
 #include "wickrIOServerCommon.h"
 #include "wickrbotsettings.h"
+#include "../../shared/common/wickrioapi.h"
 
 bool WBIOServerCommon::m_initialized = false;
 QList<WBIOClientApps *>  WBIOServerCommon::m_botApps;
 QStringList              WBIOServerCommon::m_bots;
 QStringList              WBIOServerCommon::m_parsers;
+QList<WBIOBotTypes *>    WBIOServerCommon::m_supportedBots;
 
 /**
  * @brief WBIOCommon::getSettings
@@ -104,9 +106,26 @@ void
 WBIOServerCommon::initClientApps()
 {
     if (!m_initialized) {
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botAlpha",       nullptr,                nullptr,               false, false));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_botBeta",        nullptr,                nullptr,               false, false));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("test_bot",            nullptr,                nullptr,               false, false));
+
+        WBIOBotTypes *hubot      = new WBIOBotTypes("hubot",      "hubot",      APIURL_MSGRECVCBACK,
+                                                    "/usr/lib/wickr/integrations/software/hubot/software.tar.gz",
+                                                    "install.sh", "configure.sh", "start.sh", "stop.sh" );
+        WBIOBotTypes *supportBot = new WBIOBotTypes("supportBot", "supportbot", APIURL_MSGRECVLIB,
+                                                    "/usr/lib/wickr/integrations/software/supportbot/software.tar.gz",
+                                                    "install.sh", "configure.sh", "start.sh", "stop.sh" );
+        WBIOServerCommon::m_supportedBots.append(hubot);
+        WBIOServerCommon::m_supportedBots.append(supportBot);
+
+        WBIOClientApps *testAlpha = new WBIOClientApps("test_botAlpha", nullptr, nullptr, false, false);
+        WBIOClientApps *testBeta  = new WBIOClientApps("test_botBeta",  nullptr, nullptr, false, false);
+        WBIOClientApps *testProd  = new WBIOClientApps("test_bot",      nullptr, nullptr, false, false);
+        testAlpha->addBot(hubot); testAlpha->addBot(supportBot);
+        testBeta->addBot(hubot);  testBeta->addBot(supportBot);
+        testProd->addBot(hubot);  testProd->addBot(supportBot);
+
+        WBIOServerCommon::m_botApps.append(testAlpha);
+        WBIOServerCommon::m_botApps.append(testBeta);
+        WBIOServerCommon::m_botApps.append(testProd);
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botAlpha", "compliance_provAlpha", nullptr,               true,  false));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botBeta",  "compliance_provBeta",  nullptr,               true,  false));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_bot",      "compliance_prov",      nullptr,               true,  false));
@@ -237,4 +256,99 @@ WBIOServerCommon::isPasswordRequired(const QString& binaryName)
         }
     }
     return false;
+}
+
+QList<WBIOBotTypes *>
+WBIOServerCommon::getBotsSupported(const QString& clientApp)
+{
+    WBIOServerCommon::initClientApps();
+
+    for (WBIOClientApps *botapp : WBIOServerCommon::m_botApps) {
+        if (botapp->bot() == clientApp) {
+            return botapp->supportedBots();
+        }
+    }
+    return QList<WBIOBotTypes*>();
+}
+
+QString
+WBIOServerCommon::getBotSoftwarePath(const QString& botType)
+{
+    WBIOServerCommon::initClientApps();
+
+    for (WBIOBotTypes *bottypes : WBIOServerCommon::m_supportedBots) {
+        if (bottypes->m_name == botType) {
+            if (bottypes->m_swLocation.isEmpty())
+                return QString();
+
+            QString path = bottypes->swLocation();
+            return path;
+        }
+    }
+    return QString();
+}
+
+QString
+WBIOServerCommon::getBotInstaller(const QString& botType)
+{
+    WBIOServerCommon::initClientApps();
+
+    for (WBIOBotTypes *bottypes : WBIOServerCommon::m_supportedBots) {
+        if (bottypes->m_name == botType) {
+            return bottypes->m_installer;
+        }
+    }
+    return QString();
+}
+
+QString
+WBIOServerCommon::getBotConfigure(const QString& botType)
+{
+    WBIOServerCommon::initClientApps();
+
+    for (WBIOBotTypes *bottypes : WBIOServerCommon::m_supportedBots) {
+        if (bottypes->m_name == botType) {
+            return bottypes->m_configure;
+        }
+    }
+    return QString();
+}
+
+QString
+WBIOServerCommon::getBotStartCmd(const QString& botType)
+{
+    WBIOServerCommon::initClientApps();
+
+    for (WBIOBotTypes *bottypes : WBIOServerCommon::m_supportedBots) {
+        if (bottypes->m_name == botType) {
+            return bottypes->m_startCmd;
+        }
+    }
+    return QString();
+}
+
+QString
+WBIOServerCommon::getBotStopCmd(const QString& botType)
+{
+    WBIOServerCommon::initClientApps();
+
+    for (WBIOBotTypes *bottypes : WBIOServerCommon::m_supportedBots) {
+        if (bottypes->m_name == botType) {
+            return bottypes->m_stopCmd;
+        }
+    }
+    return QString();
+}
+
+QString
+WBIOServerCommon::getBotMsgIface(const QString& botType)
+{
+    WBIOServerCommon::initClientApps();
+
+    for (WBIOBotTypes *bottypes : WBIOServerCommon::m_supportedBots) {
+        if (bottypes->m_name == botType) {
+            return bottypes->m_msgIface;
+        }
+    }
+    return QString();
 }

@@ -17,7 +17,7 @@ CmdParser::CmdParser(CmdOperation *operation) :
  * the configuration of existing parsers.  Only parsers in the paused state can be
  * modified. The user can start or pause a parser as well from this function.
  */
-bool CmdParser::runCommands()
+bool CmdParser::runCommands(QString commands)
 {
     QTextStream input(stdin);
 
@@ -129,7 +129,7 @@ void CmdParser::listParsers()
             qDebug() << "CONSOLE:Unable to find state of parser";
         }
         name = processName.split(".");
-        currentState = WickrIOConsoleParserHandler::getActualProcessState(processName,m_operation->m_ioDB);
+        currentState = WickrIOConsoleParserHandler::getActualProcessState(processName, processName, m_operation->m_ioDB);
         QString data = QString("CONSOLE:Index: %1   Name: %2   Id: %3   State: %4")
                 .arg(cnt++)
                 .arg(name[1])

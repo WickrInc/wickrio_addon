@@ -403,7 +403,7 @@ void WickrIOClientLoginHdlr::slotLoginDone(WickrLoginContext *ls)
 
         // Cache the database storage keys
         QString dbKey = WickrCore::WickrSession::getActiveSession()->cacheKeys();
-        if (WickrCore::WickrSession::cacheDBKey(dbKey)) {
+        if (WickrCore::WickrSession::cacheDBKey(dbKey, ls->password())) {
             // Remove the password in the settings file
             if (m_operation->m_settings != nullptr) {
                 m_operation->m_settings->beginGroup(WBSETTINGS_USER_HEADER);

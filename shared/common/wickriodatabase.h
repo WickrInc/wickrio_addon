@@ -167,6 +167,7 @@ private:
 #define DB_STATID_MSGS_RX           2
 #define DB_STATID_ERRORS_TX         3
 #define DB_STATID_ERRORS_RX         4
+#define DB_STATID_MSGS_OBOXSYNC     5
 
 #define DB_STATDESC_TOTAL           "total"
 

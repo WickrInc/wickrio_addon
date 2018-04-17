@@ -21,7 +21,7 @@ class CmdParser : public CmdBase
 public:
     explicit CmdParser(CmdOperation *operation);
 
-    bool runCommands();
+    bool runCommands(QString commands);
     void status();
 
 private:

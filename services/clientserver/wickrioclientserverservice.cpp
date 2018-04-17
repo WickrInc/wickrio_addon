@@ -501,11 +501,11 @@ bool WickrIOClientServerService::startClient(WickrBotClients *client)
     QString outputFile = QString("%1\\clients\\%2\\logs\\WickrIO%2.output").arg(m_operation->databaseDir).arg(client->name);
 #else
     configFileName = QString(WBIO_CLIENT_SETTINGS_FORMAT).arg(m_operation->databaseDir).arg(client->name);
-    clientDbDir = QString("%1/clients/%2/client").arg(m_operation->databaseDir).arg(client->name);
-    logname = QString("%1/clients/%2/logs/WickrIO%2.log").arg(m_operation->databaseDir).arg(client->name);
-    workingDir = QString("%1/clients/%2").arg(m_operation->databaseDir).arg(client->name);
+    clientDbDir = QString(WBIO_CLIENT_DBDIR_FORMAT).arg(m_operation->databaseDir).arg(client->name);
+    logname = QString(WBIO_CLIENT_LOGFILE_FORMAT).arg(m_operation->databaseDir).arg(client->name);
+    workingDir = QString(WBIO_CLIENT_WORKINGDIR_FORMAT).arg(m_operation->databaseDir).arg(client->name);
 
-    QString outputFile = QString("%1/clients/%2/logs/WickrIO%2.output").arg(m_operation->databaseDir).arg(client->name);
+    QString outputFile = QString(WBIO_CLIENT_OUTFILE_FORMAT).arg(m_operation->databaseDir).arg(client->name);
 #endif
 
 
@@ -632,6 +632,42 @@ bool WickrIOClientServerService::startClient(WickrBotClients *client)
         qDebug() << "Leaving startClient: could not start!";
 #endif
         return false;
+    }
+
+    // Check if there is an integration to start for this client
+    if (!client->botType.isEmpty()) {
+        QString startCmd = WBIOServerCommon::getBotStartCmd(client->botType);
+        if (!startCmd.isEmpty()) {
+            QString destPath = QString(WBIO_CLIENT_BOTDIR_FORMAT)
+                    .arg(WBIO_DEFAULT_DBLOCATION)
+                    .arg(client->name)
+                    .arg(client->botType);
+            QString startFullPath = QString("%1/%2").arg(destPath).arg(startCmd);
+
+            m_operation->log_handler->log("**********************************");
+            m_operation->log_handler->log(QString("Starting %1").arg(startFullPath));
+
+            // Create a process to run the installer
+            QProcess *runBotStartCmd = new QProcess(this);
+            runBotStartCmd->setProcessChannelMode(QProcess::MergedChannels);
+            runBotStartCmd->setWorkingDirectory(destPath);
+            runBotStartCmd->start(startFullPath, QIODevice::ReadWrite);
+
+            // Wait for it to start
+            if(!runBotStartCmd->waitForStarted()) {
+                qDebug() << "Failed to run %1";
+            } else {
+                QStringList startOutput;
+
+                while(runBotStartCmd->waitForReadyRead()) {
+                    QString bytes = QString(runBotStartCmd->readAll());
+                    startOutput.append(bytes);
+                }
+            }
+
+            m_operation->log_handler->log("Done starting!");
+            m_operation->log_handler->log("**********************************");
+        }
     }
 #ifdef DEBUG_TRACE
     qDebug() << "Leaving startClient";

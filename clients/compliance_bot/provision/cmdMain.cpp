@@ -210,7 +210,7 @@ CmdMain::listBots()
                 } else if (state.state == PROCSTATE_RUNNING) {
                     clientState = "Running";
                     // Check if the process is running
-                    if (!WickrBotUtils::isRunning(client->binary, state.process_id)) {
+                    if (!WickrBotUtils::isRunning(client->name, state.process_id)) {
                         procRunningString = "(appears to be stopped)";
                     }
                 } else if (state.state == PROCSTATE_PAUSED) {

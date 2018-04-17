@@ -191,11 +191,13 @@ QStringList WickrIOConsoleParserHandler::getNetworkInterfaceList()
  * down or paused it will also verify that the process is running.
  * TODO: Should the process be updated in the database if it is found to not be running?
  * @param processName
+ * @param searchString
  * @param ioDB
  * @return
  */
 QString
-WickrIOConsoleParserHandler::getActualProcessState(const QString &processName, WickrIOClientDatabase* ioDB, int timeout)
+WickrIOConsoleParserHandler::getActualProcessState(const QString &processName, const QString &searchString,
+                                                   WickrIOClientDatabase* ioDB, int timeout)
 {
     WickrBotProcessState state;
     QString parserState = "UNKNOWN";
@@ -211,12 +213,7 @@ WickrIOConsoleParserHandler::getActualProcessState(const QString &processName, W
 
             // If greater than the timeout then check if the process is running
             if (secs > timeout) {
-#if 0
-                QString appName = QFileInfo(QCoreApplication::arguments().at(0)).fileName();
-#else
-                QString appName = "WickrIO";
-#endif
-                if (WickrBotUtils::isRunning(appName, state.process_id)) {
+                if (WickrBotUtils::isRunning(searchString, state.process_id)) {
 //                    WickrBotUtils::killProcess(state.process_id);
                     parserState = "Hung?";
                 } else {

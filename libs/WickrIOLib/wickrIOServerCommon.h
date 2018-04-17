@@ -10,6 +10,46 @@
 #include "wickrIOParsers.h"
 
 /**
+ * @brief The WBIOBotTypes class
+ * This class is used to identify the hardcoded types of Bots supported (i.e. hubot, supportbot)
+ * It should be used to support customer additional bot types.
+ */
+class WBIOBotTypes
+{
+public:
+    WBIOBotTypes(const QString& name, const QString& type, const QString& msgIface,
+                 const QString& swLoc,
+                 const QString& installer, const QString& configure,
+                 const QString& startCmd, const QString& stopCmd) :
+        m_name(name),
+        m_type(type),
+        m_msgIface(msgIface),
+        m_swLocation(swLoc),
+        m_installer(installer),
+        m_configure(configure),
+        m_startCmd(startCmd),
+        m_stopCmd(stopCmd) {}
+
+    QString m_name;
+    QString m_type;
+    QString m_msgIface;
+    QString m_swLocation;
+    QString m_installer;
+    QString m_configure;
+    QString m_startCmd;
+    QString m_stopCmd;
+
+    QString name()       { return m_name; }
+    QString type()       { return m_type; }
+    QString swLocation() { return m_swLocation; }
+    QString installer()  { return m_installer; }
+    QString configure()  { return m_configure; }
+    QString startCmd()   { return m_startCmd; }
+    QString stopCmd()    { return m_stopCmd; }
+};
+
+
+/**
  * @brief The WBIOClientApps class
  * This class is used to identify the applications associated with the known client apps
  */
@@ -29,11 +69,16 @@ public:
     bool    m_pwRequired;
     bool    m_isMotherBot;
 
+    QList<WBIOBotTypes *> m_supportedBots;
+
     QString bot()       { return m_botApp; }
     QString provision() { return m_provisionApp; }
     QString parser()    { return m_parserApp; }
     bool pwRequired()   { return m_pwRequired; }
     bool isMotherBot()  { return m_isMotherBot; }
+
+    QList<WBIOBotTypes *> supportedBots() { return m_supportedBots; }
+    void addBot(WBIOBotTypes *bot) { m_supportedBots.append(bot); }
 };
 
 /**
@@ -63,11 +108,21 @@ public:
 
     static QStringList getAvailableMotherClients();
 
+    static QList<WBIOBotTypes *> getBotsSupported(const QString& clientApp);
+    static QString getBotSoftwarePath(const QString& botType);
+    static QString getBotInstaller(const QString& botType);
+    static QString getBotConfigure(const QString& botType);
+    static QString getBotStartCmd(const QString& botType);
+    static QString getBotStopCmd(const QString& botType);
+    static QString getBotMsgIface(const QString& botType);
+
 private:
     static bool                     m_initialized;
     static QList<WBIOClientApps *>  m_botApps;
     static QStringList              m_bots;
     static QStringList              m_parsers;
+
+    static QList<WBIOBotTypes *>    m_supportedBots;
 };
 
 

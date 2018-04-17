@@ -96,7 +96,6 @@ int main(int argc, char *argv[])
     bool debugOutput = false;
 
     QString clientDbPath("");
-    QString suffix;
     QString wbConfigFile("");
 
     for( int argidx = 1; argidx < argc; argidx++ ) {
@@ -106,9 +105,6 @@ int main(int argc, char *argv[])
             clientDbPath = cmd.remove("-clientdbdir=");
         } else if (cmd.startsWith("-config=")) {
             wbConfigFile = cmd.remove("-config=");
-        } else if (cmd.startsWith("-suffix")) {
-            suffix = cmd.remove("-suffix=");
-            WickrUtil::setTestAccountMode(suffix);
         } else if (cmd == "-debug") {
             debugOutput = true;
         }

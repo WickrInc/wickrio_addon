@@ -24,7 +24,11 @@ int main(int argc, char *argv[])
 
     coreapp.setOrganizationName(WBIO_ORGANIZATION);
     coreapp.setApplicationName(WBIO_CONSOLE_TARGET);
-
     CmdMain cmdmain;
-    cmdmain.runCommands();
+    if (argc > 1) {
+        QString commands(argv[1]);
+        cmdmain.runCommands(commands);
+    } else {
+        cmdmain.runCommands();
+    }
 }

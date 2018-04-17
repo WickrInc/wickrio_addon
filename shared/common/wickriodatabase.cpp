@@ -58,6 +58,19 @@ WickrIOClientDatabase::createRelationalTables()
     }
     tstQuery.finish();
 
+    // Need to extend the clients table to contain the integration bot type
+    {
+        QSqlQuery tstQuery(m_db);
+        tstQuery.prepare("SELECT integration_type from clients");
+        tstQuery.exec();
+        if (!tstQuery.isActive()) {
+            if (!runSimpleQuery("ALTER TABLE clients ADD integration_type")) {
+                qDebug() << "Could not alter clients table to add integration_type!";
+            }
+        }
+        tstQuery.finish();
+    }
+
     // Check if the Tokens table exists already, if not create it
     if (! m_db.tables().contains(QLatin1String(DB_TOKEN_TABLE))) {
         QSqlQuery query(m_db);
@@ -518,7 +531,7 @@ WickrIOClientDatabase::getClients()
     if (!initialized)
         return clients;
 
-    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile,console_id,binary FROM clients";
+    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile,console_id,binary,integration_type FROM clients";
     QSqlQuery *query = new QSqlQuery(m_db);
     query->prepare(queryString);
 
@@ -583,7 +596,7 @@ WickrIOClientDatabase::getClientUsingName(QString name)
     if (!initialized)
         return client;
 
-    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile,console_id,binary FROM clients WHERE name=?";
+    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile,console_id,binary,integration_type FROM clients WHERE name=?";
     QSqlQuery query(m_db);
     query.prepare(queryString);
     query.bindValue(0, name);
@@ -637,7 +650,7 @@ WickrIOClientDatabase::getConsoleClients(int console_id)
     if (!initialized)
         return clients;
 
-    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile,binary FROM clients WHERE console_id = ?";
+    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile,binary,integration_type FROM clients WHERE console_id = ?";
     QSqlQuery *query = new QSqlQuery(m_db);
     query->prepare(queryString);
     query->bindValue(0, console_id);

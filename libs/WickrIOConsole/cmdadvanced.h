@@ -17,7 +17,7 @@ class CmdAdvanced : public CmdBase
 public:
     explicit CmdAdvanced(CmdOperation *operation);
 
-    bool runCommands();
+    bool runCommands(QString commands=QString());
     void status();
 
 private:

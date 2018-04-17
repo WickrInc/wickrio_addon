@@ -1028,8 +1028,12 @@ RequestHandler::deleteConvo(bool isSecureConvo, const QString& vgroupID)
                 return false;
             }
         } else {
-            // If 1-To-1 convo
-            WICKRBOT->m_convoHdlr.deleteConvo(convo);
+            WickrCore::WickrOneToOneMgr *one2oneMgr = WickrCore::WickrRuntime::getConvoMgr();
+            if (one2oneMgr) {
+                one2oneMgr->deleteOneToOneStart(vgroupID);
+            } else {
+                return false;
+            }
         }
     }
     return true;
@@ -1040,7 +1044,9 @@ RequestHandler::processDeleteRoom(const QString &clientID, stefanfrings::HttpRes
 {
     WickrCore::WickrConvo *convo = WickrCore::WickrConvo::getConvoWithvGroupID(clientID);
     if (convo) {
-        if (!convo->getIsRoomMaster()) {
+        if (convo->getConvoType() != CONVO_SECURE_ROOM) {
+            sendFailure(400, "Must be secure room", response);
+        } else if (!convo->getIsRoomMaster()) {
             sendFailure(400, "Must be room master", response);
         } else {
             if (RequestHandler::deleteConvo(true, clientID)) {
@@ -1210,12 +1216,19 @@ RequestHandler::processAddGroupConvo(stefanfrings::HttpRequest& request, stefanf
     }
 
     QStringList memberslist;
+    QStringList memberHashes;
     int ttl = 0;
+    int bor = 0;
 
     // Get the TTL / Destruct time
     if (grpConvoObject.contains(APIJSON_ROOMTTL)) {
         value = grpConvoObject[APIJSON_ROOMTTL];
         ttl = value.toInt(0);
+    }
+    // Get the BOR / Burn on Read
+    if (grpConvoObject.contains(APIJSON_ROOMBOR)) {
+        value = grpConvoObject[APIJSON_ROOMBOR];
+        bor = value.toInt(0);
     }
 
     // Get the members
@@ -1226,34 +1239,95 @@ RequestHandler::processAddGroupConvo(stefanfrings::HttpRequest& request, stefanf
         return;
     }
 
-    QStringList memberHashes;
-    foreach (QString member, memberslist) {
-        WickrCore::WickrUser *user = WickrCore::WickrUser::getUserWithAlias(member);
-        if (user == NULL) {
-            sendFailure(400, "Cannot find user record for member", response);
-            return;
-        }
-        QString idHash = user->getServerIDHash();
-        if (idHash.isEmpty()) {
-            sendFailure(500, "Problem handling user record for member", response);
-            return;
-        }
-        memberHashes.append(idHash);
+    // Update and validate the input list of members.  If false is returned then
+    // there was an error processing the list, or the member was invalid!
+    if (!updateAndValidateMembers(response, memberslist, &memberHashes)) {
+        return;
     }
-
     // Create the room
 
     // Create convo (create if not found, no group name, secure room)
     QString membersString = memberHashes.join(',');
 
-#if 0
-    WickrCore::WickrSecureRoomMgr *roomMgr = WickrCore::WickrRuntime::getRoomMgr();
-    if (roomMgr) {
-        roomMgr->createSecureRoomConvoStart(membersString, mastersString, ttl, title, description);
+    QSet<WickrCore::WickrUser *> validateUsers;
+
+    // Need to make sure this convo does not exist already
+    QList<WickrCore::WickrUser*>users;
+
+    for (int i=0; i < memberslist.size(); i++) {
+        WickrCore::WickrUser *user = WickrCore::WickrUser::getUserWithAlias(memberslist.at(i));
+//        WickrCore::WickrUser *user = WickrCore::WickrUser::getUserByServerID(memberslist.at(i));
+        if (user) {
+            users.append(user);
+            validateUsers.insert(user);
+        } else {
+            QString errMsg = "Cannot find user record for " + memberslist.at(i);
+            sendFailure(400, errMsg.toLatin1(), response);
+            return;
+        }
+    }
+    // If group already exists, simply redirect
+    QString vgroupID = WickrCore::WickrConvo::groupConvoExists(users);
+    if (!vgroupID.isEmpty()) {
+        sendFailure(400, "Group conversation already exists", response);
+        return;
     }
 
-#endif
-    sendSuccess(response);
+    WickrCore::WickrSecureRoomMgr *roomMgr = WickrCore::WickrRuntime::getRoomMgr();
+    if (!roomMgr) {
+        sendFailure(400, "Failed to create group conversation", response);
+        return;
+    }
+
+    WickrCore::WickrUser *self = WickrCore::WickrUser::getSelfUser();
+    QString mastersString;
+    if (self) {
+        mastersString = membersString + "," + self->getServerIDHash();
+    } else {
+        sendFailure(400, "Failed to create group conversation", response);
+        return;
+    }
+
+    vgroupID = roomMgr->createSecureRoomConvoStart(membersString,
+                                                   mastersString,
+                                                   ttl,
+                                                   "",
+                                                   "",
+                                                   bor,
+                                                   false);
+    if (vgroupID.isEmpty()) {
+        sendFailure(400, "Failed to create group conversation", response);
+        return;
+    }
+
+    // no will wait for the room to be created or timeout due to an error
+
+    QTimer timer;
+    QEventLoop loop;
+
+    loop.connect(roomMgr, SIGNAL(roomCreatedServerSuccess()), SLOT(quit()));
+//        loop.connect(roomMgr, SIGNAL(signalError()), SLOT(quit()));
+    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+
+    int loopCount = 10;
+
+    while (loopCount-- > 0) {
+        timer.start(1000);
+        loop.exec();
+
+        if (timer.isActive()) {
+            timer.stop();
+            break;
+        } else {
+            qDebug() << "CONSOLE:Timed out waiting for create group conversation response!";
+            sendFailure(400, "Failed to create group conversation", response);
+            return;
+        }
+    }
+
+    // Return the vGroupID
+    QString body = QString("{ \"vgroupid\" : \"%1\" }").arg(vgroupID);
+    sendSuccess(body.toLatin1(), response);
 }
 
 void
@@ -1261,7 +1335,9 @@ RequestHandler::processDeleteGroupConvo(const QString &clientID, stefanfrings::H
 {
     WickrCore::WickrConvo *convo = WickrCore::WickrConvo::getConvoWithvGroupID(clientID);
     if (convo) {
-        if (RequestHandler::deleteConvo(true, clientID)) {
+        if (convo->getConvoType() != CONVO_GROUP_CONVO) {
+            sendFailure(400, "Must be group conversation", response);
+        } else if (RequestHandler::deleteConvo(false, clientID)) {
             sendSuccess(response);
         } else {
             sendFailure(400, "Failed to delete Group Convo", response);
@@ -1302,6 +1378,7 @@ RequestHandler::processGetGroupConvos(const QString &clientID, stefanfrings::Htt
 
                 grpConvoValue.insert(APIJSON_VGROUPID, currentConvo->getVGroupID());
                 grpConvoValue.insert(APIJSON_ROOMTTL, QString::number(currentConvo->getDestruct()));
+                grpConvoValue.insert(APIJSON_ROOMBOR, QString::number(currentConvo->getBOR()));
 
                 // Setup the users array
                 QStringList userslist = currentConvo->getUsernameStringArray();
@@ -1322,7 +1399,7 @@ RequestHandler::processGetGroupConvos(const QString &clientID, stefanfrings::Htt
     }
 
     QJsonObject jsonObject;
-    jsonObject.insert(APIJSON_ROOMS, grpConvoArrayValue);
+    jsonObject.insert(APIJSON_GROUPCONVOS, grpConvoArrayValue);
     QJsonDocument saveDoc(jsonObject);
     QByteArray byteArray = saveDoc.toJson();
 
@@ -1410,6 +1487,9 @@ RequestHandler::getStatistics(const QString& apiKey, stefanfrings::HttpResponse&
                         break;
                     case DB_STATID_ERRORS_RX:
                         statValues.insert(APIJSON_STATID_ERRSRX, stat->statValue);
+                        break;
+                    case DB_STATID_MSGS_OBOXSYNC:
+                        statValues.insert(APIJSON_STATID_OBOXSYNC, stat->statValue);
                         break;
                     }
                 }
