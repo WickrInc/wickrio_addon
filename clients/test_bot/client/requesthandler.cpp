@@ -1488,6 +1488,9 @@ RequestHandler::getStatistics(const QString& apiKey, stefanfrings::HttpResponse&
                     case DB_STATID_ERRORS_RX:
                         statValues.insert(APIJSON_STATID_ERRSRX, stat->statValue);
                         break;
+                    case DB_STATID_MSGS_OBOXSYNC:
+                        statValues.insert(APIJSON_STATID_OBOXSYNC, stat->statValue);
+                        break;
                     }
                 }
             }

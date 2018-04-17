@@ -123,6 +123,8 @@ int main(int argc, char *argv[])
 
         if( cmd.startsWith("-dbdir=") ) {
             operation->databaseDir = cmd.remove("-dbdir=");
+        } else if (cmd.startsWith("-debug")) {
+            operation->debug = true;
         } else if (cmd.startsWith("-log=") ) {
             QString logFile = cmd.remove("-log=");
             operation->log_handler->setupLog(logFile);

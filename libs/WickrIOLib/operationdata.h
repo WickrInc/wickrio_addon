@@ -26,8 +26,8 @@ public:
 
 public:
     QString processName;
-    bool debug;
-    bool force;
+    bool debug = false;
+    bool force = false;
 
     QString appDataDir;
 

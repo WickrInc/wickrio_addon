@@ -102,6 +102,7 @@
 #define APIJSON_STATISTICS      "statistics"
 #define APIJSON_STATID_MSGSTX   "sent"
 #define APIJSON_STATID_MSGSRX   "received"
+#define APIJSON_STATID_OBOXSYNC "outbox_sync"
 #define APIJSON_STATID_ERRSTX   "sent_errors"
 #define APIJSON_STATID_ERRSRX   "recv_errors"
 #define APIJSON_STATID_PENDING  "pending_messages"
