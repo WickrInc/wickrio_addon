@@ -22,6 +22,10 @@
 #define WBSETTINGS_USER_PASSWORD        "password"
 #define WBSETTINGS_USER_USERNAME        "username"
 #define WBSETTINGS_USER_TRANSACTIONID   "transactionID"
+#define WBSETTINGS_USER_PRODUCTTYPE     "productType"
+#define WBSETTINGS_USER_PT_LEGACY       "legacy"
+#define WBSETTINGS_USER_PT_BOT          "bot"
+#define WBSETTINGS_USER_PT_DEFAULT      "bot"
 
 #define WBSETTINGS_CONFIG_HEADER        "configuration"
 #define WBSETTINGS_CONFIG_DORECEIVE     "doreceive"

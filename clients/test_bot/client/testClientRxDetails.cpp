@@ -56,11 +56,6 @@ bool TestClientRxDetails::processMessage(WickrDBObject *item)
             qDebug() << "slotProcessMessage: have an outbox message, to drop!";
         m_processing = false;
 
-        // Increment the statistic in the database
-        if (m_operation->m_botDB != NULL) {
-            m_operation->m_botDB->incStatistic(m_operation->m_client->id, DB_STATID_MSGS_OBOXSYNC, DB_STATDESC_TOTAL, 1);
-        }
-
         WickrCore::WickrOutbox *outbox = (WickrCore::WickrOutbox *)msg;
         if (outbox->isDeleted()) {
             return false;

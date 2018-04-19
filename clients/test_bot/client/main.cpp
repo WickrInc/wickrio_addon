@@ -216,17 +216,6 @@ int main(int argc, char *argv[])
     // Set the path where the Device ID will be set
     WickrUtil::botDeviceDir = clientDbPath;
 
-    // Wickr Runtime Environment (all applications include this line)
-    WickrCore::WickrRuntime::init(argc, argv,
-                                  PRODUCT_TYPE_BOT,
-                                  ClientVersionInfo::getOrgName(),
-                                  appname,
-                                  ClientConfigurationInfo::DefaultBaseURL,
-                                  ClientConfigurationInfo::DefaultDirSearchBaseURL,
-                                  productionMode,
-                                  clientType,
-                                  clientDbPath);
-
     if( !username.isEmpty() ) {
         WickrDBAdapter::setDBName( WickrDBAdapter::getDBName() + "." + username );
     }
@@ -245,6 +234,39 @@ int main(int argc, char *argv[])
 
     // Save the settings to the operation data
     operation->m_settings = settings;
+
+
+    // Product Type: for legacy and testing purposes we will support using client users
+    int productType;
+
+    // see if the product type is in the settings
+    settings->beginGroup(WBSETTINGS_USER_HEADER);
+    QString userpt_string = settings->value(WBSETTINGS_USER_PRODUCTTYPE, WBSETTINGS_USER_PT_DEFAULT).toString();
+    settings->endGroup();
+    if (userpt_string == WBSETTINGS_USER_PT_LEGACY) {
+#if defined(WICKR_MESSENGER)
+        productType = PRODUCT_TYPE_MESSENGER;
+#elif defined(WICKR_ENTERPRISE)
+        productType = PRODUCT_TYPE_PRO;
+#else
+        productType = PRODUCT_TYPE_PRO;
+#endif
+    } else {
+        productType = PRODUCT_TYPE_BOT;
+    }
+
+    // Wickr Runtime Environment (all applications include this line)
+    WickrCore::WickrRuntime::init(argc, argv,
+                                  productType,
+                                  ClientVersionInfo::getOrgName(),
+                                  appname,
+                                  ClientConfigurationInfo::DefaultBaseURL,
+                                  ClientConfigurationInfo::DefaultDirSearchBaseURL,
+                                  productionMode,
+                                  clientType,
+                                  clientDbPath);
+
+
 
     // Get the appropriate database location
     if (operation->databaseDir.isEmpty()) {
