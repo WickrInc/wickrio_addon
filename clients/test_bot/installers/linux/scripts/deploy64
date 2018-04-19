@@ -86,7 +86,7 @@ systemdlibdir=$prefix/lib/systemd/system
 optdir=$prefix/opt/WickrIO$svcBldType
 scriptsdir=$optdir/scripts
 imagedir=$optdir/attachments/image
-dstintegrationsdir=$optdir/integrations
+dstintegrationsdir=$prefix/usr/lib/wickr/integrations
 srcintegrationsdir=$current/../../../../../integrations
 
 platform=$current/../../../../../platforms/linux/generic-64

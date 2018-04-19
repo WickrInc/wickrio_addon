@@ -28,5 +28,6 @@ public:
 #define PROCSTATE_PAUSED    2       // Client is paused, or pause a client action
 #define PROCSTATE_RUNNING   1       // Client is running
 #define PROCSTATE_DOWN      0       // Client is down, initial state to start a client
+#define PROCSTATE_UNKNOWN   -99     // Do not know the state
 
 #endif // WICKRBOTPROCESSSTATE_H

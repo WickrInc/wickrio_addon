@@ -6,7 +6,8 @@ SUBDIRS = \
     WickrIOLib \
     WickrIOGUI \
     SMTPEmail \
-    qamqpsrc
+    qamqpsrc \
+    integrations
 
 
 CONFIG += ordered

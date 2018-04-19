@@ -47,17 +47,6 @@ private:
     int m_messagesDropped;
     int m_messagesRecvFailed;
 
-    // Process inbound messages
-    bool processKeyVerificationMsg(QJsonObject& jsonObject,  WickrCore::WickrInbox *msg);
-    bool processFileMsg(QJsonObject& jsonObject,  WickrCore::WickrInbox *msg);
-    bool processCallingMsg(QJsonObject& jsonObject,  WickrCore::WickrInbox *msg);
-
-    bool processControlMsg(QJsonObject& jsonObject,  WickrCore::WickrInbox *msg);
-    bool processCreateRoomBase(QJsonObject& jsonObject,  WickrCore::WickrGroupControlCreateSecureRoom *ctrlMsg);
-    bool processCreateSecureRoomMsg(QJsonObject& jsonObject,  WickrCore::WickrGroupControlCreateSecureRoom *creaatSecureRoom);
-    bool processChangeRoomConfigMsg(QJsonObject& jsonObject,  WickrCore::WickrGroupControlChangeRoomConfiguration *ctrlMsg);
-    bool processChangeMembersMsg(QJsonObject& jsonObject,  WickrCore::WickrGroupControlChangeMembers *ctrlMsg);
-
 };
 
 

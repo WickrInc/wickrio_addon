@@ -326,7 +326,7 @@ WickrIOHttpRequestHdlr::setMsgRecvCallback(const QString& apiKey, stefanfrings::
         if (client != NULL) {
             WickrIOAppSettings appSetting;
             if (m_ioDB->getAppSetting(client->id, DB_APPSETTINGS_TYPE_MSGRECVEMAIL, &appSetting)) {
-                reason = "Message receive email already set!";
+                reason = "Message receive callback already set!";
             } else {
                 appSetting.clientID = client->id;
                 appSetting.type = DB_APPSETTINGS_TYPE_MSGRECVCALLBACK;

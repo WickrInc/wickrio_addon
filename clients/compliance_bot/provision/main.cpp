@@ -80,15 +80,10 @@ int main(int argc, char *argv[])
 
     bool debugOutput = false;
 
-    QString suffix;
-
     for( int argidx = 1; argidx < argc; argidx++ ) {
         QString cmd(argv[argidx]);
 
-        if (cmd.startsWith("-suffix")) {
-            suffix = cmd.remove("-suffix=");
-            WickrUtil::setTestAccountMode(suffix);
-        } else if (cmd == "-debug") {
+        if (cmd == "-debug") {
             debugOutput = true;
         }
     }

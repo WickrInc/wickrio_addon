@@ -27,7 +27,7 @@ CmdConsole::~CmdConsole()
  * @brief CmdConsole::runConsoleCommands
  * This function will handle user input associated with the Console commands.
  */
-bool CmdConsole::runCommands()
+bool CmdConsole::runCommands(QString commands)
 {
     if (m_consoleServer == NULL) {
         m_consoleServer = new ConsoleServer(m_operation->m_ioDB);
@@ -139,7 +139,7 @@ void CmdConsole::status()
     int portNumber = m_operation->m_settings->value(WBSETTINGS_CONSOLESVR_PORT,0).toInt();
     m_operation->m_settings->endGroup();
 
-    QString clientState = WickrIOConsoleClientHandler::getActualProcessState(WBIO_CONSOLESERVER_TARGET, m_operation->m_ioDB);
+    QString clientState = WickrIOConsoleClientHandler::getActualProcessState(WBIO_CONSOLESERVER_TARGET, WBIO_CONSOLESERVER_TARGET, m_operation->m_ioDB);
     qDebug() << "CONSOLE:Console Server status:";
     qDebug() << "CONSOLE:  Type       :" << type;
     qDebug() << "CONSOLE:  Interface  :" << iface;

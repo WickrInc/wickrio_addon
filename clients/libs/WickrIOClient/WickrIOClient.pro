@@ -105,7 +105,8 @@ HEADERS += \
     wickrIOProvisionHdlr.h \
     wickrIORxService.h \
     wickrIOWatchdogService.h \
-    wickrIOServiceBase.h
+    wickrIOServiceBase.h \
+    wickrIOProcessInbox.h
 
 SOURCES += \
     clientconfigurationinfo.cpp \
@@ -122,4 +123,5 @@ SOURCES += \
     wickrIOProvisionHdlr.cpp \
     wickrIORxService.cpp \
     wickrIOWatchdogService.cpp \
-    wickrIOServiceBase.cpp
+    wickrIOServiceBase.cpp \
+    wickrIOProcessInbox.cpp

@@ -21,7 +21,7 @@ public:
     explicit CmdConsole(CmdOperation *operation);
     ~CmdConsole();
 
-    bool runCommands();
+    bool runCommands(QString commands=QString());
     void status();
 
 private:

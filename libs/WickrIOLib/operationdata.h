@@ -26,8 +26,8 @@ public:
 
 public:
     QString processName;
-    bool debug;
-    bool force;
+    bool debug = false;
+    bool force = false;
 
     QString appDataDir;
 
@@ -41,8 +41,8 @@ public:
     QString databaseDir;
     QString messagesDir;
 
-    int messageCount;
-    int duration;
+    int messageCount = 0;
+    int duration = 0;
 
     WickrBotDatabase *m_botDB;
     WickrBotClients *m_client;

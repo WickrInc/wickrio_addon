@@ -1,9 +1,9 @@
 #!/bin/bash
 
-if [[ $# -ne 6 ]]
+if [[ $# -ne 7 ]]
 then
   FileName=`basename $0`
-  echo "usage: $FileName <WickrQT> <console deb> <bot deb> <bot binary> <docker image> <image tag>"
+  echo "usage: $FileName <WickrQT> <console deb> <bot deb> <bot binary> <docker image> <image tag> <needs node>"
   exit 1
 fi
 
@@ -19,8 +19,10 @@ botexe=$4
 dockerImage="wickr/$5"
 dockerService="wickrio-$5"
 dockerTag=$6
+needsNode=$7
 
-echo "\n********************************************************************"
+echo ""
+echo "********************************************************************"
 echo "** Beginning to create docker image:"
 echo "**   botexe=$botexe"
 echo "**   dockerImage=$dockerImage"
@@ -30,8 +32,13 @@ echo "**   dockerTag=$dockerTag"
 #
 # set the values within the Dockerfile and the start.sh
 #
-sed -e "s/QTDEBFILE/${qtdebfile}/g" -e "s/BOTDEBFILE/${botdebfile}/g" -e "s/CONSOLEDEBFILE/${consoledebfile}/g" <$current/Dockerfile.orig > $current/Dockerfile
+if [ "$needsNode" == "true" ] ; then
+  sed -e "s/QTDEBFILE/${qtdebfile}/g" -e "s/BOTDEBFILE/${botdebfile}/g" -e "s/CONSOLEDEBFILE/${consoledebfile}/g" <$current/Dockerfile.node.orig > $current/Dockerfile
+else
+  sed -e "s/QTDEBFILE/${qtdebfile}/g" -e "s/BOTDEBFILE/${botdebfile}/g" -e "s/CONSOLEDEBFILE/${consoledebfile}/g" <$current/Dockerfile.orig > $current/Dockerfile
+fi
 sed -e "s/BOTEXECUTABLE/${botexe}/g" <$current/start.sh.orig > $current/start.sh
+chmod 777 $current/start.sh
 
 #
 # docker-compose build, tag, and push image to docker hub
@@ -40,6 +47,7 @@ docker-compose -f build.docker build ${dockerService}
 docker tag "$dockerImage" "${dockerImage}:${dockerTag}"
 docker push "${dockerImage}:${dockerTag}"
 docker rmi "${dockerImage}:${dockerTag}"
+docker system prune -a -f
 
-echo "\n** Finished creating docker image: ${dockerImage}:${dockerTag}"
+echo "** Finished creating docker image: ${dockerImage}:${dockerTag}"
 echo "********************************************************************"

@@ -22,6 +22,7 @@ public:
     QString transactionID;
     QString status;
     QString binary;
+    QString botType;
 
     bool isHttps;
     int port = 0;
@@ -29,10 +30,12 @@ public:
     QString sslKeyFile;
     QString sslCertFile;
 
-    bool    m_handleInbox=false; // true if client should handle inbox messages, depends on client
+    QString m_callbackString;       // Used when creating user with a integration bot
+
+    bool    m_handleInbox=false;    // true if client should handle inbox messages, depends on client
     bool    onPrem=false;
 
-    int console_id=0;           // ID of the associated Console User or 0
+    int console_id=0;               // ID of the associated Console User or 0
 
 public:
     QString getIfaceTypeStr() { return isHttps ? QString("HTTPS") : QString("HTTP"); }

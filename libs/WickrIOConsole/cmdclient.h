@@ -20,10 +20,12 @@ class CmdClient : public CmdBase
 public:
     explicit CmdClient(CmdOperation *operation);
 
-    bool runCommands();
+    bool runCommands(QString commands=QString());
     void status();
 
 private:
+    bool processCommand(QStringList cmdList, bool &isquit);
+
     bool getClientValues(WickrBotClients *client);
     void addClient();
     void deleteClient(int clientIndex);
@@ -39,6 +41,10 @@ private:
     bool validateIndex(int clientIndex);
 
     bool sendClientCmd(int port, const QString& cmd);
+
+    bool runBotScript(const QString& destPath, const QString& configure, WickrBotClients *client);
+
+    bool getAuthValue(WickrBotClients *client, bool basic, QString& authValue);
 
 private:
     CmdOperation *m_operation;

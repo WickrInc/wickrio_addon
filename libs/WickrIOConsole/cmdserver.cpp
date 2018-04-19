@@ -20,7 +20,7 @@ CmdServer::CmdServer(CmdOperation *cmdOperation) :
  * @brief CmdServer::runCommands
  * This function will handle user input associated with the Client Server commands.
  */
-bool CmdServer::runCommands()
+bool CmdServer::runCommands(QString commands)
 {
     if (m_consoleServer == NULL) {
         m_consoleServer = new ConsoleServer(m_cmdOperation->m_ioDB);
@@ -81,6 +81,6 @@ bool CmdServer::runCommands()
 
 void CmdServer::status()
 {
-    QString clientState = WickrIOConsoleClientHandler::getActualProcessState(WBIO_CLIENTSERVER_TARGET, m_cmdOperation->m_ioDB);
+    QString clientState = WickrIOConsoleClientHandler::getActualProcessState(WBIO_CLIENTSERVER_TARGET, WBIO_CLIENTSERVER_TARGET, m_cmdOperation->m_ioDB);
     qDebug() << "CONSOLE:The Clients Server state is" << clientState;
 }

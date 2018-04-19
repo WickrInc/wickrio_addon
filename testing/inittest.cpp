@@ -52,7 +52,6 @@ void InitTest::initTestCase()
     m_operation->processName = WBIO_CLIENT_TARGET;
 
     QString clientDbPath("");
-    QString suffix;
     QString wbConfigFile("");
     bool setProcessName = false;
 
@@ -68,9 +67,6 @@ void InitTest::initTestCase()
             clientDbPath = cmd.remove("-clientdbdir=");
         } else if (cmd.startsWith("-config=")) {
             wbConfigFile = cmd.remove("-config=");
-        } else if (cmd.startsWith("-suffix")) {
-            suffix = cmd.remove("-suffix=");
-            WickrUtil::setTestAccountMode(suffix);
         } else if (cmd.startsWith("-force") ) {
             // Force the WickBot Client to run, regardless of the state in the database
             m_operation->force = true;
