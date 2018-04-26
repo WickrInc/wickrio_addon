@@ -100,6 +100,10 @@ include($${DEPTH}/libs/QtWebApp/QtWebApp.pri)
 #
 include($${DEPTH}/libs/SMTPEmail/SMTPEmail.pri)
 
+#
+# Include the v8 third party library
+#
+include ($${DEPTH}/libs/third_party/v8/v8.pri)
 
 TEMPLATE = app
 
@@ -144,13 +148,15 @@ RESOURCES += \
 SOURCES += \
     main.cpp \
     requesthandler.cpp \
-    testClientRxDetails.cpp
+    testClientRxDetails.cpp \
+    requestHandlerJS.cpp
 
 HEADERS += \
     testClientConfigInfo.h \
     requesthandler.h \
     testClientConfigInfo.h \
-    testClientRxDetails.h
+    testClientRxDetails.h \
+    requestHandlerJS.h
 
 # qsqlcipher_wickr
 
@@ -227,6 +233,7 @@ linux-g++* {
 
     LIBS += -L$$OUT_PWD/$${DEPTH}/libs/SMTPEmail -lSMTPEmail
 
+    QMAKE_POST_LINK += cp $${V8_FILES} $${OUT_PWD}
 }
 
 win32 {

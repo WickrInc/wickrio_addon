@@ -13,6 +13,11 @@ QT -= gui
 
 VERSION = 1.0.1
 
+#
+# Include the v8 third party library
+#
+include ($${DEPTH}/libs/third_party/v8/v8.pri)
+
 wickr_messenger {
     DEFINES += WICKR_MESSENGER=1
 }
@@ -106,7 +111,8 @@ HEADERS += \
     wickrIORxService.h \
     wickrIOWatchdogService.h \
     wickrIOServiceBase.h \
-    wickrIOProcessInbox.h
+    wickrIOProcessInbox.h \
+    wickrIOJScriptService.h
 
 SOURCES += \
     clientconfigurationinfo.cpp \
@@ -124,4 +130,5 @@ SOURCES += \
     wickrIORxService.cpp \
     wickrIOWatchdogService.cpp \
     wickrIOServiceBase.cpp \
-    wickrIOProcessInbox.cpp
+    wickrIOProcessInbox.cpp \
+    wickrIOJScriptService.cpp

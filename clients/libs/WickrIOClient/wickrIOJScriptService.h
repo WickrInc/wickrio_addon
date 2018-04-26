@@ -1,5 +1,5 @@
-#ifndef WICKRIOCALLBACKSERVICE_H
-#define WICKRIOCALLBACKSERVICE_H
+#ifndef WICKRIOJSCRIPTSERVICE_H
+#define WICKRIOJSCRIPTSERVICE_H
 
 #include <QObject>
 #include <QThread>
@@ -7,10 +7,15 @@
 
 #include "operationdata.h"
 #include "wickrIOAppSettings.h"
-#include "SmtpMime"
+#include "wickrIOServiceBase.h"
+
+#include "libplatform/libplatform.h"
+#include "v8.h"
+
+using namespace v8;
 
 // Forward declaration
-class WickrIOCallbackThread;
+class WickrIOJScriptThread;
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -20,11 +25,11 @@ class WickrIOCallbackThread;
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-// WickrIOCallback Thread State
-enum CBThreadState { CB_UNINITIALIZED = 0, // Unitialized
-                     CB_STARTED,           // Thread started state, enteres this state only on initial startup.
-                     CB_PROCESSING,        // Currently processing messages
-                     CB_FINISHED };        // Disconnected from switchboard
+// WickrIOJScript Thread State
+enum JSThreadState { JS_UNINITIALIZED = 0, // Unitialized
+                     JS_STARTED,           // Thread started state, enteres this state only on initial startup.
+                     JS_PROCESSING,        // Currently processing messages
+                     JS_FINISHED };        // Disconnected from switchboard
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -34,15 +39,20 @@ enum CBThreadState { CB_UNINITIALIZED = 0, // Unitialized
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-class WickrIOCallbackService : public QObject
+class WickrIOJScriptService : public WickrIOServiceBase
 {
     Q_OBJECT
 
 public:
-    explicit WickrIOCallbackService();
-    virtual ~WickrIOCallbackService();
+    explicit WickrIOJScriptService();
+    virtual ~WickrIOJScriptService();
 
     void messagesPending();
+    void startScript();
+
+    bool isHealthy();
+
+    static QString jsServiceBaseName;
 
 private:
     // General purpose thread lock used for common threaded related queries/updates(hence ReadWrite).
@@ -51,13 +61,14 @@ private:
 
     WickrServiceState       m_state;
     QThread                 m_thread;
-    WickrIOCallbackThread   *m_cbThread;
+    WickrIOJScriptThread   *m_cbThread;
 
     void startThreads();
     void stopThreads();
 
 signals:
     void signalMessagesPending();
+    void signalStartScript();
 
 public slots:
 };
@@ -71,48 +82,47 @@ public slots:
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- * @brief The WickrIOCallbackThread class
+ * @brief The WickrIOJScriptThread class
  */
-class WickrIOCallbackThread : public QObject
+class WickrIOJScriptThread : public QObject
 {
     Q_OBJECT
 
 public:
-    static QString cbStringState(CBThreadState state);
+    static QString jsStringState(JSThreadState state);
 
-    WickrIOCallbackThread(QThread *thread, WickrIOCallbackService *swbSvc);
-    virtual ~WickrIOCallbackThread();
+    WickrIOJScriptThread(QThread *thread, WickrIOJScriptService *swbSvc);
+    virtual ~WickrIOJScriptThread();
 
 private:
-    WickrIOCallbackService  *m_parent;
-    CBThreadState           m_state;
+    WickrIOJScriptService  *m_parent;
+    JSThreadState           m_state;
     OperationData           *m_operation = nullptr;
 
-    SmtpClient              *m_smtp = nullptr;
-    QNetworkReply           *reply = nullptr;
-    QNetworkAccessManager   *mgr = nullptr;
+    bool                    m_jsCallbackInitialized = false;
 
-    int                     m_postedMsgID;
-    QString                 m_url;
+    // v8 definitions
+    v8::Platform*               m_platform = nullptr;
+    v8::Isolate*                m_isolate = nullptr;
+    v8::Persistent<v8::Context> m_persistent_context;
 
-    void startEmailCallback(WickrIOEmailSettings *email);
-    bool sendMessages(WickrIOEmailSettings *email);
-    MimeFile *getAttachmentFile(const QString &filename);
+    v8::Persistent<v8::Script>  m_compiledScript;
+    v8::Local<v8::Value>        m_result;
 
-    void startUrlCallback(QString url);
-    bool sendMessage();
+    bool initJScriptCallback();
+    bool stopJScriptCallback();
+
+    bool jScriptStartScript();
+    bool jScriptSendMessage();
 
 private slots:
-    void msgSendCallbackResponse(QNetworkReply *thereply, QByteArray);
-    void msgSendCallbackError(QNetworkReply *thereply, QByteArray bytes);
-    void gotReply(QNetworkReply *thereply);
 
 signals:
-    void sendReply(QNetworkReply *reply, QByteArray replyBytes);
-    void sendError(QNetworkReply *reply, QByteArray replyBytes);
 
 public slots:
     void slotProcessMessages();
+    void slotStartScript();
+
 };
 
-#endif // WICKRIOCALLBACKSERVICE_H
+#endif // WICKRIOJSCRIPTSERVICE_H

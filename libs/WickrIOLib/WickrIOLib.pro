@@ -11,7 +11,7 @@ TEMPLATE = lib
 QT += multimediawidgets
 QT -= gui
 QT += sql
-QT += network
+QT += network websockets
 
 VERSION = 1.0.1
 
@@ -80,6 +80,8 @@ INCLUDEPATH += $$DEPTH/wickr-sdk/export/Wickr
 INCLUDEPATH += $$DEPTH/wickr-sdk/libs/WickrProto
 INCLUDEPATH += $$DEPTH/wickr-sdk/libs/qbson
 INCLUDEPATH += $$DEPTH/wickr-sdk/libs/libbson
+INCLUDEPATH += $$DEPTH/wickr-sdk/libs/cloud/qcloud
+INCLUDEPATH += $$DEPTH/shared/common
 
 INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
@@ -110,7 +112,9 @@ HEADERS += \
     perftest.h \
     wickrbotstatistics.h \
     clientactions.h \
-    loghandler.h
+    loghandler.h \
+    wickrIOErrorHandler.h \
+    wickrIOAPIInterface.h
 
 SOURCES += \
     wickrIOAppSettings.cpp \
@@ -131,4 +135,6 @@ SOURCES += \
     perftest.cpp \
     wickrbotstatistics.cpp \
     clientactions.cpp \
-    loghandler.cpp
+    loghandler.cpp \
+    wickrIOErrorHandler.cpp \
+    wickrIOAPIInterface.cpp
