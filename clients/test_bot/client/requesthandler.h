@@ -53,8 +53,6 @@ private:
     void processGetMessages(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response);
     void processDeleteMessages(stefanfrings::HttpResponse& response);
 
-    QJsonObject getRoomInfo(WickrCore::WickrConvo *convo);
-
     void processUpdateRoom(const QString &vGroupID, stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response);
     void processAddRoom(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response);
     void processDeleteRoom(const QString &clientID, stefanfrings::HttpResponse& response);
@@ -63,8 +61,9 @@ private:
     void processGetRooms(stefanfrings::HttpResponse& response);
 
     void processAddGroupConvo(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response);
-    void processDeleteGroupConvo(const QString &clientID, stefanfrings::HttpResponse& response);
-    void processGetGroupConvos(const QString &clientID, stefanfrings::HttpResponse& response);
+    void processDeleteGroupConvo(const QString &vGroupID, stefanfrings::HttpResponse& response);
+    void processGetGroupConvo(const QString &vGroupID, stefanfrings::HttpResponse& response);
+    void processGetGroupConvos(stefanfrings::HttpResponse& response);
 
     // TODO: This should move to a library!!!!
     bool deleteConvo(bool isSecureConvo, const QString& vgroupID);
@@ -72,7 +71,6 @@ private:
 
     void getStatistics(const QString& apiKey, stefanfrings::HttpResponse& response);
     void clearStatistics(const QString& apiKey, stefanfrings::HttpResponse& response);
-    int numMessages();
 
 signals:
     void signalMemberSearchDone();

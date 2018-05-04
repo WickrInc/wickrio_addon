@@ -16,6 +16,9 @@ using namespace v8;
 
 // Forward declaration
 class WickrIOJScriptThread;
+class QAmqpQueue;
+class QAmqpExchange;
+class QAmqpClient;
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -91,7 +94,7 @@ class WickrIOJScriptThread : public QObject
 public:
     static QString jsStringState(JSThreadState state);
 
-    WickrIOJScriptThread(QThread *thread, WickrIOJScriptService *swbSvc);
+    WickrIOJScriptThread(QThread *thread, WickrIOJScriptService *swbSvc, QObject *parent=0);
     virtual ~WickrIOJScriptThread();
 
 private:
@@ -115,7 +118,7 @@ private:
     bool jScriptStartScript();
     bool jScriptSendMessage();
 
-private slots:
+    QString processRequest(const QByteArray& request);
 
 signals:
 
@@ -123,6 +126,18 @@ public slots:
     void slotProcessMessages();
     void slotStartScript();
 
+    void slotListen();
+
+private slots:
+    void slotClientConnected();
+    void slotQueueDeclared();
+    void slotQosDefined();
+    void slotProcessRpcMessage();
+
+private:
+    QAmqpClient *m_client = nullptr;
+    QAmqpQueue *m_rpcQueue = nullptr;
+    QAmqpExchange *m_defaultExchange = nullptr;
 };
 
 #endif // WICKRIOJSCRIPTSERVICE_H

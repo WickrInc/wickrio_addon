@@ -4,6 +4,7 @@
 #include "wickrIOErrorHandler.h"
 #include "wickrbotjsondata.h"
 #include "wickrioapi.h"
+#include "wickriodatabase.h"
 
 #include "common/wickrRuntime.h"
 
@@ -138,6 +139,42 @@ WickrIOAPIInterface::updateAndValidateMembers(QString& responseString, const QSt
     return true;
 }
 
+/**
+ * @brief WickrIOAPIInterface::deleteConvo
+ * Will delete local convo (secure room or 1-to-1). If secure room, will kick off
+ * deleteSecureRoomStart service to delete remotes.
+ *
+ */
+bool
+WickrIOAPIInterface::deleteConvo(bool isSecureConvo, const QString& vgroupID)
+{
+    WickrCore::WickrConvo *convo = WickrCore::WickrConvo::getConvoWithvGroupID(vgroupID);
+    if (convo) {
+        if (isSecureConvo) {
+            if (convo->getIsRoomMaster()) {
+                WickrCore::WickrSecureRoomMgr *roomMgr = WickrCore::WickrRuntime::getRoomMgr();
+                if (roomMgr) {
+                    roomMgr->deleteSecureRoomStart(convo);
+                } else {
+                    return false;
+                }
+            } else {
+                m_operation->log_handler->error("DELETE SECURE ROOM: Failed\n You are not a room master of this secure room.");
+                return false;
+            }
+        } else {
+            WickrCore::WickrOneToOneMgr *one2oneMgr = WickrCore::WickrRuntime::getConvoMgr();
+            if (one2oneMgr) {
+                one2oneMgr->deleteOneToOneStart(vgroupID);
+            } else {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -199,6 +236,31 @@ WickrIOAPIInterface::sendMessage(const QByteArray& json, QString& responseString
     delete jsonHandler;
 
     m_operation->log_handler->log(retValue ? "Message parsed successfully" : responseString);
+    return retValue;
+}
+
+bool
+WickrIOAPIInterface::getReceivedMessages(QString& responseString)
+{
+    WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
+    if (db == NULL) {
+        responseString = "Internal Error: Failed to cast database!";
+        return false;
+    }
+
+    QList<int> msgIDs = db->getMessageIDs(m_operation->m_client->id);
+
+    // Make sure the start is less than the number of IDs retrieved
+    if (msgIDs.size() == 0) {
+        responseString = "{ \"}";
+    } else {
+        WickrIOMessage rxMsg;
+        if (db->getMessage(msgIDs.at(0), &rxMsg)) {
+            responseString = rxMsg.json;
+            db->deleteMessage(rxMsg.id);
+        }
+     }
+     return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -577,6 +639,152 @@ WickrIOAPIInterface::updateRoom(const QString &vGroupID, const QByteArray& json,
     return true;
 }
 
+bool
+WickrIOAPIInterface::deleteRoom(const QString &vGroupID, QString& responseString)
+{
+    WickrCore::WickrConvo *convo = WickrCore::WickrConvo::getConvoWithvGroupID(vGroupID);
+    if (convo) {
+        if (convo->getConvoType() != CONVO_SECURE_ROOM) {
+            responseString = "Must be secure room";
+        } else if (!convo->getIsRoomMaster()) {
+            responseString = "Must be room master";
+        } else {
+            if (WickrIOAPIInterface::deleteConvo(true, vGroupID)) {
+                return true;
+            } else {
+                responseString = "Failed to delete room";
+            }
+        }
+    }
+    return false;
+}
+
+bool
+WickrIOAPIInterface::leaveRoom(const QString &vGroupID, QString& responseString)
+{
+    WickrCore::WickrConvo *convo = WickrCore::WickrConvo::getConvoWithvGroupID(vGroupID);
+    if (convo) {
+        if (convo->getConvoType() == CONVO_SECURE_ROOM || convo->getConvoType() == CONVO_GROUP_CONVO) {
+            WickrCore::WickrSecureRoomMgr *roomMgr = WickrCore::WickrRuntime::getRoomMgr();
+            if (roomMgr) {
+                roomMgr->leaveSecureRoomStart(vGroupID);
+                return true;
+            } else {
+                // 500 error
+                responseString = "Internal error";
+            }
+        } else {
+            responseString = "Can only leave secure room or group convo";
+        }
+    } else {
+        responseString = "Cannot find convo for vgroupid";
+    }
+    return false;
+}
+
+QJsonObject
+WickrIOAPIInterface::getRoomInfo(WickrCore::WickrConvo *convo)
+{
+    QJsonObject roomValue;
+
+    // If a secure room then add to the list
+    if (WickrCore::WickrConvo::getConvoTypeFromVGroupID(convo->getVGroupID()) == CONVO_SECURE_ROOM &&
+        convo->isSecureRoomStateSynced()) {
+
+        roomValue.insert(APIJSON_ROOMTITLE, convo->getVGroupTag());
+        roomValue.insert(APIJSON_ROOMDESC, convo->getRoomPurpose());
+        roomValue.insert(APIJSON_VGROUPID, convo->getVGroupID());
+        roomValue.insert(APIJSON_ROOMTTL, QString::number(convo->getDestruct()));
+        roomValue.insert(APIJSON_ROOMBOR, QString::number(convo->getBOR()));
+
+        // Setup the users array
+        QStringList masterslist = convo->getRoomMastersUserName();
+        QJsonArray mastersArray;
+
+        for (QString master : masterslist) {
+            QJsonObject masterEntry;
+
+            masterEntry.insert(APIJSON_NAME, master);
+            mastersArray.append(masterEntry);
+        }
+        roomValue.insert(APIJSON_ROOMMASTERS, mastersArray);
+
+        // Setup the users array
+        QStringList userslist = convo->getUsernameStringArray();
+        QJsonArray usersArray;
+
+        for (QString user : userslist) {
+            QJsonObject userEntry;
+
+            userEntry.insert(APIJSON_NAME, user);
+            usersArray.append(userEntry);
+        }
+        roomValue.insert(APIJSON_ROOMMEMBERS, usersArray);
+    }
+    return roomValue;
+}
+
+bool
+WickrIOAPIInterface::getRoom(const QString &vGroupID, QString& responseString)
+{
+    WickrCore::WickrConvo *convo = WickrCore::WickrConvo::getConvoWithvGroupID(vGroupID);
+    if (convo != nullptr) {
+        QJsonObject roomValue = getRoomInfo(convo);
+        if (roomValue.isEmpty()) {
+            responseString = "Convo is not a secure room";
+        } else {
+            QJsonDocument saveDoc(roomValue);
+            QByteArray byteArray = saveDoc.toJson();
+
+            responseString = byteArray;
+            return true;
+        }
+    } else {
+        responseString = "Can not find convo";
+    }
+    return false;
+}
+
+bool
+WickrIOAPIInterface::getRooms(QString& responseString)
+{
+#if 0
+    QByteArray paramStart = request.getParameter(APIPARAM_START);
+    QByteArray paramCount = request.getParameter(APIPARAM_COUNT);
+
+    if (paramStart.length() == 0 || paramCount.length() == 0) {
+        sendFailure(400, "Missing parameters", response);
+        return;
+    }
+    int start = paramStart.toInt();
+    int count = paramCount.toInt();
+#endif
+    QJsonArray roomArrayValue;
+
+    WickrConvoList *curConvos = WickrCore::WickrConvo::getConvoList();
+
+    // TODO: Should there be a semaphore to control access to this?
+    if (curConvos != NULL) {
+        QList<QString> keys = curConvos->acquireKeyList();
+
+        // Process each of the convos
+        for (int cid=0; cid < keys.size(); cid++) {
+
+            WickrCore::WickrConvo *currentConvo = (WickrCore::WickrConvo *)curConvos->value( keys.at(cid) );
+            QJsonObject roomValue = getRoomInfo(currentConvo);
+            if (!roomValue.isEmpty())
+                roomArrayValue.append(roomValue);
+        }
+    }
+
+    QJsonObject jsonObject;
+    jsonObject.insert(APIJSON_ROOMS, roomArrayValue);
+    QJsonDocument saveDoc(jsonObject);
+    QByteArray byteArray = saveDoc.toJson();
+    responseString = byteArray;
+    return true;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -734,4 +942,243 @@ WickrIOAPIInterface::addGroupConvo(const QByteArray& json, QString& responseStri
     return true;
 }
 
+bool
+WickrIOAPIInterface::deleteGroupConvo(const QString &vGroupID, QString& responseString)
+{
+    WickrCore::WickrConvo *convo = WickrCore::WickrConvo::getConvoWithvGroupID(vGroupID);
+    if (convo) {
+        if (convo->getConvoType() != CONVO_GROUP_CONVO) {
+            responseString = "Must be group conversation";
+        } else if (WickrIOAPIInterface::deleteConvo(false, vGroupID)) {
+            return true;
+        } else {
+            responseString = "Failed to delete Group Convo";
+        }
+    }
+    return false;
+}
 
+QJsonObject
+WickrIOAPIInterface::getGroupConvoInfo(WickrCore::WickrConvo *convo)
+{
+    QJsonObject grpConvoValue;
+
+    // If a secure room then add to the list
+    if (WickrCore::WickrConvo::getConvoTypeFromVGroupID(convo->getVGroupID()) == CONVO_GROUP_CONVO) {
+        grpConvoValue.insert(APIJSON_VGROUPID, convo->getVGroupID());
+        grpConvoValue.insert(APIJSON_ROOMTTL, QString::number(convo->getDestruct()));
+        grpConvoValue.insert(APIJSON_ROOMBOR, QString::number(convo->getBOR()));
+
+        // Setup the users array
+        QStringList userslist = convo->getUsernameStringArray();
+        QJsonArray usersArray;
+
+        for (QString user : userslist) {
+            QJsonObject userEntry;
+
+            userEntry.insert(APIJSON_NAME, user);
+            usersArray.append(userEntry);
+        }
+        grpConvoValue.insert(APIJSON_ROOMMEMBERS, usersArray);
+    }
+    return grpConvoValue;
+}
+
+bool
+WickrIOAPIInterface::getGroupConvo(const QString &vGroupID, QString& responseString)
+{
+    WickrCore::WickrConvo *convo = WickrCore::WickrConvo::getConvoWithvGroupID(vGroupID);
+    if (convo != nullptr) {
+        QJsonObject roomValue = getGroupConvoInfo(convo);
+        if (roomValue.isEmpty()) {
+            responseString = "Convo is not a secure room";
+        } else {
+            QJsonDocument saveDoc(roomValue);
+            QByteArray byteArray = saveDoc.toJson();
+
+            responseString = byteArray;
+            return true;
+        }
+    } else {
+        responseString = "Can not find convo";
+    }
+    return false;
+}
+
+bool
+WickrIOAPIInterface::getGroupConvos(QString& responseString)
+{
+#if 0
+    QByteArray paramStart = request.getParameter(APIPARAM_START);
+    QByteArray paramCount = request.getParameter(APIPARAM_COUNT);
+
+    if (paramStart.length() == 0 || paramCount.length() == 0) {
+        sendFailure(400, "Missing parameters", response);
+        return;
+    }
+    int start = paramStart.toInt();
+    int count = paramCount.toInt();
+#endif
+    QJsonArray grpConvoArrayValue;
+
+    WickrConvoList *curConvos = WickrCore::WickrConvo::getConvoList();
+
+    // TODO: Should there be a semaphore to control access to this?
+    if (curConvos != NULL) {
+        QList<QString> keys = curConvos->acquireKeyList();
+
+        // Process each of the convos
+        for (int cid=0; cid < keys.size(); cid++) {
+
+            WickrCore::WickrConvo *currentConvo = (WickrCore::WickrConvo *)curConvos->value( keys.at(cid) );
+            QJsonObject groupConvoValue = getGroupConvoInfo(currentConvo);
+            if (!groupConvoValue.isEmpty())
+                grpConvoArrayValue.append(groupConvoValue);
+        }
+    }
+
+    QJsonObject jsonObject;
+    jsonObject.insert(APIJSON_GROUPCONVOS, grpConvoArrayValue);
+    QJsonDocument saveDoc(jsonObject);
+    QByteArray byteArray = saveDoc.toJson();
+
+    responseString = byteArray;
+    return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+
+int
+WickrIOAPIInterface::numMessages()
+{
+    int numMsgs = 0;
+
+    WickrConvoList *curConvos = WickrCore::WickrConvo::getConvoList();
+
+    // TODO: Should there be a semaphore to control access to this?
+    if (curConvos != NULL) {
+        QList<QString> keys = curConvos->acquireKeyList();
+
+        // Process each of the convos
+        for (int cid=0; cid < keys.size(); cid++) {
+            WickrCore::WickrConvo *currentConvo = (WickrCore::WickrConvo *)curConvos->value( keys.at(cid) );
+            WickrMessageList *themessages = currentConvo->getMessages();
+
+            QList<QString> keys = themessages->acquireKeyList();
+
+            for( int i=0; i<keys.size(); i++) {
+                WickrCore::WickrMessage *msg = (WickrCore::WickrMessage *)themessages->value(keys.at(i));
+
+                if( !msg )
+                    continue;
+
+                // Only handle inbox messages
+                if( !msg->isInbox() )
+                    continue;
+
+#if 0
+                // Unlock the message
+                WickrStatus msgstatus = msg->unlock();
+                if( msgstatus.isError() ) {
+                    continue;
+                }
+#endif
+
+                WickrCore::WickrInbox *inbox = (WickrCore::WickrInbox *)msg;
+
+                if (inbox->getInboxState() == WICKR_INBOX_OPENED) {
+                    WickrMsgClass mclass = msg->getMsgClass();
+                    if( mclass == MsgClass_Text ) {
+                        numMsgs++;
+                    }
+                }
+            }
+        }
+    }
+    return numMsgs;
+}
+
+bool
+WickrIOAPIInterface::getStatistics(const QString& apiKey, QString& responseString)
+{
+    QJsonObject msgValues;
+    QJsonObject statValues;
+
+    WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
+    if (db != NULL) {
+        statValues.insert(APIJSON_STATID_MSGCNT, numMessages());
+        WickrBotClients *client;
+        if (apiKey.isEmpty()) {
+            client = m_operation->m_client;
+        } else {
+            client = db->getClientUsingApiKey(apiKey);
+        }
+        if (client != NULL) {
+            statValues.insert(APIJSON_STATID_PENDING, db->getClientsActionCount(client->id));
+            statValues.insert(APIJSON_STATID_PNDCBOUT, db->getClientsOutMessagesCount(client->id));
+
+            QList<WickrBotStatistics *> stats;
+            stats = db->getClientStatistics(client->id);
+            if (stats.length() > 0) {
+                for (WickrBotStatistics *stat : stats) {
+                    switch (stat->statID) {
+                    case DB_STATID_MSGS_TX:
+                        statValues.insert(APIJSON_STATID_MSGSTX, stat->statValue);
+                        break;
+                    case DB_STATID_MSGS_RX:
+                        statValues.insert(APIJSON_STATID_MSGSRX, stat->statValue);
+                        break;
+                    case DB_STATID_ERRORS_TX:
+                        statValues.insert(APIJSON_STATID_ERRSTX, stat->statValue);
+                        break;
+                    case DB_STATID_ERRORS_RX:
+                        statValues.insert(APIJSON_STATID_ERRSRX, stat->statValue);
+                        break;
+                    case DB_STATID_MSGS_OBOXSYNC:
+                        statValues.insert(APIJSON_STATID_OBOXSYNC, stat->statValue);
+                        break;
+                    }
+                }
+            }
+            msgValues.insert(APIJSON_STATISTICS, statValues);
+        }
+    }
+
+    QJsonDocument saveDoc(msgValues);
+    QByteArray byteArray = saveDoc.toJson();
+
+    responseString = byteArray;
+    return true;
+}
+
+
+bool
+WickrIOAPIInterface::clearStatistics(const QString& apiKey, QString& responseString)
+{
+    WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
+    if (db != NULL) {
+        WickrBotClients *client;
+        if (apiKey.isEmpty()) {
+            client = m_operation->m_client;
+        } else {
+            client = db->getClientUsingApiKey(apiKey);
+        }
+
+        if (client != NULL) {
+            db->deleteClientStatistics(client->id);
+            return true;
+        } else {
+            responseString = "Failed to find client with input API Key";
+        }
+    } else {
+        responseString = "Problem handling with database";
+    }
+    return false;
+}
