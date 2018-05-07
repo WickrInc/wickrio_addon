@@ -34,11 +34,19 @@ mkdir -p $plugins
 sed -e "s/PACKAGE/${target}-${baseversion}/; s/VERSION/$version/" <./${target}.control64 >$debian/control
 
 
+//
+// cp -a $QTDIR/lib/*.so $QTDIR/lib/*.so.* $libdir/
 
 cp -a $QTDIR/lib/libQt5Core.* $libdir/
+cp -a $QTDIR/lib/libQt5DBus.* $libdir/
 cp -a $QTDIR/lib/libQt5Gui.* $libdir/
+cp -a $QTDIR/lib/libQt5NetworkAuth.* $libdir/
 cp -a $QTDIR/lib/libQt5Network.* $libdir/
 cp -a $QTDIR/lib/libQt5Sql.* $libdir/
+cp -a $QTDIR/lib/libQt5WebChannel.* $libdir/
+cp -a $QTDIR/lib/libQt5WebEngineCore.* $libdir/
+cp -a $QTDIR/lib/libQt5WebEngine.* $libdir/
+cp -a $QTDIR/lib/libQt5WebEngineWidgets.* $libdir/
 cp -a $QTDIR/lib/libQt5WebSockets.* $libdir/
 cp -a $QTDIR/lib/libQt5Widgets.* $libdir/
 
