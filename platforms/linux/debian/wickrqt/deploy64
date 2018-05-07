@@ -34,8 +34,8 @@ mkdir -p $plugins
 sed -e "s/PACKAGE/${target}-${baseversion}/; s/VERSION/$version/" <./${target}.control64 >$debian/control
 
 
-//
-// cp -a $QTDIR/lib/*.so $QTDIR/lib/*.so.* $libdir/
+#
+# cp -a $QTDIR/lib/*.so $QTDIR/lib/*.so.* $libdir/
 
 cp -a $QTDIR/lib/libQt5Core.* $libdir/
 cp -a $QTDIR/lib/libQt5DBus.* $libdir/
