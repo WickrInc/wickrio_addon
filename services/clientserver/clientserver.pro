@@ -107,6 +107,7 @@ QT += core sql
 QT += network
 QT -= gui
 QT += multimediawidgets
+QT += websockets
 
 CONFIG += depend_includepath
 

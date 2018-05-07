@@ -82,6 +82,7 @@ include($${DEPTH}/libs/WickrIOLib/WickrIOLib.pri)
 INCLUDEPATH += ../client
 QT  += core sql
 QT  += network
+QT  += websockets
 QT  -= gui
 
 CONFIG   += console
