@@ -120,7 +120,6 @@ include($${DEPTH}/libs/QtWebApp/QtWebApp.pri)
 #
 include($${DEPTH}/libs/SMTPEmail/SMTPEmail.pri)
 
-
 TEMPLATE = app
 
 CONFIG(release,release|debug) {

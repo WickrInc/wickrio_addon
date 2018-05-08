@@ -25,3 +25,6 @@ isEmpty(LIBDIR) {
     LIBDIR = lib
 }
 
+INCLUDEPATH += $${QAMQP_INCLUDEPATH}
+
+LIBS += -L$$OUT_PWD/$$DEPTH/libs/qamqpsrc $${QAMQP_LIBS}

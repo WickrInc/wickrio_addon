@@ -15,6 +15,9 @@
 // Forward declaration
 class WickrIOServiceBase;
 
+// Define optional services to start
+#define WIO_RUNTIME_JAVASCRIPT_SVC  0x01
+
 /**
  * @brief The WickrIOClientRuntime class
  *
@@ -32,8 +35,8 @@ public:
     static void shutdown();
 
     // Dynamic service functions
-    bool addService(WickrIOServiceBase *newSvc);
-    WickrIOServiceBase *findService(const QString& svcName);
+    static bool addService(WickrIOServiceBase *newSvc);
+    static WickrIOServiceBase *findService(const QString& svcName);
 
     /**
      * Message Callback Service API
@@ -66,6 +69,7 @@ public:
     static WickrIOProvisionHdlr* provHdlr();
     static void provHdlrBeginOnPrem(const QString username, const QString password, const QString regToken);
     static void provHdlrBeginCloud(const QString &email, const QString password, const QString &inviteCode);
+
 
     /*
      * cleanup of sending files, remove encrypted files

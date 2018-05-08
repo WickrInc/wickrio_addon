@@ -13,8 +13,6 @@ DEPTH = ../../..
 #
 include($${DEPTH}/libs/qamqpsrc/qamqpsrc.pri)
 
-INCLUDEPATH += $${QAMQP_INCLUDEPATH}
-LIBS += -L$${DEPTH}/libs/qamqpsrc $${QAMQP_LIBS}
 
 linux-g++* {
     CONFIG(release,release|debug) {

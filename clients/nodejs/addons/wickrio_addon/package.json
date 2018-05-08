@@ -1,0 +1,11 @@
+{
+      "name": "wickrio_addon",
+      "version": "0.0.0",
+      "description": "WickrIO c++ addon",
+      "gypfile": true,
+      "main": "./build/Release/my_addon",
+      "license": "MIT",
+      "dependencies": {
+        "nan": "^2.3.3"
+      }
+}

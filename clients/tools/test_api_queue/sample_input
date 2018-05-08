@@ -1,0 +1,3 @@
+{ "action" : "send_message", "message" : "Welcome to Wickr! This message will self destruct eventually.", "users" : [ { "name" : "nymets@wickrautomation.com" } ] }
+{ "action" : "get_statistics" }
+

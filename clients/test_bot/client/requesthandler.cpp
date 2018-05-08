@@ -17,7 +17,8 @@ bool RequestHandler::perftestsetup = false;
 
 RequestHandler::RequestHandler(OperationData *operation, QObject* parent) :
     WickrIOHttpRequestHdlr(parent),
-    m_operation(operation)
+    m_operation(operation),
+    m_apiInterface(operation, parent)
 {
     if (!perftestsetup) {
         for (int i=0; i<10; i++) {
@@ -177,7 +178,11 @@ void RequestHandler::service(stefanfrings::HttpRequest& request, stefanfrings::H
         if (methodString.toLower() == "post") {
             processAddGroupConvo(request, response);
         } else if (methodString.toLower() == "get") {
-            processGetGroupConvos(clientID, response);
+            if (clientID.isEmpty()) {
+                processGetGroupConvos(response);
+            } else {
+                processGetGroupConvo(clientID, response);
+            }
         } else if (methodString.toLower() == "delete") {
             processDeleteGroupConvo(clientID, response);
         } else {
@@ -204,6 +209,14 @@ void RequestHandler::service(stefanfrings::HttpRequest& request, stefanfrings::H
 }
 
 
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+
 /**
  * @brief RequestHandler::processSendMessage
  * This function will send the message associated with the input http request
@@ -214,62 +227,13 @@ void
 RequestHandler::processSendMessage(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response)
 {
     QByteArray body=request.getBody();
-    WickrBotJsonData *jsonHandler = new WickrBotJsonData(m_operation);
+    QString retString;
 
-    if (! jsonHandler->parseJson4SendMessage(body)) {
-        QString errStr;
-        if (!jsonHandler->getLastError().isEmpty())
-            errStr = jsonHandler->getLastError();
-        else
-            errStr = "Failed parsing message JSON";
-        sendFailure(400, errStr.toLatin1(), response);
-        m_operation->log_handler->log("Message JSON parsing failed!");
+    if (!m_apiInterface.sendMessage(body, retString)) {
+        sendFailure(400, retString.toLatin1(), response);
     } else {
-        // Check if there is a status user and if it is a valid user
-        if (!jsonHandler->m_statususer.isEmpty()) {
-            QStringList statusUList;
-            statusUList.append(jsonHandler->m_statususer);
-            if (!updateAndValidateMembers(response, statusUList)) {
-                delete jsonHandler;
-                return;
-            }
-        }
-
-        QStringList userNames = jsonHandler->getUserNames();
-        QString vGroupID = jsonHandler->getVGroupID();
-
-        // If there is a message and the length is too long return error
-        if (!jsonHandler->m_message.isEmpty() &&
-                (jsonHandler->m_message.length() > WickrCore::WickrRuntime::getEnvironmentMgr()->maxMessageSize())) {
-            sendFailure(400, "Message length too long", response);
-            m_operation->log_handler->log("Message length too long");
-        }
-        else if (userNames.isEmpty() && vGroupID.isEmpty()) {
-            sendFailure(400, "No users identified", response);
-            m_operation->log_handler->log("No users identified!");
-        } else if (!userNames.isEmpty()){
-            // Update and validate the input list of usernames.  If false is returned then
-            // there was an error processing the list, or the user was invalid!
-            if (updateAndValidateMembers(response, userNames)) {
-                if (jsonHandler->postEntry4SendMessage()) {
-                    m_operation->log_handler->log("Message parsed successfully");
-                    sendSuccess(response);
-                } else {
-                    sendFailure(400, "Failed sending message", response);
-                    m_operation->log_handler->log("Message parsing failed!");
-                }
-            }
-        } else {
-            if (jsonHandler->postEntry4SendMessage()) {
-                m_operation->log_handler->log("Message parsed successfully");
-                sendSuccess(response);
-            } else {
-                sendFailure(400, "Failed sending message", response);
-                m_operation->log_handler->log("Message parsing failed!");
-            }
-        }
+        sendSuccess(response);
     }
-    delete jsonHandler;
 }
 
 /**
@@ -478,529 +442,37 @@ RequestHandler::processDeleteMessages(stefanfrings::HttpResponse& response)
     sendSuccess(response);
 }
 
-/**
- * @brief RequestHandler::getJsonArrayValue
- * This function will return a list of strings for the specified entry within
- * the named json array.
- * TODO: Move this to a JSON class
- * @param jsonObject the JSON object to parse from
- * @param jsonName the name of the values to pull
- * @param jsonTag the name of the array to use
- * @return
- */
-QStringList
-RequestHandler::getJsonArrayValue(QJsonObject jsonObject, QString jsonName, QString jsonArray)
-{
-    QStringList retList;
-    QJsonArray entryArray;
-    QJsonValue value;
-
-    // Parse the contacts
-    if (jsonObject.contains(jsonArray)) {
-        value = jsonObject[jsonArray];
-        entryArray = value.toArray();
-
-        for (int i=0; i< entryArray.size(); i++) {
-            QJsonValue arrayValue;
-
-            arrayValue = entryArray[i];
-
-            if (arrayValue.isObject()) {
-                // Get the title for this contact entry
-                QJsonObject arrayObject = arrayValue.toObject();
-
-                if (arrayObject.contains(jsonName)) {
-                    QJsonValue idobj = arrayObject[jsonName];
-                    QString id = idobj.toString();
-                    retList.append(id);
-                }
-            }
-        }
-    }
-    return retList;
-}
-
-bool
-RequestHandler::updateAndValidateMembers(stefanfrings::HttpResponse& response, const QStringList& memberslist, QStringList *memberHashes)
-{
-    QStringList memberSearchList;
-    foreach (QString member, memberslist) {
-        WickrCore::WickrUser *user = WickrCore::WickrUser::getUserWithAlias(member);
-        if (user == NULL) {
-            memberSearchList.append(member);
-        } else {
-            int networkflag = user->getUserNetworkFlag();
-            qDebug() << "Networkflag for " << member << " is " << networkflag;
-
-            QString idHash = user->getServerIDHash();
-            if (idHash.isEmpty()) {
-                sendFailure(500, "Problem handling user record!", response);
-                return false;
-            }
-            if (memberHashes != nullptr)
-                memberHashes->append(idHash);
-        }
-    }
-
-    // TODO: Need to check if is a master in the room
-    if (memberSearchList.size() > 0) {
-
-        // Post a request to th server for each member to search for
-        foreach (QString searchMember, memberSearchList) {
-            WickrUserValidateSearch *c = new WickrUserValidateSearch(WICKR_USERNAME_ALIAS,searchMember,0);
-            QObject::connect(c, &WickrUserValidateSearch::signalRequestCompleted, [=](WickrUserValidateSearch *context) {
-                emit signalMemberSearchDone();
-                context->deleteLater();
-            });
-            WickrCore::WickrRuntime::taskSvcMakeRequest(c);
-
-            QTimer timer;
-            QEventLoop loop;
-
-            loop.connect(this, SIGNAL(signalMemberSearchDone()), SLOT(quit()));
-            connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
-
-            int loopCount = 10;
-
-            while (loopCount-- > 0) {
-                timer.start(1000);
-                loop.exec();
-
-                if (timer.isActive()) {
-                    timer.stop();
-                    break;
-                } else {
-                    qDebug() << "CONSOLE:Timed out waiting for User Validate Search response!";
-                    sendFailure(400, "Failure waiting for user verification", response);
-                    return false;
-                }
-            }
-        }
-
-        // Now make sure that user records have been created for the searched members
-        foreach (QString searchMember, memberSearchList) {
-            WickrCore::WickrUser *user = WickrCore::WickrUser::getUserWithAlias(searchMember);
-            if (user == NULL) {
-                QString errMsg = "Cannot find user record for " + searchMember;
-                sendFailure(400, errMsg.toLatin1(), response);
-                return false;
-            }
-
-            int networkflag = user->getUserNetworkFlag();
-            qDebug() << "Networkflag for " << searchMember << " is " << networkflag;
-
-            if (memberHashes != nullptr) {
-                QString idHash = user->getServerIDHash();
-                if (idHash.isEmpty()) {
-                    QString errMsg = "Problem handling user record for " + searchMember;
-                    sendFailure(500, errMsg.toLatin1(), response);
-                    return false;
-                }
-                memberHashes->append(idHash);
-            }
-        }
-    }
-    return true;
-}
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
 
 void
 RequestHandler::processAddRoom(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response)
 {
     QByteArray jsonString = request.getBody();
+    QString responseString;
 
-    // Get the room details from the incoming message
-    QJsonParseError jsonError;
-    QJsonDocument jsonResponse = QJsonDocument().fromJson(jsonString, &jsonError);
-
-    if (jsonError.error != QJsonParseError::NoError) {
-        sendFailure(400, "Failed", response);
-        return;
-    }
-
-    QJsonObject jsonObject = jsonResponse.object();
-    QJsonValue value;
-
-    QJsonObject roomObject;
-
-    // Start the operation
-    if (jsonObject.contains(APIJSON_ROOM)) {
-        value = jsonObject[APIJSON_ROOM];
-        roomObject = value.toObject();
+    if (m_apiInterface.addRoom(jsonString, responseString)) {
+        sendSuccess(responseString.toLatin1(), response);
     } else {
-        sendFailure(400, "malformed JSON", response);
-        return;
+        sendFailure(400, responseString.toLatin1(), response);
     }
-
-    // Check that required objects exist
-    if (!roomObject.contains(APIJSON_ROOMMEMBERS) || !roomObject.contains(APIJSON_ROOMMASTERS) ||
-        !roomObject.contains(APIJSON_ROOMTITLE))
-    {
-        sendFailure(400, "Missing required data", response);
-        return;
-    }
-
-    QStringList memberslist;
-    QStringList memberHashes;
-    QStringList masterslist;
-    QString title;
-    QString description;
-    int ttl = 0;
-    int bor = 0;
-
-    // Get the TTL / Destruct time
-    if (roomObject.contains(APIJSON_ROOMTTL)) {
-        value = roomObject[APIJSON_ROOMTTL];
-        ttl = value.toInt(0);
-    }
-
-    // Get the BOR / Burn on read
-    if (roomObject.contains(APIJSON_ROOMBOR)) {
-        value = roomObject[APIJSON_ROOMBOR];
-        bor = value.toInt(0);
-    }
-
-    // Get the description
-    if (roomObject.contains(APIJSON_ROOMDESC)) {
-        value = roomObject[APIJSON_ROOMDESC];
-        description = value.toString();
-    }
-
-    // Get the title
-    value = roomObject[APIJSON_ROOMTITLE];
-    title = value.toString();
-    if (title.isEmpty()) {
-        sendFailure(400, "Invalid title", response);
-        return;
-    }
-
-    // Get the members
-    memberslist = getJsonArrayValue(roomObject, APIJSON_NAME, APIJSON_ROOMMEMBERS);
-    QString members = memberslist.join(",");
-    if (members.isEmpty()) {
-        sendFailure(400, "Invalid members list", response);
-        return;
-    }
-
-    // Update and validate the input list of members.  If false is returned then
-    // there was an error processing the list, or the member was invalid!
-    if (!updateAndValidateMembers(response, memberslist, &memberHashes)) {
-        return;
-    }
-
-    // Get the list of masters
-    masterslist = getJsonArrayValue(roomObject, APIJSON_NAME, APIJSON_ROOMMASTERS);
-    if (masterslist.size() == 0) {
-        sendFailure(400, "Invalid masters list", response);
-        return;
-    }
-
-    QStringList masterHashes;
-    foreach (QString master, masterslist) {
-        WickrCore::WickrUser *user = WickrCore::WickrUser::getUserWithAlias(master);
-        if (user == NULL) {
-            sendFailure(400, "Cannot find user record for master", response);
-            return;
-        }
-        QString idHash = user->getServerIDHash();
-        if (idHash.isEmpty()) {
-            sendFailure(500, "Problem handling user record for master", response);
-            return;
-        }
-        masterHashes.append(idHash);
-    }
-
-    // Create the room
-
-    // Create convo (create if not found, no group name, secure room)
-    QString mastersString = masterHashes.join(',');
-    QString membersString = memberHashes.join(',');
-
-    WickrCore::WickrSecureRoomMgr *roomMgr = WickrCore::WickrRuntime::getRoomMgr();
-    if (!roomMgr) {
-        sendFailure(400, "Failed to create room", response);
-        return;
-    }
-
-    QString vgroupID = roomMgr->createSecureRoomConvoStart(membersString,
-                                                           mastersString,
-                                                           ttl,
-                                                           title,
-                                                           description,
-                                                           bor,
-                                                           true);
-    if (vgroupID.isEmpty()) {
-        sendFailure(400, "Failed to create room", response);
-        return;
-    }
-
-    // no will wait for the room to be created or timeout due to an error
-
-    QTimer timer;
-    QEventLoop loop;
-
-    loop.connect(roomMgr, SIGNAL(roomCreatedServerSuccess()), SLOT(quit()));
-//        loop.connect(roomMgr, SIGNAL(signalError()), SLOT(quit()));
-    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
-
-    int loopCount = 10;
-
-    while (loopCount-- > 0) {
-        timer.start(1000);
-        loop.exec();
-
-        if (timer.isActive()) {
-            timer.stop();
-            break;
-        } else {
-            qDebug() << "CONSOLE:Timed out waiting for create secure room response!";
-            sendFailure(400, "Failed to create room", response);
-            return;
-        }
-    }
-
-    // Return the vGroupID
-    QString body = QString("{ \"vgroupid\" : \"%1\" }").arg(vgroupID);
-    sendSuccess(body.toLatin1(), response);
 }
 
 void
 RequestHandler::processUpdateRoom(const QString &vGroupID, stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response)
 {
     QByteArray jsonString = request.getBody();
+    QString responseString;
 
-    // Get the room details from the incoming message
-    QJsonParseError jsonError;
-    QJsonDocument jsonResponse = QJsonDocument().fromJson(jsonString, &jsonError);
-
-    if (jsonError.error != QJsonParseError::NoError) {
-        sendFailure(400, "Failed", response);
-        return;
-    }
-
-    // Get the convo associated with the room to be changed
-    WickrCore::WickrConvo* convo = WickrCore::WickrConvo::getConvoWithvGroupID( vGroupID );
-    if (!convo) {
-        sendFailure(400, "Convo does not exist", response);
-        return;
-    }
-
-    QJsonObject jsonObject = jsonResponse.object();
-    QJsonValue value;
-
-    bool has_memberslist;
-    QStringList memberslist;
-    QStringList memberHashes;
-    QStringList addMembersList;
-    QStringList addMembersHashes;
-    QStringList delMembersList;
-    QStringList delMembersHashes;
-    bool has_masterslist;
-    QStringList masterslist;
-    QStringList masterHashes;
-    bool has_title;
-    QString title;
-    bool has_description;
-    QString description;
-    bool has_ttl;
-    long ttl = 0;
-    bool has_bor;
-    long bor = 0;
-
-    // Get the TTL / Destruct time
-    has_ttl = jsonObject.contains(APIJSON_ROOMTTL);
-    if (has_ttl) {
-        value = jsonObject[APIJSON_ROOMTTL];
-        ttl = value.toInt(0);
+    if (m_apiInterface.updateRoom(vGroupID, jsonString, responseString)) {
+        sendSuccess(response);
     } else {
-        ttl = convo->getDestruct();
-    }
-
-    // Get the BOR / Burn on read
-    has_bor = jsonObject.contains(APIJSON_ROOMBOR);
-    if (has_bor) {
-        value = jsonObject[APIJSON_ROOMBOR];
-        bor = value.toInt(0);
-    } else {
-        bor = convo->getBOR();
-    }
-
-    // Get the description
-    has_description = jsonObject.contains(APIJSON_ROOMDESC);
-    if (has_description) {
-        value = jsonObject[APIJSON_ROOMDESC];
-        description = value.toString();
-    } else {
-        description = convo->getRoomPurpose();
-    }
-
-    // Get the title
-    has_title = jsonObject.contains(APIJSON_ROOMTITLE);
-    if (has_title) {
-        value = jsonObject[APIJSON_ROOMTITLE];
-        title = value.toString();
-        if (title.isEmpty()) {
-            sendFailure(400, "Invalid title", response);
-            return;
-        }
-    } else {
-        title = convo->getVGroupTag();
-    }
-
-    // Get the members
-    has_memberslist = jsonObject.contains(APIJSON_ROOMMEMBERS);
-    if (has_memberslist) {
-        memberslist = getJsonArrayValue(jsonObject, APIJSON_NAME, APIJSON_ROOMMEMBERS);
-        QString members = memberslist.join(",");
-        if (members.isEmpty()) {
-            sendFailure(400, "Invalid members list", response);
-            return;
-        }
-
-        // Update and validate the input list of members.  If false is returned then
-        // there was an error processing the list, or the member was invalid!
-        if (!updateAndValidateMembers(response, memberslist, &memberHashes)) {
-            return;
-        }
-
-        QStringList allUserNames;
-        QList<WickrCore::WickrUser *>users = convo->getAllUsers();
-        for (WickrCore::WickrUser *user : users) {
-            allUserNames.append(user->getUserID());
-        }
-        addMembersList = memberslist;
-        for (QString userName : allUserNames)
-            addMembersList.removeOne(userName);
-        delMembersList = allUserNames;
-        for (QString userName : memberslist)
-            delMembersList.removeOne(userName);
-
-        // Update and validate the input list of members.  If false is returned then
-        // there was an error processing the list, or the member was invalid!
-        if (!updateAndValidateMembers(response, addMembersList, &addMembersHashes)) {
-            return;
-        }
-        // Update and validate the input list of members.  If false is returned then
-        // there was an error processing the list, or the member was invalid!
-        if (!updateAndValidateMembers(response, delMembersList, &delMembersHashes)) {
-            return;
-        }
-    }
-
-    // Get the list of masters
-    has_masterslist = jsonObject.contains(APIJSON_ROOMMASTERS);
-    if (has_masterslist) {
-        masterslist = getJsonArrayValue(jsonObject, APIJSON_NAME, APIJSON_ROOMMASTERS);
-        if (masterslist.size() == 0) {
-            sendFailure(400, "Invalid masters list", response);
-            return;
-        }
-
-        foreach (QString master, masterslist) {
-            WickrCore::WickrUser *user = WickrCore::WickrUser::getUserWithAlias(master);
-            if (user == NULL) {
-                sendFailure(400, "Cannot find user record for master", response);
-                return;
-            }
-            QString idHash = user->getServerIDHash();
-            if (idHash.isEmpty()) {
-                sendFailure(500, "Problem handling user record for master", response);
-                return;
-            }
-            masterHashes.append(idHash);
-        }
-    }
-
-    WickrCore::WickrSecureRoomMgr *roomMgr = WickrCore::WickrRuntime::getRoomMgr();
-    if (!roomMgr) {
-        sendFailure(400, "Failed to create room", response);
-        return;
-    }
-
-    // Update the room
-
-    // Create convo (create if not found, no group name, secure room)
-    QString mastersString = masterHashes.join(',');
-    QString membersString = memberHashes.join(',');
-
-    QString addUsersHash = addMembersHashes.join(',');
-    QString delUsersHash = delMembersHashes.join(',');
-
-    int roomFunction = 0;
-
-    if (has_memberslist || has_masterslist)
-        roomFunction |= WickrCore::WickrSecureRoomMgr::EDIT_MEMBERS;
-    if (has_bor || has_ttl || has_title || has_description)
-        roomFunction |= WickrCore::WickrSecureRoomMgr::EDIT_CONFIG;
-
-    if (! roomMgr->editSecureRoomStart(roomFunction,
-                                       vGroupID,
-                                       addUsersHash,
-                                       delUsersHash,
-                                       ttl,
-                                       title,
-                                       description,
-                                       masterHashes,
-                                       bor,
-                                       false)) {
-        sendFailure(400, "Failed to modify room", response);
-        return;
-    }
-
-    // no will wait for the room to be created or timeout due to an error
-
-    QTimer timer;
-    QEventLoop loop;
-
-    loop.connect(roomMgr, SIGNAL(roomCreatedServerSuccess()), SLOT(quit()));
-//        loop.connect(roomMgr, SIGNAL(signalError()), SLOT(quit()));
-    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
-
-    int loopCount = 10;
-
-    while (loopCount-- > 0) {
-        timer.start(1000);
-        loop.exec();
-
-        if (timer.isActive()) {
-            timer.stop();
-            break;
-        } else {
-            qDebug() << "CONSOLE:Timed out waiting for create secure room response!";
-            sendFailure(400, "Failed to create room", response);
-            return;
-        }
-    }
-
-    sendSuccess(response);
-}
-
-void
-RequestHandler::onCreateSecureRoom(const QString& vGroupID, const QStringList& mastersHashList, int destructionTime, const QString& roomTitle, const QString& roomDescription)
-{
-    qDebug() << "RequestHandler::onCreateSecureRoom called!!";
-    WickrCore::WickrConvo* convo = WickrCore::WickrConvo::getConvoWithvGroupID( vGroupID );
-    if ( convo ) {
-        qDebug() << "CONTROL CREATE SECURE ROOM:"
-                 << "\nROOM NAME      : " << roomTitle
-                 << "\nROOM PURPOSE   : " << roomDescription
-                 << "\nROOM MASTERS   : " << mastersHashList
-                 << "\nROOM TTL       : " << destructionTime
-                 << "\nROOM VGROUP-ID : " << vGroupID;
-
-        // Update convo
-        convo->setVGroupTag(roomTitle);
-        convo->setDestruct(destructionTime);
-        convo->setRoomPurpose(roomDescription);
-
-        // Add room masters
-        for (int i=0; i < mastersHashList.size(); i++) {
-            WickrCore::WickrUser *user = WickrCore::WickrUser::getUserByServerID(mastersHashList.at(i));
-            if (user)
-            {
-                convo->addMaster(user, WickrCore::WickrUser::getSelfUser());
-            }
-        }
-        convo->save();
+        sendFailure(400, responseString.toLatin1(), response);
     }
 }
 
@@ -1040,484 +512,139 @@ RequestHandler::deleteConvo(bool isSecureConvo, const QString& vgroupID)
 }
 
 void
-RequestHandler::processDeleteRoom(const QString &clientID, stefanfrings::HttpResponse& response)
+RequestHandler::processDeleteRoom(const QString &vGroupID, stefanfrings::HttpResponse& response)
 {
-    WickrCore::WickrConvo *convo = WickrCore::WickrConvo::getConvoWithvGroupID(clientID);
-    if (convo) {
-        if (convo->getConvoType() != CONVO_SECURE_ROOM) {
-            sendFailure(400, "Must be secure room", response);
-        } else if (!convo->getIsRoomMaster()) {
-            sendFailure(400, "Must be room master", response);
-        } else {
-            if (RequestHandler::deleteConvo(true, clientID)) {
-                sendSuccess(response);
-            } else {
-                sendFailure(400, "Failed to delete room", response);
-            }
-        }
+    QString responseString;
+
+    if (m_apiInterface.deleteRoom(vGroupID, responseString)) {
+        sendSuccess(response);
+    } else {
+        sendFailure(400, responseString.toLatin1(), response);
     }
 }
 
 void
 RequestHandler::processLeaveRoom(const QString &vGroupID, stefanfrings::HttpResponse& response)
 {
-    WickrCore::WickrConvo *convo = WickrCore::WickrConvo::getConvoWithvGroupID(vGroupID);
-    if (convo) {
-        if (convo->getConvoType() == CONVO_SECURE_ROOM || convo->getConvoType() == CONVO_GROUP_CONVO) {
-            WickrCore::WickrSecureRoomMgr *roomMgr = WickrCore::WickrRuntime::getRoomMgr();
-            if (roomMgr) {
-                roomMgr->leaveSecureRoomStart(vGroupID);
-                sendSuccess(response);
-            } else {
-                sendFailure(500, "Internal error", response);
-            }
-        } else {
-            sendFailure(400, "Can only leave secure room or group convo", response);
-        }
+    QString responseString;
+
+    if (m_apiInterface.leaveRoom(vGroupID, responseString)) {
+        sendSuccess(response);
     } else {
-        sendFailure(400, "Cannot find convo for vgroupid", response);
+        sendFailure(400, responseString.toLatin1(), response);
     }
-}
-
-QJsonObject
-RequestHandler::getRoomInfo(WickrCore::WickrConvo *convo)
-{
-    QJsonObject roomValue;
-
-    // If a secure room then add to the list
-    if (WickrCore::WickrConvo::getConvoTypeFromVGroupID(convo->getVGroupID()) == CONVO_SECURE_ROOM &&
-        convo->isSecureRoomStateSynced()) {
-
-        roomValue.insert(APIJSON_ROOMTITLE, convo->getVGroupTag());
-        roomValue.insert(APIJSON_ROOMDESC, convo->getRoomPurpose());
-        roomValue.insert(APIJSON_VGROUPID, convo->getVGroupID());
-        roomValue.insert(APIJSON_ROOMTTL, QString::number(convo->getDestruct()));
-        roomValue.insert(APIJSON_ROOMBOR, QString::number(convo->getBOR()));
-
-        // Setup the users array
-        QStringList masterslist = convo->getRoomMastersUserName();
-        QJsonArray mastersArray;
-
-        for (QString master : masterslist) {
-            QJsonObject masterEntry;
-
-            masterEntry.insert(APIJSON_NAME, master);
-            mastersArray.append(masterEntry);
-        }
-        roomValue.insert(APIJSON_ROOMMASTERS, mastersArray);
-
-        // Setup the users array
-        QStringList userslist = convo->getUsernameStringArray();
-        QJsonArray usersArray;
-
-        for (QString user : userslist) {
-            QJsonObject userEntry;
-
-            userEntry.insert(APIJSON_NAME, user);
-            usersArray.append(userEntry);
-        }
-        roomValue.insert(APIJSON_ROOMMEMBERS, usersArray);
-    }
-    return roomValue;
 }
 
 void
 RequestHandler::processGetRoom(const QString &vGroupID, stefanfrings::HttpResponse& response)
 {
-    WickrCore::WickrConvo *convo = WickrCore::WickrConvo::getConvoWithvGroupID(vGroupID);
-    if (convo != nullptr) {
-        QJsonObject roomValue = getRoomInfo(convo);
-        if (roomValue.isEmpty()) {
-            sendFailure(400, "Convo is not a secure room", response);
-        } else {
-            QJsonDocument saveDoc(roomValue);
-            QByteArray byteArray = saveDoc.toJson();
+    QString responseString;
 
-            sendSuccess(byteArray, response);
-        }
+    if (m_apiInterface.getRoom(vGroupID, responseString)) {
+        sendSuccess(responseString.toLatin1(), response);
     } else {
-        sendFailure(400, "Can not find convo", response);
+        sendFailure(400, responseString.toLatin1(), response);
     }
 }
 
 void
 RequestHandler::processGetRooms(stefanfrings::HttpResponse& response)
 {
-#if 0
-    QByteArray paramStart = request.getParameter(APIPARAM_START);
-    QByteArray paramCount = request.getParameter(APIPARAM_COUNT);
+    QString responseString;
 
-    if (paramStart.length() == 0 || paramCount.length() == 0) {
-        sendFailure(400, "Missing parameters", response);
-        return;
+    if (m_apiInterface.getRooms(responseString)) {
+        sendSuccess(responseString.toLatin1(), response);
+    } else {
+        sendFailure(400, responseString.toLatin1(), response);
     }
-    int start = paramStart.toInt();
-    int count = paramCount.toInt();
-#endif
-    QJsonArray roomArrayValue;
-
-    WickrConvoList *curConvos = WickrCore::WickrConvo::getConvoList();
-
-    // TODO: Should there be a semaphore to control access to this?
-    if (curConvos != NULL) {
-        QList<QString> keys = curConvos->acquireKeyList();
-
-        // Process each of the convos
-        for (int cid=0; cid < keys.size(); cid++) {
-
-            WickrCore::WickrConvo *currentConvo = (WickrCore::WickrConvo *)curConvos->value( keys.at(cid) );
-            QJsonObject roomValue = getRoomInfo(currentConvo);
-            if (!roomValue.isEmpty())
-                roomArrayValue.append(roomValue);
-        }
-    }
-
-    QJsonObject jsonObject;
-    jsonObject.insert(APIJSON_ROOMS, roomArrayValue);
-    QJsonDocument saveDoc(jsonObject);
-    QByteArray byteArray = saveDoc.toJson();
-
-    sendSuccess(byteArray, response);
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
 
 void
 RequestHandler::processAddGroupConvo(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response)
 {
     QByteArray jsonString = request.getBody();
+    QString responseString;
 
-    // Get the room details from the incoming message
-    QJsonParseError jsonError;
-    QJsonDocument jsonResponse = QJsonDocument().fromJson(jsonString, &jsonError);
-
-    if (jsonError.error != QJsonParseError::NoError) {
-        sendFailure(400, "Failed", response);
-        return;
-    }
-
-    QJsonObject jsonObject = jsonResponse.object();
-    QJsonValue value;
-
-    QJsonObject grpConvoObject;
-
-    // Start the operation
-    if (jsonObject.contains(APIJSON_GROUPCONVO)) {
-        value = jsonObject[APIJSON_GROUPCONVO];
-        grpConvoObject = value.toObject();
+    if (m_apiInterface.addGroupConvo(jsonString, responseString)) {
+        sendSuccess(responseString.toLatin1(), response);
     } else {
-        sendFailure(400, "malformed JSON", response);
-        return;
-    }
-
-    // Check that required objects exist
-    if (!grpConvoObject.contains(APIJSON_ROOMMEMBERS))
-    {
-        sendFailure(400, "Missing required data", response);
-        return;
-    }
-
-    QStringList memberslist;
-    QStringList memberHashes;
-    int ttl = 0;
-    int bor = 0;
-
-    // Get the TTL / Destruct time
-    if (grpConvoObject.contains(APIJSON_ROOMTTL)) {
-        value = grpConvoObject[APIJSON_ROOMTTL];
-        ttl = value.toInt(0);
-    }
-    // Get the BOR / Burn on Read
-    if (grpConvoObject.contains(APIJSON_ROOMBOR)) {
-        value = grpConvoObject[APIJSON_ROOMBOR];
-        bor = value.toInt(0);
-    }
-
-    // Get the members
-    memberslist = getJsonArrayValue(grpConvoObject, APIJSON_NAME, APIJSON_ROOMMEMBERS);
-    QString members = memberslist.join(",");
-    if (members.isEmpty()) {
-        sendFailure(400, "Invalid members list", response);
-        return;
-    }
-
-    // Update and validate the input list of members.  If false is returned then
-    // there was an error processing the list, or the member was invalid!
-    if (!updateAndValidateMembers(response, memberslist, &memberHashes)) {
-        return;
-    }
-    // Create the room
-
-    // Create convo (create if not found, no group name, secure room)
-    QString membersString = memberHashes.join(',');
-
-    QSet<WickrCore::WickrUser *> validateUsers;
-
-    // Need to make sure this convo does not exist already
-    QList<WickrCore::WickrUser*>users;
-
-    for (int i=0; i < memberslist.size(); i++) {
-        WickrCore::WickrUser *user = WickrCore::WickrUser::getUserWithAlias(memberslist.at(i));
-//        WickrCore::WickrUser *user = WickrCore::WickrUser::getUserByServerID(memberslist.at(i));
-        if (user) {
-            users.append(user);
-            validateUsers.insert(user);
-        } else {
-            QString errMsg = "Cannot find user record for " + memberslist.at(i);
-            sendFailure(400, errMsg.toLatin1(), response);
-            return;
-        }
-    }
-    // If group already exists, simply redirect
-    QString vgroupID = WickrCore::WickrConvo::groupConvoExists(users);
-    if (!vgroupID.isEmpty()) {
-        sendFailure(400, "Group conversation already exists", response);
-        return;
-    }
-
-    WickrCore::WickrSecureRoomMgr *roomMgr = WickrCore::WickrRuntime::getRoomMgr();
-    if (!roomMgr) {
-        sendFailure(400, "Failed to create group conversation", response);
-        return;
-    }
-
-    WickrCore::WickrUser *self = WickrCore::WickrUser::getSelfUser();
-    QString mastersString;
-    if (self) {
-        mastersString = membersString + "," + self->getServerIDHash();
-    } else {
-        sendFailure(400, "Failed to create group conversation", response);
-        return;
-    }
-
-    vgroupID = roomMgr->createSecureRoomConvoStart(membersString,
-                                                   mastersString,
-                                                   ttl,
-                                                   "",
-                                                   "",
-                                                   bor,
-                                                   false);
-    if (vgroupID.isEmpty()) {
-        sendFailure(400, "Failed to create group conversation", response);
-        return;
-    }
-
-    // no will wait for the room to be created or timeout due to an error
-
-    QTimer timer;
-    QEventLoop loop;
-
-    loop.connect(roomMgr, SIGNAL(roomCreatedServerSuccess()), SLOT(quit()));
-//        loop.connect(roomMgr, SIGNAL(signalError()), SLOT(quit()));
-    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
-
-    int loopCount = 10;
-
-    while (loopCount-- > 0) {
-        timer.start(1000);
-        loop.exec();
-
-        if (timer.isActive()) {
-            timer.stop();
-            break;
-        } else {
-            qDebug() << "CONSOLE:Timed out waiting for create group conversation response!";
-            sendFailure(400, "Failed to create group conversation", response);
-            return;
-        }
-    }
-
-    // Return the vGroupID
-    QString body = QString("{ \"vgroupid\" : \"%1\" }").arg(vgroupID);
-    sendSuccess(body.toLatin1(), response);
-}
-
-void
-RequestHandler::processDeleteGroupConvo(const QString &clientID, stefanfrings::HttpResponse& response)
-{
-    WickrCore::WickrConvo *convo = WickrCore::WickrConvo::getConvoWithvGroupID(clientID);
-    if (convo) {
-        if (convo->getConvoType() != CONVO_GROUP_CONVO) {
-            sendFailure(400, "Must be group conversation", response);
-        } else if (RequestHandler::deleteConvo(false, clientID)) {
-            sendSuccess(response);
-        } else {
-            sendFailure(400, "Failed to delete Group Convo", response);
-        }
+        sendFailure(400, responseString.toLatin1(), response);
     }
 }
 
 void
-RequestHandler::processGetGroupConvos(const QString &clientID, stefanfrings::HttpResponse& response)
+RequestHandler::processDeleteGroupConvo(const QString &vGroupID, stefanfrings::HttpResponse& response)
 {
-#if 0
-    QByteArray paramStart = request.getParameter(APIPARAM_START);
-    QByteArray paramCount = request.getParameter(APIPARAM_COUNT);
+    QString responseString;
 
-    if (paramStart.length() == 0 || paramCount.length() == 0) {
-        sendFailure(400, "Missing parameters", response);
-        return;
+    if (m_apiInterface.deleteGroupConvo(vGroupID, responseString)) {
+        sendSuccess(response);
+    } else {
+        sendFailure(400, responseString.toLatin1(), response);
     }
-    int start = paramStart.toInt();
-    int count = paramCount.toInt();
-#endif
-    QJsonArray grpConvoArrayValue;
-
-    WickrConvoList *curConvos = WickrCore::WickrConvo::getConvoList();
-
-    // TODO: Should there be a semaphore to control access to this?
-    if (curConvos != NULL) {
-        QList<QString> keys = curConvos->acquireKeyList();
-
-        // Process each of the convos
-        for (int cid=0; cid < keys.size(); cid++) {
-
-            WickrCore::WickrConvo *currentConvo = (WickrCore::WickrConvo *)curConvos->value( keys.at(cid) );
-
-            // If a secure room then add to the list
-            if (WickrCore::WickrConvo::getConvoTypeFromVGroupID(currentConvo->getVGroupID()) == CONVO_GROUP_CONVO) {
-                QJsonObject grpConvoValue;
-
-                grpConvoValue.insert(APIJSON_VGROUPID, currentConvo->getVGroupID());
-                grpConvoValue.insert(APIJSON_ROOMTTL, QString::number(currentConvo->getDestruct()));
-                grpConvoValue.insert(APIJSON_ROOMBOR, QString::number(currentConvo->getBOR()));
-
-                // Setup the users array
-                QStringList userslist = currentConvo->getUsernameStringArray();
-                QJsonArray usersArray;
-
-                for (QString user : userslist) {
-                    QJsonObject userEntry;
-
-                    userEntry.insert(APIJSON_NAME, user);
-                    usersArray.append(userEntry);
-                }
-                grpConvoValue.insert(APIJSON_ROOMMEMBERS, usersArray);
-
-
-                grpConvoArrayValue.append(grpConvoValue);
-            }
-        }
-    }
-
-    QJsonObject jsonObject;
-    jsonObject.insert(APIJSON_GROUPCONVOS, grpConvoArrayValue);
-    QJsonDocument saveDoc(jsonObject);
-    QByteArray byteArray = saveDoc.toJson();
-
-    sendSuccess(byteArray, response);
 }
 
-
-int
-RequestHandler::numMessages()
+void
+RequestHandler::processGetGroupConvo(const QString &vGroupID, stefanfrings::HttpResponse& response)
 {
-    int numMsgs = 0;
+    QString responseString;
 
-    WickrConvoList *curConvos = WickrCore::WickrConvo::getConvoList();
-
-    // TODO: Should there be a semaphore to control access to this?
-    if (curConvos != NULL) {
-        QList<QString> keys = curConvos->acquireKeyList();
-
-        // Process each of the convos
-        for (int cid=0; cid < keys.size(); cid++) {
-            WickrCore::WickrConvo *currentConvo = (WickrCore::WickrConvo *)curConvos->value( keys.at(cid) );
-            WickrMessageList *themessages = currentConvo->getMessages();
-
-            QList<QString> keys = themessages->acquireKeyList();
-
-            for( int i=0; i<keys.size(); i++) {
-                WickrCore::WickrMessage *msg = (WickrCore::WickrMessage *)themessages->value(keys.at(i));
-
-                if( !msg )
-                    continue;
-
-                // Only handle inbox messages
-                if( !msg->isInbox() )
-                    continue;
-
-#if 0
-                // Unlock the message
-                WickrStatus msgstatus = msg->unlock();
-                if( msgstatus.isError() ) {
-                    continue;
-                }
-#endif
-
-                WickrCore::WickrInbox *inbox = (WickrCore::WickrInbox *)msg;
-
-                if (inbox->getInboxState() == WICKR_INBOX_OPENED) {
-                    WickrMsgClass mclass = msg->getMsgClass();
-                    if( mclass == MsgClass_Text ) {
-                        numMsgs++;
-                    }
-                }
-            }
-        }
+    if (m_apiInterface.getGroupConvo(vGroupID, responseString)) {
+        sendSuccess(responseString.toLatin1(), response);
+    } else {
+        sendFailure(400, responseString.toLatin1(), response);
     }
-    return numMsgs;
 }
+
+void
+RequestHandler::processGetGroupConvos(stefanfrings::HttpResponse& response)
+{
+    QString responseString;
+
+    if (m_apiInterface.getGroupConvos(responseString)) {
+        sendSuccess(responseString.toLatin1(), response);
+    } else {
+        sendFailure(400, responseString.toLatin1(), response);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
 
 void
 RequestHandler::getStatistics(const QString& apiKey, stefanfrings::HttpResponse& response)
 {
-    QJsonObject msgValues;
-    QJsonObject statValues;
+    QString retString;
 
-    WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
-    if (db != NULL) {
-        statValues.insert(APIJSON_STATID_MSGCNT, numMessages());
-        WickrBotClients *client = db->getClientUsingApiKey(apiKey);
-        if (client != NULL) {
-            statValues.insert(APIJSON_STATID_PENDING, db->getClientsActionCount(client->id));
-            statValues.insert(APIJSON_STATID_PNDCBOUT, db->getClientsOutMessagesCount(client->id));
-
-            QList<WickrBotStatistics *> stats;
-            stats = db->getClientStatistics(client->id);
-            if (stats.length() > 0) {
-                for (WickrBotStatistics *stat : stats) {
-                    switch (stat->statID) {
-                    case DB_STATID_MSGS_TX:
-                        statValues.insert(APIJSON_STATID_MSGSTX, stat->statValue);
-                        break;
-                    case DB_STATID_MSGS_RX:
-                        statValues.insert(APIJSON_STATID_MSGSRX, stat->statValue);
-                        break;
-                    case DB_STATID_ERRORS_TX:
-                        statValues.insert(APIJSON_STATID_ERRSTX, stat->statValue);
-                        break;
-                    case DB_STATID_ERRORS_RX:
-                        statValues.insert(APIJSON_STATID_ERRSRX, stat->statValue);
-                        break;
-                    case DB_STATID_MSGS_OBOXSYNC:
-                        statValues.insert(APIJSON_STATID_OBOXSYNC, stat->statValue);
-                        break;
-                    }
-                }
-            }
-            msgValues.insert(APIJSON_STATISTICS, statValues);
-        }
+    if (!m_apiInterface.getStatistics(apiKey, retString)) {
+        sendFailure(400, retString.toLatin1(), response);
+    } else {
+        sendSuccess(retString.toLatin1(), response);
     }
-
-    QJsonDocument saveDoc(msgValues);
-    QByteArray byteArray = saveDoc.toJson();
-
-    sendSuccess(byteArray, response);
 }
 
 void
 RequestHandler::clearStatistics(const QString& apiKey, stefanfrings::HttpResponse& response)
 {
-    WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
-    if (db != NULL) {
-        WickrBotClients *client = db->getClientUsingApiKey(apiKey);
-        if (client != NULL) {
-            db->deleteClientStatistics(client->id);
-            sendSuccess(response);
-        } else {
-            sendFailure(400, "Failed to find client with input API Key", response);
-        }
+    QString retString;
+
+    if (!m_apiInterface.clearStatistics(apiKey, retString)) {
+        sendFailure(400, retString.toLatin1(), response);
     } else {
-        sendFailure(500, "Problem handling with database", response);
+        sendSuccess(response);
     }
 }
 

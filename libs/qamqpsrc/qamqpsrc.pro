@@ -6,6 +6,7 @@ TARGET = qamqp
 QT += core network
 QT -= gui
 DEFINES += QAMQP_BUILD
+QAMQP_LIBRARY_TYPE = staticlib
 CONFIG += $${QAMQP_LIBRARY_TYPE}
 VERSION = $${QAMQP_VERSION}
 win32:DESTDIR = $$OUT_PWD

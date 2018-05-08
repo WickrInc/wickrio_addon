@@ -191,13 +191,15 @@ OperationData *WickrIOClientRuntime::operationData() {
 bool
 WickrIOClientRuntime::addService(WickrIOServiceBase *newSvc)
 {
+    WickrIOClientRuntime& me = WickrIOClientRuntime::get();
+
     QString svcName = newSvc->serviceName();
     // if the service exists already then return failed
-    if (w_dynamicServices.contains(svcName)) {
+    if (me.w_dynamicServices.contains(svcName)) {
         qDebug() << "Cannot add service" << svcName << "it aleady exists!";
         return false;
     }
-    w_dynamicServices.insert(svcName, newSvc);
+    me.w_dynamicServices.insert(svcName, newSvc);
     return true;
 }
 
@@ -210,9 +212,11 @@ WickrIOClientRuntime::addService(WickrIOServiceBase *newSvc)
 WickrIOServiceBase *
 WickrIOClientRuntime::findService(const QString& svcName)
 {
+    WickrIOClientRuntime& me = WickrIOClientRuntime::get();
+
     WickrIOServiceBase *retSvc = nullptr;
-    if (w_dynamicServices.contains(svcName)) {
-        retSvc = w_dynamicServices.value(svcName, nullptr);
+    if (me.w_dynamicServices.contains(svcName)) {
+        retSvc = me.w_dynamicServices.value(svcName, nullptr);
     } else {
         qDebug() << "Cannot find service" << svcName;
     }

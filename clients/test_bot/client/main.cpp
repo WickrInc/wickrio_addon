@@ -18,6 +18,7 @@
 #include "testClientConfigInfo.h"
 #include "wickrIOClientRuntime.h"
 #include "testClientRxDetails.h"
+#include "wickrIOJScriptService.h"
 
 #ifdef WICKR_PLUGIN_SUPPORT
 Q_IMPORT_PLUGIN(WickrPlugin)
@@ -86,6 +87,62 @@ searchConfigFile() {
 #endif
 }
 
+#include "requestHandlerJS.h"
+
+#if 0
+//This will expose an object with the type Game, into the global scope.
+ //It will return a handle to the JS object that represents this c++ instance.
+Handle<Object> WrapReqHdlrObject( RequestHandlerJS *reqHdlrInstance )
+{
+ HandleScope scope;
+
+     //This will persist when we leave the handle scope,
+     //meaning that the actual c++ instance is preserved
+ Persistent<ObjectTemplate> class_template;
+
+     //This is just the preset for an emtpy object
+ Handle<ObjectTemplate> raw_template = ObjectTemplate::New();
+
+     //This is so we can store a c++ object on it
+ raw_template->SetInternalFieldCount(1);
+
+     //Create the actual template object,
+ class_template = Persistent<ObjectTemplate>::New( raw_template );
+
+     //Create an instance of the js object
+ Handle<Object> result = class_template->NewInstance();
+
+     //Create a wrapper for the c++ instance
+ Handle<External> class_ptr = External::New( reqHdlrInstance );
+
+     //Store the 'external c++ pointer' inside the JS object
+ result->SetInternalField( 0 , class_ptr );
+
+     //Return the JS object representing this class
+ return scope.Close(result);
+}
+
+ //This will return the c++ object that WrapGameObject stored,
+ //from an existing jsObject. Used in the start callback
+RequestHandlerJS* UnwrapReqHdlrObject( Handle<Object> jsObject )
+{
+ Handle<External> pointer = Handle<External>::Cast( jsObject->GetInternalField(0) );
+ return static_cast<RequestHandlerJS*>( pointer->Value() );
+}
+
+//Here is a helper function to ease the process - This inserts a named property with a callback
+//into the object requested. For example, game.start <- this would be simpler using the function here
+void ExposeProperty(Handle<Object> intoObject, Handle<Value> namev8String, InvocationCallback funcID)
+{
+        Locker lock;
+        HandleScope handle_scope;
+
+        intoObject->Set( namev8String , FunctionTemplate::New( funcID )->GetFunction(), ReadOnly );
+}
+
+#endif
+
+
 Q_IMPORT_PLUGIN(QSQLCipherDriverPlugin)
 
 int main(int argc, char *argv[])
@@ -93,6 +150,7 @@ int main(int argc, char *argv[])
     QCoreApplication *app = NULL;
 
     Q_INIT_RESOURCE(test_bot);
+
 
     // Setup appropriate library values based on Beta or Production client
     QByteArray secureJson;
@@ -356,6 +414,14 @@ int main(int argc, char *argv[])
     WickrIOClientRuntime::init(operation);
     WickrIOClientRuntime::setFileSendCleanup(true);
 
+    /*
+     * Start the Javascript service and attach to the Client Runtime
+     */
+    WickrIOJScriptService *jsSvc = new WickrIOJScriptService();
+    if (!WickrIOClientRuntime::addService(jsSvc)) {
+        qDebug() << "Could not start the JavaScript service!";
+    }
+
     // Create the receive details object
     TestClientRxDetails *rxDetails = new TestClientRxDetails(operation);
 
@@ -377,6 +443,8 @@ int main(int argc, char *argv[])
         WICKRBOT->setIPC(WickrIOClientRuntime::ipcSvc());
     });
 
+
+
     /*
      * When the login is successful create the HTTP listner to receive
      * the Web API requests.
@@ -394,8 +462,14 @@ int main(int argc, char *argv[])
         /*
          * Start the Integration software if there is any configured
          */
+        WickrIOJScriptService *jsSvc = (WickrIOJScriptService*)WickrIOClientRuntime::findService(WickrIOJScriptService::jsServiceBaseName);
+        if (jsSvc)
+            jsSvc->startScript();
+
     });
     WICKRBOT->start();
+
+
 
     int retval = app->exec();
 

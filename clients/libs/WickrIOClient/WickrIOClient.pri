@@ -58,4 +58,9 @@ win32 {
     }
 }
 
+#
+# Include the RabbitMQ API Library
+#
+include($${DEPTH}/libs/qamqpsrc/qamqpsrc.pri)
+
 ~ 

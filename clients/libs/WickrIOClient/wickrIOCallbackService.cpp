@@ -32,7 +32,7 @@ WickrIOCallbackService::~WickrIOCallbackService() {
 }
 
 /**
- * @brief WickrSwitchboardService::startThreads
+ * @brief WickrIOCallbackService::startThreads
  * Starts all threads on message service.
  */
 void WickrIOCallbackService::startThreads()
@@ -51,8 +51,8 @@ void WickrIOCallbackService::startThreads()
 }
 
 /**
- * @brief WickrSwitchboardService::stopThreads
- * Stops all threads on switchboard service.
+ * @brief WickrIOCallbackService::stopThreads
+ * Stops all threads on WickrIO Callback service.
  */
 void WickrIOCallbackService::stopThreads()
 {
@@ -63,7 +63,7 @@ void WickrIOCallbackService::stopThreads()
     // Task Service
     m_thread.quit();
     m_thread.wait();
-    qDebug("SWITCHBOARD THREAD: Shutdown Thread (%p)", &m_thread);
+    qDebug("WICKRIOCALLBACK THREAD: Shutdown Thread (%p)", &m_thread);
 }
 
 void WickrIOCallbackService::messagesPending()
@@ -102,7 +102,6 @@ QString WickrIOCallbackThread::cbStringState(CBThreadState state)
 WickrIOCallbackThread::WickrIOCallbackThread(QThread *thread, WickrIOCallbackService *cbSvc)
     : m_parent(cbSvc)
     , m_state(CBThreadState::CB_UNINITIALIZED)
-    , m_operation(nullptr)
 {
     thread->setObjectName("WickrIOCallbackThread");
     this->moveToThread(thread);
@@ -262,8 +261,6 @@ WickrIOCallbackThread::sendMessages(WickrIOEmailSettings *email)
         }
     }
 }
-
-
 
 /**********************************************************************************************
  * CALLBACK FUNCTIONS

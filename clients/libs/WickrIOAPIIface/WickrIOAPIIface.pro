@@ -2,7 +2,7 @@
 
 DEPTH = ../../..
 
-TARGET = WickrIOClient
+TARGET = WickrIOAPIIface
 TEMPLATE = lib
 
 CONFIG += qt
@@ -14,14 +14,10 @@ QT -= gui
 VERSION = 1.0.1
 
 #
-# Include the v8 third party library
-#
-include ($${DEPTH}/libs/third_party/v8/v8.pri)
-
-#
 # Include the RabbitMQ API Library
 #
 include($${DEPTH}/libs/qamqpsrc/qamqpsrc.pri)
+INCLUDEPATH += $${QAMQP_INCLUDEPATH}
 
 wickr_messenger {
     DEFINES += WICKR_MESSENGER=1
@@ -74,7 +70,7 @@ linux-g++* {
 }
 
 win32 {
-   DEFINES += WICKRIOCLIENTLIB_EXPORT
+   DEFINES += WICKRIOAPIIFACELIB_EXPORT
 }
 
 # Windows and Unix get the suffix "d" to indicate a debug version of the library.
@@ -99,41 +95,7 @@ INCLUDEPATH += $$DEPTH/shared/common
 DEPENDPATH += $$PWD
 
 HEADERS += \
-    clientconfigurationinfo.h \
-    clientversioninfo.h \
-    wickrBuildNumbers.h \
-    wickrIOActionService.h \
-    wickrIOCallbackService.h \
-    wickrIOClientLoginHdlr.h \
-    wickrIOClientMain.h \
-    wickrIOClientRuntime.h \
-    wickrIOConvoHdlr.h \
-    wickrIOEventService.h \
-    wickrIOFileDownloadService.h \
-    wickrIOJson.h \
-    wickrIOMessageCounter.h \
-    wickrIOProvisionHdlr.h \
-    wickrIORxService.h \
-    wickrIOWatchdogService.h \
-    wickrIOServiceBase.h \
-    wickrIOProcessInbox.h \
-    wickrIOJScriptService.h
+    wickrIOAPIIface.h
 
 SOURCES += \
-    clientconfigurationinfo.cpp \
-    clientversioninfo.cpp \
-    wickrIOActionService.cpp \
-    wickrIOCallbackService.cpp \
-    wickrIOClientLoginHdlr.cpp \
-    wickrIOClientMain.cpp \
-    wickrIOClientRuntime.cpp \
-    wickrIOConvoHdlr.cpp \
-    wickrIOEventService.cpp \
-    wickrIOFileDownloadService.cpp \
-    wickrIOJson.cpp \
-    wickrIOProvisionHdlr.cpp \
-    wickrIORxService.cpp \
-    wickrIOWatchdogService.cpp \
-    wickrIOServiceBase.cpp \
-    wickrIOProcessInbox.cpp \
-    wickrIOJScriptService.cpp
+    wickrIOAPIIface.cpp
