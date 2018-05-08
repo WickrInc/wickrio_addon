@@ -13,7 +13,9 @@
 
 QString WickrIOJScriptService::jsServiceBaseName = "WickrIOJScriptThread";
 
+#if 0
 using namespace v8;
+#endif
 
 WickrIOJScriptService::WickrIOJScriptService() : WickrIOServiceBase(jsServiceBaseName),
     m_lock(QReadWriteLock::Recursive),

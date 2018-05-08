@@ -9,10 +9,12 @@
 #include "wickrIOAppSettings.h"
 #include "wickrIOServiceBase.h"
 
+#if 0
 #include "libplatform/libplatform.h"
 #include "v8.h"
 
 using namespace v8;
+#endif
 
 // Forward declaration
 class WickrIOJScriptThread;
@@ -104,6 +106,7 @@ private:
 
     bool                    m_jsCallbackInitialized = false;
 
+#if 0
     // v8 definitions
     v8::Platform*               m_platform = nullptr;
     v8::Isolate*                m_isolate = nullptr;
@@ -111,6 +114,7 @@ private:
 
     v8::Persistent<v8::Script>  m_compiledScript;
     v8::Local<v8::Value>        m_result;
+#endif
 
     bool initJScriptCallback();
     bool stopJScriptCallback();
