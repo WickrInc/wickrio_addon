@@ -87,9 +87,9 @@ searchConfigFile() {
 #endif
 }
 
+#if 0
 #include "requestHandlerJS.h"
 
-#if 0
 //This will expose an object with the type Game, into the global scope.
  //It will return a handle to the JS object that represents this c++ instance.
 Handle<Object> WrapReqHdlrObject( RequestHandlerJS *reqHdlrInstance )

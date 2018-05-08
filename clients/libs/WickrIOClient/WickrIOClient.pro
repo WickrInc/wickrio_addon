@@ -16,7 +16,7 @@ VERSION = 1.0.1
 #
 # Include the v8 third party library
 #
-include ($${DEPTH}/libs/third_party/v8/v8.pri)
+#include ($${DEPTH}/libs/third_party/v8/v8.pri)
 
 #
 # Include the RabbitMQ API Library
