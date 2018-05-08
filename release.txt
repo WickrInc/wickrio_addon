@@ -1,4 +1,5 @@
-Release Notes from v4.26-release to v4.38.1-5:
+Release Notes from v4.26-release to v4.39.1-2:
+  * Initial work for nodejs addon work
   * Integration installation and configuration changes
   * Parser Restart Handling
   * Add new directory
