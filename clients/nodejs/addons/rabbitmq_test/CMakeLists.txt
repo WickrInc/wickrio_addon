@@ -8,8 +8,8 @@ project (rabbitmq_test)
 # Declare the source files location
 file(GLOB SOURCE_FILES "src/*.cpp" "src/*.h")
 
-include_directories(~/Development/rabbitmq/amqpcpp/include)
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs ~/Development/rabbitmq/amqpcpp ~Development/rabbitmq/rabbitmq-c/build/librabbitmq)
+include_directories(../libs/third_party/amqpcpp/include ../libs/third_party/rabbitmq-c/include)
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs ../libs/third_party/amqpcpp ../libs/third_party/rabbitmq-c)
 add_executable(rabbitmq_test ${SOURCE_FILES})
 
 target_link_libraries(rabbitmq_test libamqpcpp.a librabbitmq.a openssl ${CMAKE_DL_LIBS})
