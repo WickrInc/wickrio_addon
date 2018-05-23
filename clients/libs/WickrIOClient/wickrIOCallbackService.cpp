@@ -45,6 +45,8 @@ void WickrIOCallbackService::startThreads()
     // Connect internal threads signals and slots
     connect(this, &WickrIOCallbackService::signalMessagesPending,
             m_cbThread, &WickrIOCallbackThread::slotProcessMessages, Qt::QueuedConnection);
+    connect(this, &WickrIOCallbackService::signalSetSaveAttachments,
+            m_cbThread, &WickrIOCallbackThread::slotSetSaveAttachments, Qt::QueuedConnection);
 
     // Perform startup here, creating and configuring ressources.
     m_thread.start();
@@ -69,6 +71,11 @@ void WickrIOCallbackService::stopThreads()
 void WickrIOCallbackService::messagesPending()
 {
     emit signalMessagesPending();
+}
+
+void WickrIOCallbackService::setSaveAttachments(bool saveAttachments)
+{
+    emit signalSetSaveAttachments(saveAttachments);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -118,6 +125,12 @@ WickrIOCallbackThread::WickrIOCallbackThread(QThread *thread, WickrIOCallbackSer
  */
 WickrIOCallbackThread::~WickrIOCallbackThread() {
     qDebug() << "WICKRIOCALLBACK THREAD: Worker Destroyed.";
+}
+
+void
+WickrIOCallbackThread::slotSetSaveAttachments(bool saveAttachments)
+{
+    m_saveAttachments = saveAttachments;
 }
 
 void
@@ -251,7 +264,7 @@ WickrIOCallbackThread::sendMessages(WickrIOEmailSettings *email)
             m_smtp->sendMail(message);
 
             // Free the current message memory and delete the message
-            db->deleteMessage(rxMsg.id);
+            db->deleteMessage(rxMsg.id, m_saveAttachments);
 
             for (MimeFile *file : attachmentFiles) {
                 file->deleteLater();
@@ -376,7 +389,7 @@ WickrIOCallbackThread::msgSendCallbackResponse(QNetworkReply *thereply, QByteArr
         if (db == NULL) {
             CLEANUP_SERVER_REQ(msgSendCallbackResponse,msgSendCallbackError);
         } else {
-            db->deleteMessage(m_postedMsgID);
+            db->deleteMessage(m_postedMsgID, m_saveAttachments);
             m_postedMsgID = 0;
         }
     }

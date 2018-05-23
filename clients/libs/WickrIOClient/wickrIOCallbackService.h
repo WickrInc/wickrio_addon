@@ -43,6 +43,7 @@ public:
     virtual ~WickrIOCallbackService();
 
     void messagesPending();
+    void setSaveAttachments(bool saveAttachments);
 
 private:
     // General purpose thread lock used for common threaded related queries/updates(hence ReadWrite).
@@ -58,6 +59,7 @@ private:
 
 signals:
     void signalMessagesPending();
+    void signalSetSaveAttachments(bool saveAttachments);
 
 public slots:
 };
@@ -94,6 +96,7 @@ private:
 
     int                     m_postedMsgID;
     QString                 m_url;
+    bool                    m_saveAttachments = false;
 
     void startEmailCallback(WickrIOEmailSettings *email);
     bool sendMessages(WickrIOEmailSettings *email);
@@ -113,6 +116,7 @@ signals:
 
 public slots:
     void slotProcessMessages();
+    void slotSetSaveAttachments(bool saveAttachments);
 };
 
 #endif // WICKRIOCALLBACKSERVICE_H

@@ -257,7 +257,7 @@ WickrIOAPIInterface::getReceivedMessages(QString& responseString)
         WickrIOMessage rxMsg;
         if (db->getMessage(msgIDs.at(0), &rxMsg)) {
             responseString = rxMsg.json;
-            db->deleteMessage(rxMsg.id);
+            db->deleteMessage(rxMsg.id, true);
         }
      }
      return true;

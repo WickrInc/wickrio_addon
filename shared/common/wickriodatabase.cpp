@@ -1245,16 +1245,18 @@ WickrIOClientDatabase::messageHasAttachments(int id) {
 }
 
 bool
-WickrIOClientDatabase::deleteMessage(int id) {
+WickrIOClientDatabase::deleteMessage(int id, bool saveAttachment) {
     if (!initialized)
         return false;
 
-    // If there are attachments then delete the files!
-    QList<WickrIODBAttachment *> attachments = getAttachments(id);
-    for (WickrIODBAttachment *attach : attachments) {
-        QFile tempFile(attach->m_filename);
-        tempFile.remove();
-        delete attach;
+    if (!saveAttachment) {
+        // If there are attachments then delete the files!
+        QList<WickrIODBAttachment *> attachments = getAttachments(id);
+        for (WickrIODBAttachment *attach : attachments) {
+            QFile tempFile(attach->m_filename);
+            tempFile.remove();
+            delete attach;
+        }
     }
 
     QString queryString = "DELETE FROM messages WHERE id = ?";

@@ -84,6 +84,12 @@ WickrIOClientRuntime::cbSvcMessagesPending() {
     return true;
 }
 
+void
+WickrIOClientRuntime::cbSvcSetSaveAttachment(bool saveAttachment)
+{
+    cbSvc()->setSaveAttachments(saveAttachment);
+}
+
 /**
  * @brief WickrIO File Download Service API
  */

@@ -355,6 +355,9 @@ int main(int argc, char *argv[])
      */
     WickrIOClientRuntime::init(operation);
 
+    // Make sure that attachments are saved
+    WickrIOClientRuntime::cbSvcSetSaveAttachment(true);
+
     /*
      * Start the WickrIO thread
      */

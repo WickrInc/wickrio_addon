@@ -43,6 +43,7 @@ public:
      */
     static WickrIOCallbackService* cbSvc();
     static bool cbSvcMessagesPending();
+    static void cbSvcSetSaveAttachment(bool saveAttachment);
 
     /**
      * File Download Service API

@@ -119,7 +119,7 @@ public:
     bool updateMessage(WickrIOMessage *message);
     bool getMessage(int id, WickrIOMessage *message);
     QList<int> getMessageIDs(int clientID);
-    bool deleteMessage(int id);
+    bool deleteMessage(int id, bool saveAttachment);
     bool messageHasAttachments(int id);
     int getClientsOutMessagesCount(int clientID);
 
