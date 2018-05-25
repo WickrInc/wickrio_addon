@@ -59,10 +59,15 @@ RabbitMQIface::init()
     m_amqp = new AMQP("guest:guest@localhost:5672");
 
 #if 1
-    m_requestQName = "rpc_queue";
-    m_responseQName = "response_queue";
+    long randValue = rand();
+    string randValueString = to_string(randValue);
+    string responseQueue = "rcv_" + randValueString;
+
+    m_requestQName = m_clientName + "_rpc";
+    m_responseQName = responseQueue;
+//    m_requestQName = "rpc_queue";
+//    m_responseQName = "response_queue";
 #else
-    m_requestQName = m_clientName + "_request";
     m_responseQName = m_clientName + "_response";
 #endif
     m_responseQueue = m_amqp->createQueue(m_responseQName);

@@ -27,7 +27,7 @@ bool WickrIOAPIIface::slotConnectToServer()
 }
 
 void
-WickrIOAPIIface::makeRequest(const QString& request)
+WickrIOAPIIface::makeRequest(const QString& request, const QString& clientname)
 {
     qDebug() << " [x] Request: (" << request << ")";
     m_correlationId = QUuid::createUuid().toString();
@@ -35,7 +35,8 @@ WickrIOAPIIface::makeRequest(const QString& request)
     properties.insert(QAmqpMessage::ReplyTo, m_responseQueue->name());
     properties.insert(QAmqpMessage::CorrelationId, m_correlationId);
 
-    m_defaultExchange->publish(request, "rpc_queue", properties);
+    QString queueName = clientname + "_rpc";
+    m_defaultExchange->publish(request, queueName, properties);
 }
 
 void WickrIOAPIIface::slotClientConnected()

@@ -338,7 +338,10 @@ WickrIOJScriptThread::processRequest(const QByteArray& request)
 
 void WickrIOJScriptThread::slotClientConnected()
 {
-    m_rpcQueue = m_client->createQueue("rpc_queue");
+    OperationData* operation = WickrIOClientRuntime::operationData();
+    QString queueName = operation->m_client->user + "_rpc";
+
+    m_rpcQueue = m_client->createQueue(queueName);
     connect(m_rpcQueue, SIGNAL(declared()), this, SLOT(slotQueueDeclared()));
     connect(m_rpcQueue, SIGNAL(qosDefined()), this, SLOT(slotQosDefined()));
     connect(m_rpcQueue, SIGNAL(messageReceived()), this, SLOT(slotProcessRpcMessage()));

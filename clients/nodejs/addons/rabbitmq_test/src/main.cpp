@@ -6,7 +6,7 @@ int main (int argc, char** argv) {
 	try {
         RabbitMQIface *iface;
 
-        string clientName = "WickrBot1001";
+        string clientName = "bot0525014028@62114373.net";
 
         iface = new RabbitMQIface(clientName);
 

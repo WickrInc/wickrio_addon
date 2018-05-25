@@ -102,7 +102,6 @@ public:
 private:
     WickrIOJScriptService  *m_parent;
     JSThreadState           m_state;
-    OperationData           *m_operation = nullptr;
 
     bool                    m_jsCallbackInitialized = false;
 

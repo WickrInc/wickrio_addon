@@ -12,7 +12,7 @@ public:
     WickrIOAPIIface(QObject *parent = 0);
     ~WickrIOAPIIface();
 
-    void makeRequest(const QString& request);
+    void makeRequest(const QString& request, const QString& clientname);
 
 signals:
     void signalConnected();
