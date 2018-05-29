@@ -4,6 +4,19 @@ using namespace std;
 
 string RabbitMQIface::m_responseString;
 
+RabbitMQIface::RabbitMQIface(string client) :
+    m_clientName(client)
+{
+}
+
+RabbitMQIface::~RabbitMQIface()
+{
+    if (m_amqp) {
+        m_amqp->closeChannel();
+        delete m_amqp;
+    }
+}
+
 int
 RabbitMQIface::onCancel(AMQPMessage * message)
 {
@@ -39,18 +52,6 @@ RabbitMQIface::onMessage( AMQPMessage * message ) {
         RabbitMQIface::m_responseString = "";
     }
     return 1;
-}
-
-RabbitMQIface::RabbitMQIface(string client) :
-    m_clientName(client)
-{
-}
-
-RabbitMQIface::~RabbitMQIface()
-{
-    if (m_amqp) {
-        delete m_amqp;
-    }
 }
 
 bool
