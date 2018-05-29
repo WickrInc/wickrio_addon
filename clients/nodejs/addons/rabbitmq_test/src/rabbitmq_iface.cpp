@@ -18,7 +18,7 @@ RabbitMQIface::onMessage( AMQPMessage * message ) {
 
     AMQPQueue * q = message->getQueue();
     q->Ack( message->getDeliveryTag() );
-    q->Cancel( message->getConsumerTag() );
+//    q->Cancel( message->getConsumerTag() );
 
 #if 0
     i++;
@@ -58,7 +58,6 @@ RabbitMQIface::init()
 {
     m_amqp = new AMQP("guest:guest@localhost:5672");
 
-#if 1
     long randValue = rand();
     string randValueString = to_string(randValue);
     string responseQueue = "rcv_" + randValueString;
@@ -67,11 +66,11 @@ RabbitMQIface::init()
     m_responseQName = responseQueue;
 //    m_requestQName = "rpc_queue";
 //    m_responseQName = "response_queue";
-#else
-    m_responseQName = m_clientName + "_response";
-#endif
+
     m_responseQueue = m_amqp->createQueue(m_responseQName);
     m_responseQueue->Declare(m_responseQueue->getName(), AMQP_EXCLUSIVE | AMQP_AUTODELETE);
+    m_responseQueue->addEvent(AMQP_MESSAGE, onMessage );
+    m_responseQueue->addEvent(AMQP_CANCEL, onCancel );
 
     m_exch = m_amqp->createExchange();
     return true;
@@ -80,17 +79,19 @@ RabbitMQIface::init()
 string
 RabbitMQIface::sendMessage(string message)
 {
+    long randValue = rand();
+    string randValueString = to_string(randValue);
+
     m_exch->setHeader("Reply-to", m_responseQueue->getName());
-    m_exch->setHeader("correlation_id", "ABCDEF");
+    m_exch->setHeader("correlation_id", randValueString);
 
     m_exch->Publish(message , m_requestQName); // publish very long message
 
+    string consumerTag = "tag_" + randValueString;
+    m_responseQueue->setConsumerTag(consumerTag);
 
-    m_responseQueue->setConsumerTag("tag_123");
-    m_responseQueue->addEvent(AMQP_MESSAGE, onMessage );
-    m_responseQueue->addEvent(AMQP_CANCEL, onCancel );
-
-    m_responseQueue->Consume(AMQP_NOACK);
+//    m_responseQueue->Consume(AMQP_NOACK);
+    m_responseQueue->Consume();
 
     return RabbitMQIface::m_responseString;
 }

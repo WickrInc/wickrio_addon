@@ -1,4 +1,5 @@
 #include "rabbitmq_iface.h"
+#include "bot_iface.h"
 
 using namespace std;
 
@@ -68,14 +69,18 @@ int main (int argc, char** argv) {
                 string command;
 
                 if (input == "get_statistics") {
-                    command = "{ \"action\" : \"get_statistics\" }";
+                    cmdStringGetStatistics(command);
                 } else if (input == "modify_room") {
                     string vGroupID;
                     if (!getInput("Enter VGroupID: ", vGroupID)) {
                         done = true;
                         continue;
                     }
-                    command = "{ \"action\" : \"modify_room \", \"vgroupid\" : " + vGroupID + " }";
+
+                    if (!cmdStringModifyRoom(command, vGroupID)) {
+                        std::cout << "Failed to create Modify Room command!";
+                        continue;
+                    }
                 } else if (input == "send_message") {
                     string vGroupID;
                     vector <string> users;
@@ -111,20 +116,9 @@ int main (int argc, char** argv) {
                         continue;
                     }
 
-                    if (vGroupID.size() > 0) {
-                        command = "{ \"action\" : \"send_message\", \"vgroupid\" : " + vGroupID + ", " \
-                                + "\"message\" : \"" + message \
-                                + "\" }";
-                    } else {
-                        command = "{ \"action\" : \"send_message\", \"message\" : \"" + message + "\" , "
-                                + "\"users\" : [ ";
-                        for (int i=0; i<users.size(); i++) {
-                            command += "{ \"name\" : \"" + users.at(0) + "\" }";
-                            if (i < (users.size() - 1)) {
-                                command += ",";
-                            }
-                        }
-                        command += " ] }";
+                    if (!cmdStringSendMessage(command, vGroupID, users, message, ttl, bor)) {
+                        std::cout << "Failed to create Send Message command!";
+                        continue;
                     }
                 } else {
                     std::cout << "Unknown command: " << input << "\n";
