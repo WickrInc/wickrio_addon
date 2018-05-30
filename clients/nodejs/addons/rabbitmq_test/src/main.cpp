@@ -87,7 +87,8 @@ int main (int argc, char** argv) {
                       << "\nStatistics commands:\n"
                       << "    clear_statistics\n"
                       << "    get_statistics\n"
-                      << "\nSend Message commands:\n"
+                      << "\nMessage commands:\n"
+                      << "    get_message\n"
                       << "    send_message\n"
                       << "\nMisc. commands:\n"
                       << "    quit\n"
@@ -217,6 +218,8 @@ int main (int argc, char** argv) {
                 std::cout << "Failed to create Delete Group Conversaion command!";
                 continue;
             }
+        } else if (input == "get_message") {
+                botIface.cmdStringGetReceivedMessage(command);
         } else if (input == "send_message") {
             string vGroupID;
             vector <string> users;

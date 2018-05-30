@@ -316,6 +316,13 @@ BotIface::cmdStringClearStatistics(string& command)
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 BotIface::BotIfaceStatus
+BotIface::cmdStringGetReceivedMessage(string& command)
+{
+    command = "{ \"action\" : \"get_received_messages\" }";
+    return SUCCESS;
+}
+
+BotIface::BotIfaceStatus
 BotIface::cmdStringSendMessage(string& command,
                      const string& vGroupID,
                      const vector <string>& users,

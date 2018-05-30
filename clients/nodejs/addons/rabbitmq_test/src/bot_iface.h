@@ -47,13 +47,6 @@ public:
                                        const string& description,
                                        const string& ttl,
                                        const string& bor);
-
-    BotIfaceStatus cmdStringSendMessage(string& command,
-                                        const string& vGroupID,
-                                        const vector <string>& users,
-                                        const string& message,
-                                        const string& ttl,
-                                        const string& bor);
     BotIfaceStatus cmdStringGetRoom(string& command, const string& vGroupID);
     BotIfaceStatus cmdStringLeaveRoom(string& command, const string& vGroupID);
     BotIfaceStatus cmdStringDeleteRoom(string& command, const string& vGroupID);
@@ -65,6 +58,15 @@ public:
     BotIfaceStatus cmdStringDeleteGroupConvo(string& command, const string& vGroupID);
     BotIfaceStatus cmdStringGetGroupConvo(string& command, const string& vGroupID);
     BotIfaceStatus cmdStringGetGroupConvos(string& command);
+
+    BotIfaceStatus cmdStringGetReceivedMessage(string& command);
+    BotIfaceStatus cmdStringSendMessage(string& command,
+                                        const string& vGroupID,
+                                        const vector <string>& users,
+                                        const string& message,
+                                        const string& ttl,
+                                        const string& bor);
+
 
     string getLastErrorString() { return m_lastError; }
     void clearLastError() { m_lastError = ""; }

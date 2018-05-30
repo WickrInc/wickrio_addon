@@ -252,7 +252,7 @@ WickrIOAPIInterface::getReceivedMessages(QString& responseString)
 
     // Make sure the start is less than the number of IDs retrieved
     if (msgIDs.size() == 0) {
-        responseString = "{ \"}";
+        responseString = "{ }";
     } else {
         WickrIOMessage rxMsg;
         if (db->getMessage(msgIDs.at(0), &rxMsg)) {
