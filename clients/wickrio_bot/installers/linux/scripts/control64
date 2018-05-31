@@ -1,4 +1,4 @@
-Package: wio-test-botEXTENSION
+Package: wio-wickrio-botEXTENSION
 Architecture: amd64
 Section: net
 Priority: optional

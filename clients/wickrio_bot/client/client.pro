@@ -15,12 +15,11 @@ wickr_compliance_bot {
     DEFINES += WICKR_COMPLIANCE=1
 }
 
-
 CONFIG(release,release|debug) {
-    message(*** WickrIO Conformance Provision Release Build)
+    message(*** WickrIO Test Bot Client Release Build)
     BUILD_TYPE=release
 } else {
-    message(*** WickrIO Conformance Provision Debug build)
+    message(*** WickrIO Test Bot Client Beta build)
     DEFINES += VERSIONDEBUG
     BUILD_TYPE=debug
 }
@@ -77,16 +76,14 @@ include($${COMMON}/common.pri)
 include($${DEPTH}/shared/common_http/common_http.pri)
 
 #
-# Include the Wickr Client Base library
+# Include the Wickr Client library
 #
-#include($${DEPTH}/libs/WickrBase/WickrBase.pri)
-#include($${DEPTH}/qtsingleapplication/qtsingleapplication.pri)
+include(../../libs/WickrIOClient/WickrIOClient.pri)
 
 INCLUDEPATH += $$DEPTH/wickr-sdk/export
 INCLUDEPATH += $$DEPTH/wickr-sdk/src
 INCLUDEPATH += $$DEPTH/wickr-sdk/export/Wickr
 INCLUDEPATH += $$DEPTH/wickr-sdk/libs/qbson
-INCLUDEPATH += $$DEPTH/wickr-sdk/libs/libbson
 
 #
 # Include the Wickr IO library
@@ -104,14 +101,14 @@ include($${DEPTH}/libs/QtWebApp/QtWebApp.pri)
 include($${DEPTH}/libs/SMTPEmail/SMTPEmail.pri)
 
 #
-# Include the Wickr Client library
+# Include the v8 third party library
 #
-include(../../libs/WickrIOClient/WickrIOClient.pri)
+#include ($${DEPTH}/libs/third_party/v8/v8.pri)
 
 TEMPLATE = app
 
 CONFIG(release,release|debug) {
-    TARGET = provision
+    TARGET = wickrio_bot
 
     SOURCES += $${COMMON}/versiondebugNO.cpp
 
@@ -125,10 +122,10 @@ CONFIG(release,release|debug) {
     }
 }
 else {
-    wickr_blackout:TARGET = provisionOnPrm
-    else:wickr_beta:TARGET = provisionBeta
-    else:wickr_qa:TARGET = provisionQA
-    else:TARGET = provisionAlpha
+    wickr_blackout:TARGET = wickrio_botOnPrm
+    else:wickr_beta:TARGET = wickrio_botBeta
+    else:wickr_qa:TARGET = wickrio_botQA
+    else:TARGET = wickrio_botAlpha
 
     SOURCES += $${COMMON}/versiondebugYES.cpp
 
@@ -146,25 +143,18 @@ else {
 }
 
 RESOURCES += \
-    provisioning.qrc
+    wickrio_bot.qrc
 
 SOURCES += \
-    $${COMMON}/cmdbase.cpp \
-    cmdProvisioning.cpp \
     main.cpp \
-    wickrioeclientmain.cpp \
-    wickrIOLoginHdlr.cpp \
-    wickrIOProvisionHdlr.cpp \
-    wickrIOClientRuntime.cpp
+    requesthandler.cpp \
+    testClientRxDetails.cpp
 
 HEADERS += \
-    $${COMMON}/cmdbase.h \
     testClientConfigInfo.h \
-    cmdProvisioning.h \
-    wickrioeclientmain.h \
-    wickrIOLoginHdlr.h \
-    wickrIOProvisionHdlr.h \
-    wickrIOClientRuntime.h
+    requesthandler.h \
+    testClientConfigInfo.h \
+    testClientRxDetails.h
 
 # qsqlcipher_wickr
 
@@ -203,13 +193,13 @@ macx {
 
 linux-g++* {
     CONFIG(release,release|debug) {
-        QMAKE_RPATHDIR += /usr/lib/wio_test_bot
+        QMAKE_RPATHDIR += /usr/lib/wio_wickrio_bot
     }
     else {
-        wickr_blackout:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-onprem
-        else:wickr_beta:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-beta
-        else:wickr_qa:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-qa
-        else:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-alpha
+        wickr_blackout:QMAKE_RPATHDIR = /usr/lib/wio_wickrio_bot-onprem
+        else:wickr_beta:QMAKE_RPATHDIR = /usr/lib/wio_wickrio_bot-beta
+        else:wickr_qa:QMAKE_RPATHDIR = /usr/lib/wio_wickrio_bot-qa
+        else:QMAKE_RPATHDIR = /usr/lib/wio_wickrio_bot-alpha
     }
 
     QMAKE_CXXFLAGS += -Wunused-parameter
@@ -241,6 +231,7 @@ linux-g++* {
 
     LIBS += -L$$OUT_PWD/$${DEPTH}/libs/SMTPEmail -lSMTPEmail
 
+#    QMAKE_POST_LINK += cp $${V8_FILES} $${OUT_PWD}
 }
 
 win32 {

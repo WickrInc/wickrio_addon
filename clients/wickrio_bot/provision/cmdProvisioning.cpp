@@ -20,7 +20,7 @@ bool CmdProvisioning::runCommands()
 
     bool quitcheck;
 
-    // Need to have a valid test bot running
+    // Need to have a valid wickrIO bot running
 
 
 #if defined(WICKR_ENTERPRISE)
