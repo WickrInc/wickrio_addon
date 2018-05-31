@@ -22,28 +22,20 @@ void display(const v8::FunctionCallbackInfo<v8::Value> & args) {
   //args.GetReturnValue().Set(retval);
 }
 
+BotIface::BotIfaceStatus cmdGetStatistics(const v8::FunctionCallbackInfo<v8::Value> & args){
+  string command, reponse;
+  botIface.cmdStringGetStatistics(command);
 
-
-BotIface::BotIfaceStatus send(const v8::FunctionCallbackInfo<v8::Value> & args) {
-  Isolate* isolate = args.GetIsolate();
-  std::string client = std::string("name");
-  BotIface botIface(client);
-
-  v8::String::Utf8Value param1(args[0]->ToString());
-  std::string command = std::string(*param1);
-  v8::String::Utf8Value param2(args[1]->ToString());
-  std::string response = std::string(*param2);
-
-  string response;
   if (botIface.send(command, response) != BotIface::SUCCESS) {
       std::cout << "Send failed: " << botIface.getLastErrorString();
       continue;
   }
-
-  Local<Boolean> retval = v8::Boolean::New(isolate, result);
-  args.GetReturnValue().Set(retval);
+  else {
+      if (response.length() > 0) {
+            cout << response << endl;
+      }
+  }
 }
-
 
 
 BotIface::BotIfaceStatus cmdAddRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
@@ -51,7 +43,7 @@ BotIface::BotIfaceStatus cmdAddRoom(const v8::FunctionCallbackInfo<v8::Value> & 
   std::string client = std::string("name");
   BotIface botIface(client);
 
- std::string command;
+  string command, reponse;
 
   vector <string> members;
   Local<Array> arr = Local<Array>::Cast(args[1]);
@@ -80,6 +72,16 @@ BotIface::BotIfaceStatus cmdAddRoom(const v8::FunctionCallbackInfo<v8::Value> & 
 
   BotIface::BotIfaceStatus result = botIface.cmdStringAddRoom(command, members, moderators, title, description, ttl, bor);
 
+  if (botIface.send(command, response) != BotIface::SUCCESS) {
+      std::cout << "Send failed: " << botIface.getLastErrorString();
+      continue;
+  }
+  else {
+      if (response.length() > 0) {
+            cout << response << endl;
+      }
+  }
+
   BotIface::BotIfaceStatus retval = v8::BotIface::BotIfaceStatus::New(isolate, result);
   args.GetReturnValue().Set(retval);
 }
@@ -87,11 +89,13 @@ BotIface::BotIfaceStatus cmdAddRoom(const v8::FunctionCallbackInfo<v8::Value> & 
 
 
 void init(Handle <Object> exports, Handle<Object> module) {
-  std::string client = std::string("name");
-  BotIface botIface(client);
+  //2nd param: what we call from Javascript
+  //3rd param: the name of the actual function
   NODE_SET_METHOD(exports, "display", display);
-  NODE_SET_METHOD(exports, "send", send);
-  NODE_SET_METHOD(exports, "cmdAddRoom", cmdAddRoom);
+  NODE_SET_METHOD(exports, "cmdGetStatistics", cmdGetStatistics);
+  //NODE_SET_METHOD(exports, "cmdStringClearStatistics", cmdStringClearStatistics);
+  //NODE_SET_METHOD(exports, "cmdStringGetRooms", cmdStringGetRooms);
+  //NODE_SET_METHOD(exports, "cmdAddRoom", cmdAddRoom);
   // NODE_SET_METHOD(exports, "cmdStringModifyRoom", cmdStringModifyRoom);
   // NODE_SET_METHOD(exports, "cmdStringDeleteRoom", cmd_string_delete_room);
   // NODE_SET_METHOD(exports, "cmdStringLeaveRoom", cmd_string_leave_room);
