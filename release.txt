@@ -1,4 +1,6 @@
-Release Notes from v4.26-release to v4.41.2-2:
+Release Notes from v4.26-release to v4.41.3-2:
+  * Moving the integrations to a separate installer [ci skip]
+  * Initial Commit for Node.js/C++ Addon [ci skip]
   * Initial work for nodejs addon work
   * Integration installation and configuration changes
   * Parser Restart Handling
