@@ -1,9 +1,9 @@
 #!/bin/bash
 
-if [[ $# -ne 7 ]]
+if [[ $# -ne 8 ]]
 then
   FileName=`basename $0`
-  echo "usage: $FileName <WickrQT> <console deb> <bot deb> <bot binary> <docker image> <image tag> <needs node>"
+  echo "usage: $FileName <WickrQT> <console deb> <bot deb> <bot binary> <docker image> <image tag> <integration deb> <needs node>"
   exit 1
 fi
 
@@ -19,7 +19,8 @@ botexe=$4
 dockerImage="wickr/$5"
 dockerService="wickrio-$5"
 dockerTag=$6
-needsNode=$7
+integrationdebfile="$7"
+needsNode=$8
 
 echo ""
 echo "********************************************************************"
@@ -33,9 +34,9 @@ echo "**   dockerTag=$dockerTag"
 # set the values within the Dockerfile and the start.sh
 #
 if [ "$needsNode" == "true" ] ; then
-  sed -e "s/QTDEBFILE/${qtdebfile}/g" -e "s/BOTDEBFILE/${botdebfile}/g" -e "s/CONSOLEDEBFILE/${consoledebfile}/g" <$current/Dockerfile.node.orig > $current/Dockerfile
+  sed -e "s/QTDEBFILE/${qtdebfile}/g" -e "s/BOTDEBFILE/${botdebfile}/g" -e "s/CONSOLEDEBFILE/${consoledebfile}/g" -e "s/INTEGRATIONDEBFILE/${consoledebfile}/g" <$current/Dockerfile.node.orig > $current/Dockerfile
 else
-  sed -e "s/QTDEBFILE/${qtdebfile}/g" -e "s/BOTDEBFILE/${botdebfile}/g" -e "s/CONSOLEDEBFILE/${consoledebfile}/g" <$current/Dockerfile.orig > $current/Dockerfile
+  sed -e "s/QTDEBFILE/${qtdebfile}/g" -e "s/BOTDEBFILE/${botdebfile}/g" -e "s/CONSOLEDEBFILE/${consoledebfile}/g" -e "s/INTEGRATIONDEBFILE/${consoledebfile}/g" <$current/Dockerfile.orig > $current/Dockerfile
 fi
 sed -e "s/BOTEXECUTABLE/${botexe}/g" <$current/start.sh.orig > $current/start.sh
 chmod 777 $current/start.sh

@@ -12,6 +12,7 @@ EXPOSE 4001
 EXPOSE 5001
 
 COPY packages/QTDEBFILE ./QTDEBFILE
+COPY packages/INTEGRATIONDEBFILE ./INTEGRATIONDEBFILE
 COPY packages/BOTDEBFILE ./BOTDEBFILE
 COPY packages/CONSOLEDEBFILE ./CONSOLEDEBFILE
 
@@ -21,6 +22,7 @@ RUN apt-get update \
   && apt-get -y install gdebi \
   && apt-get -y install libsqlcipher.dev \
   && gdebi -n QTDEBFILE \
+  && gdebi -n INTEGRATIONDEBFILE \
   && gdebi -n BOTDEBFILE \
   && gdebi -n CONSOLEDEBFILE
 ARG DEBIAN_FRONTEND=readline
