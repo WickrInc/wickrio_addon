@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_CXX_STANDARD 11)
+set(PROJ_LIBRARIES "amqpcpp")
 
 # Name of the project (will be the name of the plugin)
 project (wickrio_addon)
