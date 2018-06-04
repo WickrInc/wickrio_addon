@@ -16,10 +16,10 @@ wickr_compliance_bot {
 }
 
 CONFIG(release,release|debug) {
-    message(*** WickrIO Test Bot Client Release Build)
+    message(*** WickrIO Bot Client Release Build)
     BUILD_TYPE=release
 } else {
-    message(*** WickrIO Test Bot Client Beta build)
+    message(*** WickrIO Bot Client Beta build)
     DEFINES += VERSIONDEBUG
     BUILD_TYPE=debug
 }
@@ -367,4 +367,5 @@ INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/libs/qbson
 INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/libs/libbson
 INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/libs/cloud/qcloud
 INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/libs/WickrProto
+
 

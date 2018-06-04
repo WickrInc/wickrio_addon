@@ -63,11 +63,13 @@ WickrBotLog::write(const QString& message, int count, WickrBotLog::WickrBotLogTy
             .arg(message)
             .arg(count);
 
+#if defined(WICKR_DEBUG) || !defined(WICKR_PRODUCTION)
     if (m_outFileName.isEmpty()) {
         qDebug() << toString(type) << outmessage;
     } else {
         writeToFile(m_outFileName, outmessage);
     }
+#endif
 
     // If it is NOT redirected output then put into the log file
     if (type != RedirectedOutput) {
