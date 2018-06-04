@@ -6,7 +6,7 @@
 #endif
 
 #include <unistd.h>
-#include "/home/aaron/Desktop/wickr-wickrio/wickr-wickrio/clients/nodejs/addons/libs/third_party/amqpcpp/include/AMQPcpp.h"
+#include "AMQPcpp.h"
 
 using namespace std;
 
