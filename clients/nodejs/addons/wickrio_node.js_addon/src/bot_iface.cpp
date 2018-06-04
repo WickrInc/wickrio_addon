@@ -54,9 +54,9 @@ BotIface::send(const string& command, string& response)
 
 
 void
-BotIface::display( string & a)
+BotIface::display(string & a)
 {
-    cout<<"String:"<<a;
+    cout<<"String: "<< a << endl;
     return;
 }
 ///////////////////////////////////////////////////////////////////////////////////////////
