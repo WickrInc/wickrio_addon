@@ -16,10 +16,10 @@ wickr_compliance_bot {
 }
 
 CONFIG(release,release|debug) {
-    message(*** WickrIO Test Bot Client Release Build)
+    message(*** WickrIO Bot Client Release Build)
     BUILD_TYPE=release
 } else {
-    message(*** WickrIO Test Bot Client Beta build)
+    message(*** WickrIO Bot Client Beta build)
     DEFINES += VERSIONDEBUG
     BUILD_TYPE=debug
 }
@@ -108,7 +108,7 @@ include($${DEPTH}/libs/SMTPEmail/SMTPEmail.pri)
 TEMPLATE = app
 
 CONFIG(release,release|debug) {
-    TARGET = test_bot
+    TARGET = wickrio_bot
 
     SOURCES += $${COMMON}/versiondebugNO.cpp
 
@@ -122,10 +122,10 @@ CONFIG(release,release|debug) {
     }
 }
 else {
-    wickr_blackout:TARGET = test_botOnPrm
-    else:wickr_beta:TARGET = test_botBeta
-    else:wickr_qa:TARGET = test_botQA
-    else:TARGET = test_botAlpha
+    wickr_blackout:TARGET = wickrio_botOnPrm
+    else:wickr_beta:TARGET = wickrio_botBeta
+    else:wickr_qa:TARGET = wickrio_botQA
+    else:TARGET = wickrio_botAlpha
 
     SOURCES += $${COMMON}/versiondebugYES.cpp
 
@@ -143,7 +143,7 @@ else {
 }
 
 RESOURCES += \
-    test_bot.qrc
+    wickrio_bot.qrc
 
 SOURCES += \
     main.cpp \
@@ -193,13 +193,13 @@ macx {
 
 linux-g++* {
     CONFIG(release,release|debug) {
-        QMAKE_RPATHDIR += /usr/lib/wio_test_bot
+        QMAKE_RPATHDIR += /usr/lib/wio_wickrio_bot
     }
     else {
-        wickr_blackout:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-onprem
-        else:wickr_beta:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-beta
-        else:wickr_qa:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-qa
-        else:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-alpha
+        wickr_blackout:QMAKE_RPATHDIR = /usr/lib/wio_wickrio_bot-onprem
+        else:wickr_beta:QMAKE_RPATHDIR = /usr/lib/wio_wickrio_bot-beta
+        else:wickr_qa:QMAKE_RPATHDIR = /usr/lib/wio_wickrio_bot-qa
+        else:QMAKE_RPATHDIR = /usr/lib/wio_wickrio_bot-alpha
     }
 
     QMAKE_CXXFLAGS += -Wunused-parameter
@@ -367,4 +367,5 @@ INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/libs/qbson
 INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/libs/libbson
 INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/libs/cloud/qcloud
 INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/libs/WickrProto
+
 

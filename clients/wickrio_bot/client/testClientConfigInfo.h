@@ -6,19 +6,19 @@
  * the TARGET definitions within the .pro files.
  */
 #if defined(WICKR_BLACKOUT) && defined(WICKR_DEBUG)
-#define WBIO_CLIENT_TARGET          "test_botOnPrem"
+#define WBIO_CLIENT_TARGET          "wickrio_botOnPrem"
 
 #elif defined(WICKR_BETA)
-#define WBIO_CLIENT_TARGET          "test_botBeta"
+#define WBIO_CLIENT_TARGET          "wickrio_botBeta"
 
 #elif defined(WICKR_ALPHA)
-#define WBIO_CLIENT_TARGET          "test_botAlpha"
+#define WBIO_CLIENT_TARGET          "wickrio_botAlpha"
 
 #elif defined(WICKR_PRODUCTION)
-#define WBIO_CLIENT_TARGET          "test_bot"
+#define WBIO_CLIENT_TARGET          "wickrio_bot"
 
 #elif defined(WICKR_QA)
-#define WBIO_CLIENT_TARGET          "test_botQA"
+#define WBIO_CLIENT_TARGET          "wickrio_botQA"
 
 #else
 "No WICKR_TARGET defined!!!"

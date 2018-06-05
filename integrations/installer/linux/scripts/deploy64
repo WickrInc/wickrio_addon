@@ -1,0 +1,127 @@
+#!/bin/sh
+
+# a second stage deploy script...
+#
+# Arguments to this script:
+# $1 = build number
+# $2 = build extension string (i.e. alpha)
+# $3 = build installation string (i.e. Alpha)
+# $4 = release build flag (true for release)
+# $5 = Output directory
+
+set -e
+current=`dirname $0`
+cd $current
+
+build_number=$1
+build_extension=$2
+install_extension=$3
+release_flag=$4
+output_dir="$5"
+
+if test -z "$release_flag" ; then
+  release_flag="false"; fi
+
+#
+# Make sure the version number is the correct length
+#
+check=${#build_number}
+if [ $check -lt 8 ]; then
+  build_number="0$build_number"
+fi
+
+#
+# Debug display of input
+#
+echo build_number=$build_number
+echo build_extension=$build_extension
+echo install_extension=$install_extension
+echo release_flag=$release_flag
+
+#
+# Setup the version number(s)
+#
+maj=`echo $build_number | cut -c1-2 | sed 's/^0*//'`
+min=`echo $build_number | cut -c3-4`
+pat=`echo $build_number | cut -c5-6`
+bld=`echo $build_number | cut -c7-8`
+
+if [ "$release_flag" = "true" ]; then
+    bldtype=""
+    BldType=""
+    version="${maj}.${min}.${pat}-${bld}"
+    svcbldtype=""
+    svcBldType=""
+else
+    bldtype="-${build_extension}"
+    BldType=$install_extension
+    version="${maj}.${min}.${pat}-${bld}~${build_extension}"
+    svcbldtype="-debug"
+    svcBldType="Debug"
+fi
+
+
+#
+# More debug output
+#
+echo bldtype=$bldtype
+echo BldType=$BldType
+echo version=$version
+
+prefix=~/tmp/wio_integration${bldtype}-deb
+debian=~/tmp/wio_integration${bldtype}-deb/DEBIAN
+
+dstintegrationsdir=$prefix/usr/lib/wickr/integrations
+srcintegrationsdir=$current/../../../../integrations
+
+# Cleanup the target location (i.e. remove the target directory)
+rm -rf $prefix
+
+# Create the appropriate directories in the target location
+mkdir -p $debian
+mkdir -p $dstintegrationsdir
+
+#
+# Change the contents appropriately for Beta version Release versions
+#
+sed -e "s/EXTENSION/${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" -e "s/SVCEXTEN/${svcbldtype}/g" -e "s/VERSION/$version/" <$current/control64 > $debian/control
+
+# Installer pre and post installation scripts
+sed -e "s/EXTENSION/${svcbldtype}/g" -e "s/INSTALLEXT/${SvcBldType}/g" <$current/preinst > $debian/preinst
+sed -e "s/EXTENSION/${svcbldtype}/g" -e "s/INSTALLEXT/${SvcBldType}/g" <$current/postinst > $debian/postinst
+sed -e "s/EXTENSION/${svcbldtype}/g" -e "s/INSTALLEXT/${SvcBldType}/g" <$current/prerm > $debian/prerm
+
+#
+# Copy the integrations software
+#
+cp -a -r $srcintegrationsdir/software $dstintegrationsdir
+
+#
+# Generate the MD5 SUM value
+#
+cd $prefix
+find . -type f ! -regex '.*?debian-binary.*' ! -regex '.*?DEBIAN.*' -printf '%P ' | xargs md5sum > DEBIAN/md5sums
+
+#
+# Change the mode of the installed files
+#
+cd ~/tmp
+chmod 0644 $debian/*
+chmod -R g-w $prefix/usr
+chmod 755 $debian/preinst
+chmod 755 $debian/postinst
+chmod 755 $debian/prerm
+
+#
+# Create the actual package
+#
+rm -f wio_integration${bldtype}_*.deb
+fakeroot chown -R root:root $prefix
+
+fakeroot dpkg -b wio_integration${bldtype}-deb/ wio_integration${bldtype}_${version}.deb
+sha256sum wio_integration${bldtype}_${version}.deb >wio_integration${bldtype}_${version}.sha256
+
+if test -d "$output_dir" ; then
+    cp wio_integration${bldtype}_${version}.* "$output_dir/"
+    echo "copying wio_integration${bldtype}_${version}.* to $output_dir/"
+fi

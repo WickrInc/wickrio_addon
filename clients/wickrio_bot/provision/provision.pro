@@ -203,13 +203,13 @@ macx {
 
 linux-g++* {
     CONFIG(release,release|debug) {
-        QMAKE_RPATHDIR += /usr/lib/wio_test_bot
+        QMAKE_RPATHDIR += /usr/lib/wio_wickrio_bot
     }
     else {
-        wickr_blackout:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-onprem
-        else:wickr_beta:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-beta
-        else:wickr_qa:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-qa
-        else:QMAKE_RPATHDIR = /usr/lib/wio_test_bot-alpha
+        wickr_blackout:QMAKE_RPATHDIR = /usr/lib/wio_wickrio_bot-onprem
+        else:wickr_beta:QMAKE_RPATHDIR = /usr/lib/wio_wickrio_bot-beta
+        else:wickr_qa:QMAKE_RPATHDIR = /usr/lib/wio_wickrio_bot-qa
+        else:QMAKE_RPATHDIR = /usr/lib/wio_wickrio_bot-alpha
     }
 
     QMAKE_CXXFLAGS += -Wunused-parameter

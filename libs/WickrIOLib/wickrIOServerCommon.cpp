@@ -116,16 +116,16 @@ WBIOServerCommon::initClientApps()
         WBIOServerCommon::m_supportedBots.append(hubot);
         WBIOServerCommon::m_supportedBots.append(supportBot);
 
-        WBIOClientApps *testAlpha = new WBIOClientApps("test_botAlpha", nullptr, nullptr, false, false);
-        WBIOClientApps *testBeta  = new WBIOClientApps("test_botBeta",  nullptr, nullptr, false, false);
-        WBIOClientApps *testProd  = new WBIOClientApps("test_bot",      nullptr, nullptr, false, false);
-        testAlpha->addBot(hubot); testAlpha->addBot(supportBot);
-        testBeta->addBot(hubot);  testBeta->addBot(supportBot);
-        testProd->addBot(hubot);  testProd->addBot(supportBot);
+        WBIOClientApps *wickrIOAlpha = new WBIOClientApps("wickrio_botAlpha", nullptr, nullptr, false, false);
+        WBIOClientApps *wickrIOBeta  = new WBIOClientApps("wickrio_botBeta",  nullptr, nullptr, false, false);
+        WBIOClientApps *wickrIOProd  = new WBIOClientApps("wickrio_bot",      nullptr, nullptr, false, false);
+        wickrIOAlpha->addBot(hubot); wickrIOAlpha->addBot(supportBot);
+        wickrIOBeta->addBot(hubot);  wickrIOBeta->addBot(supportBot);
+        wickrIOProd->addBot(hubot);  wickrIOProd->addBot(supportBot);
 
-        WBIOServerCommon::m_botApps.append(testAlpha);
-        WBIOServerCommon::m_botApps.append(testBeta);
-        WBIOServerCommon::m_botApps.append(testProd);
+        WBIOServerCommon::m_botApps.append(wickrIOAlpha);
+        WBIOServerCommon::m_botApps.append(wickrIOBeta);
+        WBIOServerCommon::m_botApps.append(wickrIOProd);
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botAlpha", "compliance_provAlpha", nullptr,               true,  false));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botBeta",  "compliance_provBeta",  nullptr,               true,  false));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_bot",      "compliance_prov",      nullptr,               true,  false));

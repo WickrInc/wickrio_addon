@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -e
+
+case "$1" in
+    upgrade)
+        echo "Pre-remove for upgrade of WickrIO Integration Software:"
+
+    ;;
+
+    remove)
+        echo "Removing current installation of WickrIO Integration Software:"
+
+    ;;
+esac    
+
+
+exit 0

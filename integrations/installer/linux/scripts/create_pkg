@@ -1,0 +1,37 @@
+#!/bin/sh
+
+# a second stage deploy script...
+
+set -e
+current=`dirname $0`
+cd $current
+
+QTVER="5_9"
+
+buildtype=$1
+outputdir="$2"
+
+#
+# Setup the build type values and validate the input value
+#
+case "$buildtype" in
+debug)
+    bldExtStr="debug"
+    bldInsStr="Debug"
+    relBldFlag="false"
+    ;;
+release)
+    bldExtStr=""
+    bldInsStr=""
+    relBldFlag="true"
+    ;;
+*)
+    echo "usage: create_pkg <debug|release> [output directory]"
+    exit
+    ;;
+esac
+
+
+build_number=`cat ../../../../BUILD_NUMBER`
+
+$current/deploy64 $build_number "${bldExtStr}" "${bldInsStr}" ${relBldFlag} "${outputdir}"

@@ -27,5 +27,5 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_JS_INC})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../libs/third_party/amqpcpp/include ${CMAKE_CURRENT_SOURCE_DIR}/../libs/third_party/rabbitmq-c/include)
 
-# TODO: make sure openssl is properly linked below
-target_link_libraries(${PROJECT_NAME} ${CMAKE_JS_LIB} ${CMAKE_CURRENT_SOURCE_DIR}/../rabbitmq_test ${CMAKE_CURRENT_SOURCE_DIR}/../libs/third_party/amqpcpp/libamqpcpp.a ${CMAKE_CURRENT_SOURCE_DIR}/../libs/third_party/rabbitmq-c/librabbitmq.a ${CMAKE_DL_LIBS} OpenSSL::SSL OpenSSL::Crypto)
+#target_link_libraries(rabbitmq_test libamqpcpp.a librabbitmq.a openssl ${CMAKE_DL_LIBS} OpenSSL::Crypto)
+target_link_libraries(${PROJECT_NAME} ${CMAKE_JS_LIB} libamqpcpp.so librabbitmq.so ${CMAKE_DL_LIBS} OpenSSL::SSL OpenSSL::Crypto)

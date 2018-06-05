@@ -115,10 +115,11 @@ case "$product-$btype" in
         doWelcomeBot=""
         doCoreBot="true"
         consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
+        integrationDeb="wio_integration-debug_${version}-${bld}~debug_amd64.deb"
         complianceDeb=""
         complianceExe=""
-        broadcastDeb="wio_test_bot-alpha_${version}-${bld}~alpha_amd64.deb"
-        broadcastExe="test_botAlpha"
+        broadcastDeb="wio_wickrio_bot-alpha_${version}-${bld}~alpha_amd64.deb"
+        broadcastExe="wickrio_botAlpha"
         broadcastImage="bot-cloud-broadcast-alpha"
         welcomeDeb=""
         welcomeExe="welcome_botAlpha"
@@ -133,10 +134,11 @@ case "$product-$btype" in
         doWelcomeBot=""
         doCoreBot="true"
         consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
+        integrationDeb="wio_integration-debug_${version}-${bld}~debug_amd64.deb"
         complianceDeb=""
         complianceExe=""
-        broadcastDeb="wio_test_bot-beta_${version}-${bld}~beta_amd64.deb"
-        broadcastExe="test_botBeta"
+        broadcastDeb="wio_wickrio_bot-beta_${version}-${bld}~beta_amd64.deb"
+        broadcastExe="wickrio_botBeta"
         broadcastImage="bot-cloud-broadcast-beta"
         welcomeDeb=""
         welcomeExe=""
@@ -151,10 +153,11 @@ case "$product-$btype" in
         doWelcomeBot=""
         doCoreBot="true"
         consoleDeb="wio_console_${version}-${bld}_amd64.deb"
+        integrationDeb="wio_integration_${version}-${bld}_amd64.deb"
         complianceDeb=""
         complianceExe=""
-        broadcastDeb="wio_test_bot_${version}-${bld}_amd64.deb"
-        broadcastExe="test_bot"
+        broadcastDeb="wio_wickrio_bot_${version}-${bld}_amd64.deb"
+        broadcastExe="wickrio_bot"
         broadcastImage="bot-cloud-broadcast"
         welcomeDeb=""
         welcomeExe=""
@@ -169,6 +172,7 @@ case "$product-$btype" in
         doWelcomeBot="true"
         doCoreBot="true"
         consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
+        integrationDeb="wio_integration-debug_${version}-${bld}~debug_amd64.deb"
         complianceDeb=""
         complianceExe=""
         broadcastDeb=""
@@ -188,6 +192,7 @@ case "$product-$btype" in
         doWelcomeBot="true"
         doCoreBot="true"
         consoleDeb="wio_console_${version}-${bld}_amd64.deb"
+        integrationDeb="wio_integration_${version}-${bld}_amd64.deb"
         complianceDeb=""
         broadcastDeb=""
         broadcastExe=""
@@ -206,11 +211,12 @@ case "$product-$btype" in
         doWelcomeBot=""
         doCoreBot=""
         consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
+        integrationDeb="wio_integration-debug_${version}-${bld}~debug_amd64.deb"
         complianceDeb="wio_compliance_bot-alpha_${version}-${bld}~alpha_amd64.deb"
         complianceExe="compliance_botAlpha"
         complianceImage="bot-enterprise-compliance-alpha"
-        broadcastDeb="wio_test_bot-alpha_${version}-${bld}~alpha_amd64.deb"
-        broadcastExe="test_botAlpha"
+        broadcastDeb="wio_wickrio_bot-alpha_${version}-${bld}~alpha_amd64.deb"
+        broadcastExe="wickrio_botAlpha"
         broadcastImage="bot-enterprise-broadcast-alpha"
         welcomeDeb=""
         welcomeExe=""
@@ -224,11 +230,12 @@ case "$product-$btype" in
         doWelcomeBot=""
         doCoreBot=""
         consoleDeb="wio_console_${version}-${bld}_amd64.deb"
+        integrationDeb="wio_integration_${version}-${bld}_amd64.deb"
         complianceDeb="wio_compliance_bot_${version}-${bld}_amd64.deb"
         complianceExe="compliance_bot"
         complianceImage="bot-enterprise-compliance"
-        broadcastDeb="wio_test_bot_${version}-${bld}_amd64.deb"
-        broadcastExe="test_bot"
+        broadcastDeb="wio_wickrio_bot_${version}-${bld}_amd64.deb"
+        broadcastExe="wickrio_bot"
         broadcastImage="bot-enterprise-broadcast"
         welcomeDeb=""
         welcomeExe=""
@@ -302,10 +309,10 @@ if test ! -z "$doComplianceBot" ; then
 fi
 
 if test ! -z "$doBroadcastBot" ; then
-    echo "Create test_bot for $product $btype"
+    echo "Create wickrio_bot for $product $btype"
     build_number=`cat $abs/BUILD_NUMBER`
     binary_dir="$abs/$build"
-    $abs/clients/test_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
+    $abs/clients/wickrio_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
 fi
 
 if test ! -z "$doWelcomeBot" ; then
@@ -321,6 +328,10 @@ if test ! -z "$doCoreBot" ; then
     binary_dir="$abs/$build"
     $abs/clients/core_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
 fi
+
+echo "going to create the integration software package"
+build_number=`cat $abs/BUILD_NUMBER`
+$abs/integrations/installer/linux/scripts/deploy64 $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$deploy"
 
 echo "going to create $btype for services"
 build_number=`cat $abs/BUILD_NUMBER`
@@ -392,6 +403,10 @@ fi
 mkdir -p docker/packages
 cp ${deploy}/${wickrQTDeb} docker/packages
 cp ${deploy}/${consoleDeb} docker/packages
+
+if test ! -z "$integrationDeb" ; then
+    cp ${deploy}/${complianceDeb} docker/packages
+fi
 
 if test ! -z "$complianceDeb" ; then
     cp ${deploy}/${complianceDeb} docker/packages

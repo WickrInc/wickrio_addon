@@ -15,6 +15,9 @@ public:
     BotIface(const string& client);
     ~BotIface();
 
+    /*
+     * Definition of return values from class functions
+     */
     enum BotIfaceStatus {
         SUCCESS = 0,
 
@@ -25,8 +28,28 @@ public:
         INVALID_FIELD_VALUE,
     };
 
+    /*
+     * Initialization function.  Must be called before starting
+     */
     BotIfaceStatus init();
+
+    /*
+     * Function to send a request to the client. Response is the value
+     * returned from the client.
+     */
     BotIfaceStatus send(const string& command, string& reponse);
+
+    /*
+     * These functions are to access the error information associated
+     * with the last error that occurred
+     */
+    string getLastErrorString() { return m_lastError; }
+    void clearLastError() { m_lastError = ""; }
+
+
+    /*
+     * Definition of functions that create strings to be sent to client
+     */
 
     BotIfaceStatus cmdStringGetStatistics(string& command);
     BotIfaceStatus cmdStringClearStatistics(string& command);
@@ -67,16 +90,12 @@ public:
                                         const string& ttl,
                                         const string& bor);
 
-
-    string getLastErrorString() { return m_lastError; }
-    void clearLastError() { m_lastError = ""; }
-
 private:
-    string          m_clientName;
-    RabbitMQIface   *m_iface = nullptr;
+    string          m_clientName;           // Name of the client interfacing with
+    RabbitMQIface   *m_iface = nullptr;     // Current rabbit queue interface
+    string          m_lastError = "";       // Last error string
 
-    string          m_lastError = "";
-
+    // Generic function to set the fields associated with an add/modify room command
     BotIfaceStatus setRoomFields(string& command,
                                  const vector <string>& members,
                                  const vector <string>& moderators,

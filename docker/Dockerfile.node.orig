@@ -12,6 +12,7 @@ EXPOSE 4001
 EXPOSE 5001
 
 COPY packages/QTDEBFILE ./QTDEBFILE
+COPY packages/INTEGRATIONDEBFILE ./INTEGRATIONDEBFILE
 COPY packages/BOTDEBFILE ./BOTDEBFILE
 COPY packages/CONSOLEDEBFILE ./CONSOLEDEBFILE
 
@@ -26,6 +27,7 @@ RUN apt-get update \
   && npm install -g coffeescript pm2 coffee-script axios prompt fs path \
   && apt-get install -y openssl \
   && gdebi -n QTDEBFILE \
+  && gdebi -n INTEGRATIONDEBFILE \
   && gdebi -n BOTDEBFILE \
   && gdebi -n CONSOLEDEBFILE
 ARG DEBIAN_FRONTEND=readline
