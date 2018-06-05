@@ -15,6 +15,7 @@ COPY packages/QTDEBFILE ./QTDEBFILE
 COPY packages/INTEGRATIONDEBFILE ./INTEGRATIONDEBFILE
 COPY packages/BOTDEBFILE ./BOTDEBFILE
 COPY packages/CONSOLEDEBFILE ./CONSOLEDEBFILE
+COPY packages/COREDEBFILE ./COREDEBFILE
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
@@ -29,7 +30,8 @@ RUN apt-get update \
   && gdebi -n QTDEBFILE \
   && gdebi -n INTEGRATIONDEBFILE \
   && gdebi -n BOTDEBFILE \
-  && gdebi -n CONSOLEDEBFILE
+  && gdebi -n CONSOLEDEBFILE \
+  && gdebi -n COREDEBFILE
 ARG DEBIAN_FRONTEND=readline
 
 COPY start.sh ./start.sh

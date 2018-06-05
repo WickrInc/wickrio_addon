@@ -118,9 +118,9 @@ case "$product-$btype" in
         integrationDeb="wio_integration-debug_${version}-${bld}~debug_amd64.deb"
         complianceDeb=""
         complianceExe=""
-        broadcastDeb="wio_wickrio_bot-alpha_${version}-${bld}~alpha_amd64.deb"
-        broadcastExe="wickrio_botAlpha"
-        broadcastImage="bot-cloud-broadcast-alpha"
+        wickrIODeb="wio_wickrio_bot-alpha_${version}-${bld}~alpha_amd64.deb"
+        wickrIOExe="wickrio_botAlpha"
+        wickrIOBotImage="bot-cloud-alpha"
         welcomeDeb=""
         welcomeExe="welcome_botAlpha"
         coreDeb="wio_core_bot-alpha_${version}-${bld}~alpha_amd64.deb"
@@ -137,9 +137,9 @@ case "$product-$btype" in
         integrationDeb="wio_integration-debug_${version}-${bld}~debug_amd64.deb"
         complianceDeb=""
         complianceExe=""
-        broadcastDeb="wio_wickrio_bot-beta_${version}-${bld}~beta_amd64.deb"
-        broadcastExe="wickrio_botBeta"
-        broadcastImage="bot-cloud-broadcast-beta"
+        wickrIODeb="wio_wickrio_bot-beta_${version}-${bld}~beta_amd64.deb"
+        wickrIOExe="wickrio_botBeta"
+        wickrIOBotImage="bot-cloud-beta"
         welcomeDeb=""
         welcomeExe=""
         coreDeb="wio_core_bot-beta_${version}-${bld}~beta_amd64.deb"
@@ -156,9 +156,9 @@ case "$product-$btype" in
         integrationDeb="wio_integration_${version}-${bld}_amd64.deb"
         complianceDeb=""
         complianceExe=""
-        broadcastDeb="wio_wickrio_bot_${version}-${bld}_amd64.deb"
-        broadcastExe="wickrio_bot"
-        broadcastImage="bot-cloud-broadcast"
+        wickrIODeb="wio_wickrio_bot_${version}-${bld}_amd64.deb"
+        wickrIOExe="wickrio_bot"
+        wickrIOBotImage="bot-cloud"
         welcomeDeb=""
         welcomeExe=""
         coreDeb="wio_core_bot_${version}-${bld}_amd64.deb"
@@ -175,9 +175,9 @@ case "$product-$btype" in
         integrationDeb="wio_integration-debug_${version}-${bld}~debug_amd64.deb"
         complianceDeb=""
         complianceExe=""
-        broadcastDeb=""
-        broadcastExe=""
-        broadcastImage=""
+        wickrIODeb=""
+        wickrIOExe=""
+        wickrIOBotImage=""
         welcomeDeb="wio_welcome_bot-alpha_${version}-${bld}~alpha_amd64.deb"
         welcomeExe="welcome_botAlpha"
         welcomeImage="bot-messenger-welcome-alpha"
@@ -194,9 +194,9 @@ case "$product-$btype" in
         consoleDeb="wio_console_${version}-${bld}_amd64.deb"
         integrationDeb="wio_integration_${version}-${bld}_amd64.deb"
         complianceDeb=""
-        broadcastDeb=""
-        broadcastExe=""
-        broadcastImage=""
+        wickrIODeb=""
+        wickrIOExe=""
+        wickrIOBotImage=""
         welcomeDeb="wio_welcome_bot_${version}-${bld}_amd64.deb"
         welcomeExe="welcome_bot"
         welcomeImage="bot-messenger-welcome"
@@ -215,9 +215,9 @@ case "$product-$btype" in
         complianceDeb="wio_compliance_bot-alpha_${version}-${bld}~alpha_amd64.deb"
         complianceExe="compliance_botAlpha"
         complianceImage="bot-enterprise-compliance-alpha"
-        broadcastDeb="wio_wickrio_bot-alpha_${version}-${bld}~alpha_amd64.deb"
-        broadcastExe="wickrio_botAlpha"
-        broadcastImage="bot-enterprise-broadcast-alpha"
+        wickrIODeb="wio_wickrio_bot-alpha_${version}-${bld}~alpha_amd64.deb"
+        wickrIOExe="wickrio_botAlpha"
+        wickrIOBotImage="bot-enterprise-alpha"
         welcomeDeb=""
         welcomeExe=""
         coreDeb=""
@@ -234,9 +234,9 @@ case "$product-$btype" in
         complianceDeb="wio_compliance_bot_${version}-${bld}_amd64.deb"
         complianceExe="compliance_bot"
         complianceImage="bot-enterprise-compliance"
-        broadcastDeb="wio_wickrio_bot_${version}-${bld}_amd64.deb"
-        broadcastExe="wickrio_bot"
-        broadcastImage="bot-enterprise-broadcast"
+        wickrIODeb="wio_wickrio_bot_${version}-${bld}_amd64.deb"
+        wickrIOExe="wickrio_bot"
+        wickrIOBotImage="bot-enterprise"
         welcomeDeb=""
         welcomeExe=""
         coreDeb=""
@@ -413,19 +413,14 @@ if test ! -z "$complianceDeb" ; then
     (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${complianceDeb}" "${complianceExe}" "${complianceImage}" "${versionForDocker}" "false")
 fi
 
-if test ! -z "$broadcastDeb" ; then
-    cp ${deploy}/${broadcastDeb} docker/packages
-    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${broadcastDeb}" "${broadcastExe}" "${broadcastImage}" "${versionForDocker}" "true")
+if test ! -z "$wickrIODeb" ; then
+    cp ${deploy}/${wickrIODeb} docker/packages
+    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${wickrIODeb}" "${wickrIOExe}" "${wickrIOBotImage}" "${versionForDocker}" "true" "${coreDeb}")
 fi
 
 if test ! -z "$welcomeDeb" ; then
     cp ${deploy}/${welcomeDeb} docker/packages
     (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${welcomeDeb}" "${welcomeExe}" "${welcomeImage}" "${versionForDocker}" "false")
-fi
-
-if test ! -z "$coreDeb" ; then
-    cp ${deploy}/${coreDeb} docker/packages
-    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${coreDeb}" "${coreExe}" "${coreImage}" "${versionForDocker}" "false")
 fi
 
 rm -rf docker/packages
