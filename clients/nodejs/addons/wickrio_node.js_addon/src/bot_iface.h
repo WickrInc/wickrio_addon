@@ -33,10 +33,8 @@ public:
 
     BotIfaceStatus init();
     BotIfaceStatus send(const string& command, string& reponse);
-    void display(string & a);
     BotIfaceStatus cmdStringGetStatistics(string& command);
     BotIfaceStatus cmdStringClearStatistics(string& command);
-
     BotIfaceStatus cmdStringGetRooms(string& command);
     BotIfaceStatus cmdStringAddRoom(string& command,
                                     const vector <string>& members,

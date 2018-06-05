@@ -1,6 +1,6 @@
 var addon = require('bindings')('wickrio_addon');
 
 module.exports = addon;
-console.log(addon.display("Hello World!"));
+addon.clientInit('aaronbot019512@62114373.net');
 addon.cmdGetStatistics();
 addon.cmdGetRooms();
