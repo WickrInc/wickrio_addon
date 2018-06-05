@@ -31,4 +31,4 @@ link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs ${CMAKE_CURRENT_SOURCE_DIR}/..
 
 
 #target_link_libraries(rabbitmq_test libamqpcpp.a librabbitmq.a openssl ${CMAKE_DL_LIBS} OpenSSL::Crypto)
-target_link_libraries(${PROJECT_NAME} ${CMAKE_JS_LIB} libamqpcpp.a librabbitmq.a ${CMAKE_DL_LIBS} OpenSSL::SSL OpenSSL::Crypto)
+target_link_libraries(${PROJECT_NAME} ${CMAKE_JS_LIB} libamqpcpp.so librabbitmq.so ${CMAKE_DL_LIBS} OpenSSL::SSL OpenSSL::Crypto)
