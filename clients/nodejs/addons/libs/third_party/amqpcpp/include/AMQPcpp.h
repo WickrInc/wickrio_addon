@@ -164,7 +164,7 @@ class AMQPBase {
 		void setName(std::string name);
 };
 
-class ewAMQPQueue : public AMQPBase  {
+class AMQPQueue : public AMQPBase  {
 	protected:
 #if __cplusplus > 199711L // C++11 or greater
                 std::map< AMQPEvents_e, std::function<int(AMQPMessage*)> > events;

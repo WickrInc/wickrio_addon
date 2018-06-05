@@ -7,28 +7,27 @@ using namespace std;
 using namespace Nan;
 
 
-void display(const v8::FunctionCallbackInfo<v8::Value> & args) {
-        Isolate* isolate = args.GetIsolate();
-        std::string client = std::string("name");
-        BotIface botIface(client);
-        //v8::Handle<v8::Int> a = v8::Handle<v8::int>::Cast(args[0]);
-        //v8::Handle<v8::int> b = v8::Handle<v8::int>::Cast(args[1]);
-        v8::String::Utf8Value param1(args[0]->ToString());
-        std::string str = std::string(*param1);
-        botIface.display(str);
+std::string client;
+BotIface *botIface = nullptr;
 
-        //Local<Number> retval = v8::Number::New(isolate, result);
-        //args.GetReturnValue().Set(retval);
+void clientInit(const v8::FunctionCallbackInfo<v8::Value> & args) {
+  v8::String::Utf8Value param1(args[0]->ToString());
+  std::string str = std::string(*param1);
+  client = str;
+  botIface = new BotIface(client);
+  if ( botIface->init() != BotIface::SUCCESS) {
+      std::cout << "Could not initialize Bot Interface!";
+      std::cout << botIface->getLastErrorString();
+      return;
+  }
 }
 
 void cmdGetStatistics(const v8::FunctionCallbackInfo<v8::Value> & args){
         string command, response;
-        std::string client = std::string("name");
-        BotIface botIface(client);
-        botIface.cmdStringGetStatistics(command);
+        botIface->cmdStringGetStatistics(command);
 
-        if (botIface.send(command, response) != BotIface::SUCCESS) {
-                response = botIface.getLastErrorString();
+        if (botIface->send(command, response) != BotIface::SUCCESS) {
+                response = botIface->getLastErrorString();
                 std::cout << "Send failed: " << response;
         }
         else {
@@ -41,12 +40,10 @@ void cmdGetStatistics(const v8::FunctionCallbackInfo<v8::Value> & args){
 
 void cmdClearStatistics(const v8::FunctionCallbackInfo<v8::Value> & args){
         string command, response;
-        std::string client = std::string("name");
-        BotIface botIface(client);
-        botIface.cmdStringClearStatistics(command);
+        botIface->cmdStringClearStatistics(command);
 
-        if (botIface.send(command, response) != BotIface::SUCCESS) {
-                response = botIface.getLastErrorString();
+        if (botIface->send(command, response) != BotIface::SUCCESS) {
+                response = botIface->getLastErrorString();
                 std::cout << "Send failed: " << response;
         }
         else {
@@ -59,12 +56,10 @@ void cmdClearStatistics(const v8::FunctionCallbackInfo<v8::Value> & args){
 
 void cmdGetRooms(const v8::FunctionCallbackInfo<v8::Value> & args){
         string command, response;
-        std::string client = std::string("name");
-        BotIface botIface(client);
-        botIface.cmdStringGetRooms(command);
+        botIface->cmdStringGetRooms(command);
 
-        if (botIface.send(command, response) != BotIface::SUCCESS) {
-                response = botIface.getLastErrorString();
+        if (botIface->send(command, response) != BotIface::SUCCESS) {
+                response = botIface->getLastErrorString();
                 std::cout << "Send failed: " << response;
         }
         else {
@@ -77,8 +72,6 @@ void cmdGetRooms(const v8::FunctionCallbackInfo<v8::Value> & args){
 
 void cmdAddRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
         Isolate* isolate = args.GetIsolate();
-        std::string client = std::string("name");
-        BotIface botIface(client);
         string command, response;
         vector <string> members;
         Local<Array> arr = Local<Array>::Cast(args[1]);
@@ -105,10 +98,10 @@ void cmdAddRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
         v8::String::Utf8Value param7(args[6]->ToString());
         std::string bor = std::string(*param7);
 
-        botIface.cmdStringAddRoom(command, members, moderators, title, description, ttl, bor);
+        botIface->cmdStringAddRoom(command, members, moderators, title, description, ttl, bor);
 
-        if (botIface.send(command, response) != BotIface::SUCCESS) {
-                response = botIface.getLastErrorString();
+        if (botIface->send(command, response) != BotIface::SUCCESS) {
+                response = botIface->getLastErrorString();
                 std::cout << "Send failed: " << response;
         }
         else {
@@ -122,8 +115,6 @@ void cmdAddRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
 
 void cmdModifyRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
         Isolate* isolate = args.GetIsolate();
-        std::string client = std::string("name");
-        BotIface botIface(client);
         string command, response;
         v8::String::Utf8Value param1(args[0]->ToString());
         std::string vGroupID = std::string(*param1);
@@ -152,10 +143,10 @@ void cmdModifyRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
         v8::String::Utf8Value param7(args[6]->ToString());
         std::string bor = std::string(*param7);
 
-        botIface.cmdStringModifyRoom(command, vGroupID, members, moderators, title, description, ttl, bor);
+        botIface->cmdStringModifyRoom(command, vGroupID, members, moderators, title, description, ttl, bor);
 
-        if (botIface.send(command, response) != BotIface::SUCCESS) {
-                response = botIface.getLastErrorString();
+        if (botIface->send(command, response) != BotIface::SUCCESS) {
+                response = botIface->getLastErrorString();
                 std::cout << "Send failed: " << response;
         }
         else {
@@ -169,14 +160,12 @@ void cmdModifyRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
 
 void cmdGetRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
         string command, response;
-        std::string client = std::string("name");
-        BotIface botIface(client);
         v8::String::Utf8Value param1(args[0]->ToString());
         std::string vGroupID = std::string(*param1);
-        botIface.cmdStringGetRoom(command, vGroupID);
+        botIface->cmdStringGetRoom(command, vGroupID);
 
-        if (botIface.send(command, response) != BotIface::SUCCESS) {
-                response = botIface.getLastErrorString();
+        if (botIface->send(command, response) != BotIface::SUCCESS) {
+                response = botIface->getLastErrorString();
                 std::cout << "Send failed: " << response;
         }
         else {
@@ -189,14 +178,12 @@ void cmdGetRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
 
 void cmdLeaveRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
         string command, response;
-        std::string client = std::string("name");
-        BotIface botIface(client);
         v8::String::Utf8Value param1(args[0]->ToString());
         std::string vGroupID = std::string(*param1);
-        botIface.cmdStringLeaveRoom(command, vGroupID);
+        botIface->cmdStringLeaveRoom(command, vGroupID);
 
-        if (botIface.send(command, response) != BotIface::SUCCESS) {
-                response = botIface.getLastErrorString();
+        if (botIface->send(command, response) != BotIface::SUCCESS) {
+                response = botIface->getLastErrorString();
                 std::cout << "Send failed: " << response;
         }
         else {
@@ -209,14 +196,12 @@ void cmdLeaveRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
 
 void cmdDeleteRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
         string command, response;
-        std::string client = std::string("name");
-        BotIface botIface(client);
         v8::String::Utf8Value param1(args[0]->ToString());
         std::string vGroupID = std::string(*param1);
-        botIface.cmdStringDeleteRoom(command, vGroupID);
+        botIface->cmdStringDeleteRoom(command, vGroupID);
 
-        if (botIface.send(command, response) != BotIface::SUCCESS) {
-                response = botIface.getLastErrorString();
+        if (botIface->send(command, response) != BotIface::SUCCESS) {
+                response = botIface->getLastErrorString();
                 std::cout << "Send failed: " << response;
         }
         else {
@@ -229,8 +214,6 @@ void cmdDeleteRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
 
 void cmdAddGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args) {
         Isolate* isolate = args.GetIsolate();
-        std::string client = std::string("name");
-        BotIface botIface(client);
         string command, response;
         vector <string> members;
         Local<Array> arr = Local<Array>::Cast(args[0]);
@@ -245,10 +228,10 @@ void cmdAddGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args) {
         v8::String::Utf8Value param3(args[2]->ToString());
         std::string bor = std::string(*param3);
 
-        botIface.cmdStringAddGroupConvo(command, members, ttl, bor);
+        botIface->cmdStringAddGroupConvo(command, members, ttl, bor);
 
-        if (botIface.send(command, response) != BotIface::SUCCESS) {
-                response = botIface.getLastErrorString();
+        if (botIface->send(command, response) != BotIface::SUCCESS) {
+                response = botIface->getLastErrorString();
                 std::cout << "Send failed: " << response;
         }
         else {
@@ -262,14 +245,12 @@ void cmdAddGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args) {
 
 void cmdDeleteGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args){
         string command, response;
-        std::string client = std::string("name");
-        BotIface botIface(client);
         v8::String::Utf8Value param1(args[0]->ToString());
         std::string vGroupID = std::string(*param1);
-        botIface.cmdStringDeleteGroupConvo(command, vGroupID);
+        botIface->cmdStringDeleteGroupConvo(command, vGroupID);
 
-        if (botIface.send(command, response) != BotIface::SUCCESS) {
-                response = botIface.getLastErrorString();
+        if (botIface->send(command, response) != BotIface::SUCCESS) {
+                response = botIface->getLastErrorString();
                 std::cout << "Send failed: " << response;
         }
         else {
@@ -282,14 +263,12 @@ void cmdDeleteGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args){
 
 void cmdGetGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args){
         string command, response;
-        std::string client = std::string("name");
-        BotIface botIface(client);
         v8::String::Utf8Value param1(args[0]->ToString());
         std::string vGroupID = std::string(*param1);
-        botIface.cmdStringGetGroupConvo(command, vGroupID);
+        botIface->cmdStringGetGroupConvo(command, vGroupID);
 
-        if (botIface.send(command, response) != BotIface::SUCCESS) {
-                response = botIface.getLastErrorString();
+        if (botIface->send(command, response) != BotIface::SUCCESS) {
+                response = botIface->getLastErrorString();
                 std::cout << "Send failed: " << response;
         }
         else {
@@ -303,12 +282,10 @@ void cmdGetGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args){
 
 void cmdGetGroupConvos(const v8::FunctionCallbackInfo<v8::Value> & args){
         string command, response;
-        std::string client = std::string("name");
-        BotIface botIface(client);
-        botIface.cmdStringGetGroupConvos(command);
+        botIface->cmdStringGetGroupConvos(command);
 
-        if (botIface.send(command, response) != BotIface::SUCCESS) {
-                response = botIface.getLastErrorString();
+        if (botIface->send(command, response) != BotIface::SUCCESS) {
+                response = botIface->getLastErrorString();
                 std::cout << "Send failed: " << response;
         }
         else {
@@ -321,12 +298,10 @@ void cmdGetGroupConvos(const v8::FunctionCallbackInfo<v8::Value> & args){
 
 void cmdGetReceivedMessage(const v8::FunctionCallbackInfo<v8::Value> & args){
         string command, response;
-        std::string client = std::string("name");
-        BotIface botIface(client);
-        botIface.cmdStringGetReceivedMessage(command);
+        botIface->cmdStringGetReceivedMessage(command);
 
-        if (botIface.send(command, response) != BotIface::SUCCESS) {
-                response = botIface.getLastErrorString();
+        if (botIface->send(command, response) != BotIface::SUCCESS) {
+                response = botIface->getLastErrorString();
                 std::cout << "Send failed: " << response;
         }
         else {
@@ -340,8 +315,6 @@ void cmdGetReceivedMessage(const v8::FunctionCallbackInfo<v8::Value> & args){
 
 void cmdSendMessage(const v8::FunctionCallbackInfo<v8::Value> & args) {
         Isolate* isolate = args.GetIsolate();
-        std::string client = std::string("name");
-        BotIface botIface(client);
         string command, response;
         v8::String::Utf8Value param1(args[0]->ToString());
         std::string vGroupID = std::string(*param1);
@@ -360,10 +333,10 @@ void cmdSendMessage(const v8::FunctionCallbackInfo<v8::Value> & args) {
         v8::String::Utf8Value param5(args[4]->ToString());
         std::string bor = std::string(*param5);
 
-        botIface.cmdStringSendMessage(command, vGroupID, users, message, ttl, bor);
+        botIface->cmdStringSendMessage(command, vGroupID, users, message, ttl, bor);
 
-        if (botIface.send(command, response) != BotIface::SUCCESS) {
-                response = botIface.getLastErrorString();
+        if (botIface->send(command, response) != BotIface::SUCCESS) {
+                response = botIface->getLastErrorString();
                 std::cout << "Send failed: " << response;
         }
         else {
@@ -375,25 +348,25 @@ void cmdSendMessage(const v8::FunctionCallbackInfo<v8::Value> & args) {
 }
 
 void init(Handle <Object> exports, Handle<Object> module) {
+
         //2nd param: what we call from Javascript
         //3rd param: the name of the actual function
-        NODE_SET_METHOD(exports, "display", display);
+        NODE_SET_METHOD(exports, "clientInit", clientInit);
         NODE_SET_METHOD(exports, "cmdGetStatistics", cmdGetStatistics);
         NODE_SET_METHOD(exports, "cmdClearStatistics", cmdClearStatistics);
         NODE_SET_METHOD(exports, "cmdGetRooms", cmdGetRooms);
         NODE_SET_METHOD(exports, "cmdAddRoom", cmdAddRoom);
-        // NODE_SET_METHOD(exports, "cmdModifyRoom", cmdModifyRoom);
-        // NODE_SET_METHOD(exports, "cmdGetRoom", cmdGetRoom);
-        // NODE_SET_METHOD(exports, "cmdLeaveRoom", cmdLeaveRoom);
-        // NODE_SET_METHOD(exports, "cmdDeleteRoom", cmdDeleteRoom);
+        NODE_SET_METHOD(exports, "cmdModifyRoom", cmdModifyRoom);
+        NODE_SET_METHOD(exports, "cmdGetRoom", cmdGetRoom);
+        NODE_SET_METHOD(exports, "cmdLeaveRoom", cmdLeaveRoom);
+        NODE_SET_METHOD(exports, "cmdDeleteRoom", cmdDeleteRoom);
         NODE_SET_METHOD(exports, "cmdAddGroupConvo", cmdAddGroupConvo);
-        // NODE_SET_METHOD(exports, "cmdDeleteGroupConvo", cmdDeleteGroupConvo);
-        // NODE_SET_METHOD(exports, "cmdGetGroupConvo", cmdGetGroupConvo);
-        // NODE_SET_METHOD(exports, "cmdGetGroupConvos", cmdGetGroupConvos);
-        // NODE_SET_METHOD(exports, "cmdGetReceivedMessage", cmdGetReceivedMessage);
-        // NODE_SET_METHOD(exports, "cmdSendMessage", cmdSendMessage);
+        NODE_SET_METHOD(exports, "cmdDeleteGroupConvo", cmdDeleteGroupConvo);
+        NODE_SET_METHOD(exports, "cmdGetGroupConvo", cmdGetGroupConvo);
+        NODE_SET_METHOD(exports, "cmdGetGroupConvos", cmdGetGroupConvos);
+        NODE_SET_METHOD(exports, "cmdGetReceivedMessage", cmdGetReceivedMessage);
+        NODE_SET_METHOD(exports, "cmdSendMessage", cmdSendMessage);
 }
-
 
 // associates the module name with initialization logic
 NODE_MODULE(wickrio_addon, init)
