@@ -11,19 +11,26 @@ std::string client;
 BotIface *botIface = nullptr;
 
 void clientInit(const v8::FunctionCallbackInfo<v8::Value> & args) {
-  v8::String::Utf8Value param1(args[0]->ToString());
-  std::string str = std::string(*param1);
-  client = str;
-  botIface = new BotIface(client);
-  if ( botIface->init() != BotIface::SUCCESS) {
-      std::cout << "Could not initialize Bot Interface!";
-      std::cout << botIface->getLastErrorString();
-      return;
-  }
+        v8::String::Utf8Value param1(args[0]->ToString());
+        std::string str = std::string(*param1);
+        client = str;
+        botIface = new BotIface(client);
+        if ( botIface->init() != BotIface::SUCCESS) {
+                std::cout << "Could not initialize Bot Interface!";
+                std::cout << botIface->getLastErrorString();
+                return;
+        }
 }
 
 void cmdGetStatistics(const v8::FunctionCallbackInfo<v8::Value> & args){
         string command, response;
+
+        if ( botIface->init() != BotIface::SUCCESS) {
+                std::cout << "Could not initialize Bot Interface!";
+                std::cout << botIface->getLastErrorString();
+                return;
+        }
+
         botIface->cmdStringGetStatistics(command);
 
         if (botIface->send(command, response) != BotIface::SUCCESS) {
@@ -40,6 +47,13 @@ void cmdGetStatistics(const v8::FunctionCallbackInfo<v8::Value> & args){
 
 void cmdClearStatistics(const v8::FunctionCallbackInfo<v8::Value> & args){
         string command, response;
+
+        if ( botIface->init() != BotIface::SUCCESS) {
+                std::cout << "Could not initialize Bot Interface!";
+                std::cout << botIface->getLastErrorString();
+                return;
+        }
+
         botIface->cmdStringClearStatistics(command);
 
         if (botIface->send(command, response) != BotIface::SUCCESS) {
@@ -56,6 +70,13 @@ void cmdClearStatistics(const v8::FunctionCallbackInfo<v8::Value> & args){
 
 void cmdGetRooms(const v8::FunctionCallbackInfo<v8::Value> & args){
         string command, response;
+
+        if ( botIface->init() != BotIface::SUCCESS) {
+                std::cout << "Could not initialize Bot Interface!";
+                std::cout << botIface->getLastErrorString();
+                return;
+        }
+
         botIface->cmdStringGetRooms(command);
 
         if (botIface->send(command, response) != BotIface::SUCCESS) {
@@ -71,7 +92,11 @@ void cmdGetRooms(const v8::FunctionCallbackInfo<v8::Value> & args){
 }
 
 void cmdAddRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
-        Isolate* isolate = args.GetIsolate();
+        if ( botIface->init() != BotIface::SUCCESS) {
+                std::cout << "Could not initialize Bot Interface!";
+                std::cout << botIface->getLastErrorString();
+                return;
+        }
         string command, response;
         vector <string> members;
         Local<Array> arr = Local<Array>::Cast(args[1]);
@@ -114,7 +139,11 @@ void cmdAddRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
 
 
 void cmdModifyRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
-        Isolate* isolate = args.GetIsolate();
+        if ( botIface->init() != BotIface::SUCCESS) {
+                std::cout << "Could not initialize Bot Interface!";
+                std::cout << botIface->getLastErrorString();
+                return;
+        }
         string command, response;
         v8::String::Utf8Value param1(args[0]->ToString());
         std::string vGroupID = std::string(*param1);
@@ -159,6 +188,11 @@ void cmdModifyRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
 
 
 void cmdGetRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
+        if ( botIface->init() != BotIface::SUCCESS) {
+                std::cout << "Could not initialize Bot Interface!";
+                std::cout << botIface->getLastErrorString();
+                return;
+        }
         string command, response;
         v8::String::Utf8Value param1(args[0]->ToString());
         std::string vGroupID = std::string(*param1);
@@ -177,6 +211,11 @@ void cmdGetRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
 }
 
 void cmdLeaveRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
+        if ( botIface->init() != BotIface::SUCCESS) {
+                std::cout << "Could not initialize Bot Interface!";
+                std::cout << botIface->getLastErrorString();
+                return;
+        }
         string command, response;
         v8::String::Utf8Value param1(args[0]->ToString());
         std::string vGroupID = std::string(*param1);
@@ -195,6 +234,11 @@ void cmdLeaveRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
 }
 
 void cmdDeleteRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
+        if ( botIface->init() != BotIface::SUCCESS) {
+                std::cout << "Could not initialize Bot Interface!";
+                std::cout << botIface->getLastErrorString();
+                return;
+        }
         string command, response;
         v8::String::Utf8Value param1(args[0]->ToString());
         std::string vGroupID = std::string(*param1);
@@ -213,7 +257,11 @@ void cmdDeleteRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
 }
 
 void cmdAddGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args) {
-        Isolate* isolate = args.GetIsolate();
+        if ( botIface->init() != BotIface::SUCCESS) {
+                std::cout << "Could not initialize Bot Interface!";
+                std::cout << botIface->getLastErrorString();
+                return;
+        }
         string command, response;
         vector <string> members;
         Local<Array> arr = Local<Array>::Cast(args[0]);
@@ -244,6 +292,11 @@ void cmdAddGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args) {
 
 
 void cmdDeleteGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args){
+        if ( botIface->init() != BotIface::SUCCESS) {
+                std::cout << "Could not initialize Bot Interface!";
+                std::cout << botIface->getLastErrorString();
+                return;
+        }
         string command, response;
         v8::String::Utf8Value param1(args[0]->ToString());
         std::string vGroupID = std::string(*param1);
@@ -262,6 +315,11 @@ void cmdDeleteGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args){
 }
 
 void cmdGetGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args){
+        if ( botIface->init() != BotIface::SUCCESS) {
+                std::cout << "Could not initialize Bot Interface!";
+                std::cout << botIface->getLastErrorString();
+                return;
+        }
         string command, response;
         v8::String::Utf8Value param1(args[0]->ToString());
         std::string vGroupID = std::string(*param1);
@@ -281,6 +339,11 @@ void cmdGetGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args){
 
 
 void cmdGetGroupConvos(const v8::FunctionCallbackInfo<v8::Value> & args){
+        if ( botIface->init() != BotIface::SUCCESS) {
+                std::cout << "Could not initialize Bot Interface!";
+                std::cout << botIface->getLastErrorString();
+                return;
+        }
         string command, response;
         botIface->cmdStringGetGroupConvos(command);
 
@@ -297,6 +360,11 @@ void cmdGetGroupConvos(const v8::FunctionCallbackInfo<v8::Value> & args){
 }
 
 void cmdGetReceivedMessage(const v8::FunctionCallbackInfo<v8::Value> & args){
+        if ( botIface->init() != BotIface::SUCCESS) {
+                std::cout << "Could not initialize Bot Interface!";
+                std::cout << botIface->getLastErrorString();
+                return;
+        }
         string command, response;
         botIface->cmdStringGetReceivedMessage(command);
 
@@ -314,7 +382,11 @@ void cmdGetReceivedMessage(const v8::FunctionCallbackInfo<v8::Value> & args){
 
 
 void cmdSendMessage(const v8::FunctionCallbackInfo<v8::Value> & args) {
-        Isolate* isolate = args.GetIsolate();
+        if ( botIface->init() != BotIface::SUCCESS) {
+                std::cout << "Could not initialize Bot Interface!";
+                std::cout << botIface->getLastErrorString();
+                return;
+        }
         string command, response;
         v8::String::Utf8Value param1(args[0]->ToString());
         std::string vGroupID = std::string(*param1);
