@@ -115,6 +115,7 @@ case "$product-$btype" in
         doWelcomeBot=""
         doCoreBot="true"
         consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
+        serviceDeb="wio_services-debug_${version}-${bld}~debug_amd64.deb"
         integrationDeb="wio_integration-debug_${version}-${bld}~debug_amd64.deb"
         complianceDeb=""
         complianceExe=""
@@ -134,6 +135,7 @@ case "$product-$btype" in
         doWelcomeBot=""
         doCoreBot="true"
         consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
+        serviceDeb="wio_services-debug_${version}-${bld}~debug_amd64.deb"
         integrationDeb="wio_integration-debug_${version}-${bld}~debug_amd64.deb"
         complianceDeb=""
         complianceExe=""
@@ -153,6 +155,7 @@ case "$product-$btype" in
         doWelcomeBot=""
         doCoreBot="true"
         consoleDeb="wio_console_${version}-${bld}_amd64.deb"
+        serviceDeb="wio_services-debug_${version}-${bld}_amd64.deb"
         integrationDeb="wio_integration_${version}-${bld}_amd64.deb"
         complianceDeb=""
         complianceExe=""
@@ -172,6 +175,7 @@ case "$product-$btype" in
         doWelcomeBot="true"
         doCoreBot="true"
         consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
+        serviceDeb=""
         integrationDeb="wio_integration-debug_${version}-${bld}~debug_amd64.deb"
         complianceDeb=""
         complianceExe=""
@@ -192,6 +196,7 @@ case "$product-$btype" in
         doWelcomeBot="true"
         doCoreBot="true"
         consoleDeb="wio_console_${version}-${bld}_amd64.deb"
+        serviceDeb=""
         integrationDeb="wio_integration_${version}-${bld}_amd64.deb"
         complianceDeb=""
         wickrIODeb=""
@@ -211,6 +216,7 @@ case "$product-$btype" in
         doWelcomeBot=""
         doCoreBot=""
         consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
+        serviceDeb="wio_services-debug_${version}-${bld}~debug_amd64.deb"
         integrationDeb="wio_integration-debug_${version}-${bld}~debug_amd64.deb"
         complianceDeb="wio_compliance_bot-alpha_${version}-${bld}~alpha_amd64.deb"
         complianceExe="compliance_botAlpha"
@@ -230,6 +236,7 @@ case "$product-$btype" in
         doWelcomeBot=""
         doCoreBot=""
         consoleDeb="wio_console_${version}-${bld}_amd64.deb"
+        serviceDeb="wio_services-debug_${version}-${bld}~debug_amd64.deb"
         integrationDeb="wio_integration_${version}-${bld}_amd64.deb"
         complianceDeb="wio_compliance_bot_${version}-${bld}_amd64.deb"
         complianceExe="compliance_bot"
@@ -403,6 +410,7 @@ fi
 mkdir -p docker/packages
 cp ${deploy}/${wickrQTDeb} docker/packages
 cp ${deploy}/${consoleDeb} docker/packages
+cp ${deploy}/${serviceDeb} docker/packages
 
 if test ! -z "$integrationDeb" ; then
     cp ${deploy}/${complianceDeb} docker/packages
@@ -415,7 +423,7 @@ fi
 
 if test ! -z "$wickrIODeb" ; then
     cp ${deploy}/${wickrIODeb} docker/packages
-    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${wickrIODeb}" "${wickrIOExe}" "${wickrIOBotImage}" "${versionForDocker}" "true" "${coreDeb}")
+    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${wickrIODeb}" "${wickrIOExe}" "${wickrIOBotImage}" "${versionForDocker}" "true" "${coreDeb}" "${serviceDeb}")
 fi
 
 if test ! -z "$welcomeDeb" ; then
