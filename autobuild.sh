@@ -418,17 +418,17 @@ fi
 
 if test ! -z "$complianceDeb" ; then
     cp ${deploy}/${complianceDeb} docker/packages
-    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${complianceDeb}" "${complianceExe}" "${complianceImage}" "${versionForDocker}" "false")
+    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${complianceDeb}" "${complianceExe}" "${complianceImage}" "${versionForDocker}" "${integrationDeb}")
 fi
 
 if test ! -z "$wickrIODeb" ; then
     cp ${deploy}/${wickrIODeb} docker/packages
-    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${wickrIODeb}" "${wickrIOExe}" "${wickrIOBotImage}" "${versionForDocker}" "true" "${coreDeb}" "${serviceDeb}")
+    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${wickrIODeb}" "${wickrIOExe}" "${wickrIOBotImage}" "${versionForDocker}" "${integrationDeb}" "${coreDeb}" "${serviceDeb}")
 fi
 
 if test ! -z "$welcomeDeb" ; then
     cp ${deploy}/${welcomeDeb} docker/packages
-    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${welcomeDeb}" "${welcomeExe}" "${welcomeImage}" "${versionForDocker}" "false")
+    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${welcomeDeb}" "${welcomeExe}" "${welcomeImage}" "${versionForDocker}" "${integrationDeb}")
 fi
 
 rm -rf docker/packages

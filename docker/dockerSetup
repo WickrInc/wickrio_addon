@@ -43,6 +43,7 @@ echo "**   botexe=$botexe"
 echo "**   dockerImage=$dockerImage"
 echo "**   dockerService=$dockerService"
 echo "**   dockerTag=$dockerTag"
+echo "**   integrationDebFile=$integrationdebfile"
 if [ "$isWickrBot" == "true" ] ; then
   echo "**   coredebfile=$coredebfile"
   echo "**   servicedebfile=$servicedebfile"
