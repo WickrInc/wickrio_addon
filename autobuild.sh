@@ -413,7 +413,11 @@ cp ${deploy}/${consoleDeb} docker/packages
 cp ${deploy}/${serviceDeb} docker/packages
 
 if test ! -z "$integrationDeb" ; then
-    cp ${deploy}/${complianceDeb} docker/packages
+    cp ${deploy}/${integrationDeb} docker/packages
+fi
+
+if test ! -z "$coreDeb" ; then
+    cp ${deploy}/${coreDeb} docker/packages
 fi
 
 if test ! -z "$complianceDeb" ; then
