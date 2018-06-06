@@ -9,6 +9,12 @@ services:
     wickrio-bot-cloud:
       image: wickr/bot-cloud
       build: .
+    wickrio-bot-enterprise-alpha:
+      image: wickr/bot-enterprise-alpha
+      build: .
+    wickrio-bot-enterprise:
+      image: wickr/bot-enterprise
+      build: .
     wickrio-bot-enterprise-compliance-alpha:
       image: wickr/bot-enterprise-compliance-alpha
       build: .
