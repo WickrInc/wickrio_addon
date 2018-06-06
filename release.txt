@@ -1,4 +1,4 @@
-Release Notes from v4.26-release to v4.41.5-5:
+Release Notes from v4.26-release to v4.41.5-6:
   * Add error checking
   * Add rest of functions from bot_iface.cpp
   * cmdGetStatistics addon implementation
