@@ -12,6 +12,7 @@ then
   integrationdebfile="$7"
   isWickrBot="false"
 elif [[ $# -eq 9 ]]
+then
   qtdebfile=$1
   consoledebfile=$2
   botdebfile=$3
