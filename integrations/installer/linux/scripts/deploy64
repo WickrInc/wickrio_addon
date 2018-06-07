@@ -46,16 +46,16 @@ min=`echo $build_number | cut -c3-4`
 pat=`echo $build_number | cut -c5-6`
 bld=`echo $build_number | cut -c7-8`
 
+version="${maj}.${min}.${pat}-${bld}"
+
 if [ "$release_flag" = "true" ]; then
     bldtype=""
     BldType=""
-    version="${maj}.${min}.${pat}-${bld}"
     svcbldtype=""
     svcBldType=""
 else
     bldtype="-${build_extension}"
     BldType=$install_extension
-    version="${maj}.${min}.${pat}-${bld}~${build_extension}"
     svcbldtype="-debug"
     svcBldType="Debug"
 fi
