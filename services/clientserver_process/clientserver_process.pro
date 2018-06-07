@@ -1,10 +1,12 @@
 DEPTH = ../..
 COMMON = $${DEPTH}/shared/common
 
-#
-# Include the Wickr IO services base
-#
-include(../services.pri)
+CONFIG(release,release|debug) {
+    QMAKE_RPATHDIR += /usr/lib/wio_docker_services
+}
+else {
+    QMAKE_RPATHDIR += /usr/lib/wio_docker_services-debug
+}
 
 CONFIG += c++11
 
