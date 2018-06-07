@@ -340,7 +340,7 @@ if test ! -z "$dockerServiceDeb" ; then
     echo "Create docker_services for $product $btype"
     build_number=`cat $abs/BUILD_NUMBER`
     binary_dir="$abs/$build"
-    $abs/services/clientserver_process/installer/linux/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
+    $abs/services/clientserver_process/installer/linux/deploy64 $binary_dir $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$deploy"
 fi
 
 echo "going to create the integration software package"
@@ -354,10 +354,6 @@ $abs/services/installer/linux/scripts/deploy64 $binary_dir $build_number "$svc_b
 echo "going to create $btype for console command package (for Docker)"
 build_number=`cat $abs/BUILD_NUMBER`
 $abs/services/installer/linux/scripts/consoleCmd_deploy64 $binary_dir $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$deploy"
-
-echo "going to create $btype for server command package (for Docker)"
-build_number=`cat $abs/BUILD_NUMBER`
-$abs/services/clientserver_process/installer/linux/deploy64 $binary_dir $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$deploy"
 
 echo "going to create Qt library package"
 $abs/platforms/linux/debian/wickrqt/deploy64 "$deploy"
