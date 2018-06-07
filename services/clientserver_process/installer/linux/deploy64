@@ -113,11 +113,8 @@ mkdir -p $appdata
 #
 # Copy the executables
 #
-cp -a ${build_dir}/services/consolecmd/WickrIOConsoleCmd$BldType $bindir
-cp -a ${build_dir}/services/clientserver/WickrIOSvr$BldType $bindir
-
-# only for Beta version
-cp -a ${build_dir}/services/callback_listener/WickrIOCallbackListener$BldType $bindir
+cp -a ${build_dir}/services/consolecmd/WickrIOConsoleCmd$srcBldType $bindir
+cp -a ${build_dir}/services/clientserver/WickrIOSvr$srcBldType $bindir
 
 if [ "$release_flag" = "true" ]; then
   cp -a ${build_dir}/libs/QtWebApp/libQtWebApp.* $libdir
@@ -135,7 +132,7 @@ cp -a ${build_dir}/libs/SMTPEmail/libSMTPEmail.* $libdir
 sed -e "s/EXTENSION/${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" -e "s/VERSION/$version/" <$current/control64 > $debian/control
 
 # WickrIO Client Server settings file
-sed -e "s/EXTENSION/${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" <$current/WickrIOSvr.ini > $optdir/WickrIOSvr$BldType.ini
+sed -e "s/EXTENSION/${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" <$current/WickrIOSvr.ini > $optdir/WickrIOSvr$srcBldType.ini
 
 #
 # Copy the library files
@@ -158,7 +155,7 @@ cd ~/tmp
 chmod 0644 $debian/*
 chmod -R g-w $prefix/usr
 chmod -x $libdir/*.so*
-chmod 644 $optdir/WickrIOSvr$BldType.ini
+chmod 644 $optdir/WickrIOSvr$srcBldType.ini
 
 #
 # Create the actual package
