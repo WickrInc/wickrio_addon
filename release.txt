@@ -1,4 +1,5 @@
-Release Notes from v4.26-release to v4.41.5-9:
+Release Notes from v4.26-release to v4.41.5-10:
+  * Add error checking and sending response back to Node.js code
   * Add error checking
   * Add rest of functions from bot_iface.cpp
   * cmdGetStatistics addon implementation
