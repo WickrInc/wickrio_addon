@@ -427,7 +427,7 @@ fi
 
 if test ! -z "$wickrIODeb" ; then
     cp ${deploy}/${wickrIODeb} docker/packages
-    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${wickrIODeb}" "${wickrIOExe}" "${wickrIOBotImage}" "${versionForDocker}" "${integrationDeb}" "${coreDeb}" "${serviceDeb}")
+    (cd docker; ./dockerSetup "${wickrQTDeb}" "${serviceDeb}" "${wickrIODeb}" "${wickrIOExe}" "${wickrIOBotImage}" "${versionForDocker}" "${integrationDeb}" "${coreDeb}")
 fi
 
 if test ! -z "$welcomeDeb" ; then
