@@ -340,7 +340,7 @@ if test ! -z "$dockerServiceDeb" ; then
     echo "Create docker_services for $product $btype"
     build_number=`cat $abs/BUILD_NUMBER`
     binary_dir="$abs/$build"
-    $abs/services/clientserver_process/installers/linux/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
+    $abs/services/clientserver_process/installer/linux/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
 fi
 
 echo "going to create the integration software package"
