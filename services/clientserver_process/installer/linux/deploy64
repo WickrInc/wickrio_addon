@@ -71,17 +71,12 @@ echo bldtype=$bldtype
 echo BldType=$BldType
 echo version=$version
 
-prefix=~/tmp/wio_services${bldtype}-deb
-debian=~/tmp/wio_services${bldtype}-deb/DEBIAN
+prefix=~/tmp/wio_docker_services${bldtype}-deb
+debian=~/tmp/wio_docker_services${bldtype}-deb/DEBIAN
 bindir=$prefix/usr/bin
-sbindir=$prefix/usr/sbin
-libdir=$prefix/usr/lib/wio_services${bldtype}
-docdir=$prefix/usr/share/doc/wio_services${bldtype}
-plugins=$prefix/usr/lib/wio_services${bldtype}/plugins
-
-# Service related definitions
-svcinitdir=$prefix/etc/init.d
-systemdlibdir=$prefix/lib/systemd/system
+libdir=$prefix/usr/lib/wio_docker_services${bldtype}
+docdir=$prefix/usr/share/doc/wio_docker_services${bldtype}
+plugins=$prefix/usr/lib/wio_docker_services${bldtype}/plugins
 
 optdir=$prefix/opt/WickrIO$srcBldType
 scriptsdir=$optdir/scripts
@@ -102,7 +97,6 @@ rm -rf $prefix
 # Create the appropriate directories in the target location
 mkdir -p $debian
 mkdir -p $bindir
-mkdir -p $sbindir
 mkdir -p $docdir
 mkdir -p $libdir
 mkdir -p $optdir
@@ -110,8 +104,6 @@ mkdir -p $scriptsdir
 mkdir -p $imagedir
 #mkdir -p $crondir
 mkdir -p $plugins/sqldrivers
-mkdir -p $svcinitdir
-mkdir -p $systemdlibdir
 
 # Client directories
 mkdir -p $pixmaps
@@ -121,11 +113,8 @@ mkdir -p $appdata
 #
 # Copy the executables
 #
-cp -a ${build_dir}/services/settings_init/wickrio_settings_init $bindir/wickrio_settings_init${bldtype}
-cp -a ${build_dir}/services/service_control/wickrio_service_control $bindir/wickrio_service_control${bldtype}
 cp -a ${build_dir}/services/consolecmd/WickrIOConsoleCmd$BldType $bindir
-cp -a ${build_dir}/services/consoleserver/WickrIOCSvr$BldType $sbindir
-cp -a ${build_dir}/services/clientserver/WickrIOSvr$BldType $sbindir
+cp -a ${build_dir}/services/clientserver/WickrIOSvr$BldType $bindir
 
 # only for Beta version
 cp -a ${build_dir}/services/callback_listener/WickrIOCallbackListener$BldType $bindir
@@ -133,15 +122,11 @@ cp -a ${build_dir}/services/callback_listener/WickrIOCallbackListener$BldType $b
 if [ "$release_flag" = "true" ]; then
   cp -a ${build_dir}/libs/QtWebApp/libQtWebApp.* $libdir
   cp -a ${build_dir}/libs/WickrIOLib/libWickrIOLib.* $libdir
-  cp -a ${build_dir}/libs/WickrIOGUI/libWickrIOGUI.* $libdir
 else
   cp -a ${build_dir}/libs/QtWebApp/libQtWebAppd.* $libdir
   cp -a ${build_dir}/libs/WickrIOLib/libWickrIOLibd.* $libdir
-  cp -a ${build_dir}/libs/WickrIOGUI/libWickrIOGUId.* $libdir
 fi
 cp -a ${build_dir}/libs/SMTPEmail/libSMTPEmail.* $libdir
-
-#TODO: Add any chrpath here if needed
 
 #
 # Copy support files.
@@ -149,23 +134,8 @@ cp -a ${build_dir}/libs/SMTPEmail/libSMTPEmail.* $libdir
 #
 sed -e "s/EXTENSION/${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" -e "s/VERSION/$version/" <$current/control64 > $debian/control
 
-# Installer pre and post installation scripts
-sed -e "s/EXTENSION/${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" <$current/preinst > $debian/preinst
-sed -e "s/EXTENSION/${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" <$current/postinst > $debian/postinst
-sed -e "s/EXTENSION/${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" <$current/prerm > $debian/prerm
-
 # WickrIO Client Server settings file
 sed -e "s/EXTENSION/${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" <$current/WickrIOSvr.ini > $optdir/WickrIOSvr$BldType.ini
-
-# Daemon init script
-sed -e "s/EXTENSION/${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" <$current/WickrIOSvr.script > $svcinitdir/WickrIOSvr$BldType
-
-# Daemon init script
-sed -e "s/EXTENSION/${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" <$current/WickrIOCSvr.script > $svcinitdir/WickrIOCSvr$BldType
-
-# systemd service unit files
-sed -e "s/EXTENSION/${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" <$current/WickrIOCSvr.service > $systemdlibdir/WickrIOCSvr$BldType.service
-sed -e "s/EXTENSION/${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" <$current/WickrIOSvr.service > $systemdlibdir/WickrIOSvr$BldType.service
 
 #
 # Copy the library files
@@ -188,24 +158,17 @@ cd ~/tmp
 chmod 0644 $debian/*
 chmod -R g-w $prefix/usr
 chmod -x $libdir/*.so*
-chmod 755 $debian/preinst
-chmod 755 $debian/postinst
-chmod 755 $debian/prerm
-chmod 755 $svcinitdir/WickrIOSvr$BldType
-chmod 755 $svcinitdir/WickrIOCSvr$BldType
 chmod 644 $optdir/WickrIOSvr$BldType.ini
-chmod 644 $systemdlibdir/WickrIOSvr$BldType.service
-chmod 644 $systemdlibdir/WickrIOCSvr$BldType.service
 
 #
 # Create the actual package
 #
-rm -f wio_services${bldtype}_*.deb
+rm -f wio_docker_services${bldtype}_*.deb
 fakeroot chown -R root:root $prefix
 
-fakeroot dpkg -b wio_services${bldtype}-deb/ wio_services${bldtype}_${version}_amd64.deb
-sha256sum wio_services${bldtype}_${version}_amd64.deb >wio_services${bldtype}_${version}_amd64.sha256
+fakeroot dpkg -b wio_docker_services${bldtype}-deb/ wio_docker_services${bldtype}_${version}_amd64.deb
+sha256sum wio_docker_services${bldtype}_${version}_amd64.deb >wio_docker_services${bldtype}_${version}_amd64.sha256
 
 if test -d "$output_dir" ; then
-    cp wio_services${bldtype}_${version}_amd64.* "$output_dir/" ; fi
+    cp wio_docker_services${bldtype}_${version}_amd64.* "$output_dir/" ; fi
 

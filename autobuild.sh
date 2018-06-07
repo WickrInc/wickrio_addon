@@ -115,7 +115,7 @@ case "$product-$btype" in
         doWelcomeBot=""
         doCoreBot="true"
         consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
-        serviceDeb="wio_services-debug_${version}-${bld}~debug_amd64.deb"
+        dockerServiceDeb="wio_docker_services-debug_${version}-${bld}~debug_amd64.deb"
         integrationDeb="wio_integration-debug_${version}-${bld}.deb"
         complianceDeb=""
         complianceExe=""
@@ -135,7 +135,7 @@ case "$product-$btype" in
         doWelcomeBot=""
         doCoreBot="true"
         consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
-        serviceDeb="wio_services-debug_${version}-${bld}~debug_amd64.deb"
+        dockerServiceDeb="wio_docker_services-debug_${version}-${bld}~debug_amd64.deb"
         integrationDeb="wio_integration-debug_${version}-${bld}.deb"
         complianceDeb=""
         complianceExe=""
@@ -155,7 +155,7 @@ case "$product-$btype" in
         doWelcomeBot=""
         doCoreBot="true"
         consoleDeb="wio_console_${version}-${bld}_amd64.deb"
-        serviceDeb="wio_services-debug_${version}-${bld}_amd64.deb"
+        dockerServiceDeb="wio_docker_services-debug_${version}-${bld}_amd64.deb"
         integrationDeb="wio_integration_${version}-${bld}.deb"
         complianceDeb=""
         complianceExe=""
@@ -175,7 +175,7 @@ case "$product-$btype" in
         doWelcomeBot="true"
         doCoreBot="true"
         consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
-        serviceDeb=""
+        dockerServiceDeb=""
         integrationDeb="wio_integration-debug_${version}-${bld}.deb"
         complianceDeb=""
         complianceExe=""
@@ -196,7 +196,7 @@ case "$product-$btype" in
         doWelcomeBot="true"
         doCoreBot="true"
         consoleDeb="wio_console_${version}-${bld}_amd64.deb"
-        serviceDeb=""
+        dockerServiceDeb=""
         integrationDeb="wio_integration_${version}-${bld}.deb"
         complianceDeb=""
         wickrIODeb=""
@@ -216,7 +216,7 @@ case "$product-$btype" in
         doWelcomeBot=""
         doCoreBot=""
         consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
-        serviceDeb="wio_services-debug_${version}-${bld}~debug_amd64.deb"
+        dockerServiceDeb="wio_docker_services-debug_${version}-${bld}~debug_amd64.deb"
         integrationDeb="wio_integration-debug_${version}-${bld}.deb"
         complianceDeb="wio_compliance_bot-alpha_${version}-${bld}~alpha_amd64.deb"
         complianceExe="compliance_botAlpha"
@@ -236,7 +236,7 @@ case "$product-$btype" in
         doWelcomeBot=""
         doCoreBot=""
         consoleDeb="wio_console_${version}-${bld}_amd64.deb"
-        serviceDeb="wio_services-debug_${version}-${bld}~debug_amd64.deb"
+        dockerServiceDeb="wio_docker_services-debug_${version}-${bld}~debug_amd64.deb"
         integrationDeb="wio_integration_${version}-${bld}.deb"
         complianceDeb="wio_compliance_bot_${version}-${bld}_amd64.deb"
         complianceExe="compliance_bot"
@@ -336,6 +336,13 @@ if test ! -z "$doCoreBot" ; then
     $abs/clients/core_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
 fi
 
+if test ! -z "$dockerServiceDeb" ; then
+    echo "Create docker_services for $product $btype"
+    build_number=`cat $abs/BUILD_NUMBER`
+    binary_dir="$abs/$build"
+    $abs/services/clientserver_process/installers/linux/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
+fi
+
 echo "going to create the integration software package"
 build_number=`cat $abs/BUILD_NUMBER`
 $abs/integrations/installer/linux/scripts/deploy64 $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$deploy"
@@ -347,6 +354,10 @@ $abs/services/installer/linux/scripts/deploy64 $binary_dir $build_number "$svc_b
 echo "going to create $btype for console command package (for Docker)"
 build_number=`cat $abs/BUILD_NUMBER`
 $abs/services/installer/linux/scripts/consoleCmd_deploy64 $binary_dir $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$deploy"
+
+echo "going to create $btype for server command package (for Docker)"
+build_number=`cat $abs/BUILD_NUMBER`
+$abs/services/clientserver_process/installer/linux/deploy64 $binary_dir $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$deploy"
 
 echo "going to create Qt library package"
 $abs/platforms/linux/debian/wickrqt/deploy64 "$deploy"
@@ -410,7 +421,10 @@ fi
 mkdir -p docker/packages
 cp ${deploy}/${wickrQTDeb} docker/packages
 cp ${deploy}/${consoleDeb} docker/packages
-cp ${deploy}/${serviceDeb} docker/packages
+
+if test ! -z "$dockerServiceDeb" ; then
+    cp ${deploy}/${dockerServiceDeb} docker/packages
+fi
 
 if test ! -z "$integrationDeb" ; then
     cp ${deploy}/${integrationDeb} docker/packages
@@ -427,7 +441,7 @@ fi
 
 if test ! -z "$wickrIODeb" ; then
     cp ${deploy}/${wickrIODeb} docker/packages
-    (cd docker; ./dockerSetup "${wickrQTDeb}" "${serviceDeb}" "${wickrIODeb}" "${wickrIOExe}" "${wickrIOBotImage}" "${versionForDocker}" "${integrationDeb}" "${coreDeb}")
+    (cd docker; ./dockerSetup "${wickrQTDeb}" "${dockerServiceDeb}" "${wickrIODeb}" "${wickrIOExe}" "${wickrIOBotImage}" "${versionForDocker}" "${integrationDeb}" "${coreDeb}")
 fi
 
 if test ! -z "$welcomeDeb" ; then

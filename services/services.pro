@@ -2,6 +2,7 @@ TEMPLATE = subdirs
 SUBDIRS += \
     callback_listener \
     clientserver \
+    clientserver_process \
     console \
     consolecmd \
     consoleserver \

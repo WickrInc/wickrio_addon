@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# a second stage deploy script...
+
+set -e
+current=`dirname $0`
+cd $current
+
+QTVER="5_8"
+
+$current/create_pkg "$1" release "$2"
