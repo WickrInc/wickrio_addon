@@ -115,12 +115,11 @@ case "$product-$btype" in
         doWelcomeBot=""
         doCoreBot="true"
         consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
-        dockerServiceDeb="wio_docker_services-debug_${version}-${bld}~debug_amd64.deb"
         integrationDeb="wio_integration-debug_${version}-${bld}.deb"
         complianceDeb=""
         complianceExe=""
-        wickrIODeb="wio_wickrio_bot-alpha_${version}-${bld}~alpha_amd64.deb"
-        wickrIOExe="wickrio_botAlpha"
+        wickrIODockerDeb="wio_docker-alpha_${version}-${bld}~alpha_amd64.deb"
+        wickrIOExe="WickrIOSvrDebug"
         wickrIOBotImage="bot-cloud-alpha"
         welcomeDeb=""
         welcomeExe="welcome_botAlpha"
@@ -135,12 +134,11 @@ case "$product-$btype" in
         doWelcomeBot=""
         doCoreBot="true"
         consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
-        dockerServiceDeb="wio_docker_services-debug_${version}-${bld}~debug_amd64.deb"
         integrationDeb="wio_integration-debug_${version}-${bld}.deb"
         complianceDeb=""
         complianceExe=""
-        wickrIODeb="wio_wickrio_bot-beta_${version}-${bld}~beta_amd64.deb"
-        wickrIOExe="wickrio_botBeta"
+        wickrIODockerDeb="wio_docker-beta_${version}-${bld}~beta_amd64.deb"
+        wickrIOExe="WickrIOSvrDebug"
         wickrIOBotImage="bot-cloud-beta"
         welcomeDeb=""
         welcomeExe=""
@@ -155,12 +153,11 @@ case "$product-$btype" in
         doWelcomeBot=""
         doCoreBot="true"
         consoleDeb="wio_console_${version}-${bld}_amd64.deb"
-        dockerServiceDeb="wio_docker_services-debug_${version}-${bld}_amd64.deb"
         integrationDeb="wio_integration_${version}-${bld}.deb"
         complianceDeb=""
         complianceExe=""
-        wickrIODeb="wio_wickrio_bot_${version}-${bld}_amd64.deb"
-        wickrIOExe="wickrio_bot"
+        wickrIODockerDeb="wio_docker${version}-${bld}_amd64.deb"
+        wickrIOExe="WickrIOSvr"
         wickrIOBotImage="bot-cloud"
         welcomeDeb=""
         welcomeExe=""
@@ -175,11 +172,10 @@ case "$product-$btype" in
         doWelcomeBot="true"
         doCoreBot="true"
         consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
-        dockerServiceDeb=""
         integrationDeb="wio_integration-debug_${version}-${bld}.deb"
         complianceDeb=""
         complianceExe=""
-        wickrIODeb=""
+        wickrIODockerDeb=""
         wickrIOExe=""
         wickrIOBotImage=""
         welcomeDeb="wio_welcome_bot-alpha_${version}-${bld}~alpha_amd64.deb"
@@ -196,10 +192,9 @@ case "$product-$btype" in
         doWelcomeBot="true"
         doCoreBot="true"
         consoleDeb="wio_console_${version}-${bld}_amd64.deb"
-        dockerServiceDeb=""
         integrationDeb="wio_integration_${version}-${bld}.deb"
         complianceDeb=""
-        wickrIODeb=""
+        wickrIODockerDeb=""
         wickrIOExe=""
         wickrIOBotImage=""
         welcomeDeb="wio_welcome_bot_${version}-${bld}_amd64.deb"
@@ -216,13 +211,12 @@ case "$product-$btype" in
         doWelcomeBot=""
         doCoreBot=""
         consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
-        dockerServiceDeb="wio_docker_services-debug_${version}-${bld}~debug_amd64.deb"
         integrationDeb="wio_integration-debug_${version}-${bld}.deb"
         complianceDeb="wio_compliance_bot-alpha_${version}-${bld}~alpha_amd64.deb"
         complianceExe="compliance_botAlpha"
         complianceImage="bot-enterprise-compliance-alpha"
-        wickrIODeb="wio_wickrio_bot-alpha_${version}-${bld}~alpha_amd64.deb"
-        wickrIOExe="wickrio_botAlpha"
+        wickrIODockerDeb="wio_docker-alpha_${version}-${bld}~alpha_amd64.deb"
+        wickrIOExe="WickrIOSvrDebug"
         wickrIOBotImage="bot-enterprise-alpha"
         welcomeDeb=""
         welcomeExe=""
@@ -236,13 +230,12 @@ case "$product-$btype" in
         doWelcomeBot=""
         doCoreBot=""
         consoleDeb="wio_console_${version}-${bld}_amd64.deb"
-        dockerServiceDeb="wio_docker_services-debug_${version}-${bld}~debug_amd64.deb"
         integrationDeb="wio_integration_${version}-${bld}.deb"
         complianceDeb="wio_compliance_bot_${version}-${bld}_amd64.deb"
         complianceExe="compliance_bot"
         complianceImage="bot-enterprise-compliance"
-        wickrIODeb="wio_wickrio_bot_${version}-${bld}_amd64.deb"
-        wickrIOExe="wickrio_bot"
+        wickrIODockerDeb="wio_docker${version}-${bld}_amd64.deb"
+        wickrIOExe="WickrIOSvr"
         wickrIOBotImage="bot-enterprise"
         welcomeDeb=""
         welcomeExe=""
@@ -336,11 +329,11 @@ if test ! -z "$doCoreBot" ; then
     $abs/clients/core_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
 fi
 
-if test ! -z "$dockerServiceDeb" ; then
-    echo "Create docker_services for $product $btype"
+if test ! -z "$wickrIODockerDeb" ; then
+    echo "Create docker package for $product $btype"
     build_number=`cat $abs/BUILD_NUMBER`
     binary_dir="$abs/$build"
-    $abs/services/clientserver_process/installer/linux/deploy64 $binary_dir $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$deploy"
+    $abs/docker/installer/linux/deploy64 $binary_dir $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$deploy"
 fi
 
 echo "going to create the integration software package"
@@ -418,8 +411,8 @@ mkdir -p docker/packages
 cp ${deploy}/${wickrQTDeb} docker/packages
 cp ${deploy}/${consoleDeb} docker/packages
 
-if test ! -z "$dockerServiceDeb" ; then
-    cp ${deploy}/${dockerServiceDeb} docker/packages
+if test ! -z "$wickrIODockerDeb" ; then
+    cp ${deploy}/${wickrIODockerDeb} docker/packages
 fi
 
 if test ! -z "$integrationDeb" ; then
@@ -435,9 +428,9 @@ if test ! -z "$complianceDeb" ; then
     (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${complianceDeb}" "${complianceExe}" "${complianceImage}" "${versionForDocker}" "${integrationDeb}")
 fi
 
-if test ! -z "$wickrIODeb" ; then
-    cp ${deploy}/${wickrIODeb} docker/packages
-    (cd docker; ./dockerSetup "${wickrQTDeb}" "${dockerServiceDeb}" "${wickrIODeb}" "${wickrIOExe}" "${wickrIOBotImage}" "${versionForDocker}" "${integrationDeb}" "${coreDeb}")
+if test ! -z "$wickrIODockerDeb" ; then
+    cp ${deploy}/${wickrIODockerDeb} docker/packages
+    (cd docker; ./dockerSetup "${wickrQTDeb}" "${wickrIODockerDeb}" "${wickrIOExe}" "${wickrIOBotImage}" "${versionForDocker}")
 fi
 
 if test ! -z "$welcomeDeb" ; then

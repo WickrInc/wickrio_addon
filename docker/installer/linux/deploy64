@@ -1,5 +1,10 @@
 #!/bin/sh
 
+#
+# This deploy script will install of the the WickrIO components for
+# a docker installation of the WickrIO Bot
+#
+
 # a second stage deploy script...
 #
 # Arguments to this script:
@@ -19,10 +24,13 @@ build_number=$2
 build_extension=$3
 install_extension=$4
 release_flag=$5
-output_dir="$6"
+output_dir=$6
 
 if test -z "$release_flag" ; then
 	release_flag="false"; fi
+
+if test -z "$output_dir" ; then
+    output_dir="/dev/null" ; fi
 
 #
 # Make sure the version number is the correct length
@@ -54,15 +62,14 @@ if [ "$release_flag" = "true" ]; then
     BldType=""
     version="${maj}.${min}.${pat}-${bld}"
     svcbldtype=""
-    svcBldType=""
+    srcBldType=""
 else
     bldtype="-${build_extension}"
     BldType=$install_extension
     version="${maj}.${min}.${pat}-${bld}~${build_extension}"
     svcbldtype="-debug"
-    svcBldType="Debug"
+    srcBldType=Debug
 fi
-
 
 #
 # More debug output
@@ -71,17 +78,18 @@ echo bldtype=$bldtype
 echo BldType=$BldType
 echo version=$version
 
-prefix=~/tmp/wio_wickrio_bot${bldtype}-deb
-debian=~/tmp/wio_wickrio_bot${bldtype}-deb/DEBIAN
+prefix=~/tmp/wio_docker${bldtype}-deb
+debian=~/tmp/wio_docker${bldtype}-deb/DEBIAN
 bindir=$prefix/usr/bin
-libdir=$prefix/usr/lib/wio_wickrio_bot${bldtype}
-docdir=$prefix/usr/share/doc/wio_wickrio_bot${bldtype}
-plugins=$prefix/usr/lib/wio_wickrio_bot${bldtype}/plugins
+libdir=$prefix/usr/lib/wio_docker${bldtype}
+docdir=$prefix/usr/share/doc/wio_docker${bldtype}
+plugins=$prefix/usr/lib/wio_docker${bldtype}/plugins
 
-optdir=$prefix/opt/WickrIO$svcBldType
+optdir=$prefix/opt/WickrIO$srcBldType
 
-platform=$current/../../../../../platforms/linux/generic-64
-sdkplatform=$current/../../../../../wickr-sdk/platforms/linux/generic-64
+platform=$current/../../../platforms/linux/generic-64
+sdkplatform=$current/../../../wickr-sdk/platforms/linux/generic-64
+
 
 # Client definitions
 menus=$prefix/usr/share/applications
@@ -108,37 +116,36 @@ mkdir -p $appdata
 #
 # Copy the executables
 #
+cp -a ${build_dir}/services/consolecmd/WickrIOConsoleCmd$srcBldType $bindir
+cp -a ${build_dir}/services/clientserver/WickrIOSvr$srcBldType $bindir
 cp -a ${build_dir}/clients/wickrio_bot/client/wickrio_bot$BldType $bindir
+cp -a ${build_dir}/clients/core_bot/client/core_bot$BldType $bindir
 
-#
-# TODO: Will need shared libraries
-#
 if [ "$release_flag" = "true" ]; then
   cp -a ${build_dir}/libs/QtWebApp/libQtWebApp.* $libdir
   cp -a ${build_dir}/libs/WickrIOLib/libWickrIOLib.* $libdir
-  cp -a ${build_dir}/libs/WickrIOGUI/libWickrIOGUI.* $libdir
 else
   cp -a ${build_dir}/libs/QtWebApp/libQtWebAppd.* $libdir
   cp -a ${build_dir}/libs/WickrIOLib/libWickrIOLibd.* $libdir
-  cp -a ${build_dir}/libs/WickrIOGUI/libWickrIOGUId.* $libdir
 fi
-
 cp -a ${build_dir}/libs/SMTPEmail/libSMTPEmail.* $libdir
 cp -a ${build_dir}/libs/qamqpsrc/libqamqp.* $libdir
 
 #
-# TODO: Are there any chrpath call needed to be done?
+# Run chrpath so binaries can find libraries
 #
+chrpath -r "/usr/local/wickr/Qt-5.9:/usr/local/wickr/Qt-5.9/lib:/usr/lib/wio_docker${bldtype}" $bindir/WickrIOConsoleCmd$srcBldType
+chrpath -r "/usr/local/wickr/Qt-5.9/lib:/usr/lib/wio_docker${bldtype}" $bindir/WickrIOSvr$srcBldType
+chrpath -r "/usr/local/wickr/Qt-5.9/lib:/usr/lib/wio_docker${bldtype}" $bindir/wickrio_bot$BldType
+chrpath -r "/usr/local/wickr/Qt-5.9/lib:/usr/lib/wio_docker${bldtype}" $bindir/core_bot$BldType
 
 #
 # Change the contents appropriately for Beta version Release versions
 #
 sed -e "s/EXTENSION/${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" -e "s/SVCEXTEN/${svcbldtype}/g" -e "s/VERSION/$version/" <$current/control64 > $debian/control
 
-# Installer pre and post installation scripts
-sed -e "s/EXTENSION/${svcbldtype}/g" -e "s/INSTALLEXT/${SvcBldType}/g" <$current/preinst > $debian/preinst
-sed -e "s/EXTENSION/${svcbldtype}/g" -e "s/INSTALLEXT/${SvcBldType}/g" <$current/postinst > $debian/postinst
-sed -e "s/EXTENSION/${svcbldtype}/g" -e "s/INSTALLEXT/${SvcBldType}/g" <$current/prerm > $debian/prerm
+# WickrIO Client Server settings file
+sed -e "s/EXTENSION/${bldtype}/g" -e "s/INSTALLEXT/${BldType}/g" <$current/WickrIOSvr.ini > $optdir/WickrIOSvr$srcBldType.ini
 
 #
 # Copy the library files
@@ -150,11 +157,8 @@ else
   cp -a $sdkplatform/debug/*.so $sdkplatform/debug/*.so.* $libdir/
 fi
 rm -f $plugins/sqldrivers/*
-#cp -a $current/../../../../../platforms/linux/plugins-64/* $plugins/sqldrivers/
-#cp -a $current/../plugins-64/* $plugins/sqldrivers/
-#cp -Lp /usr/lib/x86_64-linux-gnu/libicu*.so.52 $libdir/
 mkdir -p $messages
-echo "/usr/share/applications/wio_wickrio_bot${bldtype}.client" >$messages/wio_wickrio_bot${bldtype}
+echo "/usr/share/applications/wio_wickrio_bot${bldtype}.client" >$messages/wio_docker${bldtype}
 
 #
 # Generate the MD5 SUM value
@@ -169,20 +173,19 @@ cd ~/tmp
 chmod 0644 $debian/*
 chmod -R g-w $prefix/usr
 chmod -x $libdir/*.so*
-chmod 755 $debian/preinst
-chmod 755 $debian/postinst
-chmod 755 $debian/prerm
+chmod 644 $optdir/WickrIOSvr$srcBldType.ini
 
 #
 # Create the actual package
 #
-rm -f wio_wickrio_bot${bldtype}_*.deb
+rm -f wio_docker${bldtype}_*.deb
 fakeroot chown -R root:root $prefix
 
-fakeroot dpkg -b wio_wickrio_bot${bldtype}-deb/ wio_wickrio_bot${bldtype}_${version}_amd64.deb
-sha256sum wio_wickrio_bot${bldtype}_${version}_amd64.deb >wio_wickrio_bot${bldtype}_${version}_amd64.sha256
+fakeroot dpkg -b wio_docker${bldtype}-deb/ wio_docker${bldtype}_${version}_amd64.deb
+sha256sum wio_docker${bldtype}_${version}_amd64.deb >wio_docker${bldtype}_${version}_amd64.sha256
 
 if test -d "$output_dir" ; then
-    cp wio_wickrio_bot${bldtype}_${version}_amd64.* "$output_dir/"
-    echo "copying wio_wickrio_bot${bldtype}_${version}_amd64.* to $output_dir/"
+    echo "copying wio_docker${bldtype}_${version}_amd64.* to $output_dir/"
+    cp wio_docker${bldtype}_${version}_amd64.* "$output_dir/" 
 fi
+

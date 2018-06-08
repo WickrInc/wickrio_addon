@@ -1,0 +1,76 @@
+#!/bin/sh
+
+# a second stage deploy script...
+
+set -e
+current=`dirname $0`
+cd $current
+
+QTVER="5_9"
+
+product=$1
+buildtype=$2
+outputdir="$3"
+
+#
+# Setup the product values and validate the input product
+#
+case "$product" in
+cloud)
+    productStr="Pro"
+    ;;
+pro)
+    productStr="Pro"
+    ;;
+enterprise)
+    productStr="Enterprise"
+    ;;
+messenger)
+    productStr="Messenger"
+    ;;
+*)
+    echo "usage: create_pkg <cloud|enterprise|messenger> <alpha|beta|release|qa> [output directory]"
+    exit
+    ;;
+esac
+
+#
+# Setup the build type values and validate the input value
+#
+case "$buildtype" in
+alpha)
+    buildTypeStr="Alpha"
+    bldExtStr="alpha"
+    bldInsStr="Alpha"
+    relBldFlag="false"
+    ;;
+beta)
+    buildTypeStr="Beta"
+    bldExtStr="beta"
+    bldInsStr="Beta"
+    relBldFlag="false"
+    ;;
+release)
+    buildTypeStr="Release"
+    bldExtStr=""
+    bldInsStr=""
+    relBldFlag="true"
+    ;;
+qa)
+    buildTypeStr="QA"
+    bldExtStr="alpha"
+    bldInsStr="Alpha"
+    relBldFlag="false"
+    ;;
+*)
+    echo "usage: create_pkg <cloud|enterprise|messenger|plus> <alpha|beta|release|qa> [output directory]"
+    exit
+    ;;
+esac
+
+
+
+BUILDDIR=${current}/../../../../build-wickr-wickrio-Desktop_Qt_${QTVER}_GCC_64Bit_BUILT-${productStr}${buildTypeStr}
+build_number=`cat ../../../BUILD_NUMBER`
+
+$current/deploy64 $BUILDDIR $build_number "${bldExtStr}" "${bldInsStr}" ${relBldFlag} "${outputdir}"

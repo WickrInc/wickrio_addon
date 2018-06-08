@@ -11,21 +11,21 @@ then
   dockerTag=$6
   integrationdebfile="$7"
   isWickrBot="false"
-elif [[ $# -eq 8 ]]
+elif [[ $# -eq 5 ]]
 then
   qtdebfile=$1
-  servicedebfile=$2
-  botdebfile=$3
-  botexe=$4
-  dockerImage="wickr/$5"
-  dockerService="wickrio-$5"
-  dockerTag=$6
-  integrationdebfile="$7"
-  coredebfile=$8
+  botdebfile=$2
+  botexe=$3
+  dockerImage="wickr/$4"
+  dockerService="wickrio-$4"
+  dockerTag=$5
   isWickrBot="true"
 else
   FileName=`basename $0`
-  echo "usage: $FileName <WickrQT> <console|service deb> <bot deb> <bot binary> <docker image> <image tag> <integration deb> [<core deb>]"
+  echo "usage: for WickrIO Bots"
+  echo "$FileName <WickrQT> <bot deb> <bot binary> <docker image> <image tag>"
+  echo "usage: for other Bots"
+  echo "$FileName <WickrQT> <console> <bot deb> <bot binary> <docker image> <image tag> <integration deb>"
   exit 1
 fi
 
@@ -38,25 +38,27 @@ set +e
 echo ""
 echo "********************************************************************"
 echo "** Beginning to create docker image:"
-echo "**   botexe=$botexe"
 if [ "$isWickrBot" == "true" ] ; then
-  echo "**   servicedebfile=$servicedebfile"
+  echo "**   botexe=$botexe"
+  echo "**   botdebfile=$debfile"
+  echo "**   dockerImage=$dockerImage"
+  echo "**   dockerService=$dockerService"
+  echo "**   dockerTag=$dockerTag"
 else
+  echo "**   botexe=$botexe"
+  echo "**   botdebfile=$debfile"
   echo "**   consoledebfile=$consoledebfile"
-fi
-echo "**   dockerImage=$dockerImage"
-echo "**   dockerService=$dockerService"
-echo "**   dockerTag=$dockerTag"
-echo "**   integrationDebFile=$integrationdebfile"
-if [ "$isWickrBot" == "true" ] ; then
-  echo "**   coredebfile=$coredebfile"
+  echo "**   dockerImage=$dockerImage"
+  echo "**   dockerService=$dockerService"
+  echo "**   dockerTag=$dockerTag"
+  echo "**   integrationDebFile=$integrationdebfile"
 fi
 
 #
 # set the values within the Dockerfile and the start.sh
 #
 if [ "$isWickrBot" == "true" ] ; then
-  sed -e "s/QTDEBFILE/${qtdebfile}/g" -e "s/BOTDEBFILE/${botdebfile}/g" -e "s/INTEGRATIONDEBFILE/${integrationdebfile}/g" -e "s/COREDEBFILE/${coredebfile}/g" -e "s/SERVICEDEBFILE/${servicedebfile}/g" <$current/Dockerfile.wickrbot.orig > $current/Dockerfile
+  sed -e "s/QTDEBFILE/${qtdebfile}/g" -e "s/DOCKERDEBFILE/${botdebfile}/g" <$current/Dockerfile.wickrbot.orig > $current/Dockerfile
 else
   sed -e "s/QTDEBFILE/${qtdebfile}/g" -e "s/BOTDEBFILE/${botdebfile}/g" -e "s/CONSOLEDEBFILE/${consoledebfile}/g" -e "s/INTEGRATIONDEBFILE/${integrationdebfile}/g" <$current/Dockerfile.orig > $current/Dockerfile
 fi
