@@ -333,7 +333,7 @@ if test ! -z "$wickrIODockerDeb" ; then
     echo "Create docker package for $product $btype"
     build_number=`cat $abs/BUILD_NUMBER`
     binary_dir="$abs/$build"
-    $abs/docker/installer/linux/deploy64 $binary_dir $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$deploy"
+    $abs/docker/installer/linux/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
 fi
 
 echo "going to create the integration software package"
