@@ -122,7 +122,6 @@ void cmdGetRooms(const v8::FunctionCallbackInfo<v8::Value> & args){
 
 void cmdAddRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
         Isolate* isolate = args.GetIsolate();
-        cout << "args.size(): " << args.Length() << endl;
         if (botIface == nullptr) {
                 string message = "Bot Interface has not been initialized!";
                 auto error = v8::String::NewFromUtf8(isolate, message.c_str());
@@ -253,43 +252,36 @@ void cmdModifyRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
                 if(i == 0) {
                         if(!args[i]->IsString()) {
                                 message = "ModifyRoom: vGroupID must be a string!";
-                                continue;
                         }
                 }
                 else if(i == 1) {
                         if(!args[i]->IsArray()) {
                                 message = "ModifyRoom: list of Members must be an array!";
-                                continue;
                         }
                 }
                 else if(i == 2) {
                         if(!args[i]->IsArray()) {
                                 message = "ModifyRoom: list of Moderators must be an array!";
-                                continue;
                         }
                 }
                 else if(i == 3) {
                         if(!args[i]->IsString()) {
                                 message = "ModifyRoom: Title must be a string!";
-                                continue;
                         }
                 }
                 else if(i == 4) {
                         if(!args[i]->IsString()) {
                                 message = "ModifyRoom: Description must be a string!";
-                                continue;
                         }
                 }
                 else if(i == 5) {
                         if(!args[i]->IsString()) {
                                 message = "ModifyRoom: ttl must be a string!";
-                                continue;
                         }
                 }
                 else if(i == 6) {
                         if(!args[i]->IsString()) {
                                 message = "ModifyRoom: bor must be a string!";
-                                continue;
                         }
                 }
                 if(!message.empty()) {
@@ -369,7 +361,7 @@ void cmdGetRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
                 args.GetReturnValue().Set(error);
                 return;
         }
-        if (args.Length() != 1) {
+        if (args.Length() < 1) {
                 string message = "GetRoom: requires 1 vGroupID argument!";
                 auto error = v8::String::NewFromUtf8(isolate, message.c_str());
                 args.GetReturnValue().Set(error);
@@ -415,7 +407,7 @@ void cmdLeaveRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
                 args.GetReturnValue().Set(error);
                 return;
         }
-        if (args.Length() != 1) {
+        if (args.Length() < 1) {
                 string message = "LeaveRoom: requires 1 vGroupID argument!";
                 auto error = v8::String::NewFromUtf8(isolate, message.c_str());
                 args.GetReturnValue().Set(error);
@@ -460,7 +452,7 @@ void cmdDeleteRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
                 args.GetReturnValue().Set(error);
                 return;
         }
-        if (args.Length() != 1) {
+        if (args.Length() < 1) {
                 string message = "DeleteRoom: requires 1 vGroupID argument!";
                 auto error = v8::String::NewFromUtf8(isolate, message.c_str());
                 args.GetReturnValue().Set(error);
@@ -591,7 +583,7 @@ void cmdDeleteGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args){
                 args.GetReturnValue().Set(error);
                 return;
         }
-        if (args.Length() != 1) {
+        if (args.Length() < 1) {
                 string message = "DeleteGroupConvo: requires 1 vGroupID argument!";
                 auto error = v8::String::NewFromUtf8(isolate, message.c_str());
                 args.GetReturnValue().Set(error);
@@ -637,7 +629,7 @@ void cmdGetGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args){
                 args.GetReturnValue().Set(error);
                 return;
         }
-        if (args.Length() != 1) {
+        if (args.Length() < 1) {
                 string message = "GetGroupConvo: requires 1 vGroupID argument!";
                 auto error = v8::String::NewFromUtf8(isolate, message.c_str());
                 args.GetReturnValue().Set(error);
@@ -684,6 +676,7 @@ void cmdGetGroupConvos(const v8::FunctionCallbackInfo<v8::Value> & args){
                 args.GetReturnValue().Set(error);
                 return;
         }
+
         string command, response;
         botIface->cmdStringGetGroupConvos(command);
         if (botIface->send(command, response) != BotIface::SUCCESS) {
@@ -747,6 +740,45 @@ void cmdSendMessage(const v8::FunctionCallbackInfo<v8::Value> & args) {
                 args.GetReturnValue().Set(error);
                 return;
         }
+        if (args.Length() < 3) {
+                string message = "SendMessage: requires at least 3 argument!";
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        for(int i = 0; i < args.Length() - 1; i++) {
+                string message;
+                if(i == 0) {
+                        if(!args[i]->IsString()) {
+                                message = "SendMessage: vGroupID must be a string!";
+                        }
+                }
+                else if(i == 1) {
+                        if(!args[i]->IsArray()) {
+                                message = "SendMessage: list of users must be an array!";
+                        }
+                }
+                else if(i == 2) {
+                        if(!args[i]->IsString()) {
+                                message = "SendMessage: message must be a string!";
+                        }
+                }
+                else if(i == 3) {
+                        if(!args[i]->IsString()) {
+                                message = "SendMessage: ttl must be a string!";
+                        }
+                }
+                else if(i == 4) {
+                        if(!args[i]->IsString()) {
+                                message = "SendMessage: bor must be a string!";
+                        }
+                }
+                if(!message.empty()) {
+                        auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                        args.GetReturnValue().Set(error);
+                        return;
+                }
+        }
         string command, response;
         v8::String::Utf8Value param1(args[0]->ToString());
         std::string vGroupID = std::string(*param1);
@@ -764,14 +796,7 @@ void cmdSendMessage(const v8::FunctionCallbackInfo<v8::Value> & args) {
         std::string ttl = std::string(*param4);
         v8::String::Utf8Value param5(args[4]->ToString());
         std::string bor = std::string(*param5);
-
-        if (vGroupID.size() == 0 && users.size() == 0) {
-                string message = "SendMessage: Must enter either a VGroupID or a list of users!";
-                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
-                args.GetReturnValue().Set(error);
-                return;
-        }
-
+        //cout << vGroupID << endl << users[0] << endl << message << endl << ttl << endl << bor << endl;
         botIface->cmdStringSendMessage(command, vGroupID, users, message, ttl, bor);
         if (botIface->send(command, response) != BotIface::SUCCESS) {
                 response = botIface->getLastErrorString();
