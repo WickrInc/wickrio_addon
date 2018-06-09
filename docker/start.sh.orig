@@ -7,6 +7,4 @@ then
   exit 1
 fi
 
-username=$1
-
-BOTEXECUTABLE -force -clientname=${username}
+BOTEXECUTABLE
