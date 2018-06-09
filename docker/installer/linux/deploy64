@@ -117,7 +117,7 @@ mkdir -p $appdata
 # Copy the executables
 #
 cp -a ${build_dir}/services/consolecmd/WickrIOConsoleCmd$srcBldType $bindir
-cp -a ${build_dir}/services/clientserver/WickrIOSvr$srcBldType $bindir
+cp -a ${build_dir}/services/clientserver_process/WickrIOSvr$srcBldType $bindir
 cp -a ${build_dir}/clients/wickrio_bot/client/wickrio_bot$BldType $bindir
 cp -a ${build_dir}/clients/core_bot/client/core_bot$BldType $bindir
 
