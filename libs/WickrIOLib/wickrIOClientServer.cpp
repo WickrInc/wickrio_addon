@@ -8,12 +8,9 @@
 
 #include <wickrbotutils.h>
 #include "wickrbotsettings.h"
-#include "wickrioclientserver.h"
+#include "wickrIOClientServer.h"
 #include "wickrIOCommon.h"
 #include "wickrIOServerCommon.h"
-
-extern bool isVERSIONDEBUG();
-WickrIOClientServer *WickrIOClientServer::theClientServer;
 
 //#define DEBUG_TRACE 1
 
@@ -21,38 +18,13 @@ WickrIOClientServer *WickrIOClientServer::theClientServer;
  * @brief WickrIOClientServer::WickrIOClientServer
  * This is the constructor for the WickrIO service (windows) / Daemon (linux)
  */
-WickrIOClientServer::WickrIOClientServer() :
+WickrIOClientServer::WickrIOClientServer(QObject *parent) : QObject(parent),
     m_vendorName(QString(WBIO_ORGANIZATION))
 {
-#ifdef DEBUG_TRACE
-    qDebug() << "Entering constructor";
-#endif
-
-    connect(this, &WickrIOClientServer::started, this, &WickrIOClientServer::processStarted);
-    connect(this, &WickrIOClientServer::finished, this, &WickrIOClientServer::processFinished);
-
-    m_appNm = WBIO_CLIENTSERVER_TARGET;
-
-    m_operation = new OperationData();
-    m_operation->processName = WBIO_CLIENTSERVER_TARGET;
-
-    if (configureService()) {
-        m_operation->updateProcessState(PROCSTATE_RUNNING);
-    }
-#ifdef DEBUG_TRACE
-    qDebug() << "Leaving constructor";
-#endif
 }
 
 WickrIOClientServer::~WickrIOClientServer()
 {
-#ifdef DEBUG_TRACE
-    qDebug() << "Entering destructor";
-#endif
-    m_operation->updateProcessState(PROCSTATE_DOWN);
-#ifdef DEBUG_TRACE
-    qDebug() << "Leaving destructor";
-#endif
 }
 
 /**
@@ -123,18 +95,22 @@ bool WickrIOClientServer::configureService()
  * will call the slotTimeoutProcess() slot on one second intervals, to perform the
  * tasks associated with this service.
  */
-void WickrIOClientServer::processStarted()
+void WickrIOClientServer::processStarted(bool resume)
 {
 #ifdef DEBUG_TRACE
     qDebug() << "Entering start";
 #endif
-    m_statusCntDwn = UPDATE_STATUS_SECS;
-    m_backOff = BACK_OFF_START;
-    m_backOffCntDwn = m_backOff;
+    if (resume) {
+        getClients(true);
+    } else {
+        m_statusCntDwn = UPDATE_STATUS_SECS;
+        m_backOff = BACK_OFF_START;
+        m_backOffCntDwn = m_backOff;
 
-    if (m_processTimer != NULL) {
-        m_processTimer->deleteLater();
-        m_processTimer = NULL;
+        if (m_processTimer != NULL) {
+            m_processTimer->deleteLater();
+            m_processTimer = NULL;
+        }
     }
 
     m_processTimer = new QTimer(0);
@@ -151,7 +127,7 @@ void WickrIOClientServer::processStarted()
  * Called when the thread is finished. This directive will send
  * the WBIO_IPCCMDS_STOP IPC command to all of the active clients.
  */
-void WickrIOClientServer::processFinished()
+void WickrIOClientServer::processFinished(bool pause)
 {
 #ifdef DEBUG_TRACE
     qDebug() << "Entering stop";
@@ -166,7 +142,8 @@ void WickrIOClientServer::processFinished()
 
     getClients(false);
 
-    m_operation->updateProcessState(PROCSTATE_DOWN);
+    if (!pause)
+        m_operation->updateProcessState(PROCSTATE_DOWN);
 #ifdef DEBUG_TRACE
     qDebug() << "Leaving stop";
 #endif

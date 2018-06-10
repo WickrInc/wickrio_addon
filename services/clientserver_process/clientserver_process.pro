@@ -1,5 +1,6 @@
 DEPTH = ../..
 COMMON = $${DEPTH}/shared/common
+CONSOLESRC = ../console
 
 CONFIG(release,release|debug) {
     QMAKE_RPATHDIR += /usr/lib/wio_docker_services
@@ -8,9 +9,14 @@ else {
     QMAKE_RPATHDIR += /usr/lib/wio_docker_services-debug
 }
 
+#
+# Include the WickrIO common files
+#
+include($${COMMON}/common.pri)
+
 CONFIG += c++11
 
-CONFIG -= console
+#CONFIG -= console
 
 CONFIG(release,release|debug) {
     message(*** WickrIO ClientServer Process Release Build)
@@ -88,6 +94,11 @@ else {
 }
 
 #
+# Include the Wickr Console library
+#
+include($${DEPTH}/libs/WickrIOConsole/WickrIOConsole.pri)
+
+#
 # Include the QtWebApp library
 #
 include($${DEPTH}/libs/QtWebApp/QtWebApp.pri)
@@ -96,6 +107,8 @@ include($${DEPTH}/libs/QtWebApp/QtWebApp.pri)
 # Include the Wickr library
 #
 include($${DEPTH}/libs/WickrIOLib/WickrIOLib.pri)
+
+INCLUDEPATH += $${CONSOLESRC}
 
 INCLUDEPATH += $$DEPTH/wickr-sdk/export
 INCLUDEPATH += $$DEPTH/wickr-sdk/export/Wickr
@@ -114,19 +127,16 @@ QT += websockets
 CONFIG += depend_includepath
 
 SOURCES += \
+    $${COMMON}/cmdbase.cpp \
     main.cpp \
-    wickrioclientserver.cpp
+    wickrioclientserverprocess.cpp \
+    wickrioprocesscommand.cpp
 
 HEADERS += \
+    $${COMMON}/cmdbase.h \
     WickrBotContext.h \
-    wickrioclientserver.h
-
-CONFIG(release,release|debug) {
-    SOURCES += $${COMMON}/versiondebugNO.cpp
-}
-else {
-    SOURCES += $${COMMON}/versiondebugYES.cpp
-}
+    wickrioclientserverprocess.h \
+    wickrioprocesscommand.h
 
 
 #---------------------------------------------------------------------------------------

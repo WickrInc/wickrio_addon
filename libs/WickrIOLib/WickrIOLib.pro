@@ -114,7 +114,8 @@ HEADERS += \
     clientactions.h \
     loghandler.h \
     wickrIOErrorHandler.h \
-    wickrIOAPIInterface.h
+    wickrIOAPIInterface.h \
+    wickrIOClientServer.h
 
 SOURCES += \
     wickrIOAppSettings.cpp \
@@ -137,4 +138,5 @@ SOURCES += \
     clientactions.cpp \
     loghandler.cpp \
     wickrIOErrorHandler.cpp \
-    wickrIOAPIInterface.cpp
+    wickrIOAPIInterface.cpp \
+    wickrIOClientServer.cpp
