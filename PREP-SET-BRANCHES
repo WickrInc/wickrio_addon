@@ -1,0 +1,6 @@
+#!/bin/sh
+echo Setting the branches for wickr-wickrio, sdk and core
+
+export WICKRWICKRIO="alpha"
+export WICKRSDKBRANCH="v4.41"
+export WICKRCOREBRANCH="v4.41"

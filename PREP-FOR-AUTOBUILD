@@ -1,0 +1,23 @@
+#!/bin/sh
+echo This script should run to set the build number for nightly alpha builds!
+
+. ./PREP-SET-BRANCHES
+
+echo "wickr-wickrio branch = ${WICKRWICKRIO}"
+echo "wickr-sdk branch     = ${WICKRSDKBRANCH}"
+echo "wickr-core-c branch  = ${WICKRCOREBRANCH}"
+
+#
+# Get rid of any possible changes that may cause problems with the build
+#
+set +e
+git checkout .
+cd wickr-sdk
+git checkout .
+cd wickr-core-c
+git checkout .
+cd wickr-crypto
+rm -rf build-linux
+set -e
+echo "Done setting up for autobuild"
+
