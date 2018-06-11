@@ -17,22 +17,13 @@ WickrIOProcessCommand::WickrIOProcessCommand(OperationData *pOperation) :
 void
 WickrIOProcessCommand::processStarted()
 {
-#if 0
-    QTextStream input(stdin);
-
-    while (true) {
-        qDebug() << "CONSOLE:Enter one of [client, advanced, server, console, parser or users]:";
-        QString line = input.readLine();
-        qDebug() << "CONSOLE: Received: " << line;
-    }
-#else
     CmdMain cmdmain(m_operation);
     cmdmain.runCommands();
-#endif
+
+    emit signalQuit();
 }
 
 void
 WickrIOProcessCommand::processFinished()
 {
-
 }

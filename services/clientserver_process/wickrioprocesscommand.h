@@ -25,6 +25,9 @@ private slots:
     void processStarted();
     void processFinished();
 
+signals:
+    void signalQuit();
+
 };
 
 #endif // WICKRIOPROCESSCOMMAND_H

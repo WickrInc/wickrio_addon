@@ -26,7 +26,7 @@ public:
 private:
     WickrIOClientServer m_clientServer;
 
-private slots:
+public slots:
     void processStarted();
     void processFinished();
 };

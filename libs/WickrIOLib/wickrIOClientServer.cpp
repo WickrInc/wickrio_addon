@@ -142,8 +142,10 @@ void WickrIOClientServer::processFinished(bool pause)
 
     getClients(false);
 
-    if (!pause)
+    if (!pause) {
         m_operation->updateProcessState(PROCSTATE_DOWN);
+        QCoreApplication::quit();
+    }
 #ifdef DEBUG_TRACE
     qDebug() << "Leaving stop";
 #endif

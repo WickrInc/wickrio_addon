@@ -127,6 +127,10 @@ int main(int argc, char *argv[])
     WICKRIOPROCESSCOMMAND = new WickrIOProcessCommand(pOperation);
     WICKRIOPROCESSCOMMAND->start();
 
+    QObject::connect(WICKRIOPROCESSCOMMAND, &WickrIOProcessCommand::signalQuit,
+                     WICKRIOCLIENTSERVERPROCESS, &WickrIOClientServerProcess::processFinished,
+                     Qt::QueuedConnection);
+
     svcret = app->exec();
 
     qDebug() << "Leaving Client Service";
