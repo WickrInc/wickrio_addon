@@ -84,6 +84,7 @@ bindir=$prefix/usr/bin
 libdir=$prefix/usr/lib/wio_docker${bldtype}
 docdir=$prefix/usr/share/doc/wio_docker${bldtype}
 plugins=$prefix/usr/lib/wio_docker${bldtype}/plugins
+addonsdir=$prefix/usr/lib/wio_docker${bldtype}/node.addons
 
 optdir=$prefix/opt/WickrIO$srcBldType
 
@@ -105,6 +106,7 @@ mkdir -p $debian
 mkdir -p $bindir
 mkdir -p $docdir
 mkdir -p $libdir
+mkdir -p $addonsdir
 mkdir -p $optdir
 mkdir -p $plugins/sqldrivers
 
@@ -130,6 +132,11 @@ else
 fi
 cp -a ${build_dir}/libs/SMTPEmail/libSMTPEmail.* $libdir
 cp -a ${build_dir}/libs/qamqpsrc/libqamqp.* $libdir
+
+#
+# Copy the node.js addon
+#
+cp ${current}/../../../clients/nodejs/addons/wickrio_node.js_addon/build/Release/wickrio_addon.node ${addonsdir}
 
 #
 # Run chrpath so binaries can find libraries

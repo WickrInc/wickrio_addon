@@ -293,7 +293,14 @@ make $bldtype.install
 (cd $build ; qmake ../wickr-wickrio.pro $qmake $qtype)
 (cd $build ; $BUILD_CMD)
 
+#
+# Build the node addon
+#
+(cd clients/nodejs/addons/wickrio_node.js_addon; rm -rf build; cmake-js rebuild)
+
+#
 # Deploy this thing
+#
 rm -rf "$deploy"
 mkdir -p "$deploy"
 rm -rf "$output"
