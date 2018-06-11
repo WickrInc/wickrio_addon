@@ -353,7 +353,7 @@ BotIface::cmdStringSendMessage(string& command,
     }
 
     if (vGroupID.size() > 0) {
-        command = "{ \"action\" : \"send_message\", \"vgroupid\" : " + vGroupID + ", " \
+        command = "{ \"action\" : \"send_message\", \"vgroupid\" : \"" + vGroupID + "\", " \
                 + optionalFields
                 + "\"message\" : \"" + message \
                 + "\" }";
