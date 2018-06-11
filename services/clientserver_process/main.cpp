@@ -29,25 +29,28 @@
 #include "wickrbotsettings.h"
 #include "loghandler.h"
 
-extern bool isVERSIONDEBUG();
-
 #define DO_AS_SERVICE 1
 
-#include "wickrioclientserver.h"
+#include "wickrioclientserverprocess.h"
+#include "wickrioprocesscommand.h"
 
 #ifdef Q_OS_LINUX
-WickrIOClientServer *curService;
+WickrIOClientServerProcess *curService;
 #endif
 
 LogHandler logs;
 
 void redirectedOutput(QtMsgType type, const QMessageLogContext &, const QString & str)
 {
+    if (type == QtMsgType::QtDebugMsg && str.startsWith("CONSOLE:")) {
+        QString outstr = str.right(str.length()-8);
+        QTextStream(stdout) << outstr << endl;
+    } else {
 
-    logs.output(str);
-    if (type == QtFatalMsg) {
-        abort();
-
+        logs.output(str);
+        if (type == QtFatalMsg) {
+            abort();
+        }
     }
 }
 
@@ -116,8 +119,17 @@ int main(int argc, char *argv[])
 
     QCoreApplication *app = new QCoreApplication(argc, argv);
 
-    WICKRIOCLIENTSERVER = new WickrIOClientServer();
-    WICKRIOCLIENTSERVER->start();
+    OperationData *pOperation = new OperationData();
+    pOperation->processName = WBIO_CLIENTSERVER_TARGET;
+
+    WICKRIOCLIENTSERVERPROCESS = new WickrIOClientServerProcess(pOperation);
+    WICKRIOCLIENTSERVERPROCESS->start();
+    WICKRIOPROCESSCOMMAND = new WickrIOProcessCommand(pOperation);
+    WICKRIOPROCESSCOMMAND->start();
+
+    QObject::connect(WICKRIOPROCESSCOMMAND, &WickrIOProcessCommand::signalQuit,
+                     WICKRIOCLIENTSERVERPROCESS, &WickrIOClientServerProcess::processFinished,
+                     Qt::QueuedConnection);
 
     svcret = app->exec();
 

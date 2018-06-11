@@ -14,20 +14,16 @@
 #define BACK_OFF_START      1
 #define BACK_OFF_MAX        60
 
-#define WICKRIOCLIENTSERVER WickrIOClientServer::theClientServer
-
-class WickrIOClientServer : public QThread
+class WickrIOClientServer : public QObject
 {
 Q_OBJECT
 
 public:
-    WickrIOClientServer();
+    WickrIOClientServer(QObject *parent=0);
     virtual ~WickrIOClientServer();
 
-    static WickrIOClientServer *theClientServer;
+    bool configureService();
 
-private:
-    void usage();
     bool getClients(bool start);
     bool clientNeedsStart(WickrBotClients *client);
     bool parserNeedsStart(WickrBotProcessState *process);
@@ -37,8 +33,6 @@ private:
 
     bool sendClientCmd(int port, const QString& cmd);
 
-    bool configureService();
-
     OperationData       *m_operation = nullptr;
     QTimer              *m_processTimer = nullptr;
     QString             m_vendorName;
@@ -47,7 +41,6 @@ private:
     int                 m_backOff;
     bool                m_isConfigured = false;
 
-    QString             m_appNm;
     WickrIOIPCService   *m_ipcSvc = nullptr;
 
     QString             m_clientState;
@@ -55,10 +48,11 @@ private:
 
     QMap<QString, QString>  m_clientPasswords;
 
-private slots:
-    void processStarted();
-    void processFinished();
+public slots:
+    void processStarted(bool resume=false);
+    void processFinished(bool pause=false);
 
+private slots:
     void slotTimeoutProcess();
     void slotRxIPCMessage(QString type, QString value);
 
