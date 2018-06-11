@@ -119,9 +119,12 @@ int main(int argc, char *argv[])
 
     QCoreApplication *app = new QCoreApplication(argc, argv);
 
-    WICKRIOCLIENTSERVERPROCESS = new WickrIOClientServerProcess();
+    OperationData *pOperation = new OperationData();
+    pOperation->processName = WBIO_CLIENTSERVER_TARGET;
+
+    WICKRIOCLIENTSERVERPROCESS = new WickrIOClientServerProcess(pOperation);
     WICKRIOCLIENTSERVERPROCESS->start();
-    WICKRIOPROCESSCOMMAND = new WickrIOProcessCommand();
+    WICKRIOPROCESSCOMMAND = new WickrIOProcessCommand(pOperation);
     WICKRIOPROCESSCOMMAND->start();
 
     svcret = app->exec();

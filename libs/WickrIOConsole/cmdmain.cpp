@@ -10,8 +10,8 @@
 #include "consoleserver.h"
 #include "wickrIOConsoleClientHandler.h"
 
-CmdMain::CmdMain() :
-    m_cmdOperation(nullptr),
+CmdMain::CmdMain(OperationData*pOperation) :
+    m_cmdOperation(pOperation),
     m_cmdClient(&m_cmdOperation),
     m_cmdConsole(&m_cmdOperation),
     m_cmdAdvanced(&m_cmdOperation),

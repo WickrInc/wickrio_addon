@@ -20,7 +20,7 @@ WickrIOClientServerProcess *WickrIOClientServerProcess::theClientServer;
  * @brief WickrIOClientServerProcess::WickrIOClientServerProcess
  * This is the constructor for the WickrIO service (windows) / Daemon (linux)
  */
-WickrIOClientServerProcess::WickrIOClientServerProcess()
+WickrIOClientServerProcess::WickrIOClientServerProcess(OperationData *pOperation)
 {
 #ifdef DEBUG_TRACE
     qDebug() << "Entering constructor";
@@ -29,8 +29,7 @@ WickrIOClientServerProcess::WickrIOClientServerProcess()
     connect(this, &WickrIOClientServerProcess::started, this, &WickrIOClientServerProcess::processStarted);
     connect(this, &WickrIOClientServerProcess::finished, this, &WickrIOClientServerProcess::processFinished);
 
-    m_clientServer.m_operation = new OperationData();
-    m_clientServer.m_operation->processName = WBIO_CLIENTSERVER_TARGET;
+    m_clientServer.m_operation = pOperation;
 
     if (m_clientServer.configureService()) {
         m_clientServer.m_operation->updateProcessState(PROCSTATE_RUNNING);

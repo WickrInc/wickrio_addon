@@ -18,7 +18,7 @@ class WickrIOClientServerProcess : public QThread
 Q_OBJECT
 
 public:
-    WickrIOClientServerProcess();
+    WickrIOClientServerProcess(OperationData *pOperation=nullptr);
     virtual ~WickrIOClientServerProcess();
 
     static WickrIOClientServerProcess *theClientServer;

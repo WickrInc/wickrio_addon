@@ -22,7 +22,7 @@ class CmdMain : public CmdBase
 {
     Q_OBJECT
 public:
-    explicit CmdMain();
+    explicit CmdMain(OperationData*pOperation=nullptr);
 
     bool runCommands(QString commands=QString());
 
