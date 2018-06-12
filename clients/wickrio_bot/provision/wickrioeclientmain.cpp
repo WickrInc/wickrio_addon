@@ -158,11 +158,28 @@ void WickrIOEClientMain::processStarted()
                 &WickrIOEClientMain::slotProvisionFailed);
     }
 
+    connect(&m_loginHdlr,
+            &WickrIOLoginHdlr::signalOnlineFlag,
+            this,
+            &WickrIOEClientMain::slotRegisterOnline);
+
     // Start the provisioning here
     if (m_client->onPrem) {
         WickrIOClientRuntime::provHdlrBeginOnPrem(m_client->user, m_client->password, m_invite);
     } else {
+#if defined(WICKR_MESSENGER)
+        m_loginHdlr.slotRegisterUser(m_client->user, m_client->password, "", true, false, false);
+#else
         WickrIOClientRuntime::provHdlrBeginCloud(m_client->user, m_client->password, m_invite);
+#endif
+    }
+}
+
+void WickrIOEClientMain::slotRegisterOnline(bool online)
+{
+    if (!online) {
+        m_loginSuccess = false;
+        emit signalLoginFailure();
     }
 }
 

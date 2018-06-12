@@ -1,6 +1,7 @@
 TEMPLATE = subdirs
 SUBDIRS += \
-    client
+    client \
+    provision
 
 CONFIG += ordered
 

@@ -173,11 +173,12 @@ void WickrIOLoginHdlr::slotRegistrationDone(WickrRegisterUserContext *c)
     if(!c->isSuccess()) {
         // If we failed because of something other than bad credentials then show the result
         if (c->apiCode().getValue() != BAD_SYNC_CREDENTIALS) {
-            qDebug() << c->errorString();
+            qDebug().noquote().nospace() << "CONSOLE:" << c->errorString();
             emit signalOnlineFlag(false);
         }
     } else {
         // GET Arguments: <wickrid> <password>
+        qDebug().noquote().nospace() << "CONSOLE:Successfully created user";
         QString wickrid  = c->getArg(arg_USERID).toString();
         QString password = c->getArg(arg_PASSWORD).toString();
         slotLoginStart( wickrid, password );

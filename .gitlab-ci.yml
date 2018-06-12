@@ -102,6 +102,20 @@ build_messenger_alpha:
     - messenger
     - docker
 
+build_messenger_beta:
+  stage: build
+  before_script:
+    - bash PREP-FOR-AUTOBUILD
+  script:
+    - bash autobuild.sh messenger beta
+  only:
+    - tags
+  tags:
+    - linux
+    - beta
+    - messenger
+    - docker
+
 build_messenger_release:
   stage: build
   before_script:

@@ -89,7 +89,11 @@ int main(int argc, char *argv[])
     QString appname = WBIO_PROVISION_TARGET;
     QString orgname = WBIO_ORGANIZATION;
 
+#if defined(WICKR_MESSENGER)
+    wickrProductSetProductType(PRODUCT_TYPE_MESSENGER);
+#elif defined(WICKR_ENTERPRISE)
     wickrProductSetProductType(PRODUCT_TYPE_BOT);
+#endif
     WickrURLs::setDefaultBaseURLs(ClientConfigurationInfo::DefaultBaseURL,
                                   ClientConfigurationInfo::DefaultDirSearchBaseURL);
 
@@ -133,7 +137,7 @@ int main(int argc, char *argv[])
     /*
      * Get input from the user
      */
-    if (!provisioningInput.runCommands()) {
+    if (!provisioningInput.runCommands(argc, argv)) {
         exit(1);
     }
 
@@ -201,7 +205,7 @@ int main(int argc, char *argv[])
 
     // Wickr Runtime Environment (all applications include this line)
     WickrCore::WickrRuntime::init(argc, argv,
-                                  PRODUCT_TYPE_BOT,
+                                  wickrProductGetProductType(),
                                   ClientVersionInfo::getOrgName(),
                                   appname,
                                   ClientConfigurationInfo::DefaultBaseURL,
@@ -292,6 +296,10 @@ int main(int argc, char *argv[])
     QObject::connect(WICKRBOT, &WickrIOEClientMain::signalLoginSuccess, [=]() {
         qDebug() << "CONSOLE:Successfully logged in as new user!";
         qDebug() << "CONSOLE:Our work is done here, logging off!";
+        app->quit();
+    });
+    QObject::connect(WICKRBOT, &WickrIOEClientMain::signalLoginFailure, [=]() {
+        qDebug() << "CONSOLE:Failed to create or login new user!";
         app->quit();
     });
     WICKRBOT->start();

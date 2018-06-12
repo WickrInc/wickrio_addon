@@ -185,6 +185,26 @@ case "$product-$btype" in
         coreExe="core_botAlpha"
         coreImage="bot-messenger-core-alpha"
         ;;
+    messenger-beta)
+        lin_appid="6bf25f5f8b7b4bbfa333d9354e5351ca"
+        doComplianceBot=""
+        doBroadcastBot="true"
+        doWelcomeBot="true"
+        doCoreBot="true"
+        consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
+        integrationDeb="wio_integration-debug_${version}-${bld}.deb"
+        complianceDeb=""
+        complianceExe=""
+        wickrIODockerDeb=""
+        wickrIOExe=""
+        wickrIOBotImage=""
+        welcomeDeb=""
+        welcomeExe=""
+        welcomeImage=""
+        coreDeb="wio_core_bot-beta${version}-${bld}~beta.deb"
+        coreExe="core_botBeta"
+        coreImage="bot-messenger-core-beta"
+        ;;
     messenger-release)
         lin_appid="3affc0dd77b249e492c8cea29441ee60"
         doComplianceBot=""
