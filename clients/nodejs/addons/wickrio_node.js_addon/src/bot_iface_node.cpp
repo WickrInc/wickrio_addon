@@ -732,7 +732,7 @@ void cmdGetReceivedMessage(const v8::FunctionCallbackInfo<v8::Value> & args){
 }
 
 
-void cmdSendMessage(const v8::FunctionCallbackInfo<v8::Value> & args) {
+void cmdSend1to1Message(const v8::FunctionCallbackInfo<v8::Value> & args) {
         Isolate* isolate = args.GetIsolate();
         if (botIface == nullptr) {
                 string message = "Bot Interface has not been initialized!";
@@ -740,37 +740,33 @@ void cmdSendMessage(const v8::FunctionCallbackInfo<v8::Value> & args) {
                 args.GetReturnValue().Set(error);
                 return;
         }
-        if (args.Length() < 3) {
-                string message = "SendMessage: requires at least 3 argument!";
+        if (args.Length() < 2) {
+                string message = "Send1to1Message: requires at least 2 arguments!";
                 auto error = v8::String::NewFromUtf8(isolate, message.c_str());
                 args.GetReturnValue().Set(error);
                 return;
         }
+
         for(int i = 0; i < args.Length() - 1; i++) {
                 string message;
                 if(i == 0) {
-                        if(!args[i]->IsString()) {
-                                message = "SendMessage: vGroupID must be a string!";
+                        if(!args[i]->IsArray()) {
+                                message = "Send1to1Message: list of users must be an array!";
                         }
                 }
                 else if(i == 1) {
-                        if(!args[i]->IsArray()) {
-                                message = "SendMessage: list of users must be an array!";
+                        if(!args[i]->IsString()) {
+                                message = "Send1to1Message: message must be a string!";
                         }
                 }
                 else if(i == 2) {
                         if(!args[i]->IsString()) {
-                                message = "SendMessage: message must be a string!";
+                                message = "Send1to1Message: ttl must be a string!";
                         }
                 }
                 else if(i == 3) {
                         if(!args[i]->IsString()) {
-                                message = "SendMessage: ttl must be a string!";
-                        }
-                }
-                else if(i == 4) {
-                        if(!args[i]->IsString()) {
-                                message = "SendMessage: bor must be a string!";
+                                message = "Send1to1Message: bor must be a string!";
                         }
                 }
                 if(!message.empty()) {
@@ -780,24 +776,22 @@ void cmdSendMessage(const v8::FunctionCallbackInfo<v8::Value> & args) {
                 }
         }
         string command, response;
-        v8::String::Utf8Value param1(args[0]->ToString());
-        std::string vGroupID = std::string(*param1);
+        std::string placeHolder;
         vector <string> users;
-        Local<Array> arr = Local<Array>::Cast(args[1]);
+        Local<Array> arr = Local<Array>::Cast(args[0]);
         for(int i=0; i<arr->Length(); i++) {
                 Local<Value> item = arr->Get(i);
-                v8::String::Utf8Value param2(item->ToString());
-                std::string str = std::string(*param2);
+                v8::String::Utf8Value param1(item->ToString());
+                std::string str = std::string(*param1);
                 users.push_back(str);
         }
+        v8::String::Utf8Value param2(args[1]->ToString());
+        std::string message = std::string(*param2);
         v8::String::Utf8Value param3(args[2]->ToString());
-        std::string message = std::string(*param3);
+        std::string ttl = std::string(*param3);
         v8::String::Utf8Value param4(args[3]->ToString());
-        std::string ttl = std::string(*param4);
-        v8::String::Utf8Value param5(args[4]->ToString());
-        std::string bor = std::string(*param5);
-        //cout << vGroupID << endl << users[0] << endl << message << endl << ttl << endl << bor << endl;
-        botIface->cmdStringSendMessage(command, vGroupID, users, message, ttl, bor);
+        std::string bor = std::string(*param4);
+        botIface->cmdStringSendMessage(command, placeHolder, users, message, ttl, bor);
         if (botIface->send(command, response) != BotIface::SUCCESS) {
                 response = botIface->getLastErrorString();
                 string message = "Send failed: " + response;
@@ -812,6 +806,81 @@ void cmdSendMessage(const v8::FunctionCallbackInfo<v8::Value> & args) {
                 }
                 else{
                   response = "cmdSendMessage Success!";
+                  auto message = v8::String::NewFromUtf8(isolate, response.c_str());
+                  args.GetReturnValue().Set(message);
+                }
+                return;
+        }
+}
+
+void cmdSendRoomMessage(const v8::FunctionCallbackInfo<v8::Value> & args) {
+        Isolate* isolate = args.GetIsolate();
+        if (botIface == nullptr) {
+                string message = "Bot Interface has not been initialized!";
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        if (args.Length() < 2) {
+                string message = "SendRoomMessage: requires at least 2 arguments!";
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+
+        for(int i = 0; i < args.Length() - 1; i++) {
+                string message;
+                if(i == 0) {
+                        if(!args[i]->IsString()) {
+                                message = "SendRoomMessage: vGroupID must be a string!";
+                        }
+                }
+                else if(i == 1) {
+                        if(!args[i]->IsString()) {
+                                message = "SendRoomMessage: message must be a string!";
+                        }
+                }
+                else if(i == 2) {
+                        if(!args[i]->IsString()) {
+                                message = "SendRoomMessage: ttl must be a string!";
+                        }
+                }
+                else if(i == 3) {
+                        if(!args[i]->IsString()) {
+                                message = "SendRoomMessage: bor must be a string!";
+                        }
+                }
+                if(!message.empty()) {
+                        auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                        args.GetReturnValue().Set(error);
+                        return;
+                }
+        }
+        string command, response;
+        v8::String::Utf8Value param1(args[0]->ToString());
+        std::string vGroupID = std::string(*param1);
+        vector <string> placeHolder;
+        v8::String::Utf8Value param2(args[1]->ToString());
+        std::string message = std::string(*param2);
+        v8::String::Utf8Value param3(args[2]->ToString());
+        std::string ttl = std::string(*param3);
+        v8::String::Utf8Value param4(args[3]->ToString());
+        std::string bor = std::string(*param4);
+        botIface->cmdStringSendMessage(command, vGroupID, placeHolder, message, ttl, bor);
+        if (botIface->send(command, response) != BotIface::SUCCESS) {
+                response = botIface->getLastErrorString();
+                string message = "Send failed: " + response;
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        else {
+                if (response.length() > 0) {
+                        auto message = v8::String::NewFromUtf8(isolate, response.c_str());
+                        args.GetReturnValue().Set(message);
+                }
+                else{
+                  response = "cmdSendRoomMessage Success!";
                   auto message = v8::String::NewFromUtf8(isolate, response.c_str());
                   args.GetReturnValue().Set(message);
                 }
@@ -836,7 +905,8 @@ void init(Handle <Object> exports, Handle<Object> module) {
         NODE_SET_METHOD(exports, "cmdGetGroupConvo", cmdGetGroupConvo);
         NODE_SET_METHOD(exports, "cmdGetGroupConvos", cmdGetGroupConvos);
         NODE_SET_METHOD(exports, "cmdGetReceivedMessage", cmdGetReceivedMessage);
-        NODE_SET_METHOD(exports, "cmdSendMessage", cmdSendMessage);
+        NODE_SET_METHOD(exports, "cmdSend1to1Message", cmdSend1to1Message);
+        NODE_SET_METHOD(exports, "cmdSendRoomMessage", cmdSendRoomMessage);
 }
 
 // associates the module name with initialization logic
