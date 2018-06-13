@@ -56,48 +56,50 @@ var responseMessageList = [
 
 var wickrUsers = [];
 console.log(addon.clientInit('aaronbot019512@62114373.net'));
+welcomeBot();
 
-for (;;) {
-  var message = addon.cmdGetReceivedMessage();
-  if (message === "{ }") {
-    continue;
-  } else {
-    console.log(message);
-    console.log(wickrUsers);
-
-    var parsedData = JSON.parse(message);
-    var wickrID = [parsedData.sender];
-    var location = find(wickrID);
-    console.log('location1:', location);
-    if (!location) {
-      console.log('push happens!');
-      wickrUsers.push({
-        wickrID: wickrID,
-        index: 0
-      });
-    }
-    var current = getIndex(wickrID);
-    console.log('current:',current);
-    if (current < 9 || current != -1) {
-      console.log(addon.cmdSend1to1Message(wickrID, responseMessageList[current], '100', '60'));
-      location = find(wickrID);
-      wickrUsers[location].index = current + 1;
-      console.log('location2:', location);
+async function welcomeBot() {
+  for (;;) {
+    var message = await addon.cmdGetReceivedMessage();
+    if (message === "{ }") {
+      continue;
+    } else {
+      var parsedData = JSON.parse(message);
+      var wickrID = [parsedData.sender];
+      var location = await find(wickrID);
+      if (location === -1) {
+        wickrUsers.push({
+          wickrID: wickrID,
+          index: 0
+        });
+      }
+      var current = await getIndex(wickrID);
+      if (current > 9) {
+        location = await find(wickrID);
+        wickrUsers[location].index = 0;
+      }
+      current = await getIndex(wickrID);
+      if (current <= 9 && current != -1) {
+        console.log(addon.cmdSend1to1Message(wickrID, responseMessageList[current], '100', '60'));
+        location = await find(wickrID);
+        wickrUsers[location].index = current + 1;
+      }
     }
   }
 }
 
 function find(wickrID) {
-  for (var i=0;i< wickrUsers.length;i++) {
-    if (wickrUsers[i].wickrID === wickrID)
+  for (var i = 0; i < wickrUsers.length; i++) {
+    if (wickrUsers[i].wickrID[0].localeCompare(wickrID[0]) === 0)
       return i;
   }
+  return -1;
 }
 
 function getIndex(wickrID) {
-  for (var i=0;i< wickrUsers.length;i++) {
-    if (wickrUsers[i].wickrID === wickrID){
+  for (var i = 0; i < wickrUsers.length; i++) {
+    if (wickrUsers[i].wickrID[0] === wickrID[0]) {
       return wickrUsers[i].index;
-}
+    }
   }
 }
