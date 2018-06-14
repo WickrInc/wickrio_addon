@@ -43,7 +43,7 @@ integrations.update:
 	@echo $(HEADER_START)
 	@echo "Update the Integrations submodule"
 	@echo "Starting to update wickr-integrations"
-	cd $(WICKR_INTEGRATIONS); git fetch --all; git checkout $(INTEGRATIONS_BRANCH); git pull
+	cd $(WICKR_INTEGRATIONS); get checkout master; git fetch --all; git checkout $(INTEGRATIONS_BRANCH); git pull
 	@echo $(HEADER_END)
 
 ##########################################################

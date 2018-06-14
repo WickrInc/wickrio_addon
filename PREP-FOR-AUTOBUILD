@@ -6,12 +6,18 @@ echo This script should run to set the build number for nightly alpha builds!
 echo "wickr-wickrio branch = ${WICKRWICKRIO}"
 echo "wickr-sdk branch     = ${WICKRSDKBRANCH}"
 echo "wickr-core-c branch  = ${WICKRCOREBRANCH}"
+echo "wickr-integrations branch  = ${WICKRINTEGRATIONSBRANCH}"
 
 #
 # Get rid of any possible changes that may cause problems with the build
 #
 set +e
 git checkout .
+
+cd wickr-integrations
+git checkout .
+cd ..
+
 cd wickr-sdk
 git checkout .
 cd wickr-core-c
