@@ -357,7 +357,7 @@ if test ! -z "$doCoreBot" ; then
 fi
 
 echo "Getting the Hubot integration software from the wickr-integrations submodule"
-$abs/wickr-integrations/compress.sh $output $release
+(cd $abs/wickr-integrations; ./compress.sh $output $release)
 hubotsoftware=$output/hubot_$release.tar.gz
 
 if test ! -z "$wickrIODockerDeb" ; then
