@@ -1,4 +1,5 @@
-Release Notes from v4.26-release to v4.41.6-3:
+Release Notes from v4.26-release to v4.41.7-2:
+  * Add WelcomeBot and ComplianceBot scripts
   * Paul dockerinteractivestart
   * Add error checks and fixes
   * Create one package for wickrio bot docker installation [ci skip]
