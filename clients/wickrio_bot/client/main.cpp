@@ -164,7 +164,11 @@ int main(int argc, char *argv[])
     QString appname = WBIO_CLIENT_TARGET;
     QString orgname = WBIO_ORGANIZATION;
 
+#if defined(WICKR_MESSENGER)
+    wickrProductSetProductType(PRODUCT_TYPE_MESSENGER);
+#else
     wickrProductSetProductType(PRODUCT_TYPE_BOT);
+#endif
     WickrURLs::setDefaultBaseURLs(ClientConfigurationInfo::DefaultBaseURL,
                                   ClientConfigurationInfo::DefaultDirSearchBaseURL);
 
@@ -310,7 +314,11 @@ int main(int argc, char *argv[])
         productType = PRODUCT_TYPE_PRO;
 #endif
     } else {
+#if defined(WICKR_MESSENGER)
+        productType = PRODUCT_TYPE_MESSENGER;
+#else
         productType = PRODUCT_TYPE_BOT;
+#endif
     }
 
     // Wickr Runtime Environment (all applications include this line)

@@ -86,6 +86,9 @@ docdir=$prefix/usr/share/doc/wio_docker${bldtype}
 plugins=$prefix/usr/lib/wio_docker${bldtype}/plugins
 addonsdir=$prefix/usr/lib/wio_docker${bldtype}/node.addons
 
+dstintegrationsdir=$prefix/usr/lib/wickr/integrations
+srcintegrationsdir=$current/../../../integrations
+
 optdir=$prefix/opt/WickrIO$srcBldType
 
 platform=$current/../../../platforms/linux/generic-64
@@ -109,6 +112,7 @@ mkdir -p $libdir
 mkdir -p $addonsdir
 mkdir -p $optdir
 mkdir -p $plugins/sqldrivers
+mkdir -p $dstintegrationsdir
 
 # Client directories
 mkdir -p $pixmaps
@@ -137,6 +141,11 @@ cp -a ${build_dir}/libs/qamqpsrc/libqamqp.* $libdir
 # Copy the node.js addon
 #
 cp ${current}/../../../clients/nodejs/addons/wickrio_node.js_addon/build/Release/wickrio_addon.node ${addonsdir}
+
+#
+# Copy the integrations software
+#
+cp -a -r $srcintegrationsdir/software $dstintegrationsdir
 
 #
 # Run chrpath so binaries can find libraries
