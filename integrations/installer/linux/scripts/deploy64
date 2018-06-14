@@ -96,7 +96,7 @@ sed -e "s/EXTENSION/${svcbldtype}/g" -e "s/INSTALLEXT/${SvcBldType}/g" <$current
 #
 # Copy the integrations software
 #
-if test -d "$hubotsoftware" ; then
+if test -n "$hubotsoftware" ; then
   mkdir -p $dstintegrationsdir/software/hubot
   cp $hubotsoftware $dstintegrationsdir/software/hubot/software.tar.gz
 fi
