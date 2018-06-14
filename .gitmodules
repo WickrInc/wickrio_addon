@@ -3,3 +3,7 @@
         url = git@wkrnjpgit.wickrlan.net:wickr/desktop/wickr-sdk.git
 	ignore = all
 
+[submodule "wickr-integrations"]
+	path = wickr-integrations
+	url = git@wkrnjpgit.wickrlan.net:wickr/integrations/wickr-integrations.git
+	ignore = all

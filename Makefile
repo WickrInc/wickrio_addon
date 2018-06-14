@@ -1,6 +1,8 @@
 WICKR_SDK = wickr-sdk
+WICKR_INTEGRATIONS = wickr-integrations
 LOCALREPO = localRepo/$(WICKR_SDK)
 SDK_BRANCH = v4.41
+INTEGRATIONS_BRANCH = alpha
 
 ifeq ($(OS),Windows_NT)
     DIR := $(subst C:,,${CURDIR})
@@ -14,7 +16,7 @@ HEADER_START = "*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+
 default: all
 	@echo $(DIR)
 
-update: sdk.update
+update: sdk.update integrations.update
 
 clean: osx.clean
 	rm -rf $(HEADERDIR)
@@ -32,9 +34,16 @@ $(WICKR_SDK)/wickr-sdk.pro:
 
 sdk.update:
 	@echo $(HEADER_START)
-	@echo "Update the submodules"
+	@echo "Update the SDK submodule"
 	@echo "Starting to update wickr-sdk"
 	cd $(WICKR_SDK); git fetch --all; git checkout $(SDK_BRANCH); git pull; make; make update
+	@echo $(HEADER_END)
+
+integrations.update:
+	@echo $(HEADER_START)
+	@echo "Update the Integrations submodule"
+	@echo "Starting to update wickr-integrations"
+	cd $(WICKR_INTEGRATIONS); git fetch --all; git checkout $(INTEGRATIONS_BRANCH); git pull; make; make update
 	@echo $(HEADER_END)
 
 ##########################################################
