@@ -356,16 +356,20 @@ if test ! -z "$doCoreBot" ; then
     $abs/clients/core_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
 fi
 
+echo "Getting the Hubot integration software from the wickr-integrations submodule"
+$abs/wickr-integrations/compress.sh $output $release
+hubotsoftware=$output/hubot_$release.tar.gz
+
 if test ! -z "$wickrIODockerDeb" ; then
     echo "Create docker package for $product $btype"
     build_number=`cat $abs/BUILD_NUMBER`
     binary_dir="$abs/$build"
-    $abs/docker/installer/linux/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
+    $abs/docker/installer/linux/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$hubotsoftware" "$deploy"
 fi
 
 echo "going to create the integration software package"
 build_number=`cat $abs/BUILD_NUMBER`
-$abs/integrations/installer/linux/scripts/deploy64 $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$deploy"
+$abs/integrations/installer/linux/scripts/deploy64 $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$hubotsoftware" "$deploy"
 
 echo "going to create $btype for services"
 build_number=`cat $abs/BUILD_NUMBER`
