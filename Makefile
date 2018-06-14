@@ -39,6 +39,16 @@ sdk.update:
 	cd $(WICKR_SDK); git fetch --all; git checkout $(SDK_BRANCH); git pull; make; make update
 	@echo $(HEADER_END)
 
+$(WICKR_INTEGRATIONS)/compress.sh:
+	@echo $(HEADER_START)
+	@echo "Starting to install wickr-integrations from GIT"
+	git status
+	git submodule init wickr-integrations
+	git submodule update --recursive wickr-integrations
+	cd $(WICKR_INTEGRATIONS); git fetch --all; git checkout $(INTEGRATIONS_BRANCH); git pull
+	@echo "Finished to install wickr-integrations from GIT"
+	@echo $(HEADER_END)
+
 integrations.update:
 	@echo $(HEADER_START)
 	@echo "Update the Integrations submodule"
@@ -104,5 +114,5 @@ linux.release.install: linux.release
 
 
 ##########################################################
-all: $(WICKR_SDK)/wickr-sdk.pro
+all: $(WICKR_SDK)/wickr-sdk.pro $(WICKR_INTEGRATIONS)/compress.sh
 	@echo done!
