@@ -147,9 +147,9 @@ cp ${current}/../../../clients/nodejs/addons/wickrio_node.js_addon/build/Release
 #
 # Copy the integrations software
 #
-if test -d "$hubotsoftware" ; then
+if test -z "$hubotsoftware" ; then
   mkdir -p $dstintegrationsdir/software/hubot
-  cp $hubotsoftware $dstintegrationsdir/software/hubot/software.tar.gz
+  cp -a $hubotsoftware $dstintegrationsdir/software/hubot/software.tar.gz
 fi
 
 #
