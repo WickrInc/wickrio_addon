@@ -80,7 +80,7 @@ async function welcomeBot() {
       }
       current = await getIndex(wickrID);
       if (current <= 9 && current != -1) {
-        console.log(addon.cmdSend1to1Message(wickrID, responseMessageList[current], '100', '60'));
+        addon.cmdSend1to1Message(wickrID, responseMessageList[current], '100', '60');
         location = await find(wickrID);
         wickrUsers[location].index = current + 1;
       }

@@ -26,6 +26,16 @@ void clientInit(const v8::FunctionCallbackInfo<v8::Value> & args) {
         args.GetReturnValue().Set(error);
         return;
 }
+
+void closeClient(const v8::FunctionCallbackInfo<v8::Value> & args){
+  Isolate* isolate = args.GetIsolate();
+  delete botIface;
+  botIface = NULL;
+  string message = "Bot Interface closed successfully!";
+  auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+  args.GetReturnValue().Set(error);
+  return;
+}
 //v8::Handle<Boolean>
 void cmdGetStatistics(const v8::FunctionCallbackInfo<v8::Value> & args){
         Isolate* isolate = args.GetIsolate();
@@ -892,6 +902,7 @@ void init(Handle <Object> exports, Handle<Object> module) {
         //2nd param: what we call from Javascript
         //3rd param: the name of the actual function
         NODE_SET_METHOD(exports, "clientInit", clientInit);
+        NODE_SET_METHOD(exports, "closeClient", closeClient);
         NODE_SET_METHOD(exports, "cmdGetStatistics", cmdGetStatistics);
         NODE_SET_METHOD(exports, "cmdClearStatistics", cmdClearStatistics);
         NODE_SET_METHOD(exports, "cmdGetRooms", cmdGetRooms);

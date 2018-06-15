@@ -3,9 +3,7 @@ var fs = require('fs');
 
 module.exports = addon;
 console.log(addon.clientInit('aaronbot019512@62114373.net'));
-console.log(addon.cmdGetGroupConvos());
 
-console.log(addon.cmdGetReceivedMessage());
 for (;;) {
   var message = addon.cmdGetReceivedMessage();
   if(message === "{ }"){
