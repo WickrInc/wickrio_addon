@@ -23,6 +23,7 @@ var message = "Testing time!"
 //console.log(addon.cmdGetGroupConvo(vGroupID));
 //console.log(addon.cmdGetGroupConvos());
 //console.log(addon.cmdDeleteGroupConvo(vGroupID));
-// console.log(addon.cmdGetReceivedMessage());
+//console.log(addon.cmdGetReceivedMessage());
 console.log(addon.cmdSend1to1Message(members, message, ttl , bor));
+console.log(addon.closeClient());
 //console.log(addon.cmdSendRoomMessage(vGroupID, message, ttl, bor));
