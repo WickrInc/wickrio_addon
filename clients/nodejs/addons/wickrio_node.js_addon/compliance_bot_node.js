@@ -2,7 +2,7 @@ var addon = require('bindings')('wickrio_addon');
 var fs = require('fs');
 
 module.exports = addon;
-console.log(addon.clientInit('aaronbot019512@62114373.net'));
+console.log(addon.clientInit('aaronbot023299@85022943.net'));
 
 for (;;) {
   var message = addon.cmdGetReceivedMessage();

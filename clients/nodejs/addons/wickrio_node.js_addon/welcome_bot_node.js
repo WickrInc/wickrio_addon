@@ -55,37 +55,46 @@ var responseMessageList = [
 ];
 
 var wickrUsers = [];
-console.log(addon.clientInit('aaronbot019512@62114373.net'));
+console.log(addon.clientInit('aaronbot023299@85022943.net'));
 welcomeBot();
 
-async function welcomeBot() {
+async function welcomeBot(cb) {
   for (;;) {
-    var message = await addon.cmdGetReceivedMessage();
+    try {
+      var message = await addon.cmdGetReceivedMessage();
+    } catch (err) {
+      console.log(err);
+    }
     if (message === "{ }") {
       continue;
     } else {
       var parsedData = JSON.parse(message);
       var wickrID = [parsedData.sender];
-      var location = await find(wickrID);
+      try {
+        var location = await find(wickrID);
+      } catch (err) {
+        console.log(err);
+      }
       if (location === -1) {
         wickrUsers.push({
           wickrID: wickrID,
           index: 0
         });
       }
-      var current = await getIndex(wickrID);
+      var current = await getIndex(wickrID).catch((error) => console.log(error));
       if (current > 9) {
-        location = await find(wickrID);
+        location = await find(wickrID).catch((error) => console.log(error));
         wickrUsers[location].index = 0;
       }
-      current = await getIndex(wickrID);
+      current = await getIndex(wickrID).catch((error) => console.log(error));
       if (current <= 9 && current != -1) {
         addon.cmdSend1to1Message(wickrID, responseMessageList[current], '100', '60');
-        location = await find(wickrID);
+        location = await find(wickrID).catch((error) => console.log(error));
         wickrUsers[location].index = current + 1;
       }
     }
   }
+  cb(null, welcomeBot);
 }
 
 function find(wickrID) {
