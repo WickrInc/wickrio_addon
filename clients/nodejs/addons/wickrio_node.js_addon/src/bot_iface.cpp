@@ -18,10 +18,11 @@ BotIface::~BotIface()
 }
 
 BotIface::BotIfaceStatus
-BotIface::init()
+BotIface::init(const string& amqp)
 {
     try {
-        if (!m_iface->init()) {
+      cout << endl << "amqp2: " + amqp << endl;
+        if (!m_iface->init(amqp)) {
             m_lastError = "Could not initilize the interface!";
             return INIT_FAILED;
         }

@@ -31,7 +31,7 @@ public:
         INVALID_FIELD_VALUE,
     };
 
-    BotIfaceStatus init();
+    BotIfaceStatus init(const string& amqp);
     BotIfaceStatus send(const string& command, string& reponse);
     BotIfaceStatus cmdStringGetStatistics(string& command);
     BotIfaceStatus cmdStringClearStatistics(string& command);

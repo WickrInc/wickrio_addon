@@ -2,7 +2,11 @@ var addon = require('bindings')('wickrio_addon');
 var fs = require('fs');
 
 module.exports = addon;
-console.log(addon.clientInit('aaronbot023299@85022943.net'));
+var amqp_user = 'aaron';
+var amqp_password = 'aaron'
+var amqp_address = 'localhost';
+var amqp_port = '5672';
+console.log(addon.clientInit('aaronbot023299@85022943.net', amqp_user, amqp_password, amqp_address, amqp_port));
 
 for (;;) {
   var message = addon.cmdGetReceivedMessage();
