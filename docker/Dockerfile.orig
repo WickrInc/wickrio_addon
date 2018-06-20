@@ -22,7 +22,7 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends wget \
   && wget http://packages.erlang-solutions.com/site/esl/esl-erlang/FLAVOUR_1_general/esl-erlang_20.1-1~ubuntu~xenial_amd64.deb \
   && apt-get -y install gdebi \
-  && gdebi esl-erlang_20.1-1\~ubuntu\~xenial_amd64.deb \
+  && gdebi -n esl-erlang_20.1-1\~ubuntu\~xenial_amd64.deb \
   && echo "deb https://dl.bintray.com/rabbitmq/debian xenial main" | tee /etc/apt/sources.list.d/bintray.rabbitmq.list \
   && wget -O- https://www.rabbitmq.com/rabbitmq-release-signing-key.asc | apt-key add - \
   && apt-get update \
