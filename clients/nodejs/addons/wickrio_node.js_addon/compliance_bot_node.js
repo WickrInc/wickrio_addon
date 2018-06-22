@@ -5,7 +5,7 @@ module.exports = addon;
 var amqp_user = 'aaron';
 var amqp_password = 'aaron'
 var amqp_address = 'localhost';
-var amqp_port = '5672';
+var amqp_port = '5001';
 console.log(addon.clientInit('aaronbot023299@85022943.net', amqp_user, amqp_password, amqp_address, amqp_port));
 
 for (;;) {
