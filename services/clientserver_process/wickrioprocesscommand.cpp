@@ -18,6 +18,9 @@ void
 WickrIOProcessCommand::processStarted()
 {
     CmdMain cmdmain(m_operation);
+
+    // Print out a list of the clients
+    cmdmain.runCommands("client,list");
     cmdmain.runCommands();
 
     emit signalQuit();

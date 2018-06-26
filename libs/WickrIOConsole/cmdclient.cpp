@@ -162,6 +162,12 @@ void CmdClient::listClients()
     // Update the list of clients
     m_clients = m_operation->m_ioDB->getClients();
 
+    if (m_clients.size() == 0) {
+        qDebug() << "CONSOLE:There are no clients currently configured!";
+        return;
+    }
+    qDebug() << "CONSOLE:Current list of clients:";
+
     int cnt=0;
     for (WickrBotClients *client : m_clients) {
         QString processName = WBIOServerCommon::getClientProcessName(client);
