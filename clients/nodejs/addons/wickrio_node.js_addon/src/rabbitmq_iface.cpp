@@ -55,9 +55,9 @@ RabbitMQIface::onMessage( AMQPMessage * message ) {
 }
 
 bool
-RabbitMQIface::init()
+RabbitMQIface::init(const string& amqp)
 {
-    m_amqp = new AMQP("guest:guest@localhost:5672");
+    m_amqp = new AMQP(amqp);
 
     long randValue = rand();
     string randValueString = to_string(randValue);
@@ -96,4 +96,3 @@ RabbitMQIface::sendMessage(string message)
 
     return RabbitMQIface::m_responseString;
 }
-

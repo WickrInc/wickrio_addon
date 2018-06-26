@@ -1,7 +1,12 @@
 var addon = require('bindings')('wickrio_addon');
 
 module.exports = addon;
-console.log(addon.clientInit('aaronbot019512@62114373.net'));
+//ex: "guest:guest@localhost:5672"
+var amqp_user = 'guest';
+var amqp_password = 'guest'
+var amqp_address = 'localhost';
+var amqp_port = '5672';
+console.log(addon.clientInit('aaronbot023299@85022943.net', amqp_user, amqp_password, amqp_address, amqp_port));
 var vGroupID = "Sbfa682074f470f8cfe7cf05060559918c798bb4fe5355531e84340694b367a6";
 var members = ['wickraaron@wickrautomation.com'];
 var members1;
