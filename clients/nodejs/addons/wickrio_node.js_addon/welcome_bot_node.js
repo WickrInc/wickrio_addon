@@ -55,7 +55,11 @@ var responseMessageList = [
 ];
 
 var wickrUsers = [];
-console.log(addon.clientInit('aaronbot023299@85022943.net'));
+var amqp_user = 'aaron';
+var amqp_password = 'aaron'
+var amqp_address = 'localhost';
+var amqp_port = '5001';
+console.log(addon.clientInit('aaronbot023299@85022943.net', amqp_user, amqp_password, amqp_address, amqp_port));
 welcomeBot();
 
 async function welcomeBot(cb) {
@@ -72,7 +76,7 @@ async function welcomeBot(cb) {
       var wickrID = [parsedData.sender];
       try {
         var location = await find(wickrID);
-      } catch (err) {
+      } catch (err){
         console.log(err);
       }
       if (location === -1) {
@@ -81,15 +85,34 @@ async function welcomeBot(cb) {
           index: 0
         });
       }
-      var current = await getIndex(wickrID).catch((error) => console.log(error));
+      try{
+      var current = await getIndex(wickrID);
+    } catch (err){
+      console.log(err);
+    }
       if (current > 9) {
-        location = await find(wickrID).catch((error) => console.log(error));
+        try{
+        location = await find(wickrID);
+      }
+      catch (err){
+        console.log(err);
+      }
         wickrUsers[location].index = 0;
       }
-      current = await getIndex(wickrID).catch((error) => console.log(error));
+      try{
+      current = await getIndex(wickrID);
+    }
+    catch (err){
+      console.log(err);
+    }
       if (current <= 9 && current != -1) {
         addon.cmdSend1to1Message(wickrID, responseMessageList[current], '100', '60');
-        location = await find(wickrID).catch((error) => console.log(error));
+        try{
+        location = await find(wickrID);
+      }
+      catch (err){
+        console.log(err);
+      }
         wickrUsers[location].index = current + 1;
       }
     }

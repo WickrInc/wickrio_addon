@@ -16,7 +16,7 @@ public:
     RabbitMQIface(string client);
     ~RabbitMQIface();
 
-    bool init();
+    bool init(const string& amqp);
     string sendMessage(string message);
 
 private:

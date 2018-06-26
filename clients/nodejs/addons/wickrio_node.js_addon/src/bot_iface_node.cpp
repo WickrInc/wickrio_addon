@@ -6,17 +6,25 @@ using namespace v8;
 using namespace std;
 using namespace Nan;
 
-std::string client;
 BotIface *botIface = nullptr;
 
 void clientInit(const v8::FunctionCallbackInfo<v8::Value> & args) {
         Isolate* isolate = args.GetIsolate();
         string message;
         v8::String::Utf8Value param1(args[0]->ToString());
-        std::string str = std::string(*param1);
-        client = str;
+        std::string client = std::string(*param1);
         botIface = new BotIface(client);
-        if (botIface->init() != BotIface::SUCCESS) {
+        v8::String::Utf8Value param2(args[1]->ToString());
+        std::string amqp_user = std::string(*param2);
+        v8::String::Utf8Value param3(args[2]->ToString());
+        std::string amqp_password = std::string(*param3);
+        v8::String::Utf8Value param4(args[3]->ToString());
+        std::string amqp_address = std::string(*param4);
+        v8::String::Utf8Value param5(args[4]->ToString());
+        std::string amqp_port = std::string(*param5);
+        std::string amqp = amqp_user + ":" + amqp_password + "@" + amqp_address + ":" + amqp_port;
+        cout << endl << "amqp: " + amqp << endl;
+        if (botIface->init(amqp) != BotIface::SUCCESS) {
           message = botIface->getLastErrorString() + "\nCould not initialize Bot Interface!";
         }
         else{
