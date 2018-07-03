@@ -55,69 +55,41 @@ var responseMessageList = [
 ];
 
 var wickrUsers = [];
-var amqp_user = 'aaron';
-var amqp_password = 'aaron'
+var amqp_user = 'wickr_user';
+var amqp_password = 'wickr_user'
 var amqp_address = 'localhost';
-var amqp_port = '5001';
+var amqp_port = '5672';
 console.log(addon.clientInit('aaronbot023299@85022943.net', amqp_user, amqp_password, amqp_address, amqp_port));
 welcomeBot();
 
-async function welcomeBot(cb) {
+ function welcomeBot() {
   for (;;) {
-    try {
-      var message = await addon.cmdGetReceivedMessage();
-    } catch (err) {
-      console.log(err);
-    }
-    if (message === "{ }") {
+    var message = addon.cmdGetReceivedMessage();
+    if (message === "{ }" || message === "" || !message) {
       continue;
     } else {
       var parsedData = JSON.parse(message);
       var wickrID = [parsedData.sender];
-      try {
-        var location = await find(wickrID);
-      } catch (err){
-        console.log(err);
-      }
+      var location = find(wickrID);
       if (location === -1) {
         wickrUsers.push({
           wickrID: wickrID,
           index: 0
         });
       }
-      try{
-      var current = await getIndex(wickrID);
-    } catch (err){
-      console.log(err);
-    }
+      var current = getIndex(wickrID);
       if (current > 9) {
-        try{
-        location = await find(wickrID);
-      }
-      catch (err){
-        console.log(err);
-      }
+        location = find(wickrID);
         wickrUsers[location].index = 0;
       }
-      try{
-      current = await getIndex(wickrID);
-    }
-    catch (err){
-      console.log(err);
-    }
+      current = getIndex(wickrID);
       if (current <= 9 && current != -1) {
         addon.cmdSend1to1Message(wickrID, responseMessageList[current], '100', '60');
-        try{
-        location = await find(wickrID);
-      }
-      catch (err){
-        console.log(err);
-      }
+        location = find(wickrID);
         wickrUsers[location].index = current + 1;
       }
     }
   }
-  cb(null, welcomeBot);
 }
 
 function find(wickrID) {
