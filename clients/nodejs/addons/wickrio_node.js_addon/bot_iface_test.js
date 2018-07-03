@@ -2,33 +2,35 @@ var addon = require('bindings')('wickrio_addon');
 
 module.exports = addon;
 //ex: "guest:guest@localhost:5672"
-var amqp_user = 'guest';
-var amqp_password = 'guest'
+var amqp_user = 'wickr_user';
+var amqp_password = 'wickr_user'
 var amqp_address = 'localhost';
 var amqp_port = '5672';
 console.log(addon.clientInit('aaronbot023299@85022943.net', amqp_user, amqp_password, amqp_address, amqp_port));
+
+
 var vGroupID = "Sbfa682074f470f8cfe7cf05060559918c798bb4fe5355531e84340694b367a6";
 var members = ['wickraaron@wickrautomation.com'];
 var members1;
-var moderators = ['wickraaron@wickrautomation.com', 'aaronbot019512@62114373.net'];
+var moderators = ['wickraaron@wickrautomation.com'];
 var bor = "6";
 var ttl = "100";
-var title = "West side";
+var title = "90 side";
 var description = "room";
 var message = "Testing time!"
-//console.log(addon.cmdAddRoom(members, moderators, title, description, ttl, bor));
-//console.log(addon.cmdDeleteRoom(vGroupID));
-//console.log(addon.cmdGetStatistics());
-//console.log(addon.cmdClearStatistics());
-//console.log(addon.cmdGetRoom(vGroupID));
-//console.log(addon.cmdGetRooms());
-//console.log(addon.cmdLeaveRoom(vGroupID));
-//console.log(addon.cmdAddGroupConvo(members, ttl, bor));
-//console.log(addon.cmdModifyRoom(vGroupID, members, moderators, title, description, ttl, bor));
-//console.log(addon.cmdGetGroupConvo(vGroupID));
-//console.log(addon.cmdGetGroupConvos());
-//console.log(addon.cmdDeleteGroupConvo(vGroupID));
-//console.log(addon.cmdGetReceivedMessage());
-console.log(addon.cmdSend1to1Message(members, message, ttl , bor));
-console.log(addon.closeClient());
+console.log(addon.cmdAddRoom(members, moderators, title, description, ttl, bor));
+// console.log(addon.cmdDeleteRoom(vGroupID));
+// console.log(addon.cmdGetStatistics());
+// console.log(addon.cmdClearStatistics());
+// console.log(addon.cmdGetRoom(vGroupID));
+// console.log(addon.cmdGetRooms());
+ console.log(addon.cmdLeaveRoom(vGroupID));
+// console.log(addon.cmdAddGroupConvo(members, ttl, bor));
+// console.log(addon.cmdModifyRoom(vGroupID, members, moderators, title, description, ttl, bor));
+// console.log(addon.cmdGetGroupConvo(vGroupID));
+// console.log(addon.cmdGetGroupConvos());
+// console.log(addon.cmdDeleteGroupConvo(vGroupID));
+// console.log(addon.cmdGetReceivedMessage());
+// console.log(addon.cmdSend1to1Message(members, message, ttl , bor));
+// console.log(addon.closeClient());
 //console.log(addon.cmdSendRoomMessage(vGroupID, message, ttl, bor));

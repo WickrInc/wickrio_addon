@@ -231,7 +231,7 @@ void cmdAddRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
         botIface->cmdStringAddRoom(command, members, moderators, title, description, ttl, bor);
         if (botIface->send(command, response) != BotIface::SUCCESS) {
                 response = botIface->getLastErrorString();
-                string message = "Send failed: " + response;
+                string message = "Failed to create Add Room command! " + response;
                 auto error = v8::String::NewFromUtf8(isolate, message.c_str());
                 args.GetReturnValue().Set(error);
                 return;
@@ -351,7 +351,7 @@ void cmdModifyRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
         botIface->cmdStringModifyRoom(command, vGroupID, members, moderators, title, description, ttl, bor);
         if (botIface->send(command, response) != BotIface::SUCCESS) {
                 response = botIface->getLastErrorString();
-                string message = "Send failed: " + response;
+                string message = "Failed to create Modify Room command! " + response;
                 auto error = v8::String::NewFromUtf8(isolate, message.c_str());
                 args.GetReturnValue().Set(error);
                 return;
@@ -398,7 +398,7 @@ void cmdGetRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
         botIface->cmdStringGetRoom(command, vGroupID);
         if (botIface->send(command, response) != BotIface::SUCCESS) {
                 response = botIface->getLastErrorString();
-                string message = "Send failed: " + response;
+                string message = "Failed to create Get Room command! " + response;
                 auto error = v8::String::NewFromUtf8(isolate, message.c_str());
                 args.GetReturnValue().Set(error);
                 return;
@@ -443,7 +443,7 @@ void cmdLeaveRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
         botIface->cmdStringLeaveRoom(command, vGroupID);
         if (botIface->send(command, response) != BotIface::SUCCESS) {
                 response = botIface->getLastErrorString();
-                string message = "Send failed: " + response;
+                string message = "Failed to create Leave Room command! " + response;
                 auto error = v8::String::NewFromUtf8(isolate, message.c_str());
                 args.GetReturnValue().Set(error);
                 return;
@@ -488,7 +488,7 @@ void cmdDeleteRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
         botIface->cmdStringDeleteRoom(command, vGroupID);
         if (botIface->send(command, response) != BotIface::SUCCESS) {
                 response = botIface->getLastErrorString();
-                string message = "Send failed: " + response;
+                string message = "Failed to create Delete Room command! " + response;
                 auto error = v8::String::NewFromUtf8(isolate, message.c_str());
                 args.GetReturnValue().Set(error);
                 return;
@@ -573,7 +573,7 @@ void cmdAddGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args) {
         botIface->cmdStringAddGroupConvo(command, members, ttl, bor);
         if (botIface->send(command, response) != BotIface::SUCCESS) {
                 response = botIface->getLastErrorString();
-                string message = "Send failed: " + response;
+                string message = "Failed to create Add Group Conversation command! " + response;
                 auto error = v8::String::NewFromUtf8(isolate, message.c_str());
                 args.GetReturnValue().Set(error);
                 return;
@@ -620,7 +620,7 @@ void cmdDeleteGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args){
         botIface->cmdStringDeleteGroupConvo(command, vGroupID);
         if (botIface->send(command, response) != BotIface::SUCCESS) {
                 response = botIface->getLastErrorString();
-                string message = "Send failed: " + response;
+                string message = "Failed to create Delete Group Conversaion command! " + response;
                 auto error = v8::String::NewFromUtf8(isolate, message.c_str());
                 args.GetReturnValue().Set(error);
                 return;
@@ -666,7 +666,7 @@ void cmdGetGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args){
 
         if (botIface->send(command, response) != BotIface::SUCCESS) {
                 response = botIface->getLastErrorString();
-                string message = "Send failed: " + response;
+                string message = "Failed to create Get Group Conversaion command! " + response;
                 auto error = v8::String::NewFromUtf8(isolate, message.c_str());
                 args.GetReturnValue().Set(error);
                 return;
@@ -740,11 +740,11 @@ void cmdGetReceivedMessage(const v8::FunctionCallbackInfo<v8::Value> & args){
                         auto message = v8::String::NewFromUtf8(isolate, response.c_str());
                         args.GetReturnValue().Set(message);
                 }
-                else{
-                  response = "cmdGetReceivedMessage Success!";
-                  auto message = v8::String::NewFromUtf8(isolate, response.c_str());
-                  args.GetReturnValue().Set(message);
-                }
+                // else{
+                //   response = "cmdGetReceivedMessage Success!";
+                //   auto message = v8::String::NewFromUtf8(isolate, response.c_str());
+                //   args.GetReturnValue().Set(message);
+                // }
                 return;
         }
 }
@@ -812,7 +812,7 @@ void cmdSend1to1Message(const v8::FunctionCallbackInfo<v8::Value> & args) {
         botIface->cmdStringSendMessage(command, placeHolder, users, message, ttl, bor);
         if (botIface->send(command, response) != BotIface::SUCCESS) {
                 response = botIface->getLastErrorString();
-                string message = "Send failed: " + response;
+                string message = "Failed to create Send 1-to-1 Message command!" + response;
                 auto error = v8::String::NewFromUtf8(isolate, message.c_str());
                 args.GetReturnValue().Set(error);
                 return;
@@ -823,7 +823,7 @@ void cmdSend1to1Message(const v8::FunctionCallbackInfo<v8::Value> & args) {
                         args.GetReturnValue().Set(message);
                 }
                 else{
-                  response = "cmdSendMessage Success!";
+                  response = "cmdSend1to1Message Success!";
                   auto message = v8::String::NewFromUtf8(isolate, response.c_str());
                   args.GetReturnValue().Set(message);
                 }
@@ -887,7 +887,7 @@ void cmdSendRoomMessage(const v8::FunctionCallbackInfo<v8::Value> & args) {
         botIface->cmdStringSendMessage(command, vGroupID, placeHolder, message, ttl, bor);
         if (botIface->send(command, response) != BotIface::SUCCESS) {
                 response = botIface->getLastErrorString();
-                string message = "Send failed: " + response;
+                string message = "Failed to create Send Room Message command!" + response;
                 auto error = v8::String::NewFromUtf8(isolate, message.c_str());
                 args.GetReturnValue().Set(error);
                 return;
