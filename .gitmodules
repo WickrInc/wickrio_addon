@@ -7,3 +7,7 @@
 	path = wickr-integrations
 	url = git@wkrnjpgit.wickrlan.net:wickr/integrations/wickr-integrations.git
 	ignore = all
+[submodule "libs/nzmqt"]
+	path = libs/nzmqt
+	url = https://github.com/jonnydee/nzmqt.git
+	ignore = all

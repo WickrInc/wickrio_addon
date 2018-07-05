@@ -1,5 +1,6 @@
 WICKR_SDK = wickr-sdk
 WICKR_INTEGRATIONS = wickr-integrations
+LIBS_NZMQT = libs/nzmqt
 LOCALREPO = localRepo/$(WICKR_SDK)
 SDK_BRANCH = v4.41
 INTEGRATIONS_BRANCH = alpha
@@ -20,6 +21,15 @@ update: sdk.update integrations.update
 
 clean: osx.clean
 	rm -rf $(HEADERDIR)
+
+$(LIBS_NZMQT)/nzmqt.pri:
+	@echo $(HEADER_START)
+	@echo "Starting to install libs/nzmqt from GIT"
+	git status
+	git submodule init libs/nzmqt
+	git submodule update --recursive libs/nzmqt
+	@echo "Finished to install libs/nzmqt from GIT"
+	@echo $(HEADER_END)
 
 $(WICKR_SDK)/wickr-sdk.pro:
 	@echo $(HEADER_START)
@@ -114,5 +124,5 @@ linux.release.install: linux.release
 
 
 ##########################################################
-all: $(WICKR_SDK)/wickr-sdk.pro $(WICKR_INTEGRATIONS)/compress.sh
+all: $(WICKR_SDK)/wickr-sdk.pro $(LIBS_NZMQT)/nzmqt.pri $(WICKR_INTEGRATIONS)/compress.sh
 	@echo done!
