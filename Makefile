@@ -25,7 +25,6 @@ clean: osx.clean
 $(LIBS_NZMQT)/nzmqt.pri:
 	@echo $(HEADER_START)
 	@echo "Starting to install libs/nzmqt from GIT"
-	git status
 	git submodule init libs/nzmqt
 	git submodule update --recursive libs/nzmqt
 	@echo "Finished to install libs/nzmqt from GIT"
