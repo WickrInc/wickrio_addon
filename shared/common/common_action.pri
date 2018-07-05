@@ -2,11 +2,9 @@
 # split out due to the need for access to some WickrBase library functions
 #
 HEADERS += \
-    $${PWD}/wickrbotactiondatabase.h \
-    $${PWD}/wickrbotclientdatabase.h
+    $${PWD}/wickrbotactiondatabase.h
 
 SOURCES += \
-    $${PWD}/wickrbotactiondatabase.cpp \
-    $${PWD}/wickrbotclientdatabase.cpp
+    $${PWD}/wickrbotactiondatabase.cpp
 
 INCLUDEPATH += $${PWD}

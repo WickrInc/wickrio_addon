@@ -5,7 +5,7 @@
 #include "wickrIOCommon.h"
 #include "wickrIOServerCommon.h"
 #include "wickrbotsettings.h"
-#include "../../shared/common/wickrioapi.h"
+#include "wickrioapi.h"
 
 bool WBIOServerCommon::m_initialized = false;
 QList<WBIOClientApps *>  WBIOServerCommon::m_botApps;

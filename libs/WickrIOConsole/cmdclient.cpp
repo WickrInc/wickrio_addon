@@ -273,6 +273,55 @@ bool CmdClient::getClientValues(WickrBotClients *client)
     bool quit = false;
     QString temp;
 
+    // Get a unique user name
+    do {
+        temp = getNewValue(client->user, tr("Enter the user name"));
+
+        // Check if the user wants to quit the action
+        if (handleQuit(temp, &quit) && quit) {
+            return false;
+        }
+
+        // Allow the user to re-use the same name if it was previously set
+        if (! client->user.isEmpty()  && client->user == temp) {
+            break;
+        }
+    } while (chkClientsUserExists(temp));
+    client->user = temp;
+
+#if 0
+    // Get the password
+    while (true) {
+        client->password = getNewValue(client->password, tr("Enter the password"));
+
+        // Check if the user wants to quit the action
+        if (handleQuit(client->password, &quit) && quit) {
+            return false;
+        }
+
+        if (client->password.isEmpty() || client->password.length() < 4) {
+            qDebug() << "CONSOLE:Password should be at least 4 characters long!";
+        } else {
+            break;
+        }
+    }
+#endif
+
+    // Get the transaction ID
+    while (true) {
+        client->transactionID = getNewValue(client->transactionID, tr("Enter the transaction ID (for new client)"));
+
+        // Check if the user wants to quit the action
+        if (handleQuit(client->transactionID, &quit) && quit) {
+            return false;
+        }
+        break;
+    }
+
+    // The client name will be the username.  Replace the "@" character with the "_"
+    client->name = client->user.replace("@", "_");
+
+#if 0
     // Get a unique client name
     do {
         temp = getNewValue(client->name, tr("Enter an unique Name for this client (this is a local name, not the Wickr ID)"));
@@ -288,6 +337,7 @@ bool CmdClient::getClientValues(WickrBotClients *client)
         }
     } while (chkClientsNameExists(temp));
     client->name = temp;
+#endif
 
     // Determine the client type
     QStringList possibleClientTypes = WBIOServerCommon::getAvailableClientApps();
@@ -311,15 +361,11 @@ bool CmdClient::getClientValues(WickrBotClients *client)
     QString provisionApp = WBIOServerCommon::getProvisionApp(binary);
 
     if (provisionApp != "") {
-        QString clientDbDir;
         QString command = client->binary;
         QStringList arguments;
 
-        QString configFileName = QString(WBIO_CLIENT_SETTINGS_FORMAT).arg(m_operation->m_dbLocation).arg(client->name);
-        clientDbDir = QString("%1/clients/%2/client").arg(m_operation->m_dbLocation).arg(client->name);
-
-        arguments.append(QString("-config=%1").arg(configFileName));
-        arguments.append(QString("-clientdbdir=%1").arg(clientDbDir));
+        arguments.append(QString("-wickrname=%1").arg(client->user));
+        arguments.append(QString("-clientname=%1").arg(client->name));
         arguments.append(QString("-processname=%1").arg(WBIOServerCommon::getClientProcessName(client)));
 
         m_exec = new QProcess();
@@ -342,72 +388,20 @@ bool CmdClient::getClientValues(WickrBotClients *client)
         m_exec->close();
 
     } else {
-        // Get a unique user name
-        do {
-            temp = getNewValue(client->user, tr("Enter the user name"));
-
-            // Check if the user wants to quit the action
-            if (handleQuit(temp, &quit) && quit) {
-                return false;
-            }
-
-            // Allow the user to re-use the same name if it was previously set
-            if (! client->user.isEmpty()  && client->user == temp) {
-                break;
-            }
-        } while (chkClientsUserExists(temp));
-        client->user = temp;
-
-        // Get the password
-        while (true) {
-            client->password = getNewValue(client->password, tr("Enter the password"));
-
-            // Check if the user wants to quit the action
-            if (handleQuit(client->password, &quit) && quit) {
-                return false;
-            }
-
-            if (client->password.isEmpty() || client->password.length() < 4) {
-                qDebug() << "CONSOLE:Password should be at least 4 characters long!";
-            } else {
-                break;
-            }
-        }
-
-        // Get the transaction ID
-        while (true) {
-            client->transactionID = getNewValue(client->transactionID, tr("Enter the transaction ID (for new client)"));
-
-            // Check if the user wants to quit the action
-            if (handleQuit(client->transactionID, &quit) && quit) {
-                return false;
-            }
-            break;
-        }
-
     }
 
-    // Get the API Key value.  Does not currently have to be unique
-    while (true) {
-        client->apiKey = getNewValue(client->apiKey, tr("Enter the API Key"));
-
-        // Check if the user wants to quit the action
-        if (handleQuit(client->apiKey, &quit) && quit) {
-            return false;
-        }
-
-        if (client->apiKey.isEmpty() || client->apiKey.length() < 4) {
-            qDebug() << "CONSOLE:API Key should be at least 4 characters long!";
-        } else {
-            break;
-        }
-    }
+    // Generate the API Key, with a random value
+    client->apiKey = WickrIOTokens::getRandomString(16);
 
     // Get the list of possible interfaces
     QStringList ifaceList = WickrIOConsoleClientHandler::getNetworkInterfaceList();
 
     // Get a unique interface and port pair
     while (true) {
+#if 1   // Will default to "localhost"
+        client->iface = "localhost";
+        QString ifaceinput = "localhost";
+#else
         QString ifaceinput = getNewValue(client->iface, tr("Enter the interface (list to see possible interfaces)"));
 
         // Check if the user wants to quit the action
@@ -426,7 +420,7 @@ bool CmdClient::getClientValues(WickrBotClients *client)
             qDebug() << "CONSOLE:" << ifaceinput << "not found in the list of interfaces!";
             continue;
         }
-
+#endif
 
         QString port = getNewValue(QString::number(client->port), tr("Enter the IP port number"), CHECK_INT);
 
@@ -536,61 +530,87 @@ bool CmdClient::getClientValues(WickrBotClients *client)
         }
     }
 
-    // Get the Handle Inbox messages setting
-    while (true) {
-        QString handleInbox;
-        QStringList trueFalseChoices;
-        trueFalseChoices << "true" << "false";
-        handleInbox = getNewValue(client->getHandleInboxStr(), tr("Does client support inbox handling?"), CHECK_LIST, trueFalseChoices);
-        if (handleInbox.toLower() == "true") {
-            client->m_handleInbox = true;
-        } else if (handleInbox.toLower() == "false") {
-            client->m_handleInbox = false;
-        } else {
-            qDebug() << "CONSOLE:Invalid input, enter either true or false";
-            continue;
+    // Inbox handling can be turned off for Welcome Bots (only)
+    //check whether type is welcome_bot to see if need to find parser
+    if(client->binary.startsWith( "welcome_bot")){
+        while (true) {
+            QString handleInbox;
+            QStringList trueFalseChoices;
+            trueFalseChoices << "true" << "false";
+            handleInbox = getNewValue(client->getHandleInboxStr(), tr("Does client support inbox handling?"), CHECK_LIST, trueFalseChoices);
+            if (handleInbox.toLower() == "true") {
+                client->m_handleInbox = true;
+            } else if (handleInbox.toLower() == "false") {
+                client->m_handleInbox = false;
+            } else {
+                qDebug() << "CONSOLE:Invalid input, enter either true or false";
+                continue;
 
+            }
+            break;
         }
-        break;
+    } else {
+        client->m_handleInbox = true;
     }
-
 
     /*
      * setup an integration bot, if the users desires to use one
      */
-    QList<WBIOBotTypes *>botTypes = WBIOServerCommon::getBotsSupported(binary);
+    client->botType = QString();
     QString rmBotType;
-    if (botTypes.length() > 0) {
-        QString hasIntBot;
-        hasIntBot = client->botType.isEmpty() ? "no" : "yes";
 
-        // If the user wants to connect the client to an integration bot
-        temp = getNewValue(hasIntBot, tr("Do you want to connect to a integration bot?"), CHECK_BOOL);
-        if (temp == "yes") {
-            QStringList possibleBotTypes;
-            for (WBIOBotTypes *bt : botTypes) {
-                possibleBotTypes.append(bt->m_name);
-            }
-            possibleBotTypes.append("none");
+    // Check if the integrations directory exists
+    QDir destDir(WBIO_INTEGRATIONS_DIR);
+    if (destDir.exists()) {
+        QList<WBIOBotTypes *>botTypes = WBIOServerCommon::getBotsSupported(binary);
+        QList<WBIOBotTypes *>supportedIntegrations;
 
-            temp = getNewValue(client->botType, tr("Enter the bot type"), CHECK_LIST, possibleBotTypes);
-            // Check if the user wants to quit the action
-            if (handleQuit(temp, &quit) && quit) {
-                return false;
+        // Need to determine which integrations are available
+        QDirIterator it(destDir);
+        while(it.hasNext()) {
+            QDir fullPath(it.next());
+            QString dirName = fullPath.dirName();
+            for (WBIOBotTypes *botType : botTypes) {
+                if (botType->name() == dirName) {
+                    supportedIntegrations.append(botType);
+                }
             }
-            if (temp != "none") {
-                // if the bottype has changed then remove the old software
-                if (client->botType != temp)
+        }
+
+        if (supportedIntegrations.length() > 0) {
+            if (botTypes.length() > 0) {
+                QString hasIntBot;
+                hasIntBot = client->botType.isEmpty() ? "no" : "yes";
+
+                // If the user wants to connect the client to an integration bot
+                temp = getNewValue(hasIntBot, tr("Do you want to connect to a integration bot?"), CHECK_BOOL);
+                if (temp == "yes") {
+                    QStringList possibleBotTypes;
+                    for (WBIOBotTypes *bt : botTypes) {
+                        possibleBotTypes.append(bt->m_name);
+                    }
+                    possibleBotTypes.append("none");
+
+                    temp = getNewValue(client->botType, tr("Enter the bot type"), CHECK_LIST, possibleBotTypes);
+                    // Check if the user wants to quit the action
+                    if (handleQuit(temp, &quit) && quit) {
+                        return false;
+                    }
+                    if (temp != "none") {
+                        // if the bottype has changed then remove the old software
+                        if (client->botType != temp)
+                            rmBotType = client->botType;
+
+                        client->botType = temp;
+                    } else {
+                        rmBotType = client->botType;
+                        client->botType = QString();
+                    }
+                } else {
                     rmBotType = client->botType;
-
-                client->botType = temp;
-            } else {
-                rmBotType = client->botType;
-                client->botType = QString();
+                    client->botType = QString();
+                }
             }
-        } else {
-            rmBotType = client->botType;
-            client->botType = QString();
         }
     }
 

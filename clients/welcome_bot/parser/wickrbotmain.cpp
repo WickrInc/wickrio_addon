@@ -29,7 +29,7 @@ bool WickrBotMain::startTheClient(){
 
     // Open the database if needed
     if (m_operation->m_botDB == NULL) {
-        m_operation->m_botDB = new WickrBotDatabase(m_operation->databaseDir);
+        m_operation->m_botDB = new WickrIOClientDatabase(m_operation->databaseDir);
     }
     emit signalStarted();
     return true;

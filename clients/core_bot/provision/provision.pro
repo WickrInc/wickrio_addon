@@ -29,6 +29,7 @@ QT += sql multimediawidgets xml
 QT += network websockets
 
 COMMON = $${DEPTH}/shared/common
+INCLUDEPATH += $${COMMON}
 
 wickr_messenger {
     DEFINES += WICKR_MESSENGER=1
@@ -65,11 +66,6 @@ else {
 
     DEFINES += WICKR_DEBUG
 }
-
-#
-# Include the Wickr IO common files
-#
-include($${COMMON}/common.pri)
 
 #
 # Include the Wickr IO common HTTP files
@@ -376,4 +372,3 @@ INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/libs/qbson
 INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/libs/libbson
 INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/libs/cloud/qcloud
 INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/libs/WickrProto
-

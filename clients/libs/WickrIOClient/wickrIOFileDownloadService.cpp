@@ -153,7 +153,7 @@ WickrIOFileDownloadThread::slotSendFileStatusChange(const QString& uuid, const Q
             QJsonDocument saveDoc(dload->m_json);
 
             int msgID = db->insertMessage(dload->m_msg->getMsgTimestamp(), m_operation->m_client->id, saveDoc.toJson(QJsonDocument::Compact), (int)dload->m_msg->getMsgClass(), 1);
-            db->insertAttachment(msgID, dload->m_attachmentFileName, dload->m_realFileName);
+            db->insertMsgAttachment(msgID, dload->m_attachmentFileName, dload->m_realFileName);
             m_activeDownloads.remove(uuid);
 
             dload->m_msg->dodelete(traceInfo());

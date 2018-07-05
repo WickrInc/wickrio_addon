@@ -46,7 +46,7 @@ bool WickrIOClientServer::configureService()
     QString logFileName("");
 
     // If there is a database directory then create the Wickrbot database
-    m_operation->m_botDB = new WickrBotDatabase(m_operation->databaseDir);
+    m_operation->m_botDB = new WickrIOClientDatabase(m_operation->databaseDir);
 
 
     /*

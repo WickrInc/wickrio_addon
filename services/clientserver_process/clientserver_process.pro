@@ -1,6 +1,7 @@
 DEPTH = ../..
 COMMON = $${DEPTH}/shared/common
 CONSOLESRC = ../console
+INCLUDEPATH += $${COMMON}
 
 CONFIG(release,release|debug) {
     QMAKE_RPATHDIR += /usr/lib/wio_docker_services
@@ -8,11 +9,6 @@ CONFIG(release,release|debug) {
 else {
     QMAKE_RPATHDIR += /usr/lib/wio_docker_services-debug
 }
-
-#
-# Include the WickrIO common files
-#
-include($${COMMON}/common.pri)
 
 CONFIG += c++11
 
