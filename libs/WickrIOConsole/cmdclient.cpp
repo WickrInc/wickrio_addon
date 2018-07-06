@@ -319,7 +319,8 @@ bool CmdClient::getClientValues(WickrBotClients *client)
     }
 
     // The client name will be the username.  Replace the "@" character with the "_"
-    client->name = client->user.replace("@", "_");
+    client->name = client->user;
+    client->name.replace("@", "_");
 
 #if 0
     // Get a unique client name
