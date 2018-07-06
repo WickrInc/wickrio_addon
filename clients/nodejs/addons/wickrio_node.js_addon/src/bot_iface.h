@@ -5,14 +5,10 @@
 #include <functional>
 #endif
 
-#include "rabbitmq_iface.h"
-
-#include <unistd.h>
 #include <vector>
-#include <iostream>
-#include <v8.h>
 
-using namespace v8;
+#include "zeromq_iface.h"
+
 using namespace std;
 
 class BotIface
@@ -21,6 +17,9 @@ public:
     BotIface(const string& client);
     ~BotIface();
 
+    /*
+     * Definition of return values from class functions
+     */
     enum BotIfaceStatus {
         SUCCESS = 0,
 
@@ -31,10 +30,32 @@ public:
         INVALID_FIELD_VALUE,
     };
 
-    BotIfaceStatus init(const string& amqp);
+    /*
+     * Initialization function.  Must be called before starting
+     */
+    BotIfaceStatus init();
+
+    /*
+     * Function to send a request to the client. Response is the value
+     * returned from the client.
+     */
     BotIfaceStatus send(const string& command, string& reponse);
+
+    /*
+     * These functions are to access the error information associated
+     * with the last error that occurred
+     */
+    string getLastErrorString() { return m_lastError; }
+    void clearLastError() { m_lastError = ""; }
+
+
+    /*
+     * Definition of functions that create strings to be sent to client
+     */
+
     BotIfaceStatus cmdStringGetStatistics(string& command);
     BotIfaceStatus cmdStringClearStatistics(string& command);
+
     BotIfaceStatus cmdStringGetRooms(string& command);
     BotIfaceStatus cmdStringAddRoom(string& command,
                                     const vector <string>& members,
@@ -71,16 +92,13 @@ public:
                                         const string& ttl,
                                         const string& bor);
 
-
-    string getLastErrorString() { return m_lastError; }
-    void clearLastError() { m_lastError = ""; }
-
 private:
-    string          m_clientName;
-    RabbitMQIface   *m_iface = nullptr;
+    MesgQueueIface  *m_iface = nullptr;
 
-    string          m_lastError = "";
+    string          m_clientName;           // Name of the client interfacing with
+    string          m_lastError = "";       // Last error string
 
+    // Generic function to set the fields associated with an add/modify room command
     BotIfaceStatus setRoomFields(string& command,
                                  const vector <string>& members,
                                  const vector <string>& moderators,

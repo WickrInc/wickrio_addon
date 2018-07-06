@@ -1,13 +1,11 @@
 #include "bot_iface.h"
-#include <v8.h>
 
-using namespace v8;
 using namespace std;
 
 BotIface::BotIface(const string& client)
 {
     string m_clientName = client;
-    m_iface = new RabbitMQIface(m_clientName);
+    m_iface = new MesgQueueIface(m_clientName);
 }
 
 BotIface::~BotIface()
@@ -18,16 +16,11 @@ BotIface::~BotIface()
 }
 
 BotIface::BotIfaceStatus
-BotIface::init(const string& amqp)
+BotIface::init()
 {
-    try {
-        if (!m_iface->init(amqp)) {
-            m_lastError = "Could not initilize the interface!";
-            return INIT_FAILED;
-        }
-    } catch (AMQPException e) {
-        m_lastError = "Init got exception:" + e.getMessage();
-        return QEXCEPTION;
+    if (!m_iface->init()) {
+        m_lastError = "Could not initilize the interface!";
+        return INIT_FAILED;
     }
 
     return SUCCESS;
@@ -42,15 +35,10 @@ BotIface::init(const string& amqp)
 BotIface::BotIfaceStatus
 BotIface::send(const string& command, string& response)
 {
-    try {
-        response = m_iface->sendMessage(command);
-    } catch (AMQPException e) {
-        std::cout << "Send got exception:" << e.getMessage() << std::endl;
-        m_lastError = "Init got exception:" + e.getMessage();
-        return QEXCEPTION;
-    }
+    response = m_iface->sendMessage(command);
     return SUCCESS;
 }
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -353,7 +341,7 @@ BotIface::cmdStringSendMessage(string& command,
     }
 
     if (vGroupID.size() > 0) {
-        command = "{ \"action\" : \"send_message\", \"vgroupid\" : \"" + vGroupID + "\", " \
+        command = "{ \"action\" : \"send_message\", \"vgroupid\" : \"" + vGroupID + "\" , " \
                 + optionalFields
                 + "\"message\" : \"" + message \
                 + "\" }";

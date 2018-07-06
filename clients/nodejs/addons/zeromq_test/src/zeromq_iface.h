@@ -1,5 +1,5 @@
-#ifndef RABBITMQ_TEST_H
-#define RABBITMQ_TEST_H
+#ifndef ZEROMQ_TEST_H
+#define ZEROMQ_TEST_H
 
 #if __cplusplus > 199711L // C++11 or greater
 #include <functional>
@@ -32,4 +32,4 @@ private:
 
 };
 
-#endif // RABBITMQ_TEST_H
+#endif // ZEROMQ_TEST_H

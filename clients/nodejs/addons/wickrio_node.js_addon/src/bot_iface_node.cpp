@@ -24,7 +24,7 @@ void clientInit(const v8::FunctionCallbackInfo<v8::Value> & args) {
         std::string amqp_port = std::string(*param5);
         std::string amqp = amqp_user + ":" + amqp_password + "@" + amqp_address + ":" + amqp_port;
         cout << endl << "amqp: " + amqp << endl;
-        if (botIface->init(amqp) != BotIface::SUCCESS) {
+        if (botIface->init() != BotIface::SUCCESS) {
           message = botIface->getLastErrorString() + "\nCould not initialize Bot Interface!";
         }
         else{
