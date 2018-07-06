@@ -2,12 +2,19 @@
 	path = wickr-sdk
         url = git@wkrnjpgit.wickrlan.net:wickr/desktop/wickr-sdk.git
 	ignore = all
-
 [submodule "wickr-integrations"]
 	path = wickr-integrations
 	url = git@wkrnjpgit.wickrlan.net:wickr/integrations/wickr-integrations.git
 	ignore = all
-
 [submodule "libs/nzmqt"]
 	path = libs/nzmqt
 	url = https://github.com/jonnydee/nzmqt.git
+	ignore = all
+[submodule "libs/third_party/cppzmq"]
+	path = libs/third_party/cppzmq
+	url = https://github.com/zeromq/cppzmq.git
+	ignore = all
+[submodule "libs/third_party/libzmq"]
+	path = libs/third_party/libzmq
+	url = https://github.com/zeromq/libzmq.git
+	ignore = all

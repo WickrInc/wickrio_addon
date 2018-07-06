@@ -9,18 +9,10 @@
 #include "wickrIOAppSettings.h"
 #include "wickrIOServiceBase.h"
 
-#if 0
-#include "libplatform/libplatform.h"
-#include "v8.h"
-
-using namespace v8;
-#endif
+#include "nzmqt/nzmqt.hpp"
 
 // Forward declaration
 class WickrIOJScriptThread;
-class QAmqpQueue;
-class QAmqpExchange;
-class QAmqpClient;
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -105,16 +97,6 @@ private:
 
     bool                    m_jsCallbackInitialized = false;
 
-#if 0
-    // v8 definitions
-    v8::Platform*               m_platform = nullptr;
-    v8::Isolate*                m_isolate = nullptr;
-    v8::Persistent<v8::Context> m_persistent_context;
-
-    v8::Persistent<v8::Script>  m_compiledScript;
-    v8::Local<v8::Value>        m_result;
-#endif
-
     bool initJScriptCallback();
     bool stopJScriptCallback();
 
@@ -126,21 +108,17 @@ private:
 signals:
 
 public slots:
+    void slotMessageReceived(const QList<QByteArray>&);
+
     void slotProcessMessages();
     void slotStartScript();
 
-    void slotListen();
-
 private slots:
-    void slotClientConnected();
-    void slotQueueDeclared();
-    void slotQosDefined();
-    void slotProcessRpcMessage();
 
 private:
-    QAmqpClient *m_client = nullptr;
-    QAmqpQueue *m_rpcQueue = nullptr;
-    QAmqpExchange *m_defaultExchange = nullptr;
+    // ZeroMQ definitions
+    nzmqt::ZMQContext   *m_zctx = nullptr;
+    nzmqt::ZMQSocket    *m_zsocket = nullptr;
 };
 
 #endif // WICKRIOJSCRIPTSERVICE_H
