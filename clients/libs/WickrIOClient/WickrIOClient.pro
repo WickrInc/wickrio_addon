@@ -13,16 +13,6 @@ QT -= gui
 
 VERSION = 1.0.1
 
-#
-# Include the v8 third party library
-#
-#include ($${DEPTH}/libs/third_party/v8/v8.pri)
-
-#
-# Include the RabbitMQ API Library
-#
-include($${DEPTH}/libs/qamqpsrc/qamqpsrc.pri)
-
 wickr_messenger {
     DEFINES += WICKR_MESSENGER=1
 }
@@ -96,6 +86,7 @@ INCLUDEPATH += $$DEPTH/wickr-sdk/libs/libbson
 INCLUDEPATH += $$DEPTH/libs/WickrIOLib
 INCLUDEPATH += $$DEPTH/libs/SMTPEmail/src
 INCLUDEPATH += $$DEPTH/shared/common
+INCLUDEPATH += $$DEPTH/libs/nzmqt/include
 DEPENDPATH += $$PWD
 
 HEADERS += \

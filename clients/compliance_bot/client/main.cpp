@@ -110,6 +110,7 @@ int main(int argc, char *argv[])
     }
 
     QString username;
+    QString wickrname;
     QString appname = WBIO_BOT_TARGET;
     QString orgname = WBIO_ORGANIZATION;
 
@@ -145,6 +146,8 @@ int main(int argc, char *argv[])
                 temp.compare("true", Qt::CaseInsensitive)) {
                 operation->receiveOn =true;
             }
+        } else if (cmd.startsWith("-wickrname")) {
+            wickrname = cmd.remove("-wickrname=");
         } else if (cmd.startsWith("-processname")) {
             operation->processName = cmd.remove("-processname=");
         } else if (cmd.startsWith("-clientname")) {

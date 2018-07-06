@@ -1,5 +1,9 @@
 WICKR_SDK = wickr-sdk
 WICKR_INTEGRATIONS = wickr-integrations
+LIBS_NZMQT = libs/nzmqt
+NZMQT_BRANCH = tags/version-3.2.0
+LIBS_CPPZMQ = libs/third_party/cppzmq
+LIBS_LIBZMQ = libs/third_party/libzmq
 LOCALREPO = localRepo/$(WICKR_SDK)
 SDK_BRANCH = v4.41
 INTEGRATIONS_BRANCH = alpha
@@ -16,10 +20,42 @@ HEADER_START = "*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+
 default: all
 	@echo $(DIR)
 
-update: sdk.update integrations.update
+update: sdk.update integrations.update nzmqt.update
 
 clean: osx.clean
 	rm -rf $(HEADERDIR)
+
+$(LIBS_LIBZMQ)/CMakeLists.txt:
+	@echo $(HEADER_START)
+	@echo "Starting to install libs/third_party/libzmq from GIT"
+	git submodule init libs/third_party/libzmq
+	git submodule update --recursive libs/third_party/libzmq
+	@echo "Finished to install libs/third_party/libzmq from GIT"
+	@echo $(HEADER_END)
+
+$(LIBS_CPPZMQ)/CMakeLists.txt:
+	@echo $(HEADER_START)
+	@echo "Starting to install libs/third_party/cppzmq from GIT"
+	git submodule init libs/third_party/cppzmq
+	git submodule update --recursive libs/third_party/cppzmq
+	@echo "Finished to install libs/third_party/cppzmq from GIT"
+	@echo $(HEADER_END)
+
+$(LIBS_NZMQT)/nzmqt.pri:
+	@echo $(HEADER_START)
+	@echo "Starting to install libs/nzmqt from GIT"
+	git submodule init libs/nzmqt
+	git submodule update --recursive libs/nzmqt
+	cd $(LIBS_NZMQT); git fetch --all; git checkout $(NZMQT_BRANCH); git pull
+	@echo "Finished to install libs/nzmqt from GIT"
+	@echo $(HEADER_END)
+
+nzmqt.update:
+	@echo $(HEADER_START)
+	@echo "Update the libs/nzmqt submodule"
+	@echo "Starting to update libs/nzmqt"
+	cd $(LIBS_NZMQT); git fetch --all; git checkout $(NZMQT_BRANCH); git pull; ./setup-project.sh
+	@echo $(HEADER_END)
 
 $(WICKR_SDK)/wickr-sdk.pro:
 	@echo $(HEADER_START)
@@ -98,6 +134,8 @@ win32.clean:
 # Linux build
 
 linux:
+	#cd $(LIBS_LIBZMQ); mkdir -p build; cd build; cmake ..; make -j4 install
+	#cd $(LIBS_CPPZMQ); mkdir -p build; cd build; cmake ..; make -j4 install
 	cd $(WICKR_SDK); make linux
 
 linux.release:
@@ -114,5 +152,5 @@ linux.release.install: linux.release
 
 
 ##########################################################
-all: $(WICKR_SDK)/wickr-sdk.pro $(WICKR_INTEGRATIONS)/compress.sh
+all: $(WICKR_SDK)/wickr-sdk.pro $(LIBS_LIBZMQ)/CMakeLists.txt $(LIBS_CPPZMQ)/CMakeLists.txt $(LIBS_NZMQT)/nzmqt.pri $(WICKR_INTEGRATIONS)/compress.sh
 	@echo done!

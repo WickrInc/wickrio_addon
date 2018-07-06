@@ -13,7 +13,7 @@
 #include "filedownloader.h"
 #endif
 #include "wickrbotlog.h"
-#include "wickrbotdatabase.h"
+#include "wickriodatabase.h"
 #include "wickrbotclients.h"
 #include "loghandler.h"
 
@@ -44,7 +44,7 @@ public:
     int messageCount = 0;
     int duration = 0;
 
-    WickrBotDatabase *m_botDB;
+    WickrIOClientDatabase *m_botDB;
     WickrBotClients *m_client;
 
     bool receiveOn;

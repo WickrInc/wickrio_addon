@@ -150,7 +150,7 @@ bool OperationData::alreadyActive(bool closeDbOnExit)
 
     WickrBotProcessState procState;
     if (m_botDB == NULL) {
-        m_botDB = new WickrBotDatabase(databaseDir);
+        m_botDB = new WickrIOClientDatabase(databaseDir);
     }
 
     if (m_botDB->getProcessState(processName, &procState)) {

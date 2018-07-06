@@ -309,7 +309,7 @@ int main(int argc, char *argv[])
         operation->databaseDir = operation->appDataDir;
     }
     
-    operation->m_botDB = new WickrBotDatabase(operation->databaseDir);
+    operation->m_botDB = new WickrIOClientDatabase(operation->databaseDir);
     if (!operation->m_botDB->isOpen()) {
         qDebug() << "Failed to open the database!";
         return 1;

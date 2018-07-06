@@ -45,7 +45,7 @@ public:
     /**
      * @brief addLogin
      * Add a user to the list of users used to login with.
-     * @param user The username of the new userSS
+     * @param user The username of the new user
      * @param pass The password for the new user
      */
     void addLogin(const QString& user, const QString& pass, const QString& userName, const QString& transID) {

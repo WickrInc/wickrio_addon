@@ -108,6 +108,8 @@
 #define APIJSON_STATID_PENDING  "pending_messages"
 #define APIJSON_STATID_PNDCBOUT "pending_callback_messages"
 #define APIJSON_STATID_MSGCNT   "message_count"
+#define APIJSON_STATUS_USER     "statususer"
+#define APIJSON_STATUS_USER     "runtime"
 
 #define APIJSON_KEYVER_HEADER   "keyverify"
 #define APIJSON_KEYVER_MSGTYPE  "msgtype"
@@ -152,6 +154,17 @@
 #define APIJSON_STATE_UNKNOWN   "unknown"
 
 #define APIJSON_RESPOND_API     "respond_api"
+
+#define APIJSON_CFG_CLIENTS         "clients"
+#define APIJSON_CFG_NAME            "name"
+#define APIJSON_CFG_PASSWORD        "password"
+#define APIJSON_CFG_PORT            "port"              // optional
+#define APIJSON_CFG_IFACETYPE       "iface_type"        // HTTPS or HTTP
+#define APIJSON_CFG_APIKEY          "api_key"
+
+#define APIJSON_CFG_SSL             "ssl"               // SSL Setup
+#define APIJSON_CFG_SSLKEY          "key_filename"      // Key filename
+#define APIJSON_CFG_SSLCERT         "cert_filename"     // Certificate filename
 
 
 #endif // WICKRIOAPI

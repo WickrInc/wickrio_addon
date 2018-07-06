@@ -1,4 +1,6 @@
 DEPTH = ../..
+COMMON = $${DEPTH}/shared/common
+INCLUDEPATH += $${COMMON}
 
 message(*** WickrIO Settings Init build)
 

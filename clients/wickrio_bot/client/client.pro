@@ -28,6 +28,7 @@ QT += sql multimediawidgets xml
 QT += network websockets
 
 COMMON = $${DEPTH}/shared/common
+INCLUDEPATH += $${COMMON}
 
 wickr_messenger {
     DEFINES += WICKR_MESSENGER=1
@@ -66,11 +67,6 @@ else {
 }
 
 #
-# Include the Wickr IO common files
-#
-include($${COMMON}/common.pri)
-
-#
 # Include the Wickr IO common HTTP files
 #
 include($${DEPTH}/shared/common_http/common_http.pri)
@@ -101,9 +97,9 @@ include($${DEPTH}/libs/QtWebApp/QtWebApp.pri)
 include($${DEPTH}/libs/SMTPEmail/SMTPEmail.pri)
 
 #
-# Include the v8 third party library
+# Zero MQ Qt library
 #
-#include ($${DEPTH}/libs/third_party/v8/v8.pri)
+include($${DEPTH}/libs/nzmqt/nzmqt.pri)
 
 TEMPLATE = app
 
@@ -230,6 +226,7 @@ linux-g++* {
             -L$$OUT_PWD/$${DEPTH}/wickr-sdk/libs/WickrProto -lWickrProto
 
     LIBS += -L$$OUT_PWD/$${DEPTH}/libs/SMTPEmail -lSMTPEmail
+    LIBS += -lzmq
 
 #    QMAKE_POST_LINK += cp $${V8_FILES} $${OUT_PWD}
 }

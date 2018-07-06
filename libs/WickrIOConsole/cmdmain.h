@@ -35,10 +35,12 @@ private:
     CmdParser    m_cmdParser;
     CmdUsers     m_cmdUsers;
 
+    CmdOperation *m_operation = nullptr;
     bool         m_hasMotherBotBinary = false;
     bool         m_hasParserBinary = false;
 
     bool processCommand(QString cmd, QString args);
+    bool config(QString args);
 };
 
 #endif // CMDMAIN_H

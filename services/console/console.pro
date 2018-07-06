@@ -1,5 +1,6 @@
 DEPTH = ../..
 COMMON = $${DEPTH}/shared/common
+INCLUDEPATH += $${COMMON}
 
 #
 # Include the Wickr IO services base
@@ -41,11 +42,6 @@ else {
 
     DEFINES += WICKR_DEBUG
 }
-
-#
-# Include the WickrIO common files
-#
-include($${COMMON}/common.pri)
 
 CONFIG += c++11
 

@@ -7,12 +7,13 @@
 message(*** WickrBot Parser Build)
 
 DEPTH = ../../..
+COMMON = $${DEPTH}/shared/common
+INCLUDEPATH += $${COMMON}
 
 #
 # Include the RabbitMQ API Library
 #
 include($${DEPTH}/libs/qamqpsrc/qamqpsrc.pri)
-
 
 linux-g++* {
     CONFIG(release,release|debug) {

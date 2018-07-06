@@ -6,10 +6,7 @@
 #include "wickriodatabase.h"
 #include "wickrIOClientRuntime.h"
 #include "wickrIOAPIInterface.h"
-
-#include "qamqpclient.h"
-#include "qamqpqueue.h"
-#include "qamqpexchange.h"
+#include "wickrIOCommon.h"
 
 QString WickrIOJScriptService::jsServiceBaseName = "WickrIOJScriptThread";
 
@@ -188,19 +185,26 @@ WickrIOJScriptThread::slotStartScript()
         return;
     m_state = JSThreadState::JS_PROCESSING;
 
+    m_zctx = nzmqt::createDefaultContext();
+    m_zsocket = m_zctx->createSocket(nzmqt::ZMQSocket::TYP_REP, this);
+    m_zsocket->setObjectName("Replier.Socket.socket(REP)");
+    connect(m_zsocket, &nzmqt::ZMQSocket::messageReceived,
+            this, &WickrIOJScriptThread::slotMessageReceived, Qt::QueuedConnection);
 
-    // Initialize the RPC queue
-    m_client = new QAmqpClient(this);
-    m_client->setHost("localhost");
-//    m_client->setUsername("guest");
-//    m_client->setPassword("guest");
-    connect(m_client, SIGNAL(connected()), this, SLOT(slotClientConnected()));
+    m_zctx->start();
 
-    slotListen();
+    OperationData* operation = WickrIOClientRuntime::operationData();
+    QString queueDirName = QString(WBIO_CLIENT_SOCKETDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(operation->m_client->name);
+    QDir    queueDir(queueDirName);
+    if (!queueDir.exists()) {
+        if (!queueDir.mkpath(queueDirName)) {
+            qDebug() << "Cannot create message queue directory!";
+        }
+    }
+    QString queueName = QString(WBIO_CLIENT_RXSOCKET_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(operation->m_client->name);
+    m_zsocket->bindTo(queueName);
 
-#if 0
-    jScriptStartScript();
-#endif
+//    m_zsocket->bindTo("tcp://*:4005");
 
     m_state = JSThreadState::JS_STARTED;
 }
@@ -210,10 +214,19 @@ WickrIOJScriptThread::slotStartScript()
  **********************************************************************************************/
 
 void
-WickrIOJScriptThread::slotListen()
+WickrIOJScriptThread::slotMessageReceived(const QList<QByteArray>& messages)
 {
-    m_client->connectToHost();
+    qDebug() << "entered slotMessageReceived!";
+    for (QByteArray mesg : messages) {
+        QString response = processRequest(mesg);
+
+        QList<QByteArray> reply;
+        reply += response.toLocal8Bit();
+        qDebug() << "Replier::sendReply> " << response;
+        m_zsocket->sendMessage(reply);
+    }
 }
+
 
 QString
 WickrIOJScriptThread::processRequest(const QByteArray& request)
@@ -336,43 +349,6 @@ WickrIOJScriptThread::processRequest(const QByteArray& request)
     return responseString;
 }
 
-void WickrIOJScriptThread::slotClientConnected()
-{
-    OperationData* operation = WickrIOClientRuntime::operationData();
-    QString queueName = operation->m_client->user + "_rpc";
-
-    m_rpcQueue = m_client->createQueue(queueName);
-    connect(m_rpcQueue, SIGNAL(declared()), this, SLOT(slotQueueDeclared()));
-    connect(m_rpcQueue, SIGNAL(qosDefined()), this, SLOT(slotQosDefined()));
-    connect(m_rpcQueue, SIGNAL(messageReceived()), this, SLOT(slotProcessRpcMessage()));
-    m_rpcQueue->declare();
-
-    m_defaultExchange = m_client->createExchange();
-}
-
-void WickrIOJScriptThread::slotQueueDeclared()
-{
-    m_rpcQueue->qos(1);
-}
-
-void WickrIOJScriptThread::slotQosDefined()
-{
-    m_rpcQueue->consume();
-    qDebug() << " [x] Awaiting RPC requests";
-}
-
-void WickrIOJScriptThread::slotProcessRpcMessage()
-{
-    QAmqpMessage rpcMessage = m_rpcQueue->dequeue();
-
-    QString response = processRequest(rpcMessage.payload());
-    m_rpcQueue->ack(rpcMessage);
-
-    QString replyTo = rpcMessage.property(QAmqpMessage::ReplyTo).toString();
-    QAmqpMessage::PropertyHash properties;
-    properties.insert(QAmqpMessage::CorrelationId, rpcMessage.property(QAmqpMessage::CorrelationId));
-    m_defaultExchange->publish(response, replyTo, properties);
-}
 
 /**********************************************************************************************
  * API FUNCTIONS

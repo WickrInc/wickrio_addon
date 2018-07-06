@@ -1,5 +1,6 @@
 DEPTH = ../..
 COMMON = $${DEPTH}/shared/common
+INCLUDEPATH += $${COMMON}
 
 #
 # Include the Wickr IO services base

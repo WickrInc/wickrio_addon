@@ -42,6 +42,9 @@
 
 #define WBIO_CLIENT_BOTDIR_FORMAT       "%1/clients/%2/integration/%3"
 
+#define WBIO_CLIENT_RXSOCKET_FORMAT     "ipc://%1/clients/%2/tmp/0"
+#define WBIO_CLIENT_SOCKETDIR_FORMAT    "%1/clients/%2/tmp"
+
 #ifdef Q_OS_WIN
 #define WBIO_DEFAULT_DBLOCATION         TBD
         dbLocation = QString("%1/%2/%3")
@@ -55,6 +58,9 @@
 #define WBIO_DEFAULT_DBLOCATION         "/opt/WickrIO"
 #endif
 #endif
+
+// The directory
+#define WBIO_INTEGRATIONS_DIR           "/usr/lib/wickr/integrations/software"
 
 
 /*

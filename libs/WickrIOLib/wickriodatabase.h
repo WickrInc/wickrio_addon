@@ -123,8 +123,8 @@ public:
     bool messageHasAttachments(int id);
     int getClientsOutMessagesCount(int clientID);
 
-    bool insertAttachment(int messageID, const QString &filename, const QString &realFilename);
-    QList<WickrIODBAttachment *> getAttachments(int messageID);
+    bool insertMsgAttachment(int messageID, const QString &filename, const QString &realFilename);
+    QList<WickrIODBAttachment *> getMsgAttachments(int messageID);
 
     int insertUser(const QString& user, int permissions, int maxClients, int motherID);
     int insertUser(WickrIODBUser *user);

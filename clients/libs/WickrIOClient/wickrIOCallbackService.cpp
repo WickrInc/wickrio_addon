@@ -247,7 +247,7 @@ WickrIOCallbackThread::sendMessages(WickrIOEmailSettings *email)
             message.addPart(&text);
 
             if (rxMsg.hasAttachment) {
-                QList<WickrIODBAttachment *> attachments = db->getAttachments(rxMsg.id);
+                QList<WickrIODBAttachment *> attachments = db->getMsgAttachments(rxMsg.id);
                 for (WickrIODBAttachment *attachment : attachments) {
                     MimeFile *attachfile = getAttachmentFile(attachment->m_filename);
                     if (attachfile != NULL) {

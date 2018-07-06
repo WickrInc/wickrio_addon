@@ -100,22 +100,24 @@ int main(int argc, char *argv[])
     filename = QString("%1/%2.output").arg(dirname).arg(WBIO_CLIENTSERVER_TARGET);
     logname =  QString("%1/%2.log").arg(dirname).arg(WBIO_CLIENTSERVER_TARGET);
 
+    bool debugOutput = false;
+    for( int argidx = 1; argidx < argc; argidx++ ) {
+        QString cmd(argv[argidx]);
+
+        if (cmd == "-debug") {
+            debugOutput = true;
+        }
+    }
+
     WBIOCommon::makeDirectory(dirname);
     logs.setupLog(logname);
     logs.logSetOutput(filename);
-    qInstallMessageHandler(redirectedOutput);
+
+    if (!debugOutput)
+        qInstallMessageHandler(redirectedOutput);
     int svcret;
 
-
-#ifdef Q_OS_LINUX
-    for (int i=0; i<argc; i++) {
-        qDebug() << "ARG[" << i+1 << "] =" << argv[i];
-        QString cmd(argv[i]);
-    }
-
     catchUnixSignals({SIGTSTP, SIGQUIT, SIGTERM});
-#else
-#endif
 
     QCoreApplication *app = new QCoreApplication(argc, argv);
 

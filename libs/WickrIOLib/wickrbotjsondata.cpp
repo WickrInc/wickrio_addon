@@ -7,6 +7,7 @@
 #include <QJsonDocument>
 #include "wickrbotjsondata.h"
 #include "createjson.h"
+#include "wickrioapi.h"
 
 WickrBotJsonData::WickrBotJsonData(OperationData *operation) :
     m_operation(operation),
@@ -306,9 +307,9 @@ bool WickrBotJsonData::processSendMessageJsonDoc(const QJsonObject &operationObj
     QJsonValue value;
 
     // Parse the contacts
-    if (operationObject.contains("users")) {
+    if (operationObject.contains(APIJSON_MSGUSERS)) {
         m_vgroupid = QString("");
-        value = operationObject["users"];
+        value = operationObject[APIJSON_MSGUSERS];
         entryArray = value.toArray();
         for (int i=0; i< entryArray.size(); i++) {
             QJsonValue arrayValue;
@@ -319,14 +320,14 @@ bool WickrBotJsonData::processSendMessageJsonDoc(const QJsonObject &operationObj
                 // Get the title for this contact entry
                 QJsonObject arrayObject = arrayValue.toObject();
 
-                if (arrayObject.contains("id")) {
-                    QJsonValue idobj = arrayObject["id"];
+                if (arrayObject.contains(APIJSON_MSGID)) {
+                    QJsonValue idobj = arrayObject[APIJSON_MSGID];
                     QString id = idobj.toString();
                     m_userIDs.append(id);
                     if (m_operation->debug)
                         qDebug() << "User" << i+1 << id;
-                } else if (arrayObject.contains("name")) {
-                    QJsonValue nameobj = arrayObject["name"];
+                } else if (arrayObject.contains(APIJSON_NAME)) {
+                    QJsonValue nameobj = arrayObject[APIJSON_NAME];
                     QString name = nameobj.toString();
                     if (name.length() == 0) {
                         m_operation->log_handler->error("Received 0 length user!");
@@ -338,8 +339,8 @@ bool WickrBotJsonData::processSendMessageJsonDoc(const QJsonObject &operationObj
                 }
             }
         }
-    } else if (operationObject.contains("vgroupid")) {
-        value = operationObject["vgroupid"];
+    } else if (operationObject.contains(APIJSON_VGROUPID)) {
+        value = operationObject[APIJSON_VGROUPID];
         m_vgroupid = value.toString();
         if (m_vgroupid.length() == 0) {
             m_operation->log_handler->error("Received 0 length VGroupID!");
@@ -353,13 +354,13 @@ bool WickrBotJsonData::processSendMessageJsonDoc(const QJsonObject &operationObj
     }
 
     // If there is a status user then get the value
-    if (operationObject.contains("statususer")) {
-        value = operationObject["statususer"];
+    if (operationObject.contains(APIJSON_STATUS_USER)) {
+        value = operationObject[APIJSON_STATUS_USER];
         m_statususer = value.toString();
     }
 
-    if (operationObject.contains("runtime")) {
-        value = operationObject["runtime"];
+    if (operationObject.contains(APIJSON_STATUS_USER)) {
+        value = operationObject[APIJSON_STATUS_USER];
 
         // Use the current date and time if the one is invalid
         m_runTime = value.toVariant().toDateTime();
@@ -374,8 +375,8 @@ bool WickrBotJsonData::processSendMessageJsonDoc(const QJsonObject &operationObj
     }
 
     // Parse out any message
-    if (operationObject.contains("message")) {
-        value = operationObject["message"];
+    if (operationObject.contains(APIJSON_MESSAGE)) {
+        value = operationObject[APIJSON_MESSAGE];
         m_message = value.toString();
         if (m_message.length() == 0) {
             m_operation->log_handler->error("Received 0 length message!");

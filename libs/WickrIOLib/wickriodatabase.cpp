@@ -1251,7 +1251,7 @@ WickrIOClientDatabase::deleteMessage(int id, bool saveAttachment) {
 
     if (!saveAttachment) {
         // If there are attachments then delete the files!
-        QList<WickrIODBAttachment *> attachments = getAttachments(id);
+        QList<WickrIODBAttachment *> attachments = getMsgAttachments(id);
         for (WickrIODBAttachment *attach : attachments) {
             QFile tempFile(attach->m_filename);
             tempFile.remove();
@@ -1304,7 +1304,7 @@ WickrIOClientDatabase::getClientsOutMessagesCount(int clientID)
  ***************************************************************************************************************/
 
 bool
-WickrIOClientDatabase::insertAttachment(int messageID, const QString &filename, const QString &realFilename) {
+WickrIOClientDatabase::insertMsgAttachment(int messageID, const QString &filename, const QString &realFilename) {
     if (!initialized)
         return false;
     bool retval = false;
@@ -1319,7 +1319,7 @@ WickrIOClientDatabase::insertAttachment(int messageID, const QString &filename, 
             .arg(realFilename);
     if (!query.exec(queryString)) {
         QSqlError error = query.lastError();
-        qDebug() << "insertAttachment: SQL error" << error;
+        qDebug() << "insertMsgAttachment: SQL error" << error;
     } else if (query.numRowsAffected() > 0) {
         retval = true;
     }
@@ -1328,7 +1328,7 @@ WickrIOClientDatabase::insertAttachment(int messageID, const QString &filename, 
 }
 
 QList<WickrIODBAttachment *>
-WickrIOClientDatabase::getAttachments(int messageID) {
+WickrIOClientDatabase::getMsgAttachments(int messageID) {
     QList<WickrIODBAttachment *> files;
     if (!initialized)
         return files;
@@ -1338,7 +1338,7 @@ WickrIOClientDatabase::getAttachments(int messageID) {
     query.prepare(queryString);
 
     if ( !query.exec()) {
-        qDebug() << "getAttachments: Could not retrieve for message id" << messageID << query.lastError();
+        qDebug() << "getMsgAttachments: Could not retrieve for message id" << messageID << query.lastError();
     } else {
         while (query.next()) {
             WickrIODBAttachment *att = new WickrIODBAttachment(query.value(0).toString(), query.value(1).toString());
