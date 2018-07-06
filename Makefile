@@ -1,7 +1,7 @@
 WICKR_SDK = wickr-sdk
 WICKR_INTEGRATIONS = wickr-integrations
 LIBS_NZMQT = libs/nzmqt
-NZMQT_BRANCH = tags/version-3.2.0
+NZMQT_BRANCH = master
 LIBS_CPPZMQ = libs/third_party/cppzmq
 LIBS_LIBZMQ = libs/third_party/libzmq
 LOCALREPO = localRepo/$(WICKR_SDK)
@@ -54,7 +54,7 @@ nzmqt.update:
 	@echo $(HEADER_START)
 	@echo "Update the libs/nzmqt submodule"
 	@echo "Starting to update libs/nzmqt"
-	cd $(LIBS_NZMQT); git fetch --all; git checkout $(NZMQT_BRANCH); git pull; ./setup-project.sh
+	cd $(LIBS_NZMQT); git fetch --all; git checkout $(NZMQT_BRANCH); git pull
 	@echo $(HEADER_END)
 
 $(WICKR_SDK)/wickr-sdk.pro:
