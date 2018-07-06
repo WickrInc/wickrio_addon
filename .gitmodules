@@ -10,11 +10,3 @@
 	path = libs/nzmqt
 	url = https://github.com/jonnydee/nzmqt.git
 	ignore = all
-[submodule "libs/third_party/cppzmq"]
-	path = libs/third_party/cppzmq
-	url = https://github.com/zeromq/cppzmq.git
-	ignore = all
-[submodule "libs/third_party/libzmq"]
-	path = libs/third_party/libzmq
-	url = https://github.com/zeromq/libzmq.git
-	ignore = all
