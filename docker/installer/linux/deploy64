@@ -155,7 +155,7 @@ fi
 #
 # Run chrpath so binaries can find libraries
 #
-chrpath -r "/usr/local/wickr/Qt-5.9:/usr/local/wickr/Qt-5.9/lib:/usr/lib/wio_docker${bldtype}" $bindir/WickrIOConsoleCmd$srcBldType
+chrpath -r "/usr/local/wickr/Qt-5.9/lib:/usr/lib/wio_docker${bldtype}" $bindir/WickrIOConsoleCmd$srcBldType
 chrpath -r "/usr/local/wickr/Qt-5.9/lib:/usr/lib/wio_docker${bldtype}" $bindir/WickrIOSvr$srcBldType
 chrpath -r "/usr/local/wickr/Qt-5.9/lib:/usr/lib/wio_docker${bldtype}" $bindir/wickrio_bot$BldType
 chrpath -r "/usr/local/wickr/Qt-5.9/lib:/usr/lib/wio_docker${bldtype}" $bindir/core_bot$BldType
