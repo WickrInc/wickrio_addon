@@ -1,3 +1,4 @@
+#include <iostream>
 #include <nan.h>
 #include <v8.h>
 #include "bot_iface.h"
