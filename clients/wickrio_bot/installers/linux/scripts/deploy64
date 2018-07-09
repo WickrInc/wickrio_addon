@@ -82,6 +82,7 @@ optdir=$prefix/opt/WickrIO$svcBldType
 
 platform=$current/../../../../../platforms/linux/generic-64
 sdkplatform=$current/../../../../../wickr-sdk/platforms/linux/generic-64
+libzmqlibs=$current/../../../../../libs/third_party/libzmq/build/lib
 
 # Client definitions
 menus=$prefix/usr/share/applications
@@ -153,6 +154,7 @@ rm -f $plugins/sqldrivers/*
 #cp -a $current/../../../../../platforms/linux/plugins-64/* $plugins/sqldrivers/
 #cp -a $current/../plugins-64/* $plugins/sqldrivers/
 #cp -Lp /usr/lib/x86_64-linux-gnu/libicu*.so.52 $libdir/
+cp -a $libzmqlibs/*.so $libzmqlibs/*.so.* $libdir/
 mkdir -p $messages
 echo "/usr/share/applications/wio_wickrio_bot${bldtype}.client" >$messages/wio_wickrio_bot${bldtype}
 
