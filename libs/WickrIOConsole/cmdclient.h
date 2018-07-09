@@ -22,6 +22,7 @@ public:
 
     bool runCommands(QString commands=QString());
     void status();
+    void setBasicConfig(bool basicConfig) { m_basicConfig = basicConfig; }
 
 private:
     bool processCommand(QStringList cmdList, bool &isquit);
@@ -51,13 +52,14 @@ private:
     WickrIOSSLSettings m_sslSettings;
 
     // Client Message handling values
-    bool m_clientMsgSuccess;
-    bool m_clientMsgInProcess;
+    bool    m_clientMsgSuccess;
+    bool    m_clientMsgInProcess;
+
+    bool    m_basicConfig = false;
 
     QList<WickrBotClients *> m_clients;
 
     QProcess *m_exec;
-
 
 private slots:
     void slotCmdFinished(int, QProcess::ExitStatus);

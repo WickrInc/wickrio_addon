@@ -307,6 +307,7 @@ bool CmdClient::getClientValues(WickrBotClients *client)
     }
 #endif
 
+#if 0 // Not needed anymore
     // Get the transaction ID
     while (true) {
         client->transactionID = getNewValue(client->transactionID, tr("Enter the transaction ID (for new client)"));
@@ -317,6 +318,7 @@ bool CmdClient::getClientValues(WickrBotClients *client)
         }
         break;
     }
+#endif
 
     // The client name will be the username.  Replace the "@" character with the "_"
     client->name = client->user;
@@ -389,6 +391,10 @@ bool CmdClient::getClientValues(WickrBotClients *client)
         m_exec->close();
 
     } else {
+    }
+
+    if (m_basicConfig) {
+        return !quit;
     }
 
     // Generate the API Key, with a random value

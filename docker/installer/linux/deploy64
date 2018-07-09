@@ -95,7 +95,7 @@ optdir=$prefix/opt/WickrIO$srcBldType
 
 platform=$current/../../../platforms/linux/generic-64
 sdkplatform=$current/../../../wickr-sdk/platforms/linux/generic-64
-
+libzmqlibs=$current/../../../libs/third_party/libzmq/build/lib
 
 # Client definitions
 menus=$prefix/usr/share/applications
@@ -177,6 +177,7 @@ if [ "$release_flag" = "true" ]; then
 else
   cp -a $sdkplatform/debug/*.so $sdkplatform/debug/*.so.* $libdir/
 fi
+cp -a $libzmqlibs/*.so $libzmqlibs/*.so.* $libdir/
 rm -f $plugins/sqldrivers/*
 mkdir -p $messages
 echo "/usr/share/applications/wio_wickrio_bot${bldtype}.client" >$messages/wio_docker${bldtype}
