@@ -48,7 +48,7 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
     if (cmd == "?" || cmd == "help") {
         qDebug() << "CONSOLE:Commands:";
         qDebug() << "CONSOLE:  add        - adds a new client";
-        qDebug() << "CONSOLE:  back       - leave the clients setup";
+        if (!m_root) qDebug() << "CONSOLE:  back       - leave the clients setup";
         qDebug() << "CONSOLE:  delete <#> - deletes client with the specific index";
         qDebug() << "CONSOLE:  help or ?  - shows supported commands";
         qDebug() << "CONSOLE:  list       - shows a list of clients";
@@ -58,7 +58,7 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
         qDebug() << "CONSOLE:  quit       - leaves this program";
     } else if (cmd == "add") {
         addClient();
-    } else if (cmd == "back") {
+    } else if (cmd == "back" && !m_root) {
         retVal = false;
     } else if (cmd == "delete") {
         if (clientIndex == -1) {
@@ -105,7 +105,7 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
 bool CmdClient::runCommands(const QStringList& options, QString commands)
 {
     // Default to advanced configuration (for now)
-    m_basicConfig = true;
+    m_basicConfig = false;
 
     QTextStream input(stdin);
 
@@ -114,6 +114,8 @@ bool CmdClient::runCommands(const QStringList& options, QString commands)
             m_basicConfig = true;
         } else if (option == "-advanced") {
             m_basicConfig = false;
+        } else if (option == "-root") {
+            m_root = true;
         }
     }
 
@@ -140,7 +142,11 @@ bool CmdClient::runCommands(const QStringList& options, QString commands)
 
     if (commands.isEmpty()) {
         while (true) {
-            qDebug() << "CONSOLE:Enter client command:";
+            if (m_root) {
+                qDebug() << "CONSOLE:Enter command:";
+            } else {
+                qDebug() << "CONSOLE:Enter client command:";
+            }
             QString line = input.readLine();
 
             line = line.trimmed();

@@ -319,7 +319,7 @@ signals:
     void clearAll();
 
     void signalRegisterOnPrem(const QString &username, const QString &password, const QString &newPassword, const QString &salt, const QString &transactionid, bool newUser, bool sync);
-    void signalRegisterEnterprise(const QString &userId, const QString &password, const QString &transactionid, bool newUser, bool sync, bool isRekey);
+    void signalRegisterEnterprise(const QString &userId, const QString &password, const QString &salt, const QString &transactionid, bool newUser, bool sync, bool isRekey);
     void signalFailed(QString errorString);
 
 public slots:
