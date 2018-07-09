@@ -110,6 +110,7 @@ mkdir -p $appdata
 # Copy the executables
 #
 cp -a ${build_dir}/clients/wickrio_bot/client/wickrio_bot$BldType $bindir
+cp -a ${build_dir}/clients/wickrio_bot/provision/provision$BldType $bindir/wickrio_prov$BldType
 
 #
 # TODO: Will need shared libraries

@@ -116,9 +116,9 @@ WBIOServerCommon::initClientApps()
         WBIOServerCommon::m_supportedBots.append(hubot);
         WBIOServerCommon::m_supportedBots.append(supportBot);
 
-        WBIOClientApps *wickrIOAlpha = new WBIOClientApps("wickrio_botAlpha", nullptr, nullptr, false, false);
-        WBIOClientApps *wickrIOBeta  = new WBIOClientApps("wickrio_botBeta",  nullptr, nullptr, false, false);
-        WBIOClientApps *wickrIOProd  = new WBIOClientApps("wickrio_bot",      nullptr, nullptr, false, false);
+        WBIOClientApps *wickrIOAlpha = new WBIOClientApps("wickrio_botAlpha", "wickrio_provAlpha", nullptr, false, false);
+        WBIOClientApps *wickrIOBeta  = new WBIOClientApps("wickrio_botBeta",  "wickrio_provBeta",  nullptr, false, false);
+        WBIOClientApps *wickrIOProd  = new WBIOClientApps("wickrio_bot",      "wickrio_prov",      nullptr, false, false);
         wickrIOAlpha->addBot(hubot); wickrIOAlpha->addBot(supportBot);
         wickrIOBeta->addBot(hubot);  wickrIOBeta->addBot(supportBot);
         wickrIOProd->addBot(hubot);  wickrIOProd->addBot(supportBot);
