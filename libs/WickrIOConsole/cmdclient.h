@@ -20,7 +20,7 @@ class CmdClient : public CmdBase
 public:
     explicit CmdClient(CmdOperation *operation);
 
-    bool runCommands(QString commands=QString());
+    bool runCommands(const QStringList& options, QString commands=QString());
     void status();
     void setBasicConfig(bool basicConfig) { m_basicConfig = basicConfig; }
 

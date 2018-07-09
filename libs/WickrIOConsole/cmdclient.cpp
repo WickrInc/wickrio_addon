@@ -102,9 +102,20 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
  * the configuration of existing clients.  Only clients in the paused state can be
  * modified. The user can start or pause a client as well from this function.
  */
-bool CmdClient::runCommands(QString commands)
+bool CmdClient::runCommands(const QStringList& options, QString commands)
 {
+    // Default to advanced configuration (for now)
+    m_basicConfig = true;
+
     QTextStream input(stdin);
+
+    for (QString option : options) {
+        if (option == "-basic") {
+            m_basicConfig = true;
+        } else if (option == "-advanced") {
+            m_basicConfig = false;
+        }
+    }
 
     // If the database location is not set then get it
     if (! m_operation->openDatabase()) {
@@ -186,16 +197,24 @@ void CmdClient::listClients()
             botTypeString = QString(", Integration=%1").arg(client->botType);
         }
 
-        QString data = QString("CONSOLE: client[%1] %2, APIKey=%3, User=%4, Port=%5, Binary=%6, State=%7, ConsoleUser=%8%9")
-            .arg(cnt++)
-            .arg(client->name)
-            .arg(client->apiKey)
-            .arg(client->user)
-            .arg(client->port)
-            .arg(client->binary)
-            .arg(clientState)
-            .arg(consoleUser)
-            .arg(botTypeString);
+        QString data;
+        if (m_basicConfig) {
+            data = QString("CONSOLE: client[%1] %2, State=%3")
+                .arg(cnt++)
+                .arg(client->user)
+                .arg(clientState);
+        } else {
+            data = QString("CONSOLE: client[%1] %2, APIKey=%3, User=%4, Port=%5, Binary=%6, State=%7, ConsoleUser=%8%9")
+                .arg(cnt++)
+                .arg(client->name)
+                .arg(client->apiKey)
+                .arg(client->user)
+                .arg(client->port)
+                .arg(client->binary)
+                .arg(clientState)
+                .arg(consoleUser)
+                .arg(botTypeString);
+        }
         qDebug() << qPrintable(data);
     }
 }

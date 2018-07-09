@@ -39,7 +39,7 @@ private:
     bool         m_hasMotherBotBinary = false;
     bool         m_hasParserBinary = false;
 
-    bool processCommand(QString cmd, QString args);
+    bool processCommand(QString cmd, QString subcmds);
     bool config(QString args);
 };
 

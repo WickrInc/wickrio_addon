@@ -22,24 +22,32 @@ CmdMain::CmdMain(OperationData*pOperation) :
 {
 }
 
-bool CmdMain::processCommand(QString cmd, QString args)
+bool CmdMain::processCommand(QString cmd, QString subcmds)
 {
     bool retVal=true;
 
-    if (cmd == "client") {
-        retVal = m_cmdClient.runCommands(args);
+    // Handle the case for commands that accept options
+    QStringList options = cmd.split(" ");
+    QString command;
+    if (options.size() > 0) {
+        command = options.at(0);
+        options.removeFirst();
+    }
+
+    if (command == "client") {
+        retVal = m_cmdClient.runCommands(options, subcmds);
     } else if (cmd == "config") {
-        retVal = config(args);
+        retVal = config(subcmds);
     } else if (cmd == "advanced") {
-        retVal = m_cmdAdvanced.runCommands(args);
+        retVal = m_cmdAdvanced.runCommands(subcmds);
     } else if (cmd == "server") {
-        retVal = m_cmdServer.runCommands(args);
+        retVal = m_cmdServer.runCommands(subcmds);
     } else if (cmd == "console") {
-        retVal = m_cmdConsole.runCommands(args);
+        retVal = m_cmdConsole.runCommands(subcmds);
     } else if (m_hasMotherBotBinary && cmd == "users") {
-        retVal = m_cmdUsers.runCommands(args);
+        retVal = m_cmdUsers.runCommands(subcmds);
     } else if (m_hasParserBinary && cmd == "parser") {
-        retVal = m_cmdParser.runCommands(args);
+        retVal = m_cmdParser.runCommands(subcmds);
     } else if (cmd == "quit") {
         qDebug() << "CONSOLE:Good bye!";
         retVal = false;
@@ -98,12 +106,14 @@ bool CmdMain::runCommands(QString commands)
                 }
             }
 
+            // Get input from the user
             QString line = input.readLine();
 
+            // Breakup the input; handle options and other possible commands
             line = line.trimmed();
             if (line.length() > 0) {
-                QStringList arglist = line.split(" ");
-                QString cmd = arglist.at(0).toLower();
+                QStringList arglist = line.split(",");
+                QString cmd = arglist.at(0).toLower().trimmed();
                 QString args;
                 if (arglist.length() > 1)
                     args = arglist.at(1);

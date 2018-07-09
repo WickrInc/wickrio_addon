@@ -87,61 +87,19 @@ searchConfigFile() {
 #endif
 }
 
-#if 0
-#include "requestHandlerJS.h"
-
-//This will expose an object with the type Game, into the global scope.
- //It will return a handle to the JS object that represents this c++ instance.
-Handle<Object> WrapReqHdlrObject( RequestHandlerJS *reqHdlrInstance )
+void
+dropOutput(QtMsgType type, const QMessageLogContext &, const QString & )
 {
- HandleScope scope;
-
-     //This will persist when we leave the handle scope,
-     //meaning that the actual c++ instance is preserved
- Persistent<ObjectTemplate> class_template;
-
-     //This is just the preset for an emtpy object
- Handle<ObjectTemplate> raw_template = ObjectTemplate::New();
-
-     //This is so we can store a c++ object on it
- raw_template->SetInternalFieldCount(1);
-
-     //Create the actual template object,
- class_template = Persistent<ObjectTemplate>::New( raw_template );
-
-     //Create an instance of the js object
- Handle<Object> result = class_template->NewInstance();
-
-     //Create a wrapper for the c++ instance
- Handle<External> class_ptr = External::New( reqHdlrInstance );
-
-     //Store the 'external c++ pointer' inside the JS object
- result->SetInternalField( 0 , class_ptr );
-
-     //Return the JS object representing this class
- return scope.Close(result);
+    //in this function, you can write the message to any stream!
+    switch (type) {
+    case QtDebugMsg:
+    case QtWarningMsg:
+    case QtCriticalMsg:
+        break;
+    case QtFatalMsg:
+        abort();
+    }
 }
-
- //This will return the c++ object that WrapGameObject stored,
- //from an existing jsObject. Used in the start callback
-RequestHandlerJS* UnwrapReqHdlrObject( Handle<Object> jsObject )
-{
- Handle<External> pointer = Handle<External>::Cast( jsObject->GetInternalField(0) );
- return static_cast<RequestHandlerJS*>( pointer->Value() );
-}
-
-//Here is a helper function to ease the process - This inserts a named property with a callback
-//into the object requested. For example, game.start <- this would be simpler using the function here
-void ExposeProperty(Handle<Object> intoObject, Handle<Value> namev8String, InvocationCallback funcID)
-{
-        Locker lock;
-        HandleScope handle_scope;
-
-        intoObject->Set( namev8String , FunctionTemplate::New( funcID )->GetFunction(), ReadOnly );
-}
-
-#endif
-
 
 Q_IMPORT_PLUGIN(QSQLCipherDriverPlugin)
 
@@ -150,7 +108,6 @@ int main(int argc, char *argv[])
     QCoreApplication *app = NULL;
 
     Q_INIT_RESOURCE(wickrio_bot);
-
 
     // Setup appropriate library values based on Beta or Production client
     QByteArray secureJson;
@@ -171,8 +128,6 @@ int main(int argc, char *argv[])
 #endif
     WickrURLs::setDefaultBaseURLs(ClientConfigurationInfo::DefaultBaseURL,
                                   ClientConfigurationInfo::DefaultDirSearchBaseURL);
-
-    qDebug() <<  appname << "System was booted" << WickrUtil::formatTimestamp(WickrAppClock::getBootTime());
 
     operation = new OperationData();
 
@@ -217,6 +172,10 @@ int main(int argc, char *argv[])
         }
     }
 
+    // Drop all output for now
+    if (!operation->debug)
+        qInstallMessageHandler(dropOutput);
+
     if( isVERSIONDEBUG() ) {
         for( int argidx = 1; argidx < argc; argidx++ ) {
             QString cmd(argv[argidx]);
@@ -233,6 +192,8 @@ int main(int argc, char *argv[])
             }
         }
     }
+
+    qDebug() <<  appname << "System was booted" << WickrUtil::formatTimestamp(WickrAppClock::getBootTime());
 
 #ifdef Q_OS_MAC
     WickrAppDelegateInitialize();
