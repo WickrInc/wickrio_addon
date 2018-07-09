@@ -19,9 +19,9 @@ console.log(addon.cmdAddRoom(members, moderators, title, description, ttl, bor))
 // console.log(addon.cmdClearStatistics());
 // console.log(addon.cmdGetRoom(vGroupID));
 // console.log(addon.cmdGetRooms());
- console.log(addon.cmdLeaveRoom(vGroupID));
-// console.log(addon.cmdAddGroupConvo(members, ttl, bor));
-// console.log(addon.cmdModifyRoom(vGroupID, members, moderators, title, description, ttl, bor));
+// console.log(addon.cmdLeaveRoom(vGroupID));
+console.log(addon.cmdAddGroupConvo(members, ttl, bor));
+console.log(addon.cmdModifyRoom(vGroupID, members, moderators, title, description, ttl, bor));
 // console.log(addon.cmdGetGroupConvo(vGroupID));
 // console.log(addon.cmdGetGroupConvos());
 // console.log(addon.cmdDeleteGroupConvo(vGroupID));
