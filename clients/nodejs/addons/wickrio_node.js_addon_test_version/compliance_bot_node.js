@@ -3,7 +3,8 @@ var fs = require('fs');
 
 module.exports = addon;
 
-console.log(addon.clientInit('aaronbot019512_62114373.net'));
+var client = process.argv[2];
+console.log(addon.clientInit(client));
 
 for (;;) {
   var message = addon.cmdGetReceivedMessage();

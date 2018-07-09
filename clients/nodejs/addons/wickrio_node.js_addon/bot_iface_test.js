@@ -1,12 +1,7 @@
 var addon = require('bindings')('wickrio_addon');
 
 module.exports = addon;
-//ex: "guest:guest@localhost:5672"
-var amqp_user = 'wickr_user';
-var amqp_password = 'wickr_user'
-var amqp_address = 'localhost';
-var amqp_port = '5672';
-console.log(addon.clientInit('aaronbot023299@85022943.net', amqp_user, amqp_password, amqp_address, amqp_port));
+console.log(addon.clientInit('aaronbot023299@85022943.net'));
 
 
 var vGroupID = "Sbfa682074f470f8cfe7cf05060559918c798bb4fe5355531e84340694b367a6";
@@ -24,9 +19,9 @@ console.log(addon.cmdAddRoom(members, moderators, title, description, ttl, bor))
 // console.log(addon.cmdClearStatistics());
 // console.log(addon.cmdGetRoom(vGroupID));
 // console.log(addon.cmdGetRooms());
- console.log(addon.cmdLeaveRoom(vGroupID));
-// console.log(addon.cmdAddGroupConvo(members, ttl, bor));
-// console.log(addon.cmdModifyRoom(vGroupID, members, moderators, title, description, ttl, bor));
+// console.log(addon.cmdLeaveRoom(vGroupID));
+console.log(addon.cmdAddGroupConvo(members, ttl, bor));
+console.log(addon.cmdModifyRoom(vGroupID, members, moderators, title, description, ttl, bor));
 // console.log(addon.cmdGetGroupConvo(vGroupID));
 // console.log(addon.cmdGetGroupConvos());
 // console.log(addon.cmdDeleteGroupConvo(vGroupID));
