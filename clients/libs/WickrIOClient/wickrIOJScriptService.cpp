@@ -205,8 +205,12 @@ WickrIOJScriptThread::slotStartScript()
     m_zsocket->bindTo(queueName);
 
     // Set the permission of the queue file so that normal user programs can access
-    QFile zmqFile(queueName);
-    if(!zmqFile.setPermissions(0xFFFF)) {
+    QString queueFileName = QString(WBIO_CLIENT_SOCKETFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(operation->m_client->name);
+    QFile zmqFile(queueFileName);
+    if(!zmqFile.setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner |
+                               QFile::ReadUser | QFile::WriteUser | QFile::ExeUser  |
+                               QFile::ReadGroup | QFile::WriteGroup | QFile::ExeGroup |
+                               QFile::ReadOther | QFile::WriteOther | QFile::ExeOther)) {
         qDebug("Something wrong setting permissions of the queue file!");
     }
 
