@@ -1,3 +1,5 @@
+#include <string>
+
 #include "bot_iface.h"
 
 using namespace std;
@@ -5,6 +7,11 @@ using namespace std;
 BotIface::BotIface(const string& client)
 {
     string m_clientName = client;
+    int pos;
+
+    while ((pos = m_clientName.find('@')) != std::string::npos)
+        m_clientName.replace(pos, 1, "_");
+
     m_iface = new MesgQueueIface(m_clientName);
 }
 
