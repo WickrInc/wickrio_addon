@@ -128,7 +128,7 @@ cp -a ${build_dir}/services/consolecmd/WickrIOConsoleCmd$srcBldType $bindir
 cp -a ${build_dir}/services/clientserver_process/WickrIOSvr$srcBldType $bindir
 cp -a ${build_dir}/clients/wickrio_bot/client/wickrio_bot$BldType $bindir
 cp -a ${build_dir}/clients/wickrio_bot/provision/provision$BldType $bindir/wickrio_prov$BldType
-cp -a ${build_dir}/clients/core_bot/client/core_bot$BldType $bindir
+#cp -a ${build_dir}/clients/core_bot/client/core_bot$BldType $bindir
 
 if [ "$release_flag" = "true" ]; then
   cp -a ${build_dir}/libs/QtWebApp/libQtWebApp.* $libdir
