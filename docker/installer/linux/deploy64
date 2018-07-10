@@ -160,7 +160,7 @@ chrpath -r "/usr/local/wickr/Qt-5.9/lib:/usr/lib/wio_docker${bldtype}" $bindir/W
 chrpath -r "/usr/local/wickr/Qt-5.9/lib:/usr/lib/wio_docker${bldtype}" $bindir/WickrIOSvr$srcBldType
 chrpath -r "/usr/local/wickr/Qt-5.9/lib:/usr/lib/wio_docker${bldtype}" $bindir/wickrio_bot$BldType
 chrpath -r "/usr/local/wickr/Qt-5.9/lib:/usr/lib/wio_docker${bldtype}" $bindir/wickrio_prov$BldType
-chrpath -r "/usr/local/wickr/Qt-5.9/lib:/usr/lib/wio_docker${bldtype}" $bindir/core_bot$BldType
+#chrpath -r "/usr/local/wickr/Qt-5.9/lib:/usr/lib/wio_docker${bldtype}" $bindir/core_bot$BldType
 
 #
 # Change the contents appropriately for Beta version Release versions
