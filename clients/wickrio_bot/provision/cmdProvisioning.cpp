@@ -68,6 +68,7 @@ bool CmdProvisioning::runCommands(int argc, char *argv[])
             m_client->user = QString(argv[argidx+2]);
             m_client->password = QString(argv[argidx+3]);
             m_client->name = m_client->user;
+            m_client->name.replace("@", "_");
         } else {
             if (numargs != 2) {
                 qDebug() << "CONSOLE:Not enough arguments for user provisioning!";
@@ -77,6 +78,7 @@ bool CmdProvisioning::runCommands(int argc, char *argv[])
             m_client->user = QString(argv[argidx]);
             m_client->password = QString(argv[argidx+1]);
             m_client->name = m_client->user;
+            m_client->name.replace("@", "_");
         }
         qDebug() << "CONSOLE:Creating user: " << m_client->name;
     } else {
@@ -106,7 +108,7 @@ bool CmdProvisioning::runCommands(int argc, char *argv[])
 
             // For now use the user name as the local name
             m_client->name = m_client->user;
-
+            m_client->name.replace("@", "_");
         } else {
             if (m_client->user.isEmpty())
                 m_client->user = CmdBase::getNewValue(m_client->user, "Enter user name", CHECK_NONE);

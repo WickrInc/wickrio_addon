@@ -168,7 +168,7 @@ void WickrIOEClientMain::processStarted()
         WickrIOClientRuntime::provHdlrBeginOnPrem(m_client->user, m_client->password, m_invite);
     } else {
 #if defined(WICKR_MESSENGER)
-        m_loginHdlr.slotRegisterUser(m_client->user, m_client->password, "", true, false, false);
+        m_loginHdlr.slotRegisterUser(m_client->user, m_client->password, "", "", true, false, false);
 #else
         WickrIOClientRuntime::provHdlrBeginCloud(m_client->user, m_client->password, m_invite);
 #endif
