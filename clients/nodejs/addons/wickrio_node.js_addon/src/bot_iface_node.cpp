@@ -318,7 +318,7 @@ void cmdModifyRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
         ttl = std::string(*param6);
         v8::String::Utf8Value param7(args[6]->ToString());
         bor = std::string(*param7);
-        cout << endl << vGroupID << endl << members[0] << endl <<title << endl << description << endl << ttl << endl << bor << endl;
+        // cout << endl << vGroupID << endl << members[0] << endl <<title << endl << description << endl << ttl << endl << bor << endl;
         botIface->cmdStringModifyRoom(command, vGroupID, members, moderators, title, description, ttl, bor);
         if (botIface->send(command, response) != BotIface::SUCCESS) {
                 response = botIface->getLastErrorString();
@@ -752,6 +752,90 @@ void cmdSend1to1Message(const v8::FunctionCallbackInfo<v8::Value> & args) {
         }
 }
 
+
+
+
+void cmdSend1to1Attachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
+        Isolate* isolate = args.GetIsolate();
+        if (botIface == nullptr) {
+                string message = "Bot Interface has not been initialized!";
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        if (args.Length() < 2) {
+                string message = "Send1to1Attachment: requires at least 2 arguments!";
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+
+        for(int i = 0; i < args.Length() - 1; i++) {
+                string message;
+                if(i == 0) {
+                        if(!args[i]->IsArray()) {
+                                message = "Send1to1Attachment: list of users must be an array!";
+                        }
+                }
+                else if(i == 1) {
+                        if(!args[i]->IsString()) {
+                                message = "Send1to1Attachment: attachment must be a string!";
+                        }
+                }
+                else if(i == 2) {
+                        if(!args[i]->IsString()) {
+                                message = "Send1to1Attachment: ttl must be a string!";
+                        }
+                }
+                else if(i == 3) {
+                        if(!args[i]->IsString()) {
+                                message = "Send1to1Attachment: bor must be a string!";
+                        }
+                }
+                if(!message.empty()) {
+                        auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                        args.GetReturnValue().Set(error);
+                        return;
+                }
+        }
+        string command, response;
+        std::string placeHolder;
+        vector <string> users;
+        Local<Array> arr = Local<Array>::Cast(args[0]);
+        for(int i=0; i<arr->Length(); i++) {
+                Local<Value> item = arr->Get(i);
+                v8::String::Utf8Value param1(item->ToString());
+                std::string str = std::string(*param1);
+                users.push_back(str);
+        }
+        v8::String::Utf8Value param2(args[1]->ToString());
+        std::string attachment = std::string(*param2);
+        attachment = std::string("{\"filename\" : \"" + attachment
+         + "\" }");
+        v8::String::Utf8Value param3(args[2]->ToString());
+        std::string ttl = std::string(*param3);
+        v8::String::Utf8Value param4(args[3]->ToString());
+        std::string bor = std::string(*param4);
+        botIface->cmdStringSendAttachment(command, placeHolder, users, attachment, ttl, bor);
+        // cout << "Command 1:" << endl << command <<endl;
+
+        if (botIface->send(command, response) != BotIface::SUCCESS) {
+                response = botIface->getLastErrorString();
+                string message = "Failed to create Send 1-to-1 Attachment command!" + response;
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        else {
+                if (response.length() > 0) {
+                        auto message = v8::String::NewFromUtf8(isolate, response.c_str());
+                        args.GetReturnValue().Set(message);
+                }
+                return;
+        }
+}
+
+
 void cmdSendRoomMessage(const v8::FunctionCallbackInfo<v8::Value> & args) {
         Isolate* isolate = args.GetIsolate();
         if (botIface == nullptr) {
@@ -818,14 +902,84 @@ void cmdSendRoomMessage(const v8::FunctionCallbackInfo<v8::Value> & args) {
                         auto message = v8::String::NewFromUtf8(isolate, response.c_str());
                         args.GetReturnValue().Set(message);
                 }
-                // else{
-                //   response = "cmdSendRoomMessage Success!";
-                //   auto message = v8::String::NewFromUtf8(isolate, response.c_str());
-                //   args.GetReturnValue().Set(message);
-                // }
                 return;
         }
 }
+
+
+void cmdSendRoomAttachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
+        Isolate* isolate = args.GetIsolate();
+        if (botIface == nullptr) {
+                string message = "Bot Interface has not been initialized!";
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        if (args.Length() < 2) {
+                string message = "SendRoomAttachment: requires at least 2 arguments!";
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+
+        for(int i = 0; i < args.Length() - 1; i++) {
+                string message;
+                if(i == 0) {
+                        if(!args[i]->IsString()) {
+                                message = "SendRoomAttachment: vGroupID must be a string!";
+                        }
+                }
+                else if(i == 1) {
+                        if(!args[i]->IsString()) {
+                                message = "SendRoomAttachment: attachment must be a JSON object!";
+                        }
+                }
+                else if(i == 2) {
+                        if(!args[i]->IsString()) {
+                                message = "SendRoomAttachment: ttl must be a string!";
+                        }
+                }
+                else if(i == 3) {
+                        if(!args[i]->IsString()) {
+                                message = "SendRoomAttachment: bor must be a string!";
+                        }
+                }
+                if(!message.empty()) {
+                        auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                        args.GetReturnValue().Set(error);
+                        return;
+                }
+        }
+        string command, response;
+        v8::String::Utf8Value param1(args[0]->ToString());
+        std::string vGroupID = std::string(*param1);
+        vector <string> placeHolder;
+        v8::String::Utf8Value param2(args[1]->ToString());
+        std::string attachment = std::string(*param2);
+        attachment = std::string("{\"filename\" : \"" + attachment
+         + "\" }");
+        // cout << attachment << endl;
+        v8::String::Utf8Value param3(args[2]->ToString());
+        std::string ttl = std::string(*param3);
+        v8::String::Utf8Value param4(args[3]->ToString());
+        std::string bor = std::string(*param4);
+        botIface->cmdStringSendAttachment(command, vGroupID, placeHolder, attachment, ttl, bor);
+        if (botIface->send(command, response) != BotIface::SUCCESS) {
+                response = botIface->getLastErrorString();
+                string message = "Failed to create Send Room Attachment command!" + response;
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        else {
+                if (response.length() > 0) {
+                        auto message = v8::String::NewFromUtf8(isolate, response.c_str());
+                        args.GetReturnValue().Set(message);
+                }
+                return;
+        }
+}
+
 
 void init(Handle <Object> exports, Handle<Object> module) {
         //2nd param: what we call from Javascript
@@ -846,7 +1000,9 @@ void init(Handle <Object> exports, Handle<Object> module) {
         NODE_SET_METHOD(exports, "cmdGetGroupConvos", cmdGetGroupConvos);
         NODE_SET_METHOD(exports, "cmdGetReceivedMessage", cmdGetReceivedMessage);
         NODE_SET_METHOD(exports, "cmdSend1to1Message", cmdSend1to1Message);
+        NODE_SET_METHOD(exports, "cmdSend1to1Attachment", cmdSend1to1Attachment);
         NODE_SET_METHOD(exports, "cmdSendRoomMessage", cmdSendRoomMessage);
+        NODE_SET_METHOD(exports, "cmdSendRoomAttachment", cmdSendRoomAttachment);
 }
 
 // associates the module name with initialization logic

@@ -89,8 +89,14 @@ public:
                                         const string& vGroupID,
                                         const vector <string>& users,
                                         const string& message,
-                                        const string& ttl,
-                                        const string& bor);
+                                        const string& ttl="",
+                                        const string& bor="");
+    BotIfaceStatus cmdStringSendAttachment(string& command,
+                                                  const string& vGroupID,
+                                                  const vector <string>& users,
+                                                  const string& attachment,
+                                                  const string& ttl="",
+                                                  const string& bor="");
 
 private:
     MesgQueueIface  *m_iface = nullptr;
@@ -108,6 +114,7 @@ private:
                                  const string& bor);
 
     // Utility functions
+    bool is_json(const string &str);
     bool is_digits(const string &str);
     void addUserList(const vector <string>& list, string& tostring);
 

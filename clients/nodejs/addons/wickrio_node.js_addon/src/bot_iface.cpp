@@ -1,4 +1,5 @@
 #include "bot_iface.h"
+#include <iostream>
 
 using namespace std;
 
@@ -347,6 +348,52 @@ BotIface::cmdStringSendMessage(string& command,
                 + "\" }";
     } else {
         command = "{ \"action\" : \"send_message\", \"message\" : \"" + message + "\" , "
+                + optionalFields
+                + "\"users\" : ";
+        addUserList(users, command);
+        command += " }";
+    }
+    return SUCCESS;
+}
+
+
+
+
+BotIface::BotIfaceStatus
+BotIface::cmdStringSendAttachment(string& command,
+                     const string& vGroupID,
+                     const vector <string>& users,
+                     const string& attachment,
+                     const string& ttl,
+                     const string& bor)
+{
+    string optionalFields = "";
+    if (vGroupID.size() == 0 && users.size() == 0) {
+        m_lastError = "SendAttachment: Must enter either a VGroupID or a list of users!";
+        return MISSING_INPUT_FIELD;
+    }
+    if (ttl.size() > 0) {
+        if (!is_digits(ttl)) {
+            m_lastError = "SendAttachment: TTL must be a number";
+            return INVALID_FIELD_VALUE;
+        }
+        optionalFields += " \"ttl\" : " + ttl + ", ";
+    }
+    if (bor.size() > 0) {
+        if (!is_digits(bor)) {
+            m_lastError = "SendAttachment: BOR must be a number";
+            return INVALID_FIELD_VALUE;
+        }
+        optionalFields += " \"bor\" : " + bor + ", ";
+    }
+    if (vGroupID.size() > 0) {
+        command = "{ \"action\" : \"send_message\", \"vgroupid\" : \"" + vGroupID + "\" , " \
+                + optionalFields
+                + "\"attachment\" : " + attachment
+                + "}";
+      // cout << endl <<"command2: " <<command << endl;
+    } else {
+        command = "{ \"action\" : \"send_message\", \"attachment\" : " + attachment + " , "
                 + optionalFields
                 + "\"users\" : ";
         addUserList(users, command);
