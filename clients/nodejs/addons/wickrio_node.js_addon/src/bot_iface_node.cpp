@@ -15,16 +15,6 @@ void clientInit(const v8::FunctionCallbackInfo<v8::Value> & args) {
         v8::String::Utf8Value param1(args[0]->ToString());
         std::string client = std::string(*param1);
         botIface = new BotIface(client);
-        v8::String::Utf8Value param2(args[1]->ToString());
-        std::string amqp_user = std::string(*param2);
-        v8::String::Utf8Value param3(args[2]->ToString());
-        std::string amqp_password = std::string(*param3);
-        v8::String::Utf8Value param4(args[3]->ToString());
-        std::string amqp_address = std::string(*param4);
-        v8::String::Utf8Value param5(args[4]->ToString());
-        std::string amqp_port = std::string(*param5);
-        std::string amqp = amqp_user + ":" + amqp_password + "@" + amqp_address + ":" + amqp_port;
-        cout << endl << "amqp: " + amqp << endl;
         if (botIface->init() != BotIface::SUCCESS) {
           message = botIface->getLastErrorString() + "\nCould not initialize Bot Interface!";
         }
