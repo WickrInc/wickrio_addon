@@ -387,11 +387,11 @@ BotIface::cmdStringSendAttachment(string& command,
         optionalFields += " \"bor\" : " + bor + ", ";
     }
     if (vGroupID.size() > 0) {
-        command = "{ \"action\" : \"send_message\", \"vgroupid\" : \"" + vGroupID + "\" , " \
+        command = "{ \"action\" : \"send_message\", \"attachment\" : " + attachment + " , "
                 + optionalFields
-                + "\"attachment\" : " + attachment
-                + "}";
-      // cout << endl <<"command2: " <<command << endl;
+                + "\"vgroupid\" : \"" + vGroupID \
+                + "\" }";
+       cout << endl <<"command2: " <<command << endl;
     } else {
         command = "{ \"action\" : \"send_message\", \"attachment\" : " + attachment + " , "
                 + optionalFields

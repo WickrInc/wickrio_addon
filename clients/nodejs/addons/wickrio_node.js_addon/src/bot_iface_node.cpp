@@ -817,7 +817,7 @@ void cmdSend1to1Attachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
         v8::String::Utf8Value param4(args[3]->ToString());
         std::string bor = std::string(*param4);
         botIface->cmdStringSendAttachment(command, placeHolder, users, attachment, ttl, bor);
-        // cout << "Command 1:" << endl << command <<endl;
+        cout << "Command 1:" << endl << command <<endl;
 
         if (botIface->send(command, response) != BotIface::SUCCESS) {
                 response = botIface->getLastErrorString();
