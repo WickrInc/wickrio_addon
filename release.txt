@@ -1,4 +1,4 @@
-Release Notes from v4.26-release to v4.41.15-2:
+Release Notes from v4.26-release to v4.41.15-3:
   * Remove RabbitMQ code
   * Changes to perform an easy setup of a new client. Reorganized alot of software…
   * Fix function response messages, add new example app
