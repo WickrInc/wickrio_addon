@@ -582,27 +582,8 @@ WickrIOActionThread::sendMessageToConvo(WickrCore::WickrConvo *convo)
     /*
      * Setup and send the message
      */
-#if 0
-    QList<WickrCore::WickrAttachment> attachments;
-
     // TODO: Handle the attachment
     QList<QString> attachmentFiles = m_jsonHandler->getAttachments();
-    if (attachmentFiles.size() > 0) {
-        for (QString attachmentFile : attachmentFiles) {
-            QFile att(attachmentFile);
-            if( att.exists() ) {
-                att.open( QFile::ReadOnly );
-                QByteArray contents = att.readAll();
-                att.close();
-
-                WickrCore::WickrAttachment a = WickrCore::WickrAttachment(contents);
-                attachments.append(a);
-            } else {
-                m_operation->log_handler->error("Cannot open attachment file: "+attachmentFile);
-            }
-        }
-    }
-#endif
 
     long ttl = m_jsonHandler->getTTL();
     if (ttl == 0) {
@@ -617,13 +598,11 @@ WickrIOActionThread::sendMessageToConvo(WickrCore::WickrConvo *convo)
         convo->setBOR(bor);
     }
 
-#if 0
     if (attachmentFiles.size() > 0) {
         if (!sendFile(convo, attachmentFiles, m_jsonHandler->getMessage())) {
-            setProcessAction(false);
+            return false;
         }
     } else {
-#endif
         // Get the users
         QList<WickrCore::WickrUser *> userList;
 
@@ -641,9 +620,7 @@ WickrIOActionThread::sendMessageToConvo(WickrCore::WickrConvo *convo)
                                                          userList);
         connect(context, &WickrSendContext::signalRequestCompleted, this, &WickrIOActionThread::slotMessageDone, Qt::QueuedConnection);
         WickrCore::WickrRuntime::msgSvcSend(context);
-#if 0
    }
-#endif
 
     // Free the JSON Handler object
     delete m_jsonHandler;

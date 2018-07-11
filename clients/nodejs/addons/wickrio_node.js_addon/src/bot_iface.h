@@ -89,8 +89,15 @@ public:
                                         const string& vGroupID,
                                         const vector <string>& users,
                                         const string& message,
-                                        const string& ttl,
-                                        const string& bor);
+                                        const string& ttl="",
+                                        const string& bor="");
+    BotIfaceStatus cmdStringSendAttachment(string& command,
+                                           const string& vGroupID,
+                                           const vector <string>& users,
+                                           const string& attachment,
+                                           const string& displayname,
+                                           const string& ttl="",
+                                           const string& bor="");
 
 private:
     MesgQueueIface  *m_iface = nullptr;

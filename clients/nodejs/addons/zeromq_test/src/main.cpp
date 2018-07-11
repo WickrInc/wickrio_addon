@@ -1,5 +1,6 @@
 #include <iostream>
-
+#include <string>
+#include <algorithm>
 #include "bot_iface.h"
 
 using namespace std;
@@ -92,6 +93,7 @@ int main (int argc, char** argv) {
                       << "\nMessage commands:\n"
                       << "    get_message\n"
                       << "    send_message\n"
+                      << "    send_file\n"
                       << "\nMisc. commands:\n"
                       << "    quit\n"
                       << "    help\n";
@@ -258,6 +260,63 @@ int main (int argc, char** argv) {
             }
 
             if (botIface.cmdStringSendMessage(command, vGroupID, users, message, ttl, bor) != BotIface::SUCCESS) {
+                std::cout << "Failed to create Send Message command!";
+                continue;
+            }
+        } else if (input == "send_file") {
+            string vGroupID;
+            vector <string> users;
+            string filename;
+            string displayname;
+            string ttl;
+            string bor;
+
+            if (!getInput("Enter VGroupID: ", vGroupID, true)) {
+                done = true;
+                continue;
+            }
+            if (vGroupID.size() == 0) {
+                bool done=false;
+                while (!done) {
+                    string user;
+                    if (!getInput("Enter User: ", user, true)) {
+                        done = true;
+                        continue;
+                    }
+                    if (user.size() == 0)
+                        break;
+                    users.push_back(user);
+                }
+                if (done)
+                    continue;
+            }
+            if (vGroupID.size() == 0 && users.size() == 0) {
+                std::cout << "Must enter either a VGroupID or a list of users!";
+                continue;
+            }
+            if (!getInput("Enter filename to send: ", filename, true)) {
+                done = true;
+                continue;
+            }
+
+            // Allocate the destination space
+            std::string filenameLower;
+            filenameLower.resize(filename.size());
+
+            // Convert the source string to lower case
+            // storing the result in destination string
+            std::transform(filename.begin(),
+                           filename.end(),
+                           filenameLower.begin(),
+                           ::tolower);
+            if (filenameLower.find("http") == 0) {
+                if (!getInput("Enter file's display name: ", displayname, true)) {
+                    done = true;
+                    continue;
+                }
+            }
+
+            if (botIface.cmdStringSendAttachment(command, vGroupID, users, filename, displayname, ttl, bor) != BotIface::SUCCESS) {
                 std::cout << "Failed to create Send Message command!";
                 continue;
             }
