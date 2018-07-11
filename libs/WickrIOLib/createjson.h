@@ -23,7 +23,7 @@ public:
     long m_bor;
     bool m_has_bor;
     QString message;
-    QList<QString>  attachments;
+    QStringList     attachments;
     QStringList     m_attachmentDisplayNames;
     QString m_statususer;
 

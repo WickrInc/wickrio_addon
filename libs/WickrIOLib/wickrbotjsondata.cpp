@@ -176,7 +176,7 @@ bool WickrBotJsonData::processAttachmentURL(QString filename, QString url)
     return true;
 }
 
-bool WickrBotJsonData::processAttachmentFile(QString filename)
+bool WickrBotJsonData::processAttachmentFile(const QString& filename, const QString& displayname)
 {
     if (m_operation->attachmentsDir.size() == 0) {
         return false;
@@ -198,7 +198,7 @@ bool WickrBotJsonData::processAttachmentFile(QString filename)
     bool exists = fi.exists();
     if (exists) {
         m_attachments.append(fullPath);
-        m_attachmentDisplayNames.append(filename);
+        m_attachmentDisplayNames.append(displayname.isEmpty() ? filename : displayname);
     } else {
         QString errStr = QString("Attachment does not exist: %1").arg(fullPath);
         m_operation->log_handler->error(errStr);
@@ -455,96 +455,77 @@ int WickrBotJsonData::getClientID() {
     return 0;
 }
 
+bool WickrBotJsonData::processAttachmentEntry(const QJsonObject& attachment)
+{
+    QJsonValue value;
+
+    // Must containe either a filename or a url
+    if (! attachment.contains(BOTAPI_JSON_FILENAME) && ! attachment.contains(BOTAPI_JSON_URL)) {
+        m_operation->log_handler->error("Error: there is no filename or URL for this attachment!");
+        return false;
+    }
+
+    // Cannot contain both the filename and the url
+    if (attachment.contains(BOTAPI_JSON_FILENAME) && attachment.contains(BOTAPI_JSON_URL)) {
+        m_operation->log_handler->error("Error: cannot contain both a filename and URL in the attachment!");
+        return false;
+    }
+
+    // Get the display name
+    QString displayname;
+    if (attachment.contains(BOTAPI_JSON_DISPLAYNAME)) {
+        value = attachment[BOTAPI_JSON_DISPLAYNAME];
+        displayname = value.toString();
+    }
+
+    if (attachment.contains(BOTAPI_JSON_FILENAME)) {
+        value = attachment[BOTAPI_JSON_FILENAME];
+        QString filename = value.toString();
+        if (filename.length() > 0) {
+            return processAttachmentFile(filename, displayname);
+        } else {
+            m_operation->log_handler->error("Error: attachment filename is zero length!");
+            return false;
+        }
+    } else if (attachment.contains(BOTAPI_JSON_URL)) {
+        value = attachment[BOTAPI_JSON_URL];
+        QString url = value.toString();
+
+        if (url.length() > 0) {
+            return processAttachmentURL(displayname, url);
+        } else {
+            m_operation->log_handler->error("Error: attachment URL is zero length!");
+            return false;
+        }
+    } else {
+        m_operation->log_handler->error("Error: there is no filename or URL for this attachment!");
+        return false;
+    }
+    return true;
+}
+
 bool WickrBotJsonData::processAttachments(const QJsonObject &operationObject)
 {
     QJsonValue value;
+
     // Parse out any attachment
-    if (operationObject.contains("attachments")) {
-        value = operationObject["attachments"];
+    if (operationObject.contains(BOTAPI_JSON_ATTACHMENTS)) {
+        value = operationObject[BOTAPI_JSON_ATTACHMENT];
         QJsonArray attachments = value.toArray();
 
-        for (int i=0; i<attachments.size(); i++) {
+        if (attachments.size() == 0) {
+            m_operation->log_handler->error("Error: attachments contains zero entries!");
+        } else {
             QJsonObject attachment;
-            attachment = attachments.at(i).toObject();
+            attachment = attachments.at(0).toObject();
 
-            QString filename;
-
-            if (attachment.contains("filename")) {
-                value = attachment["filename"];
-                filename = value.toString();
-            } else {
-                filename = "";
-            }
-
-            if (attachment.contains("url")) {
-                value = attachment["url"];
-                QString valString = value.toString();
-
-                processAttachmentURL(filename, valString);
-            } else if (filename.length() > 0) {
-                if (!processAttachmentFile(filename))
-                    return false;
-            } else {
-                m_operation->log_handler->error("Error: there is no filename or URL for this attachment!");
-                return false;
-            }
+            return processAttachmentEntry(attachment);
         }
-    } else if (operationObject.contains("attachment")) {
-        value = operationObject["attachment"];
+    } else if (operationObject.contains(BOTAPI_JSON_ATTACHMENT)) {
+        value = operationObject[BOTAPI_JSON_ATTACHMENT];
         QJsonObject attachment = value.toObject();
 
-        QString filename;
-        if (attachment.contains("filename")) {
-            value = attachment["filename"];
-            filename = value.toString();
-        } else {
-            filename = "";
-
-            // TODO: need to generate a filename!!!
-            qDebug() << "THERE IS NO FILENAME FOR THIS ATTACHMENT!";
-        }
-
-        if (attachment.contains("contents")) {
-            value = attachment["contents"];
-            QString valString = value.toString();
-            QByteArray bytes = valString.toLatin1();
-            // This will preserve the data, you will need to decode when you read it in:
-            QByteArray res = QByteArray::fromBase64(bytes);
-
-            if (m_operation->attachmentsDir.size() > 0) {
-                if (filename != "") {
-                    QString uniqueFileName;
-
-                    qint64 milli = QDateTime::currentMSecsSinceEpoch();
-                    QString date = QString::number(milli);
-                    QFileInfo fi(filename);
-                    QString name = fi.fileName();
-
-    //                        QString fullPath = m_operation->attachmentsDir + "/" + filename;
-                    QString fullPath = m_operation->attachmentsDir + "/attach_" + date + name;
-                    if (saveAttachment(fullPath, res)) {
-                        m_attachments.append(fullPath);
-                        m_attachmentDisplayNames.append(filename);
-                        m_rmAttachmentWhenDone = true;
-                    } else {
-                        //TODO: Attachment not saved successfully
-                    }
-                }
-            } else {
-                // NO ATTACHMENT DIRECTORY, WHERE TO PUT THE ATTACHMENTS
-                m_operation->log_handler->error("Internal Error: no attachment directory");
-                return false;
-            }
-        } else {
-            if (attachment.contains("url")) {
-                value = attachment["url"];
-                QString valString = value.toString();
-
-                return processAttachmentURL(filename, valString);
-            } else if (filename.length() > 0) {
-                return processAttachmentFile(filename);
-            }
-        }
+        return processAttachmentEntry(attachment);
     }
     return true;
 }
