@@ -409,8 +409,6 @@ BotIface::cmdStringSendAttachment(string& command,
     } else {
         attachmentJSON = string("{\"filename\" : \"" + attachment + "\" }");
     }
-    cout << endl <<"attachmentJSON: " << attachmentJSON << endl;
-
 
     // create the JSON to send to the client
     if (vGroupID.size() > 0) {
@@ -419,7 +417,6 @@ BotIface::cmdStringSendAttachment(string& command,
                 + "\"vgroupid\" : \"" + vGroupID \
                 + "\" }";
     } else {
-      cout << "\nvGroupID < 0\n";
         command = "{ \"action\" : \"send_message\", \"attachment\" : " + attachmentJSON + " , "
                 + optionalFields
                 + "\"users\" : ";

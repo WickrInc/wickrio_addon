@@ -769,7 +769,6 @@ void cmdSend1to1Attachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
                 args.GetReturnValue().Set(error);
                 return;
         }
-        //cout << endl << "args[5]: " << args[5] << endl;
         for(int i = 0; i < args.Length() - 1; i++) {
                 string message;
                 if(i == 0) {
@@ -817,24 +816,17 @@ void cmdSend1to1Attachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
         std::string attachment = std::string(*param2);
         v8::String::Utf8Value param3(args[2]->ToString());
         std::string displayname = std::string(*param3);
-        cout << endl << displayname << endl;
-        // attachment = std::string("{\"displayname\" : \"" + attachment
-        //  + "\" }");
         v8::String::Utf8Value param4(args[3]->ToString());
         std::string ttl = std::string(*param4);
         v8::String::Utf8Value param5(args[4]->ToString());
         std::string bor = std::string(*param5);
         if(displayname.length() > 0){
-          cout << "\nYes URL!\n";
           botIface->cmdStringSendAttachment(command, placeHolder, users, attachment, displayname, ttl, bor);
         }
         else{
-          cout << "\nNo URL!\n";
           botIface->cmdStringSendAttachment(command, placeHolder, users, attachment, placeHolder, ttl, bor);
         }
-        cout << "Command 1:" << endl << command <<endl;
         if (botIface->send(command, response) != BotIface::SUCCESS) {
-          cout << "\nHERE1\n";
                 response = botIface->getLastErrorString();
                 string message = "Failed to create Send 1-to-1 Attachment command!" + response;
                 auto error = v8::String::NewFromUtf8(isolate, message.c_str());
@@ -843,7 +835,6 @@ void cmdSend1to1Attachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
         }
         else {
                 if (response.length() > 0) {
-                                  cout << "\nHERE2\n";
                         auto message = v8::String::NewFromUtf8(isolate, response.c_str());
                         args.GetReturnValue().Set(message);
                 }
@@ -970,16 +961,21 @@ void cmdSendRoomAttachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
         v8::String::Utf8Value param1(args[0]->ToString());
         std::string vGroupID = std::string(*param1);
         vector <string> placeHolder;
+        std::string stringHolder;
         v8::String::Utf8Value param2(args[1]->ToString());
         std::string attachment = std::string(*param2);
-        // attachment = std::string("{\"displayname\" : \"" + attachment
-        //  + "\" }");
-        // cout << attachment << endl;
         v8::String::Utf8Value param3(args[2]->ToString());
-        std::string ttl = std::string(*param3);
+        std::string displayname = std::string(*param3);
         v8::String::Utf8Value param4(args[3]->ToString());
-        std::string bor = std::string(*param4);
-        botIface->cmdStringSendAttachment(command, vGroupID, placeHolder, attachment, ttl, bor);
+        std::string ttl = std::string(*param4);
+        v8::String::Utf8Value param5(args[4]->ToString());
+        std::string bor = std::string(*param5);
+        if(displayname.length() > 0){
+          botIface->cmdStringSendAttachment(command, vGroupID, placeHolder, attachment, displayname, ttl, bor);
+        }
+        else{
+          botIface->cmdStringSendAttachment(command, vGroupID, placeHolder, attachment, displayname, ttl, bor);
+        }
         if (botIface->send(command, response) != BotIface::SUCCESS) {
                 response = botIface->getLastErrorString();
                 string message = "Failed to create Send Room Attachment command!" + response;
@@ -989,7 +985,6 @@ void cmdSendRoomAttachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
         }
         else {
                 if (response.length() > 0) {
-                  cout << "\nresponse.length()>0\n";
                         auto message = v8::String::NewFromUtf8(isolate, response.c_str());
                         args.GetReturnValue().Set(message);
                 }

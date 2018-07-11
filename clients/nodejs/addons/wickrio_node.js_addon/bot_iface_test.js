@@ -8,7 +8,7 @@ var vGroupID = "S4b87ee9e90aba8557ace71794438220927fab70b7ef2a242f96688234ac253f
 var members = ['wickraaron@wickrautomation.com'];
 var members1;
 var moderators = ['wickraaron@wickrautomation.com'];
-var bor = "60";
+var bor = "600";
 var ttl = "100";
 var title = "Sea side";
 var description = "RRRRRRRRroom";
@@ -32,10 +32,11 @@ var displayname = "Wild file.jpg";
 // console.log(addon.cmdGetReceivedMessage());
 // console.log(addon.cmdSend1to1Message(members, message, ttl , bor));
 // console.log(addon.cmdSend1to1Attachment(members, attachment, "",ttl, bor));
- console.log(addon.cmdSend1to1Attachment(members, attachment, displayname, ttl, bor));
+console.log(addon.cmdSend1to1Attachment(members, attachmentURL, displayname, ttl, bor));
 // console.log(addon.closeClient());
 // console.log(addon.cmdSendRoomMessage(vGroupID, message, ttl, bor));
-// console.log(addon.cmdSendRoomAttachment(vGroupID, attachment, ttl, bor));
+// console.log(addon.cmdSendRoomAttachment(vGroupID, attachment, "", ttl, bor));
+console.log(addon.cmdSendRoomAttachment(vGroupID, attachmentURL, displayname, ttl, bor));
 
 
 //
