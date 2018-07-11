@@ -154,12 +154,12 @@ bool WelcomeClientRxDetails::processMessage(WickrDBObject *item)
             WickrMsgClass mclass = msg->getMsgClass();
 
             if ( mclass == MsgClass_Text || mclass == MsgClass_File) {
-                QList<QString> attachments;
+                QStringList attachments, attachmentDisplayNames;
                 CreateJsonAction *action = new CreateJsonAction("sendmessage",
                                                                 msg->getvGroupID(),
                                                                 msg->getDestructTime(),
                                                                 responseMessageText(msg->getSenderUserID()),
-                                                                attachments,
+                                                                attachments, attachmentDisplayNames,
                                                                 QString(),
                                                                 true);
                 QByteArray json = action->toByteArray();

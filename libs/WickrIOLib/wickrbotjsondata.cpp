@@ -18,6 +18,7 @@ WickrBotJsonData::WickrBotJsonData(OperationData *operation) :
     m_userIDs.empty();
     m_userNames.empty();
     m_attachments.clear();
+    m_attachmentDisplayNames.clear();
     m_message = "";
     m_vgroupid = QString("");
 }
@@ -148,6 +149,7 @@ bool WickrBotJsonData::processAttachmentURL(QString filename, QString url)
     m_rmAttachmentWhenDone = false;
     if (cacheFilename != NULL) {
         m_attachments.append(cacheFilename);
+        m_attachmentDisplayNames.append(filename);
     } else {
         QString fullPath;
 
@@ -162,6 +164,7 @@ bool WickrBotJsonData::processAttachmentURL(QString filename, QString url)
         //TODO: Need to determine if we have downloaded this file already
         if (m_operation->downloadImage(url, fullPath)) {
             m_attachments.append(fullPath);
+            m_attachmentDisplayNames.append(filename);
 
             m_operation->m_botDB->insertAttachment(url, fullPath, (int)fi.size());
         } else {
@@ -195,6 +198,7 @@ bool WickrBotJsonData::processAttachmentFile(QString filename)
     bool exists = fi.exists();
     if (exists) {
         m_attachments.append(fullPath);
+        m_attachmentDisplayNames.append(filename);
     } else {
         QString errStr = QString("Attachment does not exist: %1").arg(fullPath);
         m_operation->log_handler->error(errStr);
@@ -520,6 +524,7 @@ bool WickrBotJsonData::processAttachments(const QJsonObject &operationObject)
                     QString fullPath = m_operation->attachmentsDir + "/attach_" + date + name;
                     if (saveAttachment(fullPath, res)) {
                         m_attachments.append(fullPath);
+                        m_attachmentDisplayNames.append(filename);
                         m_rmAttachmentWhenDone = true;
                     } else {
                         //TODO: Attachment not saved successfully
@@ -555,7 +560,7 @@ int WickrBotJsonData::processSendMessage() {
         if (m_message.size() > 0 || m_attachments.size() > 0) {
 
             // put the command into the database
-            CreateJsonAction *action = new CreateJsonAction("sendmessage", user, m_ttl, m_message, m_attachments, m_statususer);
+            CreateJsonAction *action = new CreateJsonAction("sendmessage", user, m_ttl, m_message, m_attachments, m_attachmentDisplayNames, m_statususer);
             if (m_has_bor)
                 action->setBOR(m_bor);
             QByteArray json = action->toByteArray();
@@ -584,7 +589,7 @@ int WickrBotJsonData::processSendMessage() {
             users.append(user);
 
             // put the command into the database
-            CreateJsonAction *action = new CreateJsonAction("sendmessage", users, m_ttl, m_message, m_attachments, m_statususer);
+            CreateJsonAction *action = new CreateJsonAction("sendmessage", users, m_ttl, m_message, m_attachments, m_attachmentDisplayNames, m_statususer);
             if (m_has_bor)
                 action->setBOR(m_bor);
             QByteArray json = action->toByteArray();
@@ -608,7 +613,7 @@ int WickrBotJsonData::processSendMessage() {
     if (! m_vgroupid.isEmpty()) {
         if (m_message.size() > 0 || m_attachments.size() > 0) {
             // put the command into the database
-            CreateJsonAction *action = new CreateJsonAction("sendmessage", m_vgroupid, m_ttl, m_message, m_attachments, m_statususer, true);
+            CreateJsonAction *action = new CreateJsonAction("sendmessage", m_vgroupid, m_ttl, m_message, m_attachments, m_attachmentDisplayNames, m_statususer, true);
             if (m_has_bor)
                 action->setBOR(m_bor);
             QByteArray json = action->toByteArray();

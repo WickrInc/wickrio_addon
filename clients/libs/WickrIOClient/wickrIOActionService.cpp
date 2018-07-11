@@ -275,7 +275,8 @@ WickrIOActionThread::sendMessageTo1To1(WickrCore::WickrConvo *convo)
      * Setup and send the message
      */
     // TODO: Handle the attachment
-    QList<QString> attachmentFiles = m_jsonHandler->getAttachments();
+    QStringList attachmentFiles = m_jsonHandler->getAttachments();
+    QStringList attachmentDisplayNames = m_jsonHandler->getAttachmentDisplayNames();
 
     long ttl = m_jsonHandler->getTTL();
     if (ttl == 0) {
@@ -291,7 +292,9 @@ WickrIOActionThread::sendMessageTo1To1(WickrCore::WickrConvo *convo)
     }
 
     if (attachmentFiles.size() > 0) {
-        if (! sendFile(convo, attachmentFiles, m_jsonHandler->getMessage())) {
+        QString displayFileName = (attachmentDisplayNames.size() > 0) ? attachmentDisplayNames.at(0) : QString();
+
+        if (! sendFile(convo, attachmentFiles.at(0), displayFileName, m_jsonHandler->getMessage())) {
             return false;
         }
     } else {
@@ -583,7 +586,8 @@ WickrIOActionThread::sendMessageToConvo(WickrCore::WickrConvo *convo)
      * Setup and send the message
      */
     // TODO: Handle the attachment
-    QList<QString> attachmentFiles = m_jsonHandler->getAttachments();
+    QStringList attachmentFiles = m_jsonHandler->getAttachments();
+    QStringList attachmentDisplayNames = m_jsonHandler->getAttachmentDisplayNames();
 
     long ttl = m_jsonHandler->getTTL();
     if (ttl == 0) {
@@ -599,7 +603,9 @@ WickrIOActionThread::sendMessageToConvo(WickrCore::WickrConvo *convo)
     }
 
     if (attachmentFiles.size() > 0) {
-        if (!sendFile(convo, attachmentFiles, m_jsonHandler->getMessage())) {
+        QString displayFileName = (attachmentDisplayNames.size() > 0) ? attachmentDisplayNames.at(0) : QString();
+
+        if (!sendFile(convo, attachmentFiles.at(0), displayFileName, m_jsonHandler->getMessage())) {
             return false;
         }
     } else {
@@ -628,13 +634,13 @@ WickrIOActionThread::sendMessageToConvo(WickrCore::WickrConvo *convo)
     return true;
 }
 
-bool WickrIOActionThread::sendFile(WickrCore::WickrConvo *targetConvo, const QList<QString> files, const QString& comments)
+bool WickrIOActionThread::sendFile(WickrCore::WickrConvo *targetConvo, const QString& file, const QString& displayName, const QString& comments)
 {
-    if (files.size() == 0)
-        return false;
-
-    QString name = files.at(0); // Orig file name
-    QString finalFileName = QFileInfo(name).fileName();
+    QString finalFileName;
+    if (displayName.isEmpty())
+        finalFileName = QFileInfo(file).fileName();
+    else
+        finalFileName = displayName;
 
     WickrCore::FetchInformation fetchInfo;
     QByteArray encryptionKeyAES = convertCFDataToByteArray( ::randomGCMKey(), false );
@@ -646,11 +652,11 @@ bool WickrIOActionThread::sendFile(WickrCore::WickrConvo *targetConvo, const QLi
     //qDebug() << "guid:" << fetchInfo.guid << "key:" << encryptionKeyAES.toHex();
 
     QMimeDatabase db;
-    QUrl fileAsUrl = QUrl::fromLocalFile(name);
+    QUrl fileAsUrl = QUrl::fromLocalFile(file);
     QString metaDataMimeType = db.mimeTypeForUrl(fileAsUrl).name();
     qint64 fileSize = 0;
 
-    QFileInfo primaryFile(name);
+    QFileInfo primaryFile(file);
     if(primaryFile.exists())
     {
         fileSize = primaryFile.size();
@@ -658,7 +664,7 @@ bool WickrIOActionThread::sendFile(WickrCore::WickrConvo *targetConvo, const QLi
 
     QList <WickrCore::FetchInformation> fetchInfoList;
     fetchInfoList.append(fetchInfo);
-    QString fileNameBeforeEncryption = name;
+    QString fileNameBeforeEncryption = file;
     QString fileNameAfterEncryption = WickrAppContext::getAttachmentsDir().absoluteFilePath(fetchInfo.guid);
 
     // ENCRYPT FILE HERE
@@ -879,7 +885,8 @@ void WickrIOActionThread::sendStatusMessage(WickrBotJson *jsonHandler, bool succ
                             users,
                             0,
                             message2send,
-                            QList<QString>(),
+                            QStringList(),
+                            QStringList(),
                             QString());
 
     QByteArray json = action.toByteArray();

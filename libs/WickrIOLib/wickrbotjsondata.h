@@ -36,6 +36,7 @@ public:
     QStringList m_userNames;
     QString m_vgroupid;
     QStringList m_attachments;
+    QStringList m_attachmentDisplayNames;
     bool m_rmAttachmentWhenDone;
     QString m_message;
     QDateTime m_runTime;

@@ -15,6 +15,7 @@
 #define JSON_OBJECT_RUNTIME         "runtime"
 #define JSON_OBJECT_ATTACH_LIST     "attachments"
 #define JSON_OBJECT_ATTACHMENT      "attachment"
+#define JSON_OBJECT_ATTACH_NAMES    "attachmentdisplaynames"
 #define JSON_OBJECT_MSG_TEXT        "message"
 #define JSON_OBJECT_TTL             "ttl"
 #define JSON_OBJECT_BOR             "bor"
@@ -46,7 +47,8 @@ private:
     WBJsonActions action;
     QList<QString> userIDs;
     QList<QString> userNames;
-    QList<QString> attachments;
+    QStringList     attachments;
+    QStringList     m_attachmentdisplaynames;
     QString message;
     QDateTime runTime;
     QString m_vgroupid;
@@ -57,6 +59,7 @@ public:
     void setTTL(long ttl) { this->ttl = ttl; }
     void setBOR(long bor) { this->bor = bor; }
     void addAttachment(QString attachment) { this->attachments.append(attachment); }
+    void addAttachmentDisplayName(QString displayName) { m_attachmentdisplaynames.append(displayName); }
     void setMessage(QString message) { this->message = message; }
     void setRunTime(QDateTime runTime) { this->runTime = runTime; }
 
@@ -67,7 +70,8 @@ public:
 
     QList<QString> getUserIDs() { return userIDs; }
     QList<QString> getUserNames() { return userNames; }
-    QList<QString> getAttachments() { return attachments; }
+    QStringList getAttachments() { return attachments; }
+    QStringList getAttachmentDisplayNames() { return m_attachmentdisplaynames; }
     QString getMessage() { return message; }
     QString getVGroupID() { return m_vgroupid; }
 
