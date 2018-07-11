@@ -404,7 +404,7 @@ BotIface::cmdStringSendAttachment(string& command,
                    attachmentLower.begin(),
                    ::tolower);
     if (attachmentLower.find("http") == 0) {
-        attachmentJSON = string("{\"url\" : \"" + attachment + "\", \"filename\" : \"" + displayname + "\" }");
+        attachmentJSON = string("{\"url\" : \"" + attachment + "\", \"displayname\" : \"" + displayname + "\" }");
     } else {
         attachmentJSON = string("{\"filename\" : \"" + attachment + "\" }");
     }

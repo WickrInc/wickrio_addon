@@ -7,6 +7,12 @@
 #include "operationdata.h"
 #include "clientactions.h"
 
+#define BOTAPI_JSON_ATTACHMENT      "attachment"
+#define BOTAPI_JSON_ATTACHMENTS     "attachments"
+#define BOTAPI_JSON_DISPLAYNAME     "displayname"
+#define BOTAPI_JSON_FILENAME        "filename"
+#define BOTAPI_JSON_URL             "url"
+
 class DECLSPEC WickrBotJsonData
 {
 public:
@@ -54,10 +60,11 @@ private:
     bool processLoginJsonDoc(const QJsonObject &operationObject);
 
     bool processAttachments(const QJsonObject &operationObject);
+    bool processAttachmentEntry(const QJsonObject &attachment);
 
     void processAttachment(QJsonObject *object);
     bool processAttachmentURL(QString filename, QString url);
-    bool processAttachmentFile(QString filename);
+    bool processAttachmentFile(const QString& filename, const QString& displayname);
 
 
     bool saveAttachment(QString filename, QByteArray data);
