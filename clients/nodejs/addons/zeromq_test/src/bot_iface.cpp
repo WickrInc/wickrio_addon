@@ -1,3 +1,6 @@
+#include <string>
+#include <algorithm>
+
 #include "bot_iface.h"
 
 using namespace std;
@@ -5,6 +8,11 @@ using namespace std;
 BotIface::BotIface(const string& client)
 {
     string m_clientName = client;
+    int pos;
+
+    while ((pos = m_clientName.find('@')) != std::string::npos)
+        m_clientName.replace(pos, 1, "_");
+
     m_iface = new MesgQueueIface(m_clientName);
 }
 
@@ -347,6 +355,69 @@ BotIface::cmdStringSendMessage(string& command,
                 + "\" }";
     } else {
         command = "{ \"action\" : \"send_message\", \"message\" : \"" + message + "\" , "
+                + optionalFields
+                + "\"users\" : ";
+        addUserList(users, command);
+        command += " }";
+    }
+    return SUCCESS;
+}
+
+BotIface::BotIfaceStatus
+BotIface::cmdStringSendAttachment(string& command,
+                                  const string& vGroupID,
+                                  const vector <string>& users,
+                                  const string& attachment,
+                                  const string& displayname,
+                                  const string& ttl,
+                                  const string& bor)
+{
+    string optionalFields = "";
+    if (vGroupID.size() == 0 && users.size() == 0) {
+        m_lastError = "SendAttachment: Must enter either a VGroupID or a list of users!";
+        return MISSING_INPUT_FIELD;
+    }
+    if (ttl.size() > 0) {
+        if (!is_digits(ttl)) {
+            m_lastError = "SendAttachment: TTL must be a number";
+            return INVALID_FIELD_VALUE;
+        }
+        optionalFields += " \"ttl\" : " + ttl + ", ";
+    }
+    if (bor.size() > 0) {
+        if (!is_digits(bor)) {
+            m_lastError = "SendAttachment: BOR must be a number";
+            return INVALID_FIELD_VALUE;
+        }
+        optionalFields += " \"bor\" : " + bor + ", ";
+    }
+
+    // Calculate the attachment contents, determine if this is a URL or not
+    string attachmentJSON;
+    string attachmentLower;
+    attachmentLower.resize(attachment.size());
+
+    // Convert the source string to lower case
+    // storing the result in destination string
+    std::transform(attachment.begin(),
+                   attachment.end(),
+                   attachmentLower.begin(),
+                   ::tolower);
+    if (attachmentLower.find("http") == 0) {
+        attachmentJSON = string("{\"url\" : \"" + attachment + "\", \"filename\" : \"" + displayname + "\" }");
+    } else {
+        attachmentJSON = string("{\"filename\" : \"" + attachment + "\" }");
+    }
+
+
+    // create the JSON to send to the client
+    if (vGroupID.size() > 0) {
+        command = "{ \"action\" : \"send_message\", \"attachment\" : " + attachmentJSON + " , "
+                + optionalFields
+                + "\"vgroupid\" : \"" + vGroupID \
+                + "\" }";
+    } else {
+        command = "{ \"action\" : \"send_message\", \"attachment\" : " + attachmentJSON + " , "
                 + optionalFields
                 + "\"users\" : ";
         addUserList(users, command);

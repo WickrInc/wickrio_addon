@@ -97,9 +97,12 @@ void WickrIOLoginHdlr::slotRegisterOnPrem(const QString &username, const QString
  * @param sync
  * @param isRekey
  */
-void WickrIOLoginHdlr::slotRegisterUser(const QString &wickrid, const QString &password, const QString &transactionid, bool newUser, bool sync, bool isRekey)
+void WickrIOLoginHdlr::slotRegisterUser(const QString &wickrid, const QString &password, const QString &salt, const QString &transactionid, bool newUser, bool sync, bool isRekey)
 {
-    WickrEnterpriseRegistrationParameters regParams(wickrid, transactionid, NULL);
+    QString hash = !salt.isEmpty() ? cryptoGetHash(password, salt) : QString();
+    qDebug() << "Password Hash=" << hash;
+
+    WickrEnterpriseRegistrationParameters regParams(wickrid, transactionid, hash);
     WickrPreRegistrationData *preRegData;
     if (m_preRegDataIface != NULL) {
         preRegData = m_preRegDataIface->getPreRegData();
@@ -143,8 +146,9 @@ void WickrIOLoginHdlr::initiateLogin()
                 emit signalLoginFailed();
             } else {
                 qDebug() << "Starting registration to create user " << userid;
+                QString salt;
 
-                slotRegisterUser(userid, password, transid, true, false, false);
+                slotRegisterUser(userid, password, salt, transid, true, false, false);
             }
         } else {
             // If the database exists then just login
@@ -153,8 +157,8 @@ void WickrIOLoginHdlr::initiateLogin()
 
                 slotLoginStart(userid, password);
             } else {
-                QString transID;
-                slotRegisterUser(userid, password, transID, false, true, false);
+                QString transID, salt;
+                slotRegisterUser(userid, password, salt, transID, false, true, false);
             }
         }
     }
@@ -206,7 +210,8 @@ void WickrIOLoginHdlr::slotLoginStart(const QString& username, const QString& pa
             QString unused = "UNUSED";
             QString user = username;
             QString pass = password;
-            slotRegisterUser(user, pass, unused, false, true, false);
+            QString salt;
+            slotRegisterUser(user, pass, salt, unused, false, true, false);
         }
         return;
     }

@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
 
     // Wickr Runtime Environment (all applications include this line)
     WickrCore::WickrRuntime::init(argc, argv,
-                                  wickrProductGetProductType(),
+                                  PRODUCT_TYPE_BOT,
                                   ClientVersionInfo::getOrgName(),
                                   appname,
                                   ClientConfigurationInfo::DefaultBaseURL,

@@ -127,7 +127,8 @@ mkdir -p $appdata
 cp -a ${build_dir}/services/consolecmd/WickrIOConsoleCmd$srcBldType $bindir
 cp -a ${build_dir}/services/clientserver_process/WickrIOSvr$srcBldType $bindir
 cp -a ${build_dir}/clients/wickrio_bot/client/wickrio_bot$BldType $bindir
-cp -a ${build_dir}/clients/core_bot/client/core_bot$BldType $bindir
+cp -a ${build_dir}/clients/wickrio_bot/provision/provision$BldType $bindir/wickrio_prov$BldType
+#cp -a ${build_dir}/clients/core_bot/client/core_bot$BldType $bindir
 
 if [ "$release_flag" = "true" ]; then
   cp -a ${build_dir}/libs/QtWebApp/libQtWebApp.* $libdir
@@ -158,7 +159,8 @@ fi
 chrpath -r "/usr/local/wickr/Qt-5.9/lib:/usr/lib/wio_docker${bldtype}" $bindir/WickrIOConsoleCmd$srcBldType
 chrpath -r "/usr/local/wickr/Qt-5.9/lib:/usr/lib/wio_docker${bldtype}" $bindir/WickrIOSvr$srcBldType
 chrpath -r "/usr/local/wickr/Qt-5.9/lib:/usr/lib/wio_docker${bldtype}" $bindir/wickrio_bot$BldType
-chrpath -r "/usr/local/wickr/Qt-5.9/lib:/usr/lib/wio_docker${bldtype}" $bindir/core_bot$BldType
+chrpath -r "/usr/local/wickr/Qt-5.9/lib:/usr/lib/wio_docker${bldtype}" $bindir/wickrio_prov$BldType
+#chrpath -r "/usr/local/wickr/Qt-5.9/lib:/usr/lib/wio_docker${bldtype}" $bindir/core_bot$BldType
 
 #
 # Change the contents appropriately for Beta version Release versions

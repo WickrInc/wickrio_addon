@@ -442,7 +442,7 @@ void WickrIOProvisionHdlr::registerWithPassword(const QString &newPassword)
             emit signalRegisterOnPrem(m_username, m_password, newPassword, !m_userExists ? m_passwordSalt : QString(), m_transID, !m_userExists, m_userExists);
         } else if (m_mode == CloudMode || m_mode == ForgotPasswordMode) {
             m_currentStep = Step::loggingIn;
-            emit signalRegisterEnterprise(m_email, newPassword, m_transID, true, false, (m_mode == ForgotPasswordMode));  // Begins a process that eventually calls WickrIOProvisionHdlr::loginComplete()
+            emit signalRegisterEnterprise(m_email, newPassword, m_passwordSalt, m_transID, true, false, (m_mode == ForgotPasswordMode));  // Begins a process that eventually calls WickrIOProvisionHdlr::loginComplete()
         }
     }
 }

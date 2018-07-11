@@ -1,3 +1,6 @@
+#include <string>
+#include <algorithm>
+
 #include "bot_iface.h"
 #include <iostream>
 
@@ -6,6 +9,11 @@ using namespace std;
 BotIface::BotIface(const string& client)
 {
     string m_clientName = client;
+    int pos;
+
+    while ((pos = m_clientName.find('@')) != std::string::npos)
+        m_clientName.replace(pos, 1, "_");
+
     m_iface = new MesgQueueIface(m_clientName);
 }
 
@@ -356,16 +364,14 @@ BotIface::cmdStringSendMessage(string& command,
     return SUCCESS;
 }
 
-
-
-
 BotIface::BotIfaceStatus
 BotIface::cmdStringSendAttachment(string& command,
-                     const string& vGroupID,
-                     const vector <string>& users,
-                     const string& attachment,
-                     const string& ttl,
-                     const string& bor)
+                                  const string& vGroupID,
+                                  const vector <string>& users,
+                                  const string& attachment,
+                                  const string& displayname,
+                                  const string& ttl,
+                                  const string& bor)
 {
     string optionalFields = "";
     if (vGroupID.size() == 0 && users.size() == 0) {
@@ -386,14 +392,33 @@ BotIface::cmdStringSendAttachment(string& command,
         }
         optionalFields += " \"bor\" : " + bor + ", ";
     }
+
+    // Calculate the attachment contents, determine if this is a URL or not
+    string attachmentJSON;
+    string attachmentLower;
+    attachmentLower.resize(attachment.size());
+
+    // Convert the source string to lower case
+    // storing the result in destination string
+    std::transform(attachment.begin(),
+                   attachment.end(),
+                   attachmentLower.begin(),
+                   ::tolower);
+    if (attachmentLower.find("http") == 0) {
+        attachmentJSON = string("{\"url\" : \"" + attachment + "\", \"filename\" : \"" + displayname + "\" }");
+    } else {
+        attachmentJSON = string("{\"filename\" : \"" + attachment + "\" }");
+    }
+
+
+    // create the JSON to send to the client
     if (vGroupID.size() > 0) {
-        command = "{ \"action\" : \"send_message\", \"attachment\" : " + attachment + " , "
+        command = "{ \"action\" : \"send_message\", \"attachment\" : " + attachmentJSON + " , "
                 + optionalFields
                 + "\"vgroupid\" : \"" + vGroupID \
                 + "\" }";
-       cout << endl <<"command2: " <<command << endl;
     } else {
-        command = "{ \"action\" : \"send_message\", \"attachment\" : " + attachment + " , "
+        command = "{ \"action\" : \"send_message\", \"attachment\" : " + attachmentJSON + " , "
                 + optionalFields
                 + "\"users\" : ";
         addUserList(users, command);

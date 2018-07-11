@@ -56,6 +56,7 @@ private:
     bool    m_clientMsgInProcess;
 
     bool    m_basicConfig = false;
+    bool    m_root = false;
 
     QList<WickrBotClients *> m_clients;
 

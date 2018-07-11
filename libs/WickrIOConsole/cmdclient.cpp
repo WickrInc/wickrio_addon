@@ -48,7 +48,7 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
     if (cmd == "?" || cmd == "help") {
         qDebug() << "CONSOLE:Commands:";
         qDebug() << "CONSOLE:  add        - adds a new client";
-        qDebug() << "CONSOLE:  back       - leave the clients setup";
+        if (!m_root) qDebug() << "CONSOLE:  back       - leave the clients setup";
         qDebug() << "CONSOLE:  delete <#> - deletes client with the specific index";
         qDebug() << "CONSOLE:  help or ?  - shows supported commands";
         qDebug() << "CONSOLE:  list       - shows a list of clients";
@@ -58,7 +58,7 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
         qDebug() << "CONSOLE:  quit       - leaves this program";
     } else if (cmd == "add") {
         addClient();
-    } else if (cmd == "back") {
+    } else if (cmd == "back" && !m_root) {
         retVal = false;
     } else if (cmd == "delete") {
         if (clientIndex == -1) {
@@ -105,7 +105,7 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
 bool CmdClient::runCommands(const QStringList& options, QString commands)
 {
     // Default to advanced configuration (for now)
-    m_basicConfig = true;
+    m_basicConfig = false;
 
     QTextStream input(stdin);
 
@@ -114,6 +114,8 @@ bool CmdClient::runCommands(const QStringList& options, QString commands)
             m_basicConfig = true;
         } else if (option == "-advanced") {
             m_basicConfig = false;
+        } else if (option == "-root") {
+            m_root = true;
         }
     }
 
@@ -140,7 +142,11 @@ bool CmdClient::runCommands(const QStringList& options, QString commands)
 
     if (commands.isEmpty()) {
         while (true) {
-            qDebug() << "CONSOLE:Enter client command:";
+            if (m_root) {
+                qDebug() << "CONSOLE:Enter command:";
+            } else {
+                qDebug() << "CONSOLE:Enter client command:";
+            }
             QString line = input.readLine();
 
             line = line.trimmed();
@@ -308,7 +314,7 @@ bool CmdClient::getClientValues(WickrBotClients *client)
     } while (chkClientsUserExists(temp));
     client->user = temp;
 
-#if 0
+#if 1
     // Get the password
     while (true) {
         client->password = getNewValue(client->password, tr("Enter the password"));
@@ -383,12 +389,16 @@ bool CmdClient::getClientValues(WickrBotClients *client)
     QString provisionApp = WBIOServerCommon::getProvisionApp(binary);
 
     if (provisionApp != "") {
-        QString command = client->binary;
         QStringList arguments;
 
+#if 1
+        arguments.append(client->user);
+        arguments.append(client->password);
+#else
         arguments.append(QString("-wickrname=%1").arg(client->user));
         arguments.append(QString("-clientname=%1").arg(client->name));
         arguments.append(QString("-processname=%1").arg(WBIOServerCommon::getClientProcessName(client)));
+#endif
 
         m_exec = new QProcess();
 
@@ -396,7 +406,7 @@ bool CmdClient::getClientValues(WickrBotClients *client)
         connect(m_exec, SIGNAL(finished(int, QProcess::readyReadStandardOutput)), this, SLOT(slotCmdOutputRx));
 
         //Tests that process starts and closes alright
-        m_exec->start(command, arguments);
+        m_exec->start(provisionApp, arguments);
 
         if (m_exec->waitForStarted(-1)) {
             m_exec->waitForFinished(-1);
@@ -972,6 +982,12 @@ void CmdClient::addClient()
             break;
         }
 
+        // Check that the record has already been added (likely during provisioning)
+        WickrBotClients *existingClient = m_operation->m_ioDB->getClientUsingUserName(client->user);
+        if (existingClient != nullptr) {
+            client->id = existingClient->id;
+        }
+
         // Add the new record to the database
         QString errorMsg = WickrIOConsoleClientHandler::addClient(m_operation->m_ioDB, client);
         if (errorMsg.isEmpty()) {
@@ -988,11 +1004,16 @@ void CmdClient::addClient()
             break;
         } else {
             qDebug() << "CONSOLE:" << errorMsg;
-            // If the record was not added to the database then ask the user to try again
-            QString response = getNewValue("", tr("Failed to add record, try again?"));
-            if (response.isEmpty() || response.toLower() == "n") {
-                delete client;
-                return;
+            bool doItAgain = true;
+            while (doItAgain) {
+                // If the record was not added to the database then ask the user to try again
+                QString response = getNewValue("", tr("Failed to add record, try again?"));
+                if (response.isEmpty() || response.toLower() == "n" || response.toLower() == "no") {
+                    delete client;
+                    return;
+                } else if (response.toLower() == "y" || response.toLower() == "yes") {
+                    doItAgain = false;
+                }
             }
         }
     }

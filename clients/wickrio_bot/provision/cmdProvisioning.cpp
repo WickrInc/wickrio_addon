@@ -37,6 +37,8 @@ bool CmdProvisioning::runCommands(int argc, char *argv[])
     // Some default WIO stuff
     m_client->apiKey = WickrIOTokens::getRandomString(16);
 
+    bool usingOptions=false;
+
     // See if the command line contains the values
     int argidx;
     for( argidx = 1; argidx < argc; argidx++ ) {
@@ -44,8 +46,16 @@ bool CmdProvisioning::runCommands(int argc, char *argv[])
         if (!cmd.startsWith("-")) {
             break;
         }
+
+        if (cmd.startsWith("-wickrname=")) {
+            usingOptions=true;
+            m_client->user = cmd.remove("-wickrname=");
+        } else if (cmd.startsWith("-clientname=")) {
+            usingOptions=true;
+            m_client->name = cmd.remove("-clientname=");
+        }
     }
-    if (argidx < argc) {
+    if (!usingOptions || argidx < argc) {
         int numargs = argc - argidx;
         if (m_client->onPrem) {
             if (numargs != 4) {
@@ -58,6 +68,7 @@ bool CmdProvisioning::runCommands(int argc, char *argv[])
             m_client->user = QString(argv[argidx+2]);
             m_client->password = QString(argv[argidx+3]);
             m_client->name = m_client->user;
+            m_client->name.replace("@", "_");
         } else {
             if (numargs != 2) {
                 qDebug() << "CONSOLE:Not enough arguments for user provisioning!";
@@ -67,6 +78,7 @@ bool CmdProvisioning::runCommands(int argc, char *argv[])
             m_client->user = QString(argv[argidx]);
             m_client->password = QString(argv[argidx+1]);
             m_client->name = m_client->user;
+            m_client->name.replace("@", "_");
         }
         qDebug() << "CONSOLE:Creating user: " << m_client->name;
     } else {
@@ -96,13 +108,16 @@ bool CmdProvisioning::runCommands(int argc, char *argv[])
 
             // For now use the user name as the local name
             m_client->name = m_client->user;
-
+            m_client->name.replace("@", "_");
         } else {
-            m_client->user = CmdBase::getNewValue(m_client->user, "Enter user name", CHECK_NONE);
-            m_client->password = CmdBase::getNewValue(m_client->password, "Enter password", CHECK_NONE);
+            if (m_client->user.isEmpty())
+                m_client->user = CmdBase::getNewValue(m_client->user, "Enter user name", CHECK_NONE);
+            if (m_client->password.isEmpty())
+                m_client->password = CmdBase::getNewValue(m_client->password, "Enter password", CHECK_NONE);
 
             // For now use the user name as the local name
-            m_client->name = CmdBase::getNewValue(m_client->name, "Enter local name", CHECK_NONE);
+            if (m_client->name.isEmpty())
+                m_client->name = CmdBase::getNewValue(m_client->name, "Enter local name", CHECK_NONE);
         }
     }
 

@@ -204,7 +204,15 @@ WickrIOJScriptThread::slotStartScript()
     QString queueName = QString(WBIO_CLIENT_RXSOCKET_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(operation->m_client->name);
     m_zsocket->bindTo(queueName);
 
-//    m_zsocket->bindTo("tcp://*:4005");
+    // Set the permission of the queue file so that normal user programs can access
+    QString queueFileName = QString(WBIO_CLIENT_SOCKETFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(operation->m_client->name);
+    QFile zmqFile(queueFileName);
+    if(!zmqFile.setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner |
+                               QFile::ReadUser | QFile::WriteUser | QFile::ExeUser  |
+                               QFile::ReadGroup | QFile::WriteGroup | QFile::ExeGroup |
+                               QFile::ReadOther | QFile::WriteOther | QFile::ExeOther)) {
+        qDebug("Something wrong setting permissions of the queue file!");
+    }
 
     m_state = JSThreadState::JS_STARTED;
 }
