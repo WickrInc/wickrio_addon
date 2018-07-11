@@ -28,7 +28,7 @@ BotIface::BotIfaceStatus
 BotIface::init()
 {
     if (!m_iface->init()) {
-        m_lastError = "Could not initilize the interface!";
+        m_lastError = "Could not initialize the interface!";
         return INIT_FAILED;
     }
 
@@ -409,6 +409,7 @@ BotIface::cmdStringSendAttachment(string& command,
     } else {
         attachmentJSON = string("{\"filename\" : \"" + attachment + "\" }");
     }
+    cout << endl <<"attachmentJSON: " << attachmentJSON << endl;
 
 
     // create the JSON to send to the client
@@ -418,6 +419,7 @@ BotIface::cmdStringSendAttachment(string& command,
                 + "\"vgroupid\" : \"" + vGroupID \
                 + "\" }";
     } else {
+      cout << "\nvGroupID < 0\n";
         command = "{ \"action\" : \"send_message\", \"attachment\" : " + attachmentJSON + " , "
                 + optionalFields
                 + "\"users\" : ";

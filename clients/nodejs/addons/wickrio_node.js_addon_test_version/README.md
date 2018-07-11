@@ -29,7 +29,7 @@ To Run the apps, inside the directory containing the file run:
 
 
 
-WickrIO REST API Functions:
+All WickrIO REST API Functions in action:
 
 addon.cmdAddRoom(members, moderators, title, description, ttl, bor)
 addon.cmdDeleteRoom(vGroupID)
@@ -45,7 +45,9 @@ addon.cmdGetGroupConvos()
 addon.cmdDeleteGroupConvo(vGroupID)
 addon.cmdGetReceivedMessage()
 addon.cmdSend1to1Message(members, message, ttl , bor)
-addon.cmdSend1to1Attachment(members, attachment, ttl , bor)
+addon.cmdSend1to1Attachment(members, attachment, "",ttl , bor)
+addon.cmdSend1to1Attachment(members, attachment, displayname, ttl, bor) //if attachment is a URL you need to provide a displayname
 addon.cmdSendRoomMessage(vGroupID, message, ttl, bor)
-addon.cmdSendRoomAttachment(vGroupID, attachment, ttl, bor)
+addon.cmdSendRoomAttachment(vGroupID, attachment, "",ttl, bor)
+addon.cmdSendRoomAttachment(vGroupID, attachment, displayname, ttl, bor) //if attachment is a URL you need to provide a displayname
 addon.closeClient()

@@ -13,7 +13,9 @@ var ttl = "100";
 var title = "Sea side";
 var description = "RRRRRRRRroom";
 var message = "Testing time!"
-var attachment = "/opt/WickrIODebug/CMakeLists.txt";
+var attachment = "/opt/WickrIODebug/package.json";
+var attachmentURL = "https://www.alsop-louie.com/wp-content/uploads/2017/03/wickr-logo-2-crop.png"
+var displayname = "Wild file.jpg";
 
 //console.log(addon.cmdAddRoom(members, moderators, title, description, ttl, bor));
 // console.log(addon.cmdDeleteRoom(vGroupID));
@@ -29,7 +31,18 @@ var attachment = "/opt/WickrIODebug/CMakeLists.txt";
 // console.log(addon.cmdDeleteGroupConvo(vGroupID));
 // console.log(addon.cmdGetReceivedMessage());
 // console.log(addon.cmdSend1to1Message(members, message, ttl , bor));
-console.log(addon.cmdSend1to1Attachment(members, attachment, ttl, bor));
+// console.log(addon.cmdSend1to1Attachment(members, attachment, "",ttl, bor));
+ console.log(addon.cmdSend1to1Attachment(members, attachment, displayname, ttl, bor));
 // console.log(addon.closeClient());
 // console.log(addon.cmdSendRoomMessage(vGroupID, message, ttl, bor));
 // console.log(addon.cmdSendRoomAttachment(vGroupID, attachment, ttl, bor));
+
+
+//
+// (string& command,
+//                                   const string& vGroupID,
+//                                   const vector <string>& users,
+//                                   const string& attachment,
+//                                   const string& displayname,
+//                                   const string& ttl,
+//                                   const string& bor)

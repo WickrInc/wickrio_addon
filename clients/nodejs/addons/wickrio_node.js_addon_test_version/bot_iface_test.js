@@ -13,7 +13,7 @@ var ttl = "100";
 var title = "Sea side";
 var description = "RRRRRRRRroom";
 var message = "Testing time!"
-var attachment = "/opt/WickrIODebug/CMakeLists.txt";
+var attachment = "/opt/WickrIODebug/package.json";
 
 //console.log(addon.cmdAddRoom(members, moderators, title, description, ttl, bor));
 // console.log(addon.cmdDeleteRoom(vGroupID));
@@ -29,7 +29,7 @@ var attachment = "/opt/WickrIODebug/CMakeLists.txt";
 // console.log(addon.cmdDeleteGroupConvo(vGroupID));
 // console.log(addon.cmdGetReceivedMessage());
 // console.log(addon.cmdSend1to1Message(members, message, ttl , bor));
-// console.log(addon.cmdSend1to1Attachment(members, attachment, ttl, bor));
+console.log(addon.cmdSend1to1Attachment(members, attachment, ttl, bor));
 // console.log(addon.closeClient());
 // console.log(addon.cmdSendRoomMessage(vGroupID, message, ttl, bor));
-console.log(addon.cmdSendRoomAttachment(vGroupID, attachment, ttl, bor));
+// console.log(addon.cmdSendRoomAttachment(vGroupID, attachment, ttl, bor));
