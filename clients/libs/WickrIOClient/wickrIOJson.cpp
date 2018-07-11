@@ -195,6 +195,15 @@ WickrBotJson::parseJsonString(QByteArray jsonString)
         this->addAttachment(value.toVariant().toString());
     }
 
+    // Parse out the attachment display names
+    if (operationObject.contains(JSON_OBJECT_ATTACH_NAMES)) {
+        value = operationObject[JSON_OBJECT_ATTACH_NAMES];
+        QJsonArray attachmentNames = value.toArray();
+        for (int i=0; i<attachmentNames.size(); i++) {
+            addAttachmentDisplayName(attachmentNames.at(i).toString());
+        }
+    }
+
     // Parse out any message
     if (operationObject.contains(JSON_OBJECT_MSG_TEXT)) {
         value = operationObject[JSON_OBJECT_MSG_TEXT];
