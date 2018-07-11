@@ -17,7 +17,7 @@ CreateJsonAction::CreateJsonAction() :
     attachments.clear();
 }
 
-CreateJsonAction::CreateJsonAction(QString action, QStringList users, long ttl, QString message, QList<QString> attachments, QString statusUser) :
+CreateJsonAction::CreateJsonAction(QString action, QStringList users, long ttl, QString message, QStringList attachments, QStringList attachmentDisplayNames, QString statusUser) :
     m_has_bor(false),
     m_statususer(statusUser)
 {
@@ -31,10 +31,15 @@ CreateJsonAction::CreateJsonAction(QString action, QStringList users, long ttl, 
     } else {
         this->attachments = attachments;
     }
+    if (attachmentDisplayNames.isEmpty()) {
+        m_attachmentDisplayNames.clear();
+    } else {
+        m_attachmentDisplayNames = attachmentDisplayNames;
+    }
 }
 
 
-CreateJsonAction::CreateJsonAction(QString action, QString name, long ttl, QString message, QList<QString> attachments, QString statusUser, bool isVGroupID) :
+CreateJsonAction::CreateJsonAction(QString action, QString name, long ttl, QString message, QStringList attachments, QStringList attachmentDisplayNames, QString statusUser, bool isVGroupID) :
     m_has_bor(false),
     m_statususer(statusUser)
 {
@@ -51,6 +56,11 @@ CreateJsonAction::CreateJsonAction(QString action, QString name, long ttl, QStri
         this->attachments.clear();
     } else {
         this->attachments = attachments;
+    }
+    if (attachmentDisplayNames.isEmpty()) {
+        m_attachmentDisplayNames.clear();
+    } else {
+        m_attachmentDisplayNames = attachmentDisplayNames;
     }
 }
 
@@ -99,6 +109,15 @@ CreateJsonAction::toByteArray()
         }
         jsonObject.insert("attachments", arrayValue);
     }
+    if (this->m_attachmentDisplayNames.size() > 0) {
+        QJsonArray arrayValue;
+        for (int i=0; i<m_attachmentDisplayNames.size(); i++) {
+            QString dnames = m_attachmentDisplayNames.at(i);
+            arrayValue.append(dnames);
+        }
+        jsonObject.insert("attachmentdisplaynames", arrayValue);
+    }
+
     if (this->message != NULL) {
         jsonObject.insert("message", this->message);
     }
