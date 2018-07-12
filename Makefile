@@ -134,8 +134,8 @@ win32.clean:
 # Linux build
 
 linux:
-	cd $(LIBS_LIBZMQ); mkdir -p build; cd build; cmake ..; make -j4 install
-	cd $(LIBS_CPPZMQ); mkdir -p build; cd build; cmake ..; make -j4 install
+	cd $(LIBS_LIBZMQ); mkdir -p build; cd build; cmake ..; make -j4
+	cd $(LIBS_CPPZMQ); mkdir -p build; cd build; cmake ..; make -j4
 	cd $(WICKR_SDK); make linux
 
 linux.release:
