@@ -1,8 +1,8 @@
 var addon = require('bindings')('wickrio_addon');
 
 module.exports = addon;
-console.log(addon.clientInit('aaronbot019512_62114373.net'));
-
+var client_name = process.env.CLIENT_NAME; //for ex: aaronbot012345@67891011.net
+console.log(addon.clientInit(client_name));
 
 var vGroupID = "S4b87ee9e90aba8557ace71794438220927fab70b7ef2a242f96688234ac253f";
 var members = ['wickraaron@wickrautomation.com'];
@@ -10,12 +10,12 @@ var members1;
 var moderators = ['wickraaron@wickrautomation.com'];
 var bor = "600";
 var ttl = "100";
-var title = "Sea side";
-var description = "RRRRRRRRroom";
+var title = "West World";
+var description = "The Good Room";
 var message = "Testing time!"
 var attachment = "/opt/WickrIODebug/package.json";
 var attachmentURL = "https://www.alsop-louie.com/wp-content/uploads/2017/03/wickr-logo-2-crop.png"
-var displayname = "Wild file.jpg";
+var displayname = "Logo.png";
 
 //console.log(addon.cmdAddRoom(members, moderators, title, description, ttl, bor));
 // console.log(addon.cmdDeleteRoom(vGroupID));
@@ -37,13 +37,3 @@ console.log(addon.cmdSend1to1Attachment(members, attachmentURL, displayname, ttl
 // console.log(addon.cmdSendRoomMessage(vGroupID, message, ttl, bor));
 // console.log(addon.cmdSendRoomAttachment(vGroupID, attachment, "", ttl, bor));
 console.log(addon.cmdSendRoomAttachment(vGroupID, attachmentURL, displayname, ttl, bor));
-
-
-//
-// (string& command,
-//                                   const string& vGroupID,
-//                                   const vector <string>& users,
-//                                   const string& attachment,
-//                                   const string& displayname,
-//                                   const string& ttl,
-//                                   const string& bor)
