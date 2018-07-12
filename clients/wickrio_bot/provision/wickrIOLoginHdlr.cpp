@@ -99,8 +99,9 @@ void WickrIOLoginHdlr::slotRegisterOnPrem(const QString &username, const QString
  */
 void WickrIOLoginHdlr::slotRegisterUser(const QString &wickrid, const QString &password, const QString &salt, const QString &transactionid, bool newUser, bool sync, bool isRekey)
 {
+    qDebug().noquote().nospace() << "CONSOLE:Begin register user context.";
+
     QString hash = !salt.isEmpty() ? cryptoGetHash(password, salt) : QString();
-    qDebug() << "Password Hash=" << hash;
 
     WickrEnterpriseRegistrationParameters regParams(wickrid, transactionid, hash);
     WickrPreRegistrationData *preRegData;
@@ -176,7 +177,10 @@ void WickrIOLoginHdlr::slotRegistrationDone(WickrRegisterUserContext *c)
 
     if(!c->isSuccess()) {
         // If we failed because of something other than bad credentials then show the result
-        if (c->apiCode().getValue() != BAD_SYNC_CREDENTIALS) {
+        if (c->apiCode().getValue() == BAD_SYNC_CREDENTIALS) {
+            qDebug().noquote().nospace() << "CONSOLE:" << c->errorString();
+            emit signalLoginFailed();
+        } else {
             qDebug().noquote().nospace() << "CONSOLE:" << c->errorString();
             emit signalOnlineFlag(false);
         }
