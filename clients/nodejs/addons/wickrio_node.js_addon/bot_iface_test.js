@@ -1,8 +1,17 @@
 var addon = require('bindings')('wickrio_addon');
-
+var prompt = require('prompt');
+prompt.start();
 module.exports = addon;
-console.log(addon.clientInit());
 
+return new Promise((resolve, reject) => {
+prompt.get(['client_bot_username'], function (err, result) {
+   console.log('Command-line input received:');
+   console.log('username: ' + result.client_bot_username);
+   var response = addon.clientInit(result.client_bot_username);
+   resolve(response);
+ });
+}).then(result => {
+console.log(result);
 var vGroupID = "S4b87ee9e90aba8557ace71794438220927fab70b7ef2a242f96688234ac253f";
 var members = ['wickraaron@wickrautomation.com'];
 var members1;
@@ -16,7 +25,7 @@ var attachment = "/opt/WickrIODebug/package.json";
 var attachmentURL = "https://www.alsop-louie.com/wp-content/uploads/2017/03/wickr-logo-2-crop.png"
 var displayname = "Logo.png";
 
-//console.log(addon.cmdAddRoom(members, moderators, title, description, ttl, bor));
+// console.log(addon.cmdAddRoom(members, moderators, title, description, ttl, bor));
 // console.log(addon.cmdDeleteRoom(vGroupID));
 // console.log(addon.cmdGetStatistics());
 // console.log(addon.cmdClearStatistics());
@@ -30,9 +39,12 @@ var displayname = "Logo.png";
 // console.log(addon.cmdDeleteGroupConvo(vGroupID));
 // console.log(addon.cmdGetReceivedMessage());
 // console.log(addon.cmdSend1to1Message(members, message, ttl , bor));
-// console.log(addon.cmdSend1to1Attachment(members, attachment, "",ttl, bor));
-// console.log(addon.cmdSend1to1Attachment(members, attachmentURL, displayname, ttl, bor));
+console.log(addon.cmdSend1to1Attachment(members, attachment, "",ttl, bor));
+console.log(addon.cmdSend1to1Attachment(members, attachmentURL, displayname, ttl, bor));
 // console.log(addon.cmdSendRoomMessage(vGroupID, message, ttl, bor));
 // console.log(addon.cmdSendRoomAttachment(vGroupID, attachment, "", ttl, bor));
-// console.log(addon.cmdSendRoomAttachment(vGroupID, attachmentURL, displayname, ttl, bor));
+console.log(addon.cmdSendRoomAttachment(vGroupID, attachmentURL, displayname, ttl, bor));
 // console.log(addon.closeClient());
+}).catch(error => {
+      console.log('Error: ', error);
+    });

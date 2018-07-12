@@ -1,5 +1,18 @@
 var addon = require('bindings')('wickrio_addon');
+var prompt = require('prompt');
+prompt.start();
 module.exports = addon;
+process.stdin.resume();//so the program will not close instantly
+
+return new Promise((resolve, reject) => {
+prompt.get(['client_bot_username'], function (err, result) {
+   console.log('Command-line input received:');
+   console.log('username: ' + result.client_bot_username);
+   var response = addon.clientInit(result.client_bot_username);
+   resolve(response);
+ });
+}).then(result => {
+console.log(result);
 
 var responseMessageList = [
   "Hey there! Thanks for messaging me! I have a few helpful but random tips I can share in response to your messages, " +
@@ -55,7 +68,6 @@ var responseMessageList = [
 ];
 
 var wickrUsers = [];
-console.log(addon.clientInit('aaronbot019512_62114373.net'));
 welcomeBot();
 
  function welcomeBot() {
@@ -103,3 +115,6 @@ function getIndex(wickrID) {
     }
   }
 }
+}).catch(error => {
+      console.log('Error: ', error);
+    });

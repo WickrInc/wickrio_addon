@@ -1,9 +1,18 @@
 var addon = require('bindings')('wickrio_addon');
 var fs = require('fs');
-
+var prompt = require('prompt');
+prompt.start();
 module.exports = addon;
 
-console.log(addon.clientInit('aaronbot019512_62114373.net'));
+return new Promise((resolve, reject) => {
+prompt.get(['client_bot_username'], function (err, result) {
+   console.log('Command-line input received:');
+   console.log('username: ' + result.client_bot_username);
+   var response = addon.clientInit(result.client_bot_username);
+   resolve(response);
+ });
+}).then(result => {
+console.log(result);
 
 for (;;) {
   var message = addon.cmdGetReceivedMessage();
@@ -18,3 +27,6 @@ for (;;) {
     });
   }
 }
+}).catch(error => {
+      console.log('Error: ', error);
+    });
