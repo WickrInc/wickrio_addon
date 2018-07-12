@@ -8,10 +8,10 @@ return new Promise((resolve, reject) => {
   var schema = {
     properties: {
       client_bot_username: {
-        pattern: /^[a-zA-Z0-9@_]+$/,
+        pattern: /^[a-zA-Z0-9@_.]+$/,
         type: 'string',
         description: 'Please enter your client bot\'s username',
-        message: 'Client bot username must be entered in order to use Wickr\'s REST API! Username must be only letters, numbers, at(@) signs, or underscore, Please try again.',
+        message: 'Client bot username must be entered in order to use Wickr\'s REST API! Username must be only letters, numbers, periods, at(@) signs, or underscores, Please try again.',
         required: true
       }
     }
