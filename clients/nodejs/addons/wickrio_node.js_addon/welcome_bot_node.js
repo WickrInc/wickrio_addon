@@ -6,8 +6,6 @@ process.stdin.resume();//so the program will not close instantly
 
 return new Promise((resolve, reject) => {
 prompt.get(['client_bot_username'], function (err, result) {
-   console.log('Command-line input received:');
-   console.log('username: ' + result.client_bot_username);
    var response = addon.clientInit(result.client_bot_username);
    resolve(response);
  });
