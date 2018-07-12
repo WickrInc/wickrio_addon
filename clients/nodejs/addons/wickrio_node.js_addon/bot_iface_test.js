@@ -1,8 +1,7 @@
 var addon = require('bindings')('wickrio_addon');
 
 module.exports = addon;
-var client_name = process.env.CLIENT_NAME; //for ex: aaronbot012345@67891011.net
-console.log(addon.clientInit(client_name));
+console.log(addon.clientInit());
 
 var vGroupID = "S4b87ee9e90aba8557ace71794438220927fab70b7ef2a242f96688234ac253f";
 var members = ['wickraaron@wickrautomation.com'];
@@ -32,8 +31,8 @@ var displayname = "Logo.png";
 // console.log(addon.cmdGetReceivedMessage());
 // console.log(addon.cmdSend1to1Message(members, message, ttl , bor));
 // console.log(addon.cmdSend1to1Attachment(members, attachment, "",ttl, bor));
-console.log(addon.cmdSend1to1Attachment(members, attachmentURL, displayname, ttl, bor));
-// console.log(addon.closeClient());
+// console.log(addon.cmdSend1to1Attachment(members, attachmentURL, displayname, ttl, bor));
 // console.log(addon.cmdSendRoomMessage(vGroupID, message, ttl, bor));
 // console.log(addon.cmdSendRoomAttachment(vGroupID, attachment, "", ttl, bor));
-console.log(addon.cmdSendRoomAttachment(vGroupID, attachmentURL, displayname, ttl, bor));
+// console.log(addon.cmdSendRoomAttachment(vGroupID, attachmentURL, displayname, ttl, bor));
+// console.log(addon.closeClient());

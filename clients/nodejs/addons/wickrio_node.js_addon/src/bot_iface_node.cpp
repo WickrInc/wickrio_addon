@@ -13,7 +13,9 @@ void clientInit(const v8::FunctionCallbackInfo<v8::Value> & args) {
         Isolate* isolate = args.GetIsolate();
         string message;
         v8::String::Utf8Value param1(args[0]->ToString());
-        std::string client = std::string(*param1);
+        std::string client;
+        cout << "Please input the client bot username: \n";
+        cin >> client;
         botIface = new BotIface(client);
         if (botIface->init() != BotIface::SUCCESS) {
           message = botIface->getLastErrorString() + "\nCould not initialize Bot Interface!";

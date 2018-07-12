@@ -115,7 +115,6 @@ private:
                                  const string& bor);
 
     // Utility functions
-    bool is_json(const string &str);
     bool is_digits(const string &str);
     void addUserList(const vector <string>& list, string& tostring);
 
