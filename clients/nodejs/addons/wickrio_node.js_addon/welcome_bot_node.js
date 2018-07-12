@@ -5,7 +5,18 @@ module.exports = addon;
 process.stdin.resume();//so the program will not close instantly
 
 return new Promise((resolve, reject) => {
-prompt.get(['client_bot_username'], function (err, result) {
+  var schema = {
+    properties: {
+      client_bot_username: {
+        pattern: /^[a-zA-Z0-9@_]+$/,
+        type: 'string',
+        description: 'Please enter your client bot\'s username',
+        message: 'Client bot username must be entered in order to use Wickr\'s REST API! Username must be only letters, numbers, at(@) signs, or underscore, Please try again.',
+        required: true
+      }
+    }
+  };
+prompt.get(schema, function (err, result) {
    var response = addon.clientInit(result.client_bot_username);
    resolve(response);
  });
