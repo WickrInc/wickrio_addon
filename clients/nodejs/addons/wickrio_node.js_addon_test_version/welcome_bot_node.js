@@ -55,9 +55,7 @@ var responseMessageList = [
 ];
 
 var wickrUsers = [];
-
-var client = process.argv[2];
-console.log(addon.clientInit(client));
+console.log(addon.clientInit('aaronbot019512_62114373.net'));
 welcomeBot();
 
  function welcomeBot() {

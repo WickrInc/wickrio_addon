@@ -2,6 +2,7 @@
 #include <algorithm>
 
 #include "bot_iface.h"
+#include <iostream>
 
 using namespace std;
 
@@ -27,7 +28,7 @@ BotIface::BotIfaceStatus
 BotIface::init()
 {
     if (!m_iface->init()) {
-        m_lastError = "Could not initilize the interface!";
+        m_lastError = "Could not initialize the interface!";
         return INIT_FAILED;
     }
 
@@ -408,7 +409,6 @@ BotIface::cmdStringSendAttachment(string& command,
     } else {
         attachmentJSON = string("{\"filename\" : \"" + attachment + "\" }");
     }
-
 
     // create the JSON to send to the client
     if (vGroupID.size() > 0) {
