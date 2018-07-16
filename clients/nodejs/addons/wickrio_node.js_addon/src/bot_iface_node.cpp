@@ -35,7 +35,7 @@ void closeClient(const v8::FunctionCallbackInfo<v8::Value> & args){
   args.GetReturnValue().Set(error);
   return;
 }
-//v8::Handle<Boolean>
+
 void cmdGetStatistics(const v8::FunctionCallbackInfo<v8::Value> & args){
         Isolate* isolate = args.GetIsolate();
         if (botIface == nullptr) {
