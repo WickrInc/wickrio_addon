@@ -18,7 +18,7 @@ BotIface::BotIface(const string& client)
 
 BotIface::~BotIface()
 {
-    if (m_iface != nullptr) {
+    if (m_iface != NULL) {
         delete m_iface;
     }
 }

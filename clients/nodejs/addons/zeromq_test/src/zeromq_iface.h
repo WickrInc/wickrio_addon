@@ -22,9 +22,9 @@ public:
 private:
     string      m_clientName;
 
-    void        *m_zctx = nullptr;
-    void        *m_zTxSocket = nullptr;
-    void        *m_zRxSocket = nullptr;
+    void        *m_zctx = NULL;
+    void        *m_zTxSocket = NULL;
+    void        *m_zRxSocket = NULL;
 
     string m_responseString;
 
