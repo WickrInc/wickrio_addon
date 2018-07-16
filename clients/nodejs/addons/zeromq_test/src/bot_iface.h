@@ -100,7 +100,7 @@ public:
                                            const string& bor="");
 
 private:
-    MesgQueueIface  *m_iface = nullptr;
+    MesgQueueIface  *m_iface = NULL;
 
     string          m_clientName;           // Name of the client interfacing with
     string          m_lastError = "";       // Last error string

@@ -391,14 +391,8 @@ bool CmdClient::getClientValues(WickrBotClients *client)
     if (provisionApp != "") {
         QStringList arguments;
 
-#if 1
         arguments.append(client->user);
         arguments.append(client->password);
-#else
-        arguments.append(QString("-wickrname=%1").arg(client->user));
-        arguments.append(QString("-clientname=%1").arg(client->name));
-        arguments.append(QString("-processname=%1").arg(WBIOServerCommon::getClientProcessName(client)));
-#endif
 
         m_exec = new QProcess();
 

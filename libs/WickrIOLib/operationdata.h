@@ -29,6 +29,12 @@ public:
     bool debug = false;
     bool force = false;
 
+    /*
+     * True if the client server just started.  This is used to start any clients
+     * that should be running when the client server comes up.
+     */
+    bool csStarted = false;
+
     QString appDataDir;
 
     QString outputFile;

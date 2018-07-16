@@ -436,6 +436,8 @@ void WickrIOProvisionHdlr::checkEmail()
 void WickrIOProvisionHdlr::registerWithPassword(const QString &newPassword)
 {
     if (!newPassword.isEmpty() && (!m_email.isEmpty() || !m_username.isEmpty())) {
+        qDebug().noquote().nospace() << "CONSOLE:Begin registration with password.";
+
         // TODO: OLD CODE WAS DOING A RESET
         if (m_mode == OnPremMode) {
             m_currentStep = Step::finished;  // If anyone asks, we are done!

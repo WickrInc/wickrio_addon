@@ -252,14 +252,6 @@ void WickrIOEClientMain::slotProvisionPageChanged(WickrIOProvisionHdlr::Page pag
  */
 void WickrIOEClientMain::slotLoginSuccess()
 {
-    QByteArray userSKey = m_loginHdlr.getSigningKey();
-    qDebug() << "CONSOLE:********************************************************************";
-    qDebug() << "CONSOLE:**** USER SIGNING KEY";
-    qDebug() << "CONSOLE:**** You will need this to enter into the console for the Bot";
-    qDebug() << "CONSOLE:****";
-    qDebug() << "CONSOLE:" << QString(userSKey.toHex());
-    qDebug() << "CONSOLE:********************************************************************";
-
     emit signalLoginSuccess();
 }
 
