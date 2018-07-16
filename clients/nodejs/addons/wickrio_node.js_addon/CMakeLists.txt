@@ -26,7 +26,8 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_JS_INC})
 
 # include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../libs/third_party/amqpcpp/include ${CMAKE_CURRENT_SOURCE_DIR}/../libs/third_party/rabbitmq-c/include)
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs ${CMAKE_CURRENT_SOURCE_DIR}/../../../../libs/third_party/libzmq/build/lib)
 
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../libs/WickrIOClientAPI/build
+${CMAKE_CURRENT_SOURCE_DIR}/../../../../libs/third_party/libzmq/build/lib)
 
-target_link_libraries(${PROJECT_NAME} ${CMAKE_JS_LIB} ${CMAKE_CURRENT_SOURCE_DIR}/../../../../libs/third_party/libzmq/build/lib/libzmq.a ${CMAKE_DL_LIBS} OpenSSL::SSL OpenSSL::Crypto)
+target_link_libraries(${PROJECT_NAME} ${CMAKE_JS_LIB} libWickrIOClientAPI.a libzmq.a ${CMAKE_DL_LIBS} OpenSSL::SSL OpenSSL::Crypto)
