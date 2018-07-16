@@ -4,6 +4,8 @@ LIBS_NZMQT = libs/nzmqt
 NZMQT_BRANCH = master
 LIBS_CPPZMQ = libs/third_party/cppzmq
 LIBS_LIBZMQ = libs/third_party/libzmq
+CLIENTAPI_LIB = clients/libs/WickrIOClientAPI
+CLIENTAPI_CPPTEST = clients/nodejs/addons/cpp_test
 LOCALREPO = localRepo/$(WICKR_SDK)
 SDK_BRANCH = v4.41
 INTEGRATIONS_BRANCH = alpha
@@ -136,12 +138,22 @@ win32.clean:
 linux:
 	cd $(LIBS_LIBZMQ); mkdir -p build; cd build; cmake ..; make -j4
 	cd $(LIBS_CPPZMQ); mkdir -p build; cd build; cmake ..; make -j4
+	cd $(CLIENTAPI_LIB); mkdir -p build; cd build; cmake ..; make
+	cd $(CLIENTAPI_CPPTEST); mkdir -p build; cd build; cmake ..; make
 	cd $(WICKR_SDK); make linux
 
 linux.release:
+	cd $(LIBS_LIBZMQ); mkdir -p build; cd build; cmake ..; make -j4
+	cd $(LIBS_CPPZMQ); mkdir -p build; cd build; cmake ..; make -j4
+	cd $(CLIENTAPI_LIB); mkdir -p build; cd build; cmake ..; make
+	cd $(CLIENTAPI_CPPTEST); mkdir -p build; cd build; cmake ..; make
 	cd $(WICKR_SDK); make linux.release
 
 linux.clean:
+	cd $(LIBS_LIBZMQ); rm -rf build
+	cd $(LIBS_CPPZMQ); rm -rf build
+	cd $(CLIENTAPI_LIB); rm -rf build
+	cd $(CLIENTAPI_CPPTEST); rm -rf build
 	cd $(WICKR_SDK); make linux.clean
 
 linux.install: linux
