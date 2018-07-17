@@ -332,40 +332,9 @@ bool CmdClient::getClientValues(WickrBotClients *client)
     }
 #endif
 
-#if 0 // Not needed anymore
-    // Get the transaction ID
-    while (true) {
-        client->transactionID = getNewValue(client->transactionID, tr("Enter the transaction ID (for new client)"));
-
-        // Check if the user wants to quit the action
-        if (handleQuit(client->transactionID, &quit) && quit) {
-            return false;
-        }
-        break;
-    }
-#endif
-
     // The client name will be the username.  Replace the "@" character with the "_"
     client->name = client->user;
     client->name.replace("@", "_");
-
-#if 0
-    // Get a unique client name
-    do {
-        temp = getNewValue(client->name, tr("Enter an unique Name for this client (this is a local name, not the Wickr ID)"));
-
-        // Check if the user wants to quit the action
-        if (handleQuit(temp, &quit) && quit) {
-            return false;
-        }
-
-        // Allow the user to re-use the same name if it was previously set
-        if (! client->name.isEmpty()  && client->name == temp) {
-            break;
-        }
-    } while (chkClientsNameExists(temp));
-    client->name = temp;
-#endif
 
     // Determine the client type
     QStringList possibleClientTypes = WBIOServerCommon::getAvailableClientApps();
@@ -416,171 +385,170 @@ bool CmdClient::getClientValues(WickrBotClients *client)
     } else {
     }
 
-    if (m_basicConfig) {
-        return !quit;
-    }
+    if (!m_basicConfig) {
 
-    // Generate the API Key, with a random value
-    client->apiKey = WickrIOTokens::getRandomString(16);
+        // Generate the API Key, with a random value
+        client->apiKey = WickrIOTokens::getRandomString(16);
 
-    // Get the list of possible interfaces
-    QStringList ifaceList = WickrIOConsoleClientHandler::getNetworkInterfaceList();
+        // Get the list of possible interfaces
+        QStringList ifaceList = WickrIOConsoleClientHandler::getNetworkInterfaceList();
 
-    // Get a unique interface and port pair
-    while (true) {
-#if 1   // Will default to "localhost"
-        client->iface = "localhost";
-        QString ifaceinput = "localhost";
-#else
-        QString ifaceinput = getNewValue(client->iface, tr("Enter the interface (list to see possible interfaces)"));
+        // Get a unique interface and port pair
+        while (true) {
+    #if 1   // Will default to "localhost"
+            client->iface = "localhost";
+            QString ifaceinput = "localhost";
+    #else
+            QString ifaceinput = getNewValue(client->iface, tr("Enter the interface (list to see possible interfaces)"));
 
-        // Check if the user wants to quit the action
-        if (handleQuit(ifaceinput, &quit) && quit) {
-            return false;
-        }
-
-        if (ifaceinput.toLower() == "list" || ifaceinput == "?") {
-            foreach (QString iface, ifaceList) {
-                qDebug() << "CONSOLE:" << iface;
+            // Check if the user wants to quit the action
+            if (handleQuit(ifaceinput, &quit) && quit) {
+                return false;
             }
-            continue;
-        }
 
-        if (!ifaceList.contains(ifaceinput)) {
-            qDebug() << "CONSOLE:" << ifaceinput << "not found in the list of interfaces!";
-            continue;
-        }
-#endif
+            if (ifaceinput.toLower() == "list" || ifaceinput == "?") {
+                foreach (QString iface, ifaceList) {
+                    qDebug() << "CONSOLE:" << iface;
+                }
+                continue;
+            }
 
-        QString port = getNewValue(QString::number(client->port), tr("Enter the IP port number"), CHECK_INT);
+            if (!ifaceList.contains(ifaceinput)) {
+                qDebug() << "CONSOLE:" << ifaceinput << "not found in the list of interfaces!";
+                continue;
+            }
+    #endif
 
-        // Check if the user wants to quit the action
-        if (handleQuit(port, &quit) && quit) {
-            return false;
-        }
+            QString port = getNewValue(QString::number(client->port), tr("Enter the IP port number"), CHECK_INT);
 
-        int portinput = port.toInt();
+            // Check if the user wants to quit the action
+            if (handleQuit(port, &quit) && quit) {
+                return false;
+            }
 
-        // Check if used the same values, if so continue on to the next field
-        if (!client->iface.isEmpty() && (client->iface == ifaceinput && client->port == portinput)) {
+            int portinput = port.toInt();
+
+            // Check if used the same values, if so continue on to the next field
+            if (!client->iface.isEmpty() && (client->iface == ifaceinput && client->port == portinput)) {
+                break;
+            }
+
+            if (chkClientsInterfaceExists(ifaceinput, portinput)) {
+                qDebug() << "CONSOLE:Interface and port combination used already!";
+                continue;
+            }
+
+            client->iface = ifaceinput;
+            client->port = portinput;
+
             break;
         }
 
-        if (chkClientsInterfaceExists(ifaceinput, portinput)) {
-            qDebug() << "CONSOLE:Interface and port combination used already!";
-            continue;
-        }
-
-        client->iface = ifaceinput;
-        client->port = portinput;
-
-        break;
-    }
-
-    // Get the interface type (HTTP or HTTPS)
-    while (true) {
-        QString ifacetype;
-        ifacetype = getNewValue(client->getIfaceTypeStr(), tr("Enter the interface type"));
-        if (ifacetype.toLower() == "https") {
-            client->isHttps = true;
-            if (m_sslSettings.sslKeyFile.isEmpty() || m_sslSettings.sslCertFile.isEmpty()) {
-                qDebug() << "CONSOLE:WARNING: SSL has not been setup! Go to the Advanced settings first!";
-            }
-        } else if (ifacetype.toLower() == "http") {
-            client->isHttps = false;
-        } else {
-            qDebug() << "CONSOLE:Invalid interface type, enter either HTTP or HTTPS";
-            continue;
-
-        }
-        break;
-    }
-
-    // Get the SSL Key and Cert values
-    if (client->isHttps) {
-        client->sslKeyFile = m_sslSettings.sslKeyFile;
-        client->sslCertFile = m_sslSettings.sslCertFile;
-    }
-
-    QList<WickrIOConsoleUser *> cusers = m_operation->m_ioDB->getConsoleUsers();
-    if (cusers.length() > 0) {
-        int curindex = -1;
-        QString temp;
-        if (client->console_id != 0) {
-            int cnt=0;
-            for (WickrIOConsoleUser *cuser : cusers) {
-                if (cuser->id == client->console_id) {
-                    curindex = cnt;
-                    break;
-                }
-                cnt++;
-            }
-        } else {
-            curindex = -1;
-        }
-        temp = getNewValue(curindex == -1 ? "n" : "y", tr("Associate with a console user?"));
-        if (handleQuit(temp, &quit) && quit) {
-        } else if (temp == "y") {
-            // Associate with a console user
-            while (true) {
-                qDebug() << "CONSOLE:Possible console user choices:";
-                int cnt=0;
-                for (WickrIOConsoleUser *cuser : cusers) {
-                    QString data = QString("CONSOLE:  index=%1, Name=%2").arg(cnt++).arg(cuser->user);
-                    qDebug() << qPrintable(data);
-                }
-                temp = getNewValue(curindex == -1 ? "" : QString::number(curindex), tr("Enter the index of the console user"), CHECK_INT);
-                if (handleQuit(temp, &quit) && quit) {
-                    break;
-                }
-                int inputIndex = temp.toInt();
-                if (inputIndex < 0 || inputIndex >= cusers.length()) {
-                    qDebug() << "CONSOLE:Invalid index value entered!";
-                } else {
-                    curindex = inputIndex;
-                    break;
-                }
-            }
-        } else {
-            curindex = -1;
-        }
-
-        // If the user is NOT quitting then update the console ID
-        if (!quit) {
-            if (curindex == -1) {
-                client->console_id = 0;
-            } else {
-                client->console_id = cusers.at(curindex)->id;
-            }
-        }
-
-        // Cleanup the allocated memory
-        for (WickrIOConsoleUser *cuser : cusers) {
-            delete cuser;
-        }
-    }
-
-    // Inbox handling can be turned off for Welcome Bots (only)
-    //check whether type is welcome_bot to see if need to find parser
-    if(client->binary.startsWith( "welcome_bot")){
+        // Get the interface type (HTTP or HTTPS)
         while (true) {
-            QString handleInbox;
-            QStringList trueFalseChoices;
-            trueFalseChoices << "true" << "false";
-            handleInbox = getNewValue(client->getHandleInboxStr(), tr("Does client support inbox handling?"), CHECK_LIST, trueFalseChoices);
-            if (handleInbox.toLower() == "true") {
-                client->m_handleInbox = true;
-            } else if (handleInbox.toLower() == "false") {
-                client->m_handleInbox = false;
+            QString ifacetype;
+            ifacetype = getNewValue(client->getIfaceTypeStr(), tr("Enter the interface type"));
+            if (ifacetype.toLower() == "https") {
+                client->isHttps = true;
+                if (m_sslSettings.sslKeyFile.isEmpty() || m_sslSettings.sslCertFile.isEmpty()) {
+                    qDebug() << "CONSOLE:WARNING: SSL has not been setup! Go to the Advanced settings first!";
+                }
+            } else if (ifacetype.toLower() == "http") {
+                client->isHttps = false;
             } else {
-                qDebug() << "CONSOLE:Invalid input, enter either true or false";
+                qDebug() << "CONSOLE:Invalid interface type, enter either HTTP or HTTPS";
                 continue;
 
             }
             break;
         }
-    } else {
-        client->m_handleInbox = true;
+
+        // Get the SSL Key and Cert values
+        if (client->isHttps) {
+            client->sslKeyFile = m_sslSettings.sslKeyFile;
+            client->sslCertFile = m_sslSettings.sslCertFile;
+        }
+
+        QList<WickrIOConsoleUser *> cusers = m_operation->m_ioDB->getConsoleUsers();
+        if (cusers.length() > 0) {
+            int curindex = -1;
+            QString temp;
+            if (client->console_id != 0) {
+                int cnt=0;
+                for (WickrIOConsoleUser *cuser : cusers) {
+                    if (cuser->id == client->console_id) {
+                        curindex = cnt;
+                        break;
+                    }
+                    cnt++;
+                }
+            } else {
+                curindex = -1;
+            }
+            temp = getNewValue(curindex == -1 ? "n" : "y", tr("Associate with a console user?"));
+            if (handleQuit(temp, &quit) && quit) {
+            } else if (temp == "y") {
+                // Associate with a console user
+                while (true) {
+                    qDebug() << "CONSOLE:Possible console user choices:";
+                    int cnt=0;
+                    for (WickrIOConsoleUser *cuser : cusers) {
+                        QString data = QString("CONSOLE:  index=%1, Name=%2").arg(cnt++).arg(cuser->user);
+                        qDebug() << qPrintable(data);
+                    }
+                    temp = getNewValue(curindex == -1 ? "" : QString::number(curindex), tr("Enter the index of the console user"), CHECK_INT);
+                    if (handleQuit(temp, &quit) && quit) {
+                        break;
+                    }
+                    int inputIndex = temp.toInt();
+                    if (inputIndex < 0 || inputIndex >= cusers.length()) {
+                        qDebug() << "CONSOLE:Invalid index value entered!";
+                    } else {
+                        curindex = inputIndex;
+                        break;
+                    }
+                }
+            } else {
+                curindex = -1;
+            }
+
+            // If the user is NOT quitting then update the console ID
+            if (!quit) {
+                if (curindex == -1) {
+                    client->console_id = 0;
+                } else {
+                    client->console_id = cusers.at(curindex)->id;
+                }
+            }
+
+            // Cleanup the allocated memory
+            for (WickrIOConsoleUser *cuser : cusers) {
+                delete cuser;
+            }
+        }
+
+        // Inbox handling can be turned off for Welcome Bots (only)
+        //check whether type is welcome_bot to see if need to find parser
+        if(client->binary.startsWith( "welcome_bot")){
+            while (true) {
+                QString handleInbox;
+                QStringList trueFalseChoices;
+                trueFalseChoices << "true" << "false";
+                handleInbox = getNewValue(client->getHandleInboxStr(), tr("Does client support inbox handling?"), CHECK_LIST, trueFalseChoices);
+                if (handleInbox.toLower() == "true") {
+                    client->m_handleInbox = true;
+                } else if (handleInbox.toLower() == "false") {
+                    client->m_handleInbox = false;
+                } else {
+                    qDebug() << "CONSOLE:Invalid input, enter either true or false";
+                    continue;
+
+                }
+                break;
+            }
+        } else {
+            client->m_handleInbox = true;
+        }
     }
 
     /*

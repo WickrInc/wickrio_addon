@@ -21,6 +21,8 @@ public:
 private:
     OperationData *m_operation=nullptr;
 
+    unsigned getVersionNumber(QFile *versionFile);
+
 private slots:
     void processStarted();
     void processFinished();

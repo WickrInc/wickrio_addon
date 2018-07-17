@@ -63,7 +63,6 @@
 // The directory
 #define WBIO_INTEGRATIONS_DIR           "/usr/lib/wickr/integrations/software"
 
-
 /*
  * WickrIO IPC commands
  */
