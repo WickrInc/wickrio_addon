@@ -1,4 +1,6 @@
-Release Notes from v4.26-release to v4.41.17-2:
+Release Notes from v4.26-release to v4.41.18-2:
+  * Update addon and API cmake files
+  * Makr addon a library
   * Add SendAttachment functions, modified docs
   * Fix the sending a filename for the URL sending, still neeed to fix for non url sending [ci skip]
   * Fix merge
