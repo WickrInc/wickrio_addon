@@ -1,6 +1,7 @@
 #include <QStandardPaths>
 #include <QDir>
 #include <QDebug>
+#include <QFile>
 
 #include "wickrIOCommon.h"
 #include "wickrIOServerCommon.h"
@@ -107,34 +108,41 @@ WBIOServerCommon::initClientApps()
 {
     if (!m_initialized) {
 
-        WBIOBotTypes *hubot      = new WBIOBotTypes("hubot",      "hubot",      APIURL_MSGRECVCBACK,
-                                                    "/usr/lib/wickr/integrations/software/hubot/software.tar.gz",
-                                                    "install.sh", "configure.sh", "start.sh", "stop.sh" );
-        WBIOBotTypes *supportBot = new WBIOBotTypes("supportBot", "supportbot", APIURL_MSGRECVLIB,
-                                                    "/usr/lib/wickr/integrations/software/supportbot/software.tar.gz",
-                                                    "install.sh", "configure.sh", "start.sh", "stop.sh" );
-        WBIOServerCommon::m_supportedBots.append(hubot);
-        WBIOServerCommon::m_supportedBots.append(supportBot);
-
+        // Initialize the WickrIO Bots
         WBIOClientApps *wickrIOAlpha = new WBIOClientApps("wickrio_botAlpha", "wickrio_provAlpha", nullptr, false, false);
         WBIOClientApps *wickrIOBeta  = new WBIOClientApps("wickrio_botBeta",  "wickrio_provBeta",  nullptr, false, false);
         WBIOClientApps *wickrIOProd  = new WBIOClientApps("wickrio_bot",      "wickrio_prov",      nullptr, false, false);
-        wickrIOAlpha->addBot(hubot); wickrIOAlpha->addBot(supportBot);
-        wickrIOBeta->addBot(hubot);  wickrIOBeta->addBot(supportBot);
-        wickrIOProd->addBot(hubot);  wickrIOProd->addBot(supportBot);
-
         WBIOServerCommon::m_botApps.append(wickrIOAlpha);
         WBIOServerCommon::m_botApps.append(wickrIOBeta);
         WBIOServerCommon::m_botApps.append(wickrIOProd);
+
+        // Initialize the Compliance Bots
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botAlpha", "compliance_provAlpha", nullptr,               true,  false));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_botBeta",  "compliance_provBeta",  nullptr,               true,  false));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("compliance_bot",      "compliance_prov",      nullptr,               true,  false));
+
+        // Initialize the Welcome Bots
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_botAlpha",    nullptr,                "welcome_parserAlpha", false, false));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_botBeta",     nullptr,                "welcome_parserBeta",  false, false));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_bot",         nullptr,                "welcome_parser",      false, false));
+
+        // Initialize the Core bots (mother bot)
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("core_botAlpha",       nullptr,                nullptr,               false, true));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("core_botBeta",        nullptr,                nullptr,               false, true));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("core_bot",            nullptr,                nullptr,               false, true));
+
+        // If the hubot software is installed then add it to the list of available integrations
+        if (QFile(BOT_HUBOT_SOFTWARE).exists()) {
+            WBIOBotTypes *hubot = new WBIOBotTypes("hubot", "hubot", APIURL_MSGRECVCBACK, BOT_HUBOT_SOFTWARE,
+                                                   "install.sh", "configure.sh", "start.sh", "stop.sh" );
+            WBIOServerCommon::m_supportedBots.append(hubot);
+
+            // Add the hubot to the WickrIO bots
+            wickrIOAlpha->addBot(hubot);
+            wickrIOBeta->addBot(hubot);
+            wickrIOProd->addBot(hubot);
+        }
+
 
         for (WBIOClientApps *botapp : WBIOServerCommon::m_botApps) {
             m_bots.append(botapp->bot());

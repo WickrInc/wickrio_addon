@@ -9,6 +9,8 @@
 #include "wickrbotclients.h"
 #include "wickrIOParsers.h"
 
+#define BOT_HUBOT_SOFTWARE      "/usr/lib/wickr/integrations/software/hubot/software.tar.gz"
+
 /**
  * @brief The WBIOBotTypes class
  * This class is used to identify the hardcoded types of Bots supported (i.e. hubot, supportbot)

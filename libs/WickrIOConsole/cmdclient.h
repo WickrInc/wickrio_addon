@@ -47,6 +47,8 @@ private:
 
     bool getAuthValue(WickrBotClients *client, bool basic, QString& authValue);
 
+    unsigned getVersionNumber(QFile *versionFile);
+
 private:
     CmdOperation *m_operation;
     WickrIOSSLSettings m_sslSettings;
@@ -59,6 +61,7 @@ private:
     bool    m_root = false;
 
     QList<WickrBotClients *> m_clients;
+    QMap<QString, unsigned>  m_integrationVersions;
 
     QProcess *m_exec;
 

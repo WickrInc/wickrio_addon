@@ -15,6 +15,42 @@
 CmdClient::CmdClient(CmdOperation *operation) :
     m_operation(operation)
 {
+    // Check if there are any clients that have had updated hubot software
+    QDirIterator it(WBIO_INTEGRATIONS_DIR, QDir::NoDotAndDotDot | QDir::Dirs);
+    while (it.hasNext()) {
+        QDir curdir(it.next());
+
+        QFile curHubotVersionFile(QString("%1/%2/VERSION").arg(WBIO_INTEGRATIONS_DIR).arg(curdir.dirName()));
+        unsigned curHubotVersion;
+        if (curHubotVersionFile.exists()) {
+            curHubotVersion = getVersionNumber(&curHubotVersionFile);
+            if (curHubotVersion > 0) {
+                m_integrationVersions.insert(curdir.dirName(), curHubotVersion);
+            }
+        }
+    }
+}
+
+unsigned
+CmdClient::getVersionNumber(QFile *versionFile)
+{
+    if (!versionFile->open(QIODevice::ReadOnly))
+        return 0;
+
+    QString s;
+
+    QTextStream s1(versionFile);
+    s.append(s1.readAll());
+    versionFile->close();
+
+    unsigned retVal = 0;
+    QStringList slist = s.split(".");
+    if (slist.length() == 3) {
+        retVal = slist.at(0).toInt() * 1000000 + slist.at(1).toInt() * 1000 + slist.at(2).toInt();
+    } else if (slist.length() == 2) {
+        retVal = slist.at(0).toInt() * 1000000 + slist.at(1).toInt() * 1000;
+    }
+    return retVal;
 }
 
 bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
@@ -199,16 +235,39 @@ void CmdClient::listClients()
         }
 
         QString botTypeString;
+        bool needsUpgrade = false;
         if (!client->botType.isEmpty()) {
-            botTypeString = QString(", Integration=%1").arg(client->botType);
+            unsigned newBotVer = m_integrationVersions.value(client->botType, 0);
+            unsigned curBotVer = 0;
+
+            QString destPath = QString(WBIO_CLIENT_BOTDIR_FORMAT)
+                    .arg(WBIO_DEFAULT_DBLOCATION)
+                    .arg(client->name)
+                    .arg(client->botType);
+            QFile curHubotVersionFile(QString("%1/VERSION").arg(destPath));
+            if (curHubotVersionFile.exists()) {
+                curBotVer = getVersionNumber(&curHubotVersionFile);
+                if (curBotVer > 0) {
+                    if (curBotVer < newBotVer) {
+                        needsUpgrade = true;
+                    }
+                }
+            }
+
+            if (needsUpgrade) {
+                botTypeString = QString(", Integration=%1 (Needs Upgrade!)").arg(client->botType);
+            } else {
+                botTypeString = QString(", Integration=%1").arg(client->botType);
+            }
         }
 
         QString data;
         if (m_basicConfig) {
-            data = QString("CONSOLE: client[%1] %2, State=%3")
+            data = QString("CONSOLE: client[%1] %2, State=%3%4")
                 .arg(cnt++)
                 .arg(client->user)
-                .arg(clientState);
+                .arg(clientState)
+                .arg(botTypeString);
         } else {
             data = QString("CONSOLE: client[%1] %2, APIKey=%3, User=%4, Port=%5, Binary=%6, State=%7, ConsoleUser=%8%9")
                 .arg(cnt++)
