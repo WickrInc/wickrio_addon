@@ -98,8 +98,8 @@ sed -e "s/EXTENSION/${svcbldtype}/g" -e "s/INSTALLEXT/${SvcBldType}/g" <$current
 #
 if test -n "$hubotswdir" ; then
   mkdir -p $dstintegrationsdir/software/hubot
-  cp $hhubotswdir/*.tar.gz $dstintegrationsdir/software/hubot/software.tar.gz
-  cp $hhubotswdir/VERSION $dstintegrationsdir/software/hubot
+  cp $hubotswdir/*.tar.gz $dstintegrationsdir/software/hubot/software.tar.gz
+  cp $hubotswdir/VERSION $dstintegrationsdir/software/hubot
 fi
 
 
