@@ -134,7 +134,7 @@ WBIOServerCommon::initClientApps()
         // If the hubot software is installed then add it to the list of available integrations
         if (QFile(BOT_HUBOT_SOFTWARE).exists()) {
             WBIOBotTypes *hubot = new WBIOBotTypes("hubot", "hubot", APIURL_MSGRECVCBACK, BOT_HUBOT_SOFTWARE,
-                                                   "install.sh", "configure.sh", "start.sh", "stop.sh" );
+                                                   "install.sh", "configure.sh", "start.sh", "stop.sh", "upgrade.sh" );
             WBIOServerCommon::m_supportedBots.append(hubot);
 
             // Add the hubot to the WickrIO bots
@@ -343,6 +343,19 @@ WBIOServerCommon::getBotStopCmd(const QString& botType)
     for (WBIOBotTypes *bottypes : WBIOServerCommon::m_supportedBots) {
         if (bottypes->m_name == botType) {
             return bottypes->m_stopCmd;
+        }
+    }
+    return QString();
+}
+
+QString
+WBIOServerCommon::getBotUpgradeCmd(const QString& botType)
+{
+    WBIOServerCommon::initClientApps();
+
+    for (WBIOBotTypes *bottypes : WBIOServerCommon::m_supportedBots) {
+        if (bottypes->m_name == botType) {
+            return bottypes->m_upgradeCmd;
         }
     }
     return QString();

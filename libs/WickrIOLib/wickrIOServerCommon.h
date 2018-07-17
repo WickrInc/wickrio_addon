@@ -22,7 +22,7 @@ public:
     WBIOBotTypes(const QString& name, const QString& type, const QString& msgIface,
                  const QString& swLoc,
                  const QString& installer, const QString& configure,
-                 const QString& startCmd, const QString& stopCmd) :
+                 const QString& startCmd, const QString& stopCmd, const QString& upgradeCmd) :
         m_name(name),
         m_type(type),
         m_msgIface(msgIface),
@@ -30,7 +30,8 @@ public:
         m_installer(installer),
         m_configure(configure),
         m_startCmd(startCmd),
-        m_stopCmd(stopCmd) {}
+        m_stopCmd(stopCmd),
+        m_upgradeCmd(upgradeCmd) {}
 
     QString m_name;
     QString m_type;
@@ -40,6 +41,7 @@ public:
     QString m_configure;
     QString m_startCmd;
     QString m_stopCmd;
+    QString m_upgradeCmd;
 
     QString name()       { return m_name; }
     QString type()       { return m_type; }
@@ -48,6 +50,7 @@ public:
     QString configure()  { return m_configure; }
     QString startCmd()   { return m_startCmd; }
     QString stopCmd()    { return m_stopCmd; }
+    QString upgradeCmd()  { return m_upgradeCmd; }
 };
 
 
@@ -116,6 +119,7 @@ public:
     static QString getBotConfigure(const QString& botType);
     static QString getBotStartCmd(const QString& botType);
     static QString getBotStopCmd(const QString& botType);
+    static QString getBotUpgradeCmd(const QString& botType);
     static QString getBotMsgIface(const QString& botType);
 
 private:

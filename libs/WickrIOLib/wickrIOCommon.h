@@ -41,6 +41,7 @@
 #define WBIO_PARSER_LOGFILE_FORMAT      "%1/logs/%2.log"
 
 #define WBIO_CLIENT_BOTDIR_FORMAT       "%1/clients/%2/integration/%3"
+#define WBIO_CLIENT_BOTDIR_TMP_FORMAT   "%1/clients/%2/integration/%3.new"
 
 #define WBIO_CLIENT_RXSOCKET_FORMAT     "ipc://%1/clients/%2/tmp/0"
 #define WBIO_CLIENT_SOCKETDIR_FORMAT    "%1/clients/%2/tmp"

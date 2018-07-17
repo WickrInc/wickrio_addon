@@ -53,6 +53,23 @@ CmdClient::getVersionNumber(QFile *versionFile)
     return retVal;
 }
 
+void
+CmdClient::getVersionString(unsigned versionNum, QString& versionString)
+{
+    if (versionNum > 1000000) {
+        versionString = QString("%1.%2.%3").arg(QString::number(versionNum / 1000000))
+                                           .arg(QString::number((versionNum % 1000000) / 1000))
+                                           .arg(QString::number(versionNum % 1000));
+    } else if (versionNum > 1000) {
+        versionString = QString("0.%1.%2").arg(QString::number(versionNum / 1000))
+                                          .arg(QString::number(versionNum % 1000));
+    } else if (versionNum == 0) {
+        versionString = "unknown";
+    } else {
+        versionString = QString::number(versionNum);
+    }
+}
+
 bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
 {
     bool retVal = true;
@@ -83,15 +100,16 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
 
     if (cmd == "?" || cmd == "help") {
         qDebug() << "CONSOLE:Commands:";
-        qDebug() << "CONSOLE:  add        - adds a new client";
-        if (!m_root) qDebug() << "CONSOLE:  back       - leave the clients setup";
-        qDebug() << "CONSOLE:  delete <#> - deletes client with the specific index";
-        qDebug() << "CONSOLE:  help or ?  - shows supported commands";
-        qDebug() << "CONSOLE:  list       - shows a list of clients";
-        qDebug() << "CONSOLE:  modify <#> - modifies a client with the specified index";
-        qDebug() << "CONSOLE:  pause <#>  - pauses the client with the specified index";
-        qDebug() << "CONSOLE:  start <#>  - starts the client with the specified index";
-        qDebug() << "CONSOLE:  quit       - leaves this program";
+        qDebug() << "CONSOLE:  add         - adds a new client";
+        if (!m_root) qDebug() << "CONSOLE:  back        - leave the clients setup";
+        qDebug() << "CONSOLE:  delete <#>  - deletes client with the specific index";
+        qDebug() << "CONSOLE:  help or ?   - shows supported commands";
+        qDebug() << "CONSOLE:  list        - shows a list of clients";
+        qDebug() << "CONSOLE:  modify <#>  - modifies a client with the specified index";
+        qDebug() << "CONSOLE:  pause <#>   - pauses the client with the specified index";
+        qDebug() << "CONSOLE:  start <#>   - starts the client with the specified index";
+        qDebug() << "CONSOLE:  upgrade <#> - upgrade integration software for client";
+        qDebug() << "CONSOLE:  quit        - leaves this program";
     } else if (cmd == "add") {
         addClient();
     } else if (cmd == "back" && !m_root) {
@@ -124,6 +142,12 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
             qDebug() << "CONSOLE:Usage: start <index>";
         } else {
             startClient(clientIndex, bForce);
+        }
+    } else if (cmd == "upgrade") {
+        if (clientIndex == -1) {
+            qDebug() << "CONSOLE:Usage: upgrade <index>";
+        } else {
+            upgradeClient(clientIndex);
         }
     } else {
         qDebug() << "CONSOLE:" << cmd << "is not a known command!";
@@ -714,67 +738,18 @@ bool CmdClient::getClientValues(WickrBotClients *client)
             }
 
             // First copy the software to the client directory
-            qDebug().noquote().nospace() << "CONSOLE:Copying " << client->botType << " software for " << client->name;
-
-            {
-                // Create a process to extract the software
-                QProcess *unarchive = new QProcess(this);
-
-                QString command = QString("tar -xf %1 -C %2").arg(swPath).arg(destPath);
-                unarchive->setProcessChannelMode(QProcess::MergedChannels);
-                unarchive->start(command, QIODevice::ReadWrite);
-
-                // Wait for it to start
-                if(!unarchive->waitForStarted()) {
-                    qDebug() << QString("CONSOLE:Failed to install %1 software!").arg(client->botType);
-                    return false;
-                }
-
-                // Continue reading the data until EOF reached
-                QByteArray data;
-
-                while(unarchive->waitForReadyRead())
-                    data.append(unarchive->readAll());
-
-                // Output the data
-                qDebug().noquote().nospace() << "CONSOLE:" << data;
+            if (! integrationCopySW(client, swPath, destPath)) {
+                return false;
             }
 
             // Second peform the installer if one does exist
-            qDebug().noquote().nospace() << "CONSOLE:Installing " << client->botType << " software for " << client->name;
-            {
-                QStringList installOutput;
-                QString installer = WBIOServerCommon::getBotInstaller(client->botType);
-                if (!installer.isEmpty()){
-                    QString installerFullPath = QString("%1/%2").arg(destPath).arg(installer);
-                    // Create a process to run the installer
-                    QProcess *runInstaller = new QProcess(this);
-                    runInstaller->setProcessChannelMode(QProcess::MergedChannels);
-                    runInstaller->setWorkingDirectory(destPath);
-                    runInstaller->start(installerFullPath, QIODevice::ReadWrite);
-
-                    // Wait for it to start
-                    if(!runInstaller->waitForStarted()) {
-                        qDebug() << QString("CONSOLE:Failed to run %1").arg(installer);
-                        return false;
-                    }
-
-                    while(runInstaller->waitForReadyRead()) {
-                        QString bytes = QString(runInstaller->readAll());
-                        installOutput.append(bytes);
-                    }
-                }
+            if (! integrationInstall(client, destPath)) {
+                return false;
             }
 
             // Third peform the configure if one does exist
-            qDebug().noquote().nospace() << "CONSOLE:Begin configuration of " << client->botType << " software for " << client->name;
-            QString configure = WBIOServerCommon::getBotConfigure(client->botType);
-            if (!configure.isEmpty()){
-                QString configureFullpath = QString("%1/%2").arg(destPath).arg(configure);
-                if (!runBotScript(destPath, configureFullpath, client)) {
-                    qDebug().noquote().nospace() << "CONSOLE:Failed to configure " << client->botType;
-                    return false;
-                }
+            if (! integrationConfigure(client, destPath)) {
+                return false;
             }
 
             qDebug().noquote().nospace() << "CONSOLE:End of setup of " << client->botType << " software for " << client->name;
@@ -1344,3 +1319,229 @@ void CmdClient::startClient(int clientIndex, bool force)
         }
     }
 }
+
+/**
+ * @brief CmdClient::upgradeClient
+ * This function will modify an exist client.
+ * @param clientIndex
+ */
+void CmdClient::upgradeClient(int clientIndex)
+{
+    if (validateIndex(clientIndex)) {
+        WickrBotClients *client;
+        WickrBotProcessState state;
+        client = m_clients.at(clientIndex);
+
+        // Make sure there is integration software is installed
+        if (client->botType.isEmpty()) {
+            qDebug() << "CONSOLE:Client does not have integration software installed!";
+            return;
+        }
+
+        QString processName = WBIOServerCommon::getClientProcessName(client);
+        if (!m_operation->m_ioDB->getProcessState(processName, &state)) {
+            qDebug() << "CONSOLE:Cannot client's process state!";
+            return;
+        }
+
+        if (state.state == PROCSTATE_RUNNING) {
+            qDebug() << "CONSOLE:Cannot upgrade a running client! Please stop the client.";
+            return;
+        }
+
+        unsigned newBotVer = m_integrationVersions.value(client->botType, 0);
+        QString  newBotVerString;
+        getVersionString(newBotVer, newBotVerString);
+
+        unsigned curBotVer = 0;
+        QString  curBotVerString;
+
+
+        QString destPath = QString(WBIO_CLIENT_BOTDIR_FORMAT)
+                .arg(WBIO_DEFAULT_DBLOCATION)
+                .arg(client->name)
+                .arg(client->botType);
+        QFile curHubotVersionFile(QString("%1/VERSION").arg(destPath));
+        if (curHubotVersionFile.exists()) {
+            curBotVer = getVersionNumber(&curHubotVersionFile);
+        }
+        getVersionString(curBotVer, curBotVerString);
+
+        qDebug().noquote().nospace() << "CONSOLE:Upgrading from version " << curBotVerString << " to version " << newBotVerString;
+        while (true) {
+            // If the record was not updated to the database then ask the user to try again
+            QString response = getNewValue("", tr("Okay to proceed?"));
+            if (response.toLower() == "n" || response.toLower() == "no") {
+                return;
+            }
+            if (response.toLower() == "y" || response.toLower() == "yes") {
+                break;
+            }
+            qDebug() << "CONSOLE:Enter either 'y' or 'n'";
+        }
+
+        // Start the upgrade process
+        QString upgradeCmd = WBIOServerCommon::getBotUpgradeCmd(client->botType);
+
+        if (upgradeCmd.isEmpty()) {
+            qDebug() << "CONSOLE:There is no upgrade script!";
+            return;
+        }
+
+        // Get the software into the appropriate location
+        QString swPath = WBIOServerCommon::getBotSoftwarePath(client->botType);
+        if (swPath.isEmpty()) {
+            qDebug() << "CONSOLE:Cannot find software path!";
+            return;
+        }
+
+        // Location where new software is extracted to, before the upgrade
+        QString tmpDestPath = QString(WBIO_CLIENT_BOTDIR_TMP_FORMAT)
+                .arg(WBIO_DEFAULT_DBLOCATION)
+                .arg(client->name)
+                .arg(client->botType);
+
+        // Create the directory for the integration software
+        QDir destDir(tmpDestPath);
+        if (!destDir.exists()) {
+            if (!destDir.mkpath(tmpDestPath)) {
+                qDebug() << "CONSOLE:Failed to create directory for integration bot software!";
+                return;
+            }
+        }
+
+        // First copy the software to the temporary location of the client's integration directory
+        if (! integrationCopySW(client, swPath, tmpDestPath)) {
+            return;
+        }
+
+        // Second perform the upgrade, by moving the software
+        if (! integrationUpgrade(client, destPath, tmpDestPath)) {
+            return;
+        }
+
+        // Third peform the installer if one does exist
+        if (! integrationInstall(client, destPath)) {
+            return;
+        }
+
+        // Lastly, peform the configure if one does exist
+        if (! integrationConfigure(client, destPath)) {
+            return;
+        }
+    }
+}
+
+bool
+CmdClient::integrationCopySW(WickrBotClients *client, const QString& swPath, const QString& destPath)
+{
+    qDebug().noquote().nospace() << "CONSOLE:Copying " << client->botType << " software for " << client->name;
+    {
+        // Create a process to extract the software
+        QProcess *unarchive = new QProcess(this);
+
+        QString command = QString("tar -xf %1 -C %2").arg(swPath).arg(destPath);
+        unarchive->setProcessChannelMode(QProcess::MergedChannels);
+        unarchive->start(command, QIODevice::ReadWrite);
+
+        // Wait for it to start
+        if(!unarchive->waitForStarted()) {
+            qDebug() << QString("CONSOLE:Failed to install %1 software!").arg(client->botType);
+            return false;
+        }
+
+        // Continue reading the data until EOF reached
+        QByteArray data;
+
+        while(unarchive->waitForReadyRead())
+            data.append(unarchive->readAll());
+
+        // Output the data
+        qDebug().noquote().nospace() << "CONSOLE:" << data;
+    }
+    return true;
+}
+
+bool
+CmdClient::integrationInstall(WickrBotClients *client, const QString& destPath)
+{
+    // peform the installer if one does exist
+    qDebug().noquote().nospace() << "CONSOLE:Installing " << client->botType << " software for " << client->name;
+    {
+        QStringList installOutput;
+        QString installer = WBIOServerCommon::getBotInstaller(client->botType);
+        if (!installer.isEmpty()){
+            QString installerFullPath = QString("%1/%2").arg(destPath).arg(installer);
+            // Create a process to run the installer
+            QProcess *runInstaller = new QProcess(this);
+            runInstaller->setProcessChannelMode(QProcess::MergedChannels);
+            runInstaller->setWorkingDirectory(destPath);
+            runInstaller->start(installerFullPath, QIODevice::ReadWrite);
+
+            // Wait for it to start
+            if(!runInstaller->waitForStarted()) {
+                qDebug() << QString("CONSOLE:Failed to run %1").arg(installer);
+                return false;
+            }
+
+            while(runInstaller->waitForReadyRead()) {
+                QString bytes = QString(runInstaller->readAll());
+                installOutput.append(bytes);
+            }
+        }
+    }
+    return true;
+}
+
+bool
+CmdClient::integrationConfigure(WickrBotClients *client, const QString& destPath)
+{
+    qDebug().noquote().nospace() << "CONSOLE:Begin configuration of " << client->botType << " software for " << client->name;
+    QString configure = WBIOServerCommon::getBotConfigure(client->botType);
+    if (!configure.isEmpty()){
+        QString configureFullpath = QString("%1/%2").arg(destPath).arg(configure);
+        if (!runBotScript(destPath, configureFullpath, client)) {
+            qDebug().noquote().nospace() << "CONSOLE:Failed to configure " << client->botType;
+            return false;
+        }
+    }
+    return true;
+}
+
+bool
+CmdClient::integrationUpgrade(WickrBotClients *client, const QString& curSWPath, const QString& newSWPath)
+{
+    // peform the upgrade if one does exist
+    qDebug().noquote().nospace() << "CONSOLE:Upgrading " << client->botType << " software for " << client->name;
+    {
+        QStringList upgradeOutput;
+        QString upgrader = WBIOServerCommon::getBotUpgradeCmd(client->botType);
+        if (!upgrader.isEmpty()){
+            QString upgraderFullPath = QString("%1/%2").arg(newSWPath).arg(upgrader);
+            // Create a process to run the installer
+            QProcess *runUpgrader = new QProcess(this);
+            runUpgrader->setProcessChannelMode(QProcess::MergedChannels);
+            runUpgrader->setWorkingDirectory(newSWPath);
+            QStringList args;
+            args.append(curSWPath);
+            args.append(newSWPath);
+            runUpgrader->start(upgraderFullPath, args, QIODevice::ReadWrite);
+
+            // Wait for it to start
+            if(!runUpgrader->waitForStarted()) {
+                qDebug() << QString("CONSOLE:Failed to run %1").arg(upgrader);
+                return false;
+            }
+
+            while(runUpgrader->waitForReadyRead()) {
+                QString bytes = QString(runUpgrader->readAll());
+                upgradeOutput.append(bytes);
+            }
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
+
+

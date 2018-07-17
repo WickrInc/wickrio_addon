@@ -34,6 +34,7 @@ private:
     void modifyClient(int clientIndex);
     void pauseClient(int clientIndex, bool force);
     void startClient(int clientIndex, bool force);
+    void upgradeClient(int clientIndex);
 
     bool chkClientsNameExists(const QString& name);
     bool chkClientsUserExists(const QString& name);
@@ -48,6 +49,13 @@ private:
     bool getAuthValue(WickrBotClients *client, bool basic, QString& authValue);
 
     unsigned getVersionNumber(QFile *versionFile);
+    void getVersionString(unsigned versionNum, QString& versionString);
+
+    // Integration bot commands
+    bool integrationCopySW(WickrBotClients *client, const QString& swPath, const QString& destPath);
+    bool integrationInstall(WickrBotClients *client, const QString& destPath);
+    bool integrationConfigure(WickrBotClients *client, const QString& destPath);
+    bool integrationUpgrade(WickrBotClients *client, const QString& curSWPath, const QString& newSWPath);
 
 private:
     CmdOperation *m_operation;
