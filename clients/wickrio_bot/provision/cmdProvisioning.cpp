@@ -73,7 +73,7 @@ bool CmdProvisioning::runCommands(int argc, char *argv[])
             m_client->name = m_client->user;
             m_client->name.replace("@", "_");
         }
-        qDebug() << "CONSOLE:Creating user: " << m_client->name;
+        qDebug() << "CONSOLE:Creating user: " << m_client->user;
     } else {
 
         // For onprem get the config file information

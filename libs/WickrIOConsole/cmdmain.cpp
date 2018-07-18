@@ -230,6 +230,7 @@ bool CmdMain::config(QString args)
 
                     WickrBotClients *client = new WickrBotClients();
                     client->name = name;
+                    client->name.replace("@", "_");
                     client->user = name;
 
                     if (!password.isEmpty()) {

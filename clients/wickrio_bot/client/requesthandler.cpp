@@ -66,6 +66,7 @@ void RequestHandler::service(stefanfrings::HttpRequest& request, stefanfrings::H
     }
     setupResponse(request, response);
 
+#if 0   // Ignore authentication for now
     // Get the Console User from the database
     WickrIOConsoleUser cUser;
 
@@ -79,6 +80,7 @@ void RequestHandler::service(stefanfrings::HttpRequest& request, stefanfrings::H
             return;
         }
     }
+#endif
 
     // Parse the path
     QList<QByteArray> pathSplit = path.split('/');

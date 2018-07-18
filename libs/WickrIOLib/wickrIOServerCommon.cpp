@@ -133,7 +133,7 @@ WBIOServerCommon::initClientApps()
 
         // If the hubot software is installed then add it to the list of available integrations
         if (QFile(BOT_HUBOT_SOFTWARE).exists()) {
-            WBIOBotTypes *hubot = new WBIOBotTypes("hubot", "hubot", APIURL_MSGRECVCBACK, BOT_HUBOT_SOFTWARE,
+            WBIOBotTypes *hubot = new WBIOBotTypes("hubot", "hubot", true, APIURL_MSGRECVCBACK, BOT_HUBOT_SOFTWARE,
                                                    "install.sh", "configure.sh", "start.sh", "stop.sh", "upgrade.sh" );
             WBIOServerCommon::m_supportedBots.append(hubot);
 

@@ -293,11 +293,10 @@ void CmdClient::listClients()
                 .arg(clientState)
                 .arg(botTypeString);
         } else {
-            data = QString("CONSOLE: client[%1] %2, APIKey=%3, User=%4, Port=%5, Binary=%6, State=%7, ConsoleUser=%8%9")
+            data = QString("CONSOLE: client[%1] %2, APIKey=%3, Port=%4, Binary=%5, State=%6, ConsoleUser=%7%8")
                 .arg(cnt++)
-                .arg(client->name)
-                .arg(client->apiKey)
                 .arg(client->user)
+                .arg(client->apiKey)
                 .arg(client->port)
                 .arg(client->binary)
                 .arg(clientState)
@@ -397,7 +396,6 @@ bool CmdClient::getClientValues(WickrBotClients *client)
     } while (chkClientsUserExists(temp));
     client->user = temp;
 
-#if 1
     // Get the password
     while (true) {
         client->password = getNewValue(client->password, tr("Enter the password"));
@@ -413,7 +411,6 @@ bool CmdClient::getClientValues(WickrBotClients *client)
             break;
         }
     }
-#endif
 
     // The client name will be the username.  Replace the "@" character with the "_"
     client->name = client->user;
@@ -468,13 +465,38 @@ bool CmdClient::getClientValues(WickrBotClients *client)
     } else {
     }
 
+    bool getInterfaceInfo;
     if (!m_basicConfig) {
+        getInterfaceInfo = true;
+    } else {
+        // For basic configuration prompt the user if they want to add HTTP interface (default: no)
+        while (true) {
+            QString temp = getNewValue("no", tr("Do you want to use the HTTP API?"), CHECK_BOOL);
+            if (temp.toLower() == "yes" || temp.toLower() == "y") {
+                getInterfaceInfo = true;
+                break;
+            }
+            if (temp.toLower() == "no" || temp.toLower() == "n" || temp.isEmpty()) {
+                getInterfaceInfo = false;
+                break;
+            }
+
+            // Check if the user wants to quit the action
+            if (handleQuit(temp, &quit) && quit) {
+                return false;
+            }
+        }
+    }
+
+    if (getInterfaceInfo) {
 
         // Generate the API Key, with a random value
         client->apiKey = WickrIOTokens::getRandomString(16);
 
+#if 0 // Defaulting to localhost
         // Get the list of possible interfaces
         QStringList ifaceList = WickrIOConsoleClientHandler::getNetworkInterfaceList();
+#endif
 
         // Get a unique interface and port pair
         while (true) {
@@ -517,7 +539,7 @@ bool CmdClient::getClientValues(WickrBotClients *client)
             }
 
             if (chkClientsInterfaceExists(ifaceinput, portinput)) {
-                qDebug() << "CONSOLE:Interface and port combination used already!";
+                qDebug() << "CONSOLE:Port number is used already!";
                 continue;
             }
 
@@ -552,6 +574,7 @@ bool CmdClient::getClientValues(WickrBotClients *client)
             client->sslCertFile = m_sslSettings.sslCertFile;
         }
 
+#if 0 // Need to figure out how we want to set console users
         QList<WickrIOConsoleUser *> cusers = m_operation->m_ioDB->getConsoleUsers();
         if (cusers.length() > 0) {
             int curindex = -1;
@@ -609,6 +632,7 @@ bool CmdClient::getClientValues(WickrBotClients *client)
                 delete cuser;
             }
         }
+#endif
 
         // Inbox handling can be turned off for Welcome Bots (only)
         //check whether type is welcome_bot to see if need to find parser
@@ -652,7 +676,10 @@ bool CmdClient::getClientValues(WickrBotClients *client)
             QDir fullPath(it.next());
             QString dirName = fullPath.dirName();
             for (WBIOBotTypes *botType : botTypes) {
-                if (botType->name() == dirName) {
+                /* If this bot is installed and it doesn't need HTTP API,
+                 * or needs HTTP API and HTTP iface is configured
+                 */
+                if (botType->name() == dirName && (getInterfaceInfo || !botType->useHttpApi())) {
                     supportedIntegrations.append(botType);
                 }
             }
@@ -721,7 +748,7 @@ bool CmdClient::getClientValues(WickrBotClients *client)
         QString swPath = WBIOServerCommon::getBotSoftwarePath(client->botType);
         if (!swPath.isEmpty()) {
             qDebug() << "CONSOLE:**********************************************************************";
-            qDebug().noquote().nospace() << "CONSOLE:Begin setup of " << client->botType << " software for " << client->name;
+            qDebug().noquote().nospace() << "CONSOLE:Begin setup of " << client->botType << " software for " << client->user;
 
             QString destPath = QString(WBIO_CLIENT_BOTDIR_FORMAT)
                     .arg(WBIO_DEFAULT_DBLOCATION)
@@ -885,11 +912,15 @@ CmdClient::runBotScript(const QString& destPath, const QString& configure, Wickr
 
                         if (prompt == "WICKRIO_AUTH_TOKEN") {
                             QString authValue;
+#if 0 // Ignoring authentication for now
                             // Get the basic authentication value (user:pw), should use token though
                             if (!getAuthValue(client, true, authValue)) {
                                 runScript->close();
                                 return false;
                             }
+#else
+                            authValue = "admin:admin";
+#endif
 
                             authValue.append("\n");
                             runScript->write(authValue.toLatin1());
@@ -1070,7 +1101,7 @@ void CmdClient::deleteClient(int clientIndex)
                 }
             }
 
-            qDebug() << "CONSOLE:Deleting client" << client->name;
+            qDebug() << "CONSOLE:Deleting client" << client->user;
 
             if (! m_operation->m_ioDB->deleteClientUsingName(m_clients.at(clientIndex)->name)) {
                 qDebug() << "CONSOLE:There was a problem deleting the client!";
@@ -1223,7 +1254,7 @@ void CmdClient::pauseClient(int clientIndex, bool force)
             if (state.ipc_port == 0) {
                 qDebug() << "CONSOLE:Client does not have an IPC port defined, cannot pause!";
             } else if (state.state == PROCSTATE_RUNNING) {
-                QString prompt = QString(tr("Do you really want to pause the client with the name %1")).arg(client->name);
+                QString prompt = QString(tr("Do you really want to pause the client with the name %1")).arg(client->user);
                 QString response = getNewValue("", prompt);
                 if (response.toLower() == "y" || response.toLower() == "yes") {
                     if (! sendClientCmd(state.ipc_port, WBIO_IPCCMDS_PAUSE)) {
@@ -1272,7 +1303,7 @@ void CmdClient::startClient(int clientIndex, bool force)
 
         if (m_operation->m_ioDB->getProcessState(processName, &state)) {
             if (state.state == PROCSTATE_PAUSED || force) {
-                QString prompt = QString(tr("Do you really want to start the client with the name %1")).arg(client->name);
+                QString prompt = QString(tr("Do you really want to start the client with the name %1")).arg(client->user);
                 QString response = getNewValue("", prompt);
                 if (response.toLower() == "y" || response.toLower() == "yes") {
                     // Check if the database password has been created.
@@ -1435,7 +1466,7 @@ void CmdClient::upgradeClient(int clientIndex)
 bool
 CmdClient::integrationCopySW(WickrBotClients *client, const QString& swPath, const QString& destPath)
 {
-    qDebug().noquote().nospace() << "CONSOLE:Copying " << client->botType << " software for " << client->name;
+    qDebug().noquote().nospace() << "CONSOLE:Copying " << client->botType << " software for " << client->user;
     {
         // Create a process to extract the software
         QProcess *unarchive = new QProcess(this);
@@ -1466,7 +1497,7 @@ bool
 CmdClient::integrationInstall(WickrBotClients *client, const QString& destPath)
 {
     // peform the installer if one does exist
-    qDebug().noquote().nospace() << "CONSOLE:Installing " << client->botType << " software for " << client->name;
+    qDebug().noquote().nospace() << "CONSOLE:Installing " << client->botType << " software for " << client->user;
     {
         QStringList installOutput;
         QString installer = WBIOServerCommon::getBotInstaller(client->botType);
@@ -1496,7 +1527,7 @@ CmdClient::integrationInstall(WickrBotClients *client, const QString& destPath)
 bool
 CmdClient::integrationConfigure(WickrBotClients *client, const QString& destPath)
 {
-    qDebug().noquote().nospace() << "CONSOLE:Begin configuration of " << client->botType << " software for " << client->name;
+    qDebug().noquote().nospace() << "CONSOLE:Begin configuration of " << client->botType << " software for " << client->user;
     QString configure = WBIOServerCommon::getBotConfigure(client->botType);
     if (!configure.isEmpty()){
         QString configureFullpath = QString("%1/%2").arg(destPath).arg(configure);
@@ -1512,7 +1543,7 @@ bool
 CmdClient::integrationUpgrade(WickrBotClients *client, const QString& curSWPath, const QString& newSWPath)
 {
     // peform the upgrade if one does exist
-    qDebug().noquote().nospace() << "CONSOLE:Upgrading " << client->botType << " software for " << client->name;
+    qDebug().noquote().nospace() << "CONSOLE:Upgrading " << client->botType << " software for " << client->user;
     {
         QStringList upgradeOutput;
         QString upgrader = WBIOServerCommon::getBotUpgradeCmd(client->botType);
