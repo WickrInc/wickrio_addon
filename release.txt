@@ -1,4 +1,4 @@
-Release Notes from v4.26-release to v4.41.19-5:
+Release Notes from v4.26-release to v4.41.20-2:
   * Update addon and API cmake files
   * Makr addon a library
   * Add SendAttachment functions, modified docs
