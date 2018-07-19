@@ -1,4 +1,4 @@
-var addon = require('bindings')('wickrio_addon');
+var addon = require('wickrio_addon');
 var prompt = require('prompt');
 prompt.start();
 module.exports = addon;

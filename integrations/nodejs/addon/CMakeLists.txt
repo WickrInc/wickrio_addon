@@ -12,6 +12,7 @@ if(OPENSSL_FOUND)
 set(OPENSSL_USE_STATIC_LIBS TRUE)
 endif()
 
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../clients/libs/WickrIOClientAPI/build)
 
 # Declare the source files location
 file(GLOB SOURCE_FILES "src/*.cpp" "src/*.h")
@@ -27,9 +28,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
   ${CMAKE_JS_INC}
   /usr/local/include
   ${CMAKE_CURRENT_SOURCE_DIR}/../../../clients/libs/WickrIOClientAPI/src
-  ./node_modules/nan)
+  ./node_modules/nan
+  ./node_modules/bindings)
 
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../clients/libs/WickrIOClientAPI/build)
-
-
-target_link_libraries(${PROJECT_NAME} ${CMAKE_JS_LIB} ${CMAKE_CURRENT_SOURCE_DIR}/../../../clients/libs/WickrIOClientAPI/build/libWickrIOClientAPI.a ${CMAKE_DL_LIBS})
+target_link_libraries(${PROJECT_NAME} ${CMAKE_JS_LIB} libWickrIOClientAPI.a ${CMAKE_DL_LIBS})
