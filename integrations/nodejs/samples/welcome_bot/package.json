@@ -1,0 +1,15 @@
+{
+  "name": "welcome_bot",
+  "version": "1.0.0",
+  "description": "Wickr sample JavaScript Welcome Bot",
+  "main": "welcome_bot_node.js",
+  "private": true,
+  "dependencies": {
+    "bindings": "~1.2.1",
+    "cmake-js": "^3.7.3",
+    "lodash": "^4.17.10",
+    "nan": "^2.10.0",
+    "prompt": "^1.0.0",
+    "wickrio_addon": "file:../../addon"
+  }
+}

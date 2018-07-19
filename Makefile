@@ -6,6 +6,7 @@ LIBS_CPPZMQ = libs/third_party/cppzmq
 LIBS_LIBZMQ = libs/third_party/libzmq
 CLIENTAPI_LIB = clients/libs/WickrIOClientAPI
 CLIENTAPI_CPPTEST = clients/nodejs/addons/cpp_test
+NODEJS_ADDON = integrations/addon
 LOCALREPO = localRepo/$(WICKR_SDK)
 SDK_BRANCH = v4.41
 INTEGRATIONS_BRANCH = alpha
@@ -140,6 +141,7 @@ linux:
 	cd $(LIBS_CPPZMQ); mkdir -p build; cd build; cmake ..; make -j4
 	cd $(CLIENTAPI_LIB); mkdir -p build; cd build; cmake ..; make
 	cd $(CLIENTAPI_CPPTEST); mkdir -p build; cd build; cmake ..; make
+	cd $(NODEJS_ADDON); npm install nan --save; cmake-js
 	cd $(WICKR_SDK); make linux
 
 linux.release:
@@ -147,6 +149,7 @@ linux.release:
 	cd $(LIBS_CPPZMQ); mkdir -p build; cd build; cmake ..; make -j4
 	cd $(CLIENTAPI_LIB); mkdir -p build; cd build; cmake ..; make
 	cd $(CLIENTAPI_CPPTEST); mkdir -p build; cd build; cmake ..; make
+	cd $(NODEJS_ADDON); npm install nan --save; cmake-js
 	cd $(WICKR_SDK); make linux.release
 
 linux.clean:
@@ -154,6 +157,7 @@ linux.clean:
 	cd $(LIBS_CPPZMQ); rm -rf build
 	cd $(CLIENTAPI_LIB); rm -rf build
 	cd $(CLIENTAPI_CPPTEST); rm -rf build
+	cd $(NODEJS_ADDON); rm -rf build node_modules
 	cd $(WICKR_SDK); make linux.clean
 
 linux.install: linux

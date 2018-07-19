@@ -23,10 +23,13 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
 
 # Essential include files to build a node addon,
 # You should add this line in every CMake.js based project
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_JS_INC})
+target_include_directories(${PROJECT_NAME} PRIVATE
+  ${CMAKE_JS_INC}
+  /usr/local/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../clients/libs/WickrIOClientAPI/src
+  ./node_modules/nan)
 
-include_directories(/usr/local/include ${CMAKE_CURRENT_SOURCE_DIR}/../../../libs/WickrIOClientAPI/src)
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../libs/WickrIOClientAPI/build)
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../clients/libs/WickrIOClientAPI/build)
 
 
-target_link_libraries(${PROJECT_NAME} ${CMAKE_JS_LIB} ${CMAKE_CURRENT_SOURCE_DIR}/../../../libs/WickrIOClientAPI/build/libWickrIOClientAPI.a ${CMAKE_DL_LIBS})
+target_link_libraries(${PROJECT_NAME} ${CMAKE_JS_LIB} ${CMAKE_CURRENT_SOURCE_DIR}/../../clients/libs/WickrIOClientAPI/build/libWickrIOClientAPI.a ${CMAKE_DL_LIBS})

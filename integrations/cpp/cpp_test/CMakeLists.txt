@@ -10,8 +10,8 @@ project (cpp_test)
 # Declare the source files location
 file(GLOB SOURCE_FILES "src/*.cpp" "src/*.h")
 
-include_directories(/usr/local/include ${CMAKE_CURRENT_SOURCE_DIR}/../../../libs/WickrIOClientAPI/src)
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../libs/WickrIOClientAPI/build)
+include_directories(/usr/local/include ${CMAKE_CURRENT_SOURCE_DIR}/../../../clients/libs/WickrIOClientAPI/src)
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../clients/libs/WickrIOClientAPI/build)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
