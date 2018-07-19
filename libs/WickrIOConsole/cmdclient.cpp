@@ -288,7 +288,11 @@ void CmdClient::listClients()
         // If there is a port configured then create the port string
         QString portString;
         if (client->port != 0) {
-            portString = QString(", Port=%1").arg(client->port);
+            if (client->apiKey.isEmpty()) {
+                portString = QString(", Port=%1").arg(client->port);
+            } else {
+                portString = QString(", Port=%1, APIKey=%2").arg(client->port).arg(client->apiKey);
+            }
         }
 
         QString data;
@@ -300,10 +304,9 @@ void CmdClient::listClients()
                 .arg(clientState)
                 .arg(botTypeString);
         } else {
-            data = QString("CONSOLE: client[%1] %2, APIKey=%3%4, Binary=%5, State=%6, ConsoleUser=%7%8")
+            data = QString("CONSOLE: client[%1] %2%3, Binary=%4, State=%5, ConsoleUser=%6%7")
                 .arg(cnt++)
                 .arg(client->user)
-                .arg(client->apiKey)
                 .arg(portString)
                 .arg(client->binary)
                 .arg(clientState)
