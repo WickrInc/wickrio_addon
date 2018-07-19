@@ -28,7 +28,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
   ${CMAKE_JS_INC}
   /usr/local/include
   ${CMAKE_CURRENT_SOURCE_DIR}/../../../clients/libs/WickrIOClientAPI/src
-  ./node_modules/nan
-  ./node_modules/bindings)
+  ./node_modules/nan)
 
 target_link_libraries(${PROJECT_NAME} ${CMAKE_JS_LIB} libWickrIOClientAPI.a ${CMAKE_DL_LIBS})
