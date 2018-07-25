@@ -6,20 +6,18 @@ Need a recent version of node:
 
 
 In order to build the WickrIO Node.js addon you will need to have the following installed:
-- cmakejs-js : installation command "npm install -g cmake-js"
 
 install cmake:
 - sudo apt-get install cmake
 
 install g++:
-sudo apt-get install g++
+- sudo apt-get install g++
 
 
 
 To build the WickrIO Node.js addon do the following:
 1. cd to the addon directory
 2. run "npm install"
-3. run "cmake-js"
 
 Running a sample:
 1. cd to the specific example
