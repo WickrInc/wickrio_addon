@@ -385,7 +385,13 @@ $abs/services/installer/linux/scripts/consoleCmd_deploy64 $binary_dir $build_num
 echo "going to create Qt library package"
 $abs/platforms/linux/debian/wickrqt/deploy64 "$deploy"
 
-(cd $deploy ; zip -r "$output/bots-${version}.zip" *.deb *.sha256)
+echo "going to create the Samples package"
+(cd $abs/integrations/nodejs/installer; ./generate $build_number "$deploy")
+
+#
+# create the package for deployment
+#
+(cd $deploy ; zip -r "$output/bots-${version}.zip" *.deb *.sha256 *.tar.gz)
 
 echo "ZIP File: $output/bots-${version}.zip"
 
