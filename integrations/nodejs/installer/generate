@@ -1,0 +1,81 @@
+#!/bin/sh
+
+# a second stage deploy script...
+#
+# Arguments to this script:
+# $1 = build number
+# $2 = Output directory
+
+set -e
+current=`dirname $0`
+cd $current
+
+build_number=$1
+output_dir="$2"
+
+#
+# Make sure the version number is the correct length
+#
+check=${#build_number}
+if [ $check -lt 8 ]; then
+  build_number="0$build_number"
+fi
+
+#
+# Debug display of input
+#
+echo build_number=$build_number
+
+#
+# Setup the version number(s)
+#
+maj=`echo $build_number | cut -c1-2 | sed 's/^0*//'`
+min=`echo $build_number | cut -c3-4`
+pat=`echo $build_number | cut -c5-6`
+bld=`echo $build_number | cut -c7-8`
+
+version="${maj}.${min}.${pat}-${bld}"
+
+#
+# More debug output
+#
+echo version=$version
+
+prefix=~/tmp/wio_nodejs_samples
+sample_dir=$prefix/nodejs_samples
+
+tar_file=$prefix/WickrIO_nodejs_samples_${version}.tar.gz
+
+# Cleanup the target location (i.e. remove the target directory)
+rm -rf $prefix
+
+# Create the appropriate directories in the target location
+mkdir -p $sample_dir
+
+#
+# Create the sample software tree
+#
+cp -R ../addon $sample_dir
+cp -R ../samples $sample_dir
+cp ../README.md $sample_dir
+
+#
+# Create and copy the appropriate exports
+#
+mkdir -p ${sample_dir}/exports/libs
+mkdir -p ${sample_dir}/exports/include
+cp ../../../clients/libs/WickrIOClientAPI/build/libWickrIOClientAPI.a ${sample_dir}/exports/libs
+cp ../../../clients/libs/WickrIOClientAPI/src/bot_iface.h ${sample_dir}/exports/include
+
+#
+# Create the actual package
+#
+tar -zcvf ${tar_file} ${sample_dir}
+
+#
+# copy to the output directory
+#
+if test -d "$output_dir" ; then
+    cp ${tar_file} "$output_dir/"
+    echo "copying ${tar_file}.* to $output_dir/"
+fi
