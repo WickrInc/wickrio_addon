@@ -70,7 +70,8 @@ cp ../../../clients/libs/WickrIOClientAPI/src/bot_iface.h ${sample_dir}/exports/
 #
 # Create the actual package
 #
-tar -zcvf ${tar_file} ${sample_dir}
+cd ${sample_dir}
+tar -zcvf ${tar_file} *
 
 #
 # copy to the output directory
