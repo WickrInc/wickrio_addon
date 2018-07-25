@@ -15,10 +15,22 @@ return new Promise((resolve, reject) => {
       }
     }
   };
-prompt.get(schema, function (err, result) {
-   var response = addon.clientInit(result.client_bot_username);
-   resolve(response);
- });
+  if (process.argv[2] === undefined) {
+    return new Promise((resolve, reject) => {
+      prompt.get(schema, function(err, result) {
+        resolve(result.client_bot_username);
+      });
+    }).then(result => {
+      var response = addon.clientInit(result);
+      resolve(response);
+    }).catch(error => {
+      console.log('Error: ', error);
+    });
+  } else {
+    var response = addon.clientInit(process.argv[2]);
+    resolve(response);
+  }
+
 }).then(result => {
 console.log(result);
 var members = ['wickraaron@wickrautomation.com'];
