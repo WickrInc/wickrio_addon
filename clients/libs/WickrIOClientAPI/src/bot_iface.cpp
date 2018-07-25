@@ -1,6 +1,7 @@
 #include <string>
 #include <algorithm>
 
+#include "zeromq_iface.h"
 #include "bot_iface.h"
 
 using namespace std;

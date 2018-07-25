@@ -7,8 +7,6 @@
 
 #include <vector>
 
-#include "zeromq_iface.h"
-
 using namespace std;
 
 class BotIface
@@ -100,7 +98,11 @@ public:
                                            const string& bor="");
 
 private:
+#ifdef ZEROMQ_TEST_H
     MesgQueueIface  *m_iface = NULL;
+#else
+    void            *m_iface = NULL;
+#endif
 
     string          m_clientName;           // Name of the client interfacing with
     string          m_lastError = "";       // Last error string
