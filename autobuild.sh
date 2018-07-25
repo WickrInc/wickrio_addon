@@ -316,7 +316,7 @@ make $bldtype.install
 #
 # Build the node addon
 #
-(cd clients/nodejs/addons/wickrio_node.js_addon; rm -rf build; npm install; cmake-js rebuild)
+(cd integrations/nodejs/addon; rm -rf build; npm install; cmake-js rebuild)
 
 #
 # Deploy this thing
