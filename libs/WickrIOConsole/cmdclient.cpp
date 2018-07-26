@@ -456,12 +456,20 @@ bool CmdClient::getClientValues(WickrBotClients *client)
         m_exec = new QProcess();
 
         connect(m_exec, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(slotCmdFinished));
-        connect(m_exec, SIGNAL(finished(int, QProcess::readyReadStandardOutput)), this, SLOT(slotCmdOutputRx));
+//        connect(m_exec, SIGNAL(finished(int, QProcess::readyReadStandardOutput)), this, SLOT(slotCmdOutputRx));
 
         //Tests that process starts and closes alright
         m_exec->start(provisionApp, arguments);
 
         if (m_exec->waitForStarted(-1)) {
+            // Continue reading the data until EOF reached
+            while(m_exec->waitForReadyRead()) {
+                QByteArray data;
+                data = m_exec->readAll();
+
+                // Output the data
+                qDebug().noquote().nospace() << "CONSOLE:" << data;
+            }
             m_exec->waitForFinished(-1);
         } else {
             QByteArray errorout = m_exec->readAllStandardError();
@@ -996,7 +1004,7 @@ void CmdClient::slotCmdOutputRx()
 {
     QByteArray output = m_exec->readAll();
 
-    qDebug() << output;
+    qDebug().nospace().noquote() << "CONSOLE:" << output;
 
     QTextStream s(stdin);
     QString lineInput = s.readLine();
@@ -1525,9 +1533,16 @@ CmdClient::integrationInstall(WickrBotClients *client, const QString& destPath)
                 return false;
             }
 
-            while(runInstaller->waitForReadyRead()) {
-                QString bytes = QString(runInstaller->readAll());
-                installOutput.append(bytes);
+            while (runInstaller->state() != QProcess::NotRunning) {
+                if (runInstaller->waitForReadyRead(2500)) {
+                    QString bytes = QString(runInstaller->readAll());
+                    //qDebug().noquote().nospace() << "CONSOLE:" << bytes;
+                    installOutput.append(bytes);
+                } else {
+                    if (runInstaller->state() != QProcess::NotRunning) {
+                        qDebug() << "CONSOLE:Installing";
+                    }
+                }
             }
         }
     }
