@@ -1,8 +1,26 @@
 var addon = require('wickrio_addon');
 var prompt = require('prompt');
 prompt.start();
+process.title = "welcomeBot";
 module.exports = addon;
 process.stdin.resume(); //so the program will not close instantly
+
+function exitHandler(options, err) {
+    if (err)
+      console.log(err.stack);
+    if (options.exit)
+      addon.closeClient();
+}
+
+//do something when app is closing
+process.on('exit', exitHandler.bind(null,{exit:true}));
+
+//catches ctrl+c event
+process.on('SIGINT', exitHandler.bind(null, {exit:true}));
+
+// catches "kill pid" (for example: nodemon restart)
+process.on('SIGUSR1', exitHandler.bind(null, {exit:true}));
+
 
 return new Promise((resolve, reject) => {
   var schema = {
