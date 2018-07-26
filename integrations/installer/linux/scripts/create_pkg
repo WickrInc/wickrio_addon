@@ -9,7 +9,8 @@ cd $current
 QTVER="5_9"
 
 buildtype=$1
-outputdir="$2"
+hubotswdir="$2"
+outputdir="$3"
 
 #
 # Setup the build type values and validate the input value
@@ -34,4 +35,4 @@ esac
 
 build_number=`cat ../../../../BUILD_NUMBER`
 
-$current/deploy64 $build_number "${bldExtStr}" "${bldInsStr}" ${relBldFlag} "${outputdir}"
+$current/deploy64 $build_number "${bldExtStr}" "${bldInsStr}" ${relBldFlag} "${hubotswdir}" "${outputdir}"
