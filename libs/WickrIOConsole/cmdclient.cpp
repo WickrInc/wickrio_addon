@@ -1105,17 +1105,16 @@ void CmdClient::deleteClient(int clientIndex)
         WickrBotProcessState state;
         QString processName = WBIOServerCommon::getClientProcessName(client);
         if (m_operation->m_ioDB->getProcessState(processName, &state)) {
-            if (state.ipc_port == 0) {
-                qDebug() << "CONSOLE:Client does not have an IPC port defined, will not be able to stop WickrIO Client process!";
-                QString response = getNewValue("", "Do you want to continue? (y or n)");
-                if (response.toLower() == "n") {
-                    return;
-                }
-            } else if (state.state == PROCSTATE_RUNNING) {
-                qDebug() << "CONSOLE:The client is running, you should first Pause the client, then delete!";
-                QString response = getNewValue("", "Do you want to continue? (y or n)");
-                if (response.toLower() == "n") {
-                    return;
+            if (state.state == PROCSTATE_RUNNING) {
+                while (true) {
+                    qDebug() << "CONSOLE:The client is running, you should first Pause the client, then delete!";
+                    QString response = getNewValue("", "Do you want to continue? (y or n)");
+                    if (response.toLower() == "n" || response.toLower() == "no") {
+                        return;
+                    }
+                    if (response.toLower() == "y" || response.toLower() == "yes") {
+                        break;
+                    }
                 }
             }
 
