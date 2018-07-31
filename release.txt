@@ -1,4 +1,5 @@
-Release Notes from v4.26-release to v4.41.26-2:
+Release Notes from v4.26-release to v4.41.27-2:
+  * Remove the check and prompt if the IPC value is 0
   * Add start and stop to welcomeBot
   * Add check for client bot's name argument
   * Edit package.json files for samples and addon
