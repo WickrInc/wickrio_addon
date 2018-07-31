@@ -225,9 +225,9 @@ void CmdIntegration::listIntegrations()
  CmdIntegration::chkIntegrationExists(const QString& name)
  {
     // get the list of custom integrations
-    m_customInts = WBIOServerCommon::getBotsSupported("wickrio_bot", true);
+    QList<WBIOBotTypes *> customInts = WBIOServerCommon::getBotsSupported("wickrio_bot", false);
 
-    for (WBIOBotTypes *customInt : m_customInts) {
+    for (WBIOBotTypes *customInt : customInts) {
         if (customInt->name() == name)
             return true;
     }
