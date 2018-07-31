@@ -16,17 +16,28 @@ CmdClient::CmdClient(CmdOperation *operation) :
     m_operation(operation),
     m_cmdIntegration(operation)
 {
-    // Check if there are any clients that have had updated hubot software
-    QDirIterator it(WBIO_INTEGRATIONS_DIR, QDir::NoDotAndDotDot | QDir::Dirs);
-    while (it.hasNext()) {
-        QDir curdir(it.next());
+    updateIntegrationVersion();
+}
 
-        QFile curHubotVersionFile(QString("%1/%2/VERSION").arg(WBIO_INTEGRATIONS_DIR).arg(curdir.dirName()));
+void
+CmdClient::updateIntegrationVersion()
+{
+    QList<WBIOBotTypes *>integrations = WBIOServerCommon::getBotsSupported("wickrio_bot", false);
+
+    for (WBIOBotTypes *integration : integrations) {
+        QString versionName;
+        if (integration->customBot()) {
+            versionName = QString(WBIO_CUSTOMBOT_VERSIONFILE).arg(integration->name());
+        } else {
+            versionName = QString("%1/%2/VERSION").arg(WBIO_INTEGRATIONS_DIR).arg(integration->name());
+        }
+
+        QFile curHubotVersionFile(versionName);
         unsigned curHubotVersion;
         if (curHubotVersionFile.exists()) {
             curHubotVersion = getVersionNumber(&curHubotVersionFile);
             if (curHubotVersion > 0) {
-                m_integrationVersions.insert(curdir.dirName(), curHubotVersion);
+                m_integrationVersions.insert(integration->name(), curHubotVersion);
             }
         }
     }
@@ -124,6 +135,7 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
         }
     } else if (cmd == "integration") {
         retVal = m_cmdIntegration.runCommands();
+        updateIntegrationVersion();
     } else if (cmd == "list") {
         listClients();
     } else if (cmd == "modify") {
@@ -1518,6 +1530,13 @@ CmdClient::integrationInstall(WickrBotClients *client, const QString& destPath)
         QString installer = WBIOServerCommon::getBotInstaller(client->botType);
         if (!installer.isEmpty()){
             QString installerFullPath = QString("%1/%2").arg(destPath).arg(installer);
+
+            QFile installShFile(installerFullPath);
+            if (!installShFile.exists()) {
+                qDebug() << "CONSOLE:install shell file does not exist for this software!";
+                return false;
+            }
+
             // Create a process to run the installer
             QProcess *runInstaller = new QProcess(this);
             runInstaller->setProcessChannelMode(QProcess::MergedChannels);
@@ -1571,25 +1590,47 @@ CmdClient::integrationUpgrade(WickrBotClients *client, const QString& curSWPath,
         QString upgrader = WBIOServerCommon::getBotUpgradeCmd(client->botType);
         if (!upgrader.isEmpty()){
             QString upgraderFullPath = QString("%1/%2").arg(newSWPath).arg(upgrader);
-            // Create a process to run the installer
-            QProcess *runUpgrader = new QProcess(this);
-            runUpgrader->setProcessChannelMode(QProcess::MergedChannels);
-            runUpgrader->setWorkingDirectory(newSWPath);
-            QStringList args;
-            args.append(curSWPath);
-            args.append(newSWPath);
-            runUpgrader->start(upgraderFullPath, args, QIODevice::ReadWrite);
 
-            // Wait for it to start
-            if(!runUpgrader->waitForStarted()) {
-                qDebug() << QString("CONSOLE:Failed to run %1").arg(upgrader);
-                return false;
+            QFile upgradeShFile(upgraderFullPath);
+            if (upgradeShFile.exists()) {
+                // Create a process to run the installer
+                QProcess *runUpgrader = new QProcess(this);
+                runUpgrader->setProcessChannelMode(QProcess::MergedChannels);
+                runUpgrader->setWorkingDirectory(newSWPath);
+                QStringList args;
+                args.append(curSWPath);
+                args.append(newSWPath);
+                runUpgrader->start(upgraderFullPath, args, QIODevice::ReadWrite);
+
+                // Wait for it to start
+                if(!runUpgrader->waitForStarted()) {
+                    qDebug() << QString("CONSOLE:Failed to run %1").arg(upgrader);
+                    return false;
+                }
+
+                while(runUpgrader->waitForReadyRead()) {
+                    QString bytes = QString(runUpgrader->readAll());
+                    upgradeOutput.append(bytes);
+                }
+            }
+            // If there is no upgrade shell then just move the directory
+            else {
+                qDebug() << "CONSOLE:There is no upgrade shell, moving the new software in.";
+                QDir oldDir(curSWPath);
+                if (oldDir.exists()) {
+                    qDebug() << "CONSOLE:Removing old integration directory!";
+                    if (!oldDir.removeRecursively()) {
+                        qDebug() << "CONSOLE:Failed to delete the old integration directory!";
+                        return false;
+                    }
+                }
+
+                if (!oldDir.rename(newSWPath, curSWPath)) {
+                    qDebug() << "CONSOLE:Failed to move new integration directory!";
+                    return false;
+                }
             }
 
-            while(runUpgrader->waitForReadyRead()) {
-                QString bytes = QString(runUpgrader->readAll());
-                upgradeOutput.append(bytes);
-            }
         } else {
             return false;
         }

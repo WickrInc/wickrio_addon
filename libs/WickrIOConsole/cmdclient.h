@@ -75,6 +75,8 @@ private:
 
     QProcess *m_exec;
 
+    void updateIntegrationVersion();
+
 private slots:
     void slotCmdFinished(int, QProcess::ExitStatus);
     void slotCmdOutputRx();
