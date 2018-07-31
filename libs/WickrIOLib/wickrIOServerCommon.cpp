@@ -2,6 +2,7 @@
 #include <QDir>
 #include <QDebug>
 #include <QFile>
+#include <QDirIterator>
 
 #include "wickrIOCommon.h"
 #include "wickrIOServerCommon.h"
@@ -103,6 +104,132 @@ QString appName = WBIO_PARSER_TARGET;
     return appName;
 }
 
+QStringList
+WBIOServerCommon::getCustomIntegrationsList()
+{
+    QStringList customIntegrations;
+    QDir customDir(WBIO_CUSTOMBOT_DIR);
+    if (customDir.exists()) {
+        // Need to determine which integrations are available
+        QDirIterator it(WBIO_CUSTOMBOT_DIR, QDir::NoDotAndDotDot | QDir::Dirs);
+        while(it.hasNext()) {
+            QDir fullPath(it.next());
+            QString dirName = fullPath.dirName();
+
+            QFile botSw(QString(WBIO_CUSTOMBOT_SWFILE).arg(dirName));
+            if (botSw.exists())
+                customIntegrations.append(dirName);
+        }
+    }
+
+    return customIntegrations;
+}
+
+QList<WBIOBotTypes *>
+WBIOClientApps::supportedBots(bool customOnly)
+{
+    if (!customOnly)
+        return m_supportedBots;
+
+    QList<WBIOBotTypes *>customOnlyIntegrations;
+
+    for (WBIOBotTypes *integ: m_supportedBots) {
+        if (integ->customBot()) {
+            customOnlyIntegrations.append(integ);
+        }
+    }
+    return customOnlyIntegrations;
+}
+
+void
+WBIOServerCommon::addCustomIntegration(const QString& customBot, bool httpIface)
+{
+    QString botSw = QString(WBIO_CUSTOMBOT_SWFILE).arg(customBot);
+
+    // Assume that all of the shell scripts are there
+    WBIOBotTypes *bot = new WBIOBotTypes(customBot, customBot, true, httpIface, APIURL_MSGRECVCBACK, botSw,
+                                         "install.sh", "configure.sh", "start.sh", "stop.sh", "upgrade.sh" );
+    WBIOServerCommon::m_supportedBots.append(bot);
+
+    // add all the bots to the WickrIO Bots
+    WBIOClientApps *wickrIOAlpha = getClientApp("wickrio_botAlpha");
+    WBIOClientApps *wickrIOBeta  = getClientApp("wickrio_botBeta");
+    WBIOClientApps *wickrIOProd  = getClientApp("wickrio_bot");
+
+    if (wickrIOAlpha != nullptr) wickrIOAlpha->addBot(bot);
+    if (wickrIOAlpha != nullptr) wickrIOBeta->addBot(bot);
+    if (wickrIOAlpha != nullptr) wickrIOProd->addBot(bot);
+}
+
+void
+WBIOServerCommon::updateIntegrations()
+{
+    /*
+     * First remove any existing custom integrations
+     */
+
+    // remove references from the bot applications
+    for (WBIOClientApps *botApp : m_botApps) {
+        botApp->m_supportedBots.clear();
+    }
+
+    // remove and free the bot types
+    QList<WBIOBotTypes *> saveTypes;
+    for (WBIOBotTypes *botType : m_supportedBots) {
+        if (botType->customBot()) {
+            delete botType;
+        } else {
+            saveTypes.append(botType);
+        }
+    }
+    m_supportedBots.clear();
+    m_supportedBots = saveTypes;
+
+    /*
+     *  Find the custom integrations
+     */
+
+    // See if there are any custom bots setup
+    QStringList customBots = getCustomIntegrationsList();
+    for (QString customBot : customBots) {
+        QString botSw = QString(WBIO_CUSTOMBOT_SWFILE).arg(customBot);
+
+        // Assume that all of the shell scripts are there
+        WBIOBotTypes *bot = new WBIOBotTypes(customBot, customBot, true, false, APIURL_MSGRECVCBACK, botSw,
+                                             "install.sh", "configure.sh", "start.sh", "stop.sh", "upgrade.sh" );
+        WBIOServerCommon::m_supportedBots.append(bot);
+    }
+
+    // add all the bots to the WickrIO Bots
+    WBIOClientApps *wickrIOAlpha = getClientApp("wickrio_botAlpha");
+    WBIOClientApps *wickrIOBeta  = getClientApp("wickrio_botBeta");
+    WBIOClientApps *wickrIOProd  = getClientApp("wickrio_bot");
+
+    QList<WBIOClientApps *>apps;
+    if (wickrIOAlpha != nullptr) apps.append(wickrIOAlpha);
+    if (wickrIOAlpha != nullptr) apps.append(wickrIOBeta);
+    if (wickrIOAlpha != nullptr) apps.append(wickrIOProd);
+
+    // Add all the bot types to the bot applications
+    for (WBIOClientApps *app : apps) {
+        for (WBIOBotTypes *type : m_supportedBots) {
+            app->addBot(type);
+        }
+    }
+}
+
+WBIOClientApps *
+WBIOServerCommon::getClientApp(const QString& binaryName)
+{
+    for (WBIOClientApps *app : m_botApps) {
+        if (app->m_botApp == binaryName) {
+            return app;
+        }
+    }
+    return nullptr;
+}
+
+
 void
 WBIOServerCommon::initClientApps()
 {
@@ -133,7 +260,7 @@ WBIOServerCommon::initClientApps()
 
         // If the hubot software is installed then add it to the list of available integrations
         if (QFile(BOT_HUBOT_SOFTWARE).exists()) {
-            WBIOBotTypes *hubot = new WBIOBotTypes("hubot", "hubot", true, APIURL_MSGRECVCBACK, BOT_HUBOT_SOFTWARE,
+            WBIOBotTypes *hubot = new WBIOBotTypes("hubot", "hubot", false, true, APIURL_MSGRECVCBACK, BOT_HUBOT_SOFTWARE,
                                                    "install.sh", "configure.sh", "start.sh", "stop.sh", "upgrade.sh" );
             WBIOServerCommon::m_supportedBots.append(hubot);
 
@@ -143,6 +270,23 @@ WBIOServerCommon::initClientApps()
             wickrIOProd->addBot(hubot);
         }
 
+        // get any custom integrations
+
+        // See if there are any custom bots setup
+        QStringList customBots = getCustomIntegrationsList();
+        for (QString customBot : customBots) {
+            QString botSw = QString(WBIO_CUSTOMBOT_SWFILE).arg(customBot);
+
+            // Assume that all of the shell scripts are there
+            WBIOBotTypes *bot = new WBIOBotTypes(customBot, customBot, true, false, APIURL_MSGRECVCBACK, botSw,
+                                                 "install.sh", "configure.sh", "start.sh", "stop.sh", "upgrade.sh" );
+            WBIOServerCommon::m_supportedBots.append(bot);
+
+            // Add the custom bot to the WickrIO bots
+            wickrIOAlpha->addBot(bot);
+            wickrIOBeta->addBot(bot);
+            wickrIOProd->addBot(bot);
+        }
 
         for (WBIOClientApps *botapp : WBIOServerCommon::m_botApps) {
             m_bots.append(botapp->bot());
@@ -267,13 +411,13 @@ WBIOServerCommon::isPasswordRequired(const QString& binaryName)
 }
 
 QList<WBIOBotTypes *>
-WBIOServerCommon::getBotsSupported(const QString& clientApp)
+WBIOServerCommon::getBotsSupported(const QString& clientApp, bool customOnly)
 {
     WBIOServerCommon::initClientApps();
 
     for (WBIOClientApps *botapp : WBIOServerCommon::m_botApps) {
         if (botapp->bot() == clientApp) {
-            return botapp->supportedBots();
+            return botapp->supportedBots(customOnly);
         }
     }
     return QList<WBIOBotTypes*>();

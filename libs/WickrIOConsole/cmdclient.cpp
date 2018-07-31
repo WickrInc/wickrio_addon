@@ -13,7 +13,8 @@
 #include "wickrIOConsoleClientHandler.h"
 
 CmdClient::CmdClient(CmdOperation *operation) :
-    m_operation(operation)
+    m_operation(operation),
+    m_cmdIntegration(operation)
 {
     // Check if there are any clients that have had updated hubot software
     QDirIterator it(WBIO_INTEGRATIONS_DIR, QDir::NoDotAndDotDot | QDir::Dirs);
@@ -104,6 +105,7 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
         if (!m_root) qDebug() << "CONSOLE:  back        - leave the clients setup";
         qDebug() << "CONSOLE:  delete <#>  - deletes client with the specific index";
         qDebug() << "CONSOLE:  help or ?   - shows supported commands";
+        qDebug() << "CONSOLE:  integration - bot integrations menu";
         qDebug() << "CONSOLE:  list        - shows a list of clients";
         qDebug() << "CONSOLE:  modify <#>  - modifies a client with the specified index";
         qDebug() << "CONSOLE:  pause <#>   - pauses the client with the specified index";
@@ -120,6 +122,8 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
         } else {
             deleteClient(clientIndex);
         }
+    } else if (cmd == "integration") {
+        retVal = m_cmdIntegration.runCommands();
     } else if (cmd == "list") {
         listClients();
     } else if (cmd == "modify") {
@@ -683,59 +687,49 @@ bool CmdClient::getClientValues(WickrBotClients *client)
     QString rmBotType;
 
     // Check if the integrations directory exists
-    QDir destDir(WBIO_INTEGRATIONS_DIR);
-    if (destDir.exists()) {
-        QList<WBIOBotTypes *>botTypes = WBIOServerCommon::getBotsSupported(binary);
+    QList<WBIOBotTypes *>botTypes = WBIOServerCommon::getBotsSupported(binary, false);
+    if (botTypes.length() > 0) {
         QList<WBIOBotTypes *>supportedIntegrations;
+        QStringList possibleBotTypes;
 
-        // Need to determine which integrations are available
-        QDirIterator it(destDir);
-        while(it.hasNext()) {
-            QDir fullPath(it.next());
-            QString dirName = fullPath.dirName();
-            for (WBIOBotTypes *botType : botTypes) {
-                /* If this bot is installed and it doesn't need HTTP API,
-                 * or needs HTTP API and HTTP iface is configured
-                 */
-                if (botType->name() == dirName && (getInterfaceInfo || !botType->useHttpApi())) {
-                    supportedIntegrations.append(botType);
-                }
+        for (WBIOBotTypes *botType : botTypes) {
+            /* If this bot is installed and it doesn't need HTTP API,
+             * or needs HTTP API and HTTP iface is configured
+             */
+            if ((getInterfaceInfo && botType->useHttpApi()) || !botType->useHttpApi()) {
+                supportedIntegrations.append(botType);
+                possibleBotTypes.append(botType->m_name);
             }
         }
 
         if (supportedIntegrations.length() > 0) {
-            if (botTypes.length() > 0) {
-                QString hasIntBot;
-                hasIntBot = client->botType.isEmpty() ? "no" : "yes";
+            QString hasIntBot;
+            hasIntBot = client->botType.isEmpty() ? "no" : "yes";
 
-                // If the user wants to connect the client to an integration bot
-                temp = getNewValue(hasIntBot, tr("Do you want to connect to a integration bot?"), CHECK_BOOL);
-                if (temp == "yes") {
-                    QStringList possibleBotTypes;
-                    for (WBIOBotTypes *bt : botTypes) {
-                        possibleBotTypes.append(bt->m_name);
-                    }
-                    possibleBotTypes.append("none");
+            qDebug().noquote().nospace() << "CONSOLE:The following bot types are available: " << possibleBotTypes.join(',');
 
-                    temp = getNewValue(client->botType, tr("Enter the bot type"), CHECK_LIST, possibleBotTypes);
-                    // Check if the user wants to quit the action
-                    if (handleQuit(temp, &quit) && quit) {
-                        return false;
-                    }
-                    if (temp != "none") {
-                        // if the bottype has changed then remove the old software
-                        if (client->botType != temp)
-                            rmBotType = client->botType;
+            // If the user wants to connect the client to an integration bot
+            temp = getNewValue(hasIntBot, tr("Do you want to connect to a integration bot?"), CHECK_BOOL);
+            if (temp == "yes") {
 
-                        client->botType = temp;
-                    } else {
+                temp = getNewValue(client->botType, tr("Enter the bot type"), CHECK_LIST, possibleBotTypes);
+                // Check if the user wants to quit the action
+                if (handleQuit(temp, &quit) && quit) {
+                    return false;
+                }
+                if (temp != "none") {
+                    // if the bottype has changed then remove the old software
+                    if (client->botType != temp)
                         rmBotType = client->botType;
-                        client->botType = QString();
-                    }
+
+                    client->botType = temp;
                 } else {
                     rmBotType = client->botType;
                     client->botType = QString();
                 }
+            } else {
+                rmBotType = client->botType;
+                client->botType = QString();
             }
         }
     }
@@ -1243,11 +1237,15 @@ void CmdClient::pauseClient(int clientIndex, bool force)
                 qDebug() << "**********************************";
                 qDebug() << QString("Stopping %1").arg(stopFullPath);
 
-                // Create a process to run the installer
+                // Create the argument list for the start script, the client's Wickr ID
+                QStringList arguments;
+                arguments.append(client->user);
+
+                // Create a process to run the stop script
                 QProcess *runBotStopCmd = new QProcess(this);
                 runBotStopCmd->setProcessChannelMode(QProcess::MergedChannels);
                 runBotStopCmd->setWorkingDirectory(destPath);
-                runBotStopCmd->start(stopFullPath, QIODevice::ReadWrite);
+                runBotStopCmd->start(stopFullPath, arguments, QIODevice::ReadWrite);
 
                 // Wait for it to start
                 if(!runBotStopCmd->waitForStarted()) {

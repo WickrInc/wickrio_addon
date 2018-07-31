@@ -90,6 +90,7 @@ HEADERS += \
     cmdadvanced.h \
     cmdclient.h \
     cmdconsole.h \
+    cmdintegration.h \
     cmdmain.h \
     cmdoperation.h \
     cmdserver.h \
@@ -104,6 +105,7 @@ SOURCES += \
     cmdadvanced.cpp \
     cmdclient.cpp \
     cmdconsole.cpp \
+    cmdintegration.cpp \
     cmdmain.cpp \
     cmdoperation.cpp \
     cmdserver.cpp \

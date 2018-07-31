@@ -560,11 +560,15 @@ bool WickrIOClientServer::startClient(WickrBotClients *client)
             m_operation->log_handler->log("**********************************");
             m_operation->log_handler->log(QString("Starting %1").arg(startFullPath));
 
+            // Create the argument list for the start script, the client's Wickr ID
+            QStringList arguments;
+            arguments.append(client->user);
+
             // Create a process to run the installer
             QProcess *runBotStartCmd = new QProcess(this);
             runBotStartCmd->setProcessChannelMode(QProcess::MergedChannels);
             runBotStartCmd->setWorkingDirectory(destPath);
-            runBotStartCmd->start(startFullPath, QIODevice::ReadWrite);
+            runBotStartCmd->start(startFullPath, arguments, QIODevice::ReadWrite);
 
             // Wait for it to start
             if(!runBotStartCmd->waitForStarted()) {

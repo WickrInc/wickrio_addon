@@ -11,6 +11,7 @@
 #include "cmdbase.h"
 #include "cmdoperation.h"
 #include "cmdconsole.h"
+#include "cmdintegration.h"
 
 #include <QProcess>
 
@@ -58,8 +59,9 @@ private:
     bool integrationUpgrade(WickrBotClients *client, const QString& curSWPath, const QString& newSWPath);
 
 private:
-    CmdOperation *m_operation;
-    WickrIOSSLSettings m_sslSettings;
+    CmdOperation        *m_operation;
+    CmdIntegration      m_cmdIntegration;
+    WickrIOSSLSettings  m_sslSettings;
 
     // Client Message handling values
     bool    m_clientMsgSuccess;

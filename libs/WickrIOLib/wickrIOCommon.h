@@ -56,8 +56,16 @@
 #else
 #if defined(WICKR_DEBUG)
 #define WBIO_DEFAULT_DBLOCATION         "/opt/WickrIODebug"
+#define WBIO_CUSTOMBOT_DIR              "/opt/WickrIODebug/integrations/custom"
+#define WBIO_CUSTOMBOT_SWDIR            "/opt/WickrIODebug/integrations/custom/%1"
+#define WBIO_CUSTOMBOT_SWFILE           "/opt/WickrIODebug/integrations/custom/%1/software.tar.gz"
+#define WBIO_CUSTOMBOT_VERSIONFILE      "/opt/WickrIODebug/integrations/custom/%1/VERSION"
 #else
 #define WBIO_DEFAULT_DBLOCATION         "/opt/WickrIO"
+#define WBIO_CUSTOMBOT_DIR              "/opt/WickrIO/integrations/custom"
+#define WBIO_CUSTOMBOT_SWDIR            "/opt/WickrIO/integrations/custom/%1"
+#define WBIO_CUSTOMBOT_SWFILE           "/opt/WickrIO/integrations/custom/%1/software.tar.gz"
+#define WBIO_CUSTOMBOT_VERSIONFILE      "/opt/WickrIO/integrations/custom/%1/VERSION"
 #endif
 #endif
 
