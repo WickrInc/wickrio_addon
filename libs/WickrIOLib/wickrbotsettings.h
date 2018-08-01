@@ -1,6 +1,8 @@
 #ifndef WICKRBOTSETTINGS
 #define WICKRBOTSETTINGS
 
+#define WBSETTINGS_GENERAL_HEADER      "general"
+
 #define WBSETTINGS_DATABASE_HEADER      "database"
 #define WBSETTINGS_DATABASE_DIRNAME     "dirName"
 
