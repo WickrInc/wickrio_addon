@@ -151,6 +151,8 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
         } else {
             pauseClient(clientIndex, bForce);
         }
+    } else if (cmd == "ports") {
+        listInboundPorts();
     } else if (cmd == "quit") {
         retVal = false;
         isquit = true;
@@ -245,6 +247,24 @@ bool CmdClient::runCommands(const QStringList& options, QString commands)
 void CmdClient::status()
 {
     listClients();
+}
+
+void CmdClient::listInboundPorts()
+{
+    QStringList ports;
+
+    // Update the list of clients
+    m_clients = m_operation->m_ioDB->getClients();
+    for (WickrBotClients *client : m_clients) {
+        // If there is a port assigned and it is not for an integration
+        if (client->port != 0 && client->botType.isEmpty()) {
+            ports.append(QString::number(client->port));
+        }
+    }
+
+    if (ports.length() > 0) {
+        qDebug().noquote().nospace() << "CONSOLE:Warning: the following incoming ports are being used: " << ports.join(',') << "\n";
+    }
 }
 
 /**
@@ -902,6 +922,76 @@ CmdClient::getAuthValue(WickrBotClients *client, bool basic, QString& authValue)
  * @return
  */
 bool
+CmdClient::runBotScriptNEW(const QString& destPath, const QString& configure, WickrBotClients *client)
+{
+    // Values associated with the CallbackURL
+    QString cbackEndPoint;
+    QString cbackPort;
+
+    // Create a process to run the configure
+    QProcess *runScript = new QProcess(this);
+
+    connect(runScript, &QProcess::errorOccurred, [=](QProcess::ProcessError error) {
+        qDebug() << "CONSOLE:error enum val = " << error;
+    });
+
+    QStringList arguments;
+    runScript->setInputChannelMode(QProcess::ForwardedInputChannel);
+    runScript->startDetached(configure, arguments, destPath);
+
+    // Wait for it to start
+    if(!runScript->waitForStarted()) {
+        qDebug() << QString("CONSOLE:Failed to run %1").arg(configure);
+        return false;
+    }
+
+
+    if (runScript->waitForFinished(-1)) {
+        qDebug() << QString("CONSOLE:done");
+    }
+
+    // If the callback valuee are set then create the callback url for this client
+    if (!cbackEndPoint.isEmpty() && !cbackPort.isEmpty()) {
+        client->m_callbackString = QString("http://localhost:%1%2").arg(cbackPort).arg(cbackEndPoint);
+    }
+    return true;
+}
+
+
+bool
+CmdClient::readLineFromProcess(QProcess *process, QString& line)
+{
+    static QList<QByteArray> savedBytes;
+
+    // If there are bytes from a previous call use them
+    if (savedBytes.length() > 0) {
+        line = QString(savedBytes.takeFirst());
+    } else {
+        // Pause for 1 second
+        QThread::sleep(1);
+
+        if (process->waitForReadyRead(-1)) {
+            QByteArray bytes = process->readAll();
+
+            QList<QByteArray> lines = bytes.split('\n');
+
+            if (lines.size() == 0) {
+                line = "";
+                savedBytes.clear();
+            } else {
+                line = QString(lines.takeFirst());
+                savedBytes = lines;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+bool
 CmdClient::runBotScript(const QString& destPath, const QString& configure, WickrBotClients *client)
 {
     // Values associated with the CallbackURL
@@ -924,9 +1014,14 @@ CmdClient::runBotScript(const QString& destPath, const QString& configure, Wickr
         return false;
     }
 
+#if 1
+    QString bytes;
+    while (readLineFromProcess(runScript, bytes)) {
+#else
     while(runScript->waitForReadyRead(-1)) {
         while(runScript->canReadLine()) {
             QString bytes = QString(runScript->readLine());
+#endif
             if (!bytes.isEmpty()) {
                 QStringList inputList = bytes.split(":");
 
@@ -990,7 +1085,9 @@ CmdClient::runBotScript(const QString& destPath, const QString& configure, Wickr
                     qDebug().noquote().nospace() << "CONSOLE:" << bytes;
                 }
             }
+#if 0
         }
+#endif
     }
 
     // If the callback valuee are set then create the callback url for this client

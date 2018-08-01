@@ -32,6 +32,7 @@ private:
     void addClient();
     void deleteClient(int clientIndex);
     void listClients();
+    void listInboundPorts();
     void modifyClient(int clientIndex);
     void pauseClient(int clientIndex, bool force);
     void startClient(int clientIndex, bool force);
@@ -45,6 +46,9 @@ private:
 
     bool sendClientCmd(int port, const QString& cmd);
 
+    bool runBotScriptNEW(const QString& destPath, const QString& configure, WickrBotClients *client);
+
+    bool readLineFromProcess(QProcess *process, QString& line);
     bool runBotScript(const QString& destPath, const QString& configure, WickrBotClients *client);
 
     bool getAuthValue(WickrBotClients *client, bool basic, QString& authValue);
