@@ -24,9 +24,12 @@ public:
     void status();
 
 private:
+    CmdOperation            *m_operation;
+    QList<WBIOBotTypes *>   m_customInts;
+
     bool processCommand(QStringList cmdList, bool &isquit);
 
-    bool addIntegration();
+    bool addIntegration(const QString& updateName = "");
     void deleteIntegration(int index);
     void listIntegrations();
     void updateIntegration(int index);
@@ -38,12 +41,6 @@ private:
     bool validateVersion(const QString& version);
 
     bool chkIntegrationExists(const QString& name);
-
-private:
-    CmdOperation            *m_operation;
-    QList<WBIOBotTypes *>   m_customInts;
-
-private slots:
 
 };
 

@@ -23,6 +23,7 @@ void
 CmdClient::updateIntegrationVersion()
 {
     QList<WBIOBotTypes *>integrations = WBIOServerCommon::getBotsSupported("wickrio_bot", false);
+    m_integrationVersions.clear();
 
     for (WBIOBotTypes *integration : integrations) {
         QString versionName;
@@ -1473,6 +1474,9 @@ void CmdClient::upgradeClient(int clientIndex)
             return;
         }
 
+        // Check if there is a VERSION file, if not use the version
+        integrationUpdateVersionFile(tmpDestPath, newBotVerString);
+
         // Second perform the upgrade, by moving the software
         if (! integrationUpgrade(client, destPath, tmpDestPath)) {
             return;
@@ -1518,6 +1522,32 @@ CmdClient::integrationCopySW(WickrBotClients *client, const QString& swPath, con
         qDebug().noquote().nospace() << "CONSOLE:" << data;
     }
     return true;
+}
+
+void
+CmdClient::integrationUpdateVersionFile(const QString& path, const QString& version)
+{
+    if (path.isEmpty() || version.isEmpty())
+        return;
+
+    QFile versFile(QString("%1/VERSION").arg(path));
+    if (versFile.exists()) {
+        QString  curBotVerString;
+
+        unsigned curBotVer = getVersionNumber(&versFile);
+        getVersionString(curBotVer, curBotVerString);
+
+        if (curBotVerString != version) {
+            qDebug().noquote().nospace() << "CONSOLE:Warning: VERSION contains different value: " << curBotVerString << " expected " << version;
+            return;
+        }
+    }
+
+    // Create/update the version file
+    versFile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate);
+    QTextStream out(&versFile);
+    out << version << "\n";
+    versFile.close();
 }
 
 bool

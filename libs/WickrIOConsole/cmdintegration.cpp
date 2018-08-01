@@ -239,7 +239,7 @@ void CmdIntegration::listIntegrations()
  * This function will prompt the user for information about a new integration.
  * This new integration will be imported and placed in the appropriate location.
  */
-bool CmdIntegration::addIntegration()
+bool CmdIntegration::addIntegration(const QString& updateName)
 {
     bool quit = false;
     QString iName;
@@ -247,20 +247,24 @@ bool CmdIntegration::addIntegration()
     QString iVersion;
     QString temp;
 
-    // Get a unique integration
-    do {
-        temp = getNewValue(iName, tr("Enter the integration name"));
+    if (updateName.isEmpty()) {
+        // Get a unique integration
+        do {
+            temp = getNewValue(iName, tr("Enter the integration name"));
 
-        // Check if the user wants to quit the action
-        if (handleQuit(temp, &quit) && quit) {
-            return false;
-        }
-        if (!chkIntegrationExists(temp)) {
-            break;
-        }
-        qDebug() << "CONSOLE:That name is already used as in integration!";
-    } while (true);
-    iName = temp;
+            // Check if the user wants to quit the action
+            if (handleQuit(temp, &quit) && quit) {
+                return false;
+            }
+            if (!chkIntegrationExists(temp)) {
+                break;
+            }
+            qDebug() << "CONSOLE:That name is already used as in integration!";
+        } while (true);
+        iName = temp;
+    } else {
+        iName = updateName;
+    }
 
     // Get the location of the software.tar.gz fileA
     qDebug() <<"CONSOLE:Integration software must be contained in a software.tar.gz file.";
@@ -329,24 +333,30 @@ bool CmdIntegration::addIntegration()
     QFile botSwFile(QString(WBIO_CUSTOMBOT_SWFILE).arg(iName));
     // if the file exists already, which it shouldn't, prompt the user
     if (botSwFile.exists()) {
-        qDebug().nospace().noquote() << "CONSOLE:Software file exists already:" << botSwFile.fileName();
         bool deleteexisting = false;
-        while (true) {
-            QString temp = getNewValue("yes", tr("Do you want to delete the existing file?"), CHECK_BOOL);
-            if (temp.toLower() == "yes" || temp.toLower() == "y") {
-                deleteexisting = true;
-                break;
-            }
-            if (temp.toLower() == "no" || temp.toLower() == "n" || temp.isEmpty()) {
-                deleteexisting = false;
-                break;
-            }
 
-            // Check if the user wants to quit the action
-            if (handleQuit(temp, &quit) && quit) {
-                return false;
+        if (updateName.isEmpty()) {
+            qDebug().nospace().noquote() << "CONSOLE:Software file exists already:" << botSwFile.fileName();
+            while (true) {
+                QString temp = getNewValue("yes", tr("Do you want to delete the existing file?"), CHECK_BOOL);
+                if (temp.toLower() == "yes" || temp.toLower() == "y") {
+                    deleteexisting = true;
+                    break;
+                }
+                if (temp.toLower() == "no" || temp.toLower() == "n" || temp.isEmpty()) {
+                    deleteexisting = false;
+                    break;
+                }
+
+                // Check if the user wants to quit the action
+                if (handleQuit(temp, &quit) && quit) {
+                    return false;
+                }
             }
+        } else {
+            deleteexisting = true;
         }
+
         if (deleteexisting) {
             if (! botSwFile.remove()) {
                 qDebug() << "CONSOLE:Failed to remove the software file!";
@@ -370,14 +380,17 @@ bool CmdIntegration::addIntegration()
     if (!iVersion.isEmpty()) {
         // Create a new file
         QFile file(QString(WBIO_CUSTOMBOT_VERSIONFILE).arg(iName));
-        file.open(QIODevice::WriteOnly | QIODevice::Text);
+        file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate);
         QTextStream out(&file);
         out << iVersion << "\n";
         file.close();
     }
 
-    // Add the custom integration
-    WBIOServerCommon::addCustomIntegration(iName);
+    // If we are adding (not update) then add the custom integration
+    if (updateName.isEmpty()) {
+        // Add the custom integration
+        WBIOServerCommon::addCustomIntegration(iName);
+    }
     return true;
 }
 
@@ -460,5 +473,21 @@ void CmdIntegration::updateIntegration(int index)
     if (! validateIndex(index))
         return;
 
+    WBIOBotTypes *integration = m_customInts.at(index);
+
+    // Verify that there are NO clients using this integration
+    QStringList clientsUsing;
+    QList<WickrBotClients *> clients = m_operation->m_ioDB->getClients();
+    for (WickrBotClients *client : clients) {
+        if (client->botType == integration->name()) {
+            clientsUsing.append(client->user);
+        }
+    }
+    if (clientsUsing.length() > 0) {
+        qDebug().nospace().noquote() << "CONSOLE:WARNING: There are clients using this integration:" << clientsUsing.join(',');
+        qDebug().nospace().noquote() << "CONSOLE:WARNING: The software will not be automatically updated for these clients!\n";
+    }
+
+    addIntegration(integration->name());
 }
 

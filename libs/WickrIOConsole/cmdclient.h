@@ -51,6 +51,7 @@ private:
 
     unsigned getVersionNumber(QFile *versionFile);
     void getVersionString(unsigned versionNum, QString& versionString);
+    void integrationUpdateVersionFile(const QString& path, const QString& version);
 
     // Integration bot commands
     bool integrationCopySW(WickrBotClients *client, const QString& swPath, const QString& destPath);
