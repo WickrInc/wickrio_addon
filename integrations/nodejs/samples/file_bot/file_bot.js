@@ -37,7 +37,7 @@ return new Promise((resolve, reject) => {
   //Infinite loop waiting for incoming messgaes into the bot
   for (;;) {
     try {
-      var rMessage = await addon.cmdGetReceivedMessage();
+      var rMessage = addon.cmdGetReceivedMessage();
       if (rMessage === "{ }" || rMessage === "" || !rMessage) {
         continue;
       } else {
@@ -86,9 +86,9 @@ return new Promise((resolve, reject) => {
         }
       }
       var cp = await fs.copyFileSync(rMessage.file.localfilename, 'files/' + rMessage.file.filename);
-      var msg = rMessage.file.filename + "successfully saved to directory!";
+      var msg = "File named: '"+ rMessage.file.filename + "' successfully saved to directory!";
       var sMessage = addon.cmdSend1to1Message(userArr, msg, ttl, bor);
-
+      console.log(sMessage);
     } else
       console.log(rMessage);
   }
