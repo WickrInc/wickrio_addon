@@ -1,0 +1,11 @@
+{
+  "name": "bot_iface_test",
+  "version": "1.0.0",
+  "description": "Wickr sample JavaScript",
+  "main": "bot_iface_test.js",
+  "private": true,
+  "dependencies": {
+    "prompt": "^1.0.0",
+    "wickrio_addon": "file:../../addon"
+  }
+}

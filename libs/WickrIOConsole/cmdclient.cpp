@@ -15,6 +15,59 @@
 CmdClient::CmdClient(CmdOperation *operation) :
     m_operation(operation)
 {
+    // Check if there are any clients that have had updated hubot software
+    QDirIterator it(WBIO_INTEGRATIONS_DIR, QDir::NoDotAndDotDot | QDir::Dirs);
+    while (it.hasNext()) {
+        QDir curdir(it.next());
+
+        QFile curHubotVersionFile(QString("%1/%2/VERSION").arg(WBIO_INTEGRATIONS_DIR).arg(curdir.dirName()));
+        unsigned curHubotVersion;
+        if (curHubotVersionFile.exists()) {
+            curHubotVersion = getVersionNumber(&curHubotVersionFile);
+            if (curHubotVersion > 0) {
+                m_integrationVersions.insert(curdir.dirName(), curHubotVersion);
+            }
+        }
+    }
+}
+
+unsigned
+CmdClient::getVersionNumber(QFile *versionFile)
+{
+    if (!versionFile->open(QIODevice::ReadOnly))
+        return 0;
+
+    QString s;
+
+    QTextStream s1(versionFile);
+    s.append(s1.readAll());
+    versionFile->close();
+
+    unsigned retVal = 0;
+    QStringList slist = s.split(".");
+    if (slist.length() == 3) {
+        retVal = slist.at(0).toInt() * 1000000 + slist.at(1).toInt() * 1000 + slist.at(2).toInt();
+    } else if (slist.length() == 2) {
+        retVal = slist.at(0).toInt() * 1000000 + slist.at(1).toInt() * 1000;
+    }
+    return retVal;
+}
+
+void
+CmdClient::getVersionString(unsigned versionNum, QString& versionString)
+{
+    if (versionNum > 1000000) {
+        versionString = QString("%1.%2.%3").arg(QString::number(versionNum / 1000000))
+                                           .arg(QString::number((versionNum % 1000000) / 1000))
+                                           .arg(QString::number(versionNum % 1000));
+    } else if (versionNum > 1000) {
+        versionString = QString("0.%1.%2").arg(QString::number(versionNum / 1000))
+                                          .arg(QString::number(versionNum % 1000));
+    } else if (versionNum == 0) {
+        versionString = "unknown";
+    } else {
+        versionString = QString::number(versionNum);
+    }
 }
 
 bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
@@ -47,15 +100,16 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
 
     if (cmd == "?" || cmd == "help") {
         qDebug() << "CONSOLE:Commands:";
-        qDebug() << "CONSOLE:  add        - adds a new client";
-        if (!m_root) qDebug() << "CONSOLE:  back       - leave the clients setup";
-        qDebug() << "CONSOLE:  delete <#> - deletes client with the specific index";
-        qDebug() << "CONSOLE:  help or ?  - shows supported commands";
-        qDebug() << "CONSOLE:  list       - shows a list of clients";
-        qDebug() << "CONSOLE:  modify <#> - modifies a client with the specified index";
-        qDebug() << "CONSOLE:  pause <#>  - pauses the client with the specified index";
-        qDebug() << "CONSOLE:  start <#>  - starts the client with the specified index";
-        qDebug() << "CONSOLE:  quit       - leaves this program";
+        qDebug() << "CONSOLE:  add         - adds a new client";
+        if (!m_root) qDebug() << "CONSOLE:  back        - leave the clients setup";
+        qDebug() << "CONSOLE:  delete <#>  - deletes client with the specific index";
+        qDebug() << "CONSOLE:  help or ?   - shows supported commands";
+        qDebug() << "CONSOLE:  list        - shows a list of clients";
+        qDebug() << "CONSOLE:  modify <#>  - modifies a client with the specified index";
+        qDebug() << "CONSOLE:  pause <#>   - pauses the client with the specified index";
+        qDebug() << "CONSOLE:  start <#>   - starts the client with the specified index";
+        qDebug() << "CONSOLE:  upgrade <#> - upgrade integration software for client";
+        qDebug() << "CONSOLE:  quit        - leaves this program";
     } else if (cmd == "add") {
         addClient();
     } else if (cmd == "back" && !m_root) {
@@ -88,6 +142,12 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
             qDebug() << "CONSOLE:Usage: start <index>";
         } else {
             startClient(clientIndex, bForce);
+        }
+    } else if (cmd == "upgrade") {
+        if (clientIndex == -1) {
+            qDebug() << "CONSOLE:Usage: upgrade <index>";
+        } else {
+            upgradeClient(clientIndex);
         }
     } else {
         qDebug() << "CONSOLE:" << cmd << "is not a known command!";
@@ -199,23 +259,55 @@ void CmdClient::listClients()
         }
 
         QString botTypeString;
+        bool needsUpgrade = false;
         if (!client->botType.isEmpty()) {
-            botTypeString = QString(", Integration=%1").arg(client->botType);
+            unsigned newBotVer = m_integrationVersions.value(client->botType, 0);
+            unsigned curBotVer = 0;
+
+            QString destPath = QString(WBIO_CLIENT_BOTDIR_FORMAT)
+                    .arg(WBIO_DEFAULT_DBLOCATION)
+                    .arg(client->name)
+                    .arg(client->botType);
+            QFile curHubotVersionFile(QString("%1/VERSION").arg(destPath));
+            if (curHubotVersionFile.exists()) {
+                curBotVer = getVersionNumber(&curHubotVersionFile);
+                if (curBotVer > 0) {
+                    if (curBotVer < newBotVer) {
+                        needsUpgrade = true;
+                    }
+                }
+            }
+
+            if (needsUpgrade) {
+                botTypeString = QString(", Integration=%1 (Needs Upgrade!)").arg(client->botType);
+            } else {
+                botTypeString = QString(", Integration=%1").arg(client->botType);
+            }
+        }
+
+        // If there is a port configured then create the port string
+        QString portString;
+        if (client->port != 0) {
+            if (client->apiKey.isEmpty()) {
+                portString = QString(", Port=%1").arg(client->port);
+            } else {
+                portString = QString(", Port=%1, APIKey=%2").arg(client->port).arg(client->apiKey);
+            }
         }
 
         QString data;
         if (m_basicConfig) {
-            data = QString("CONSOLE: client[%1] %2, State=%3")
+            data = QString("CONSOLE: client[%1] %2%3, State=%4%5")
                 .arg(cnt++)
                 .arg(client->user)
-                .arg(clientState);
+                .arg(portString)
+                .arg(clientState)
+                .arg(botTypeString);
         } else {
-            data = QString("CONSOLE: client[%1] %2, APIKey=%3, User=%4, Port=%5, Binary=%6, State=%7, ConsoleUser=%8%9")
+            data = QString("CONSOLE: client[%1] %2%3, Binary=%4, State=%5, ConsoleUser=%6%7")
                 .arg(cnt++)
-                .arg(client->name)
-                .arg(client->apiKey)
                 .arg(client->user)
-                .arg(client->port)
+                .arg(portString)
                 .arg(client->binary)
                 .arg(clientState)
                 .arg(consoleUser)
@@ -314,7 +406,6 @@ bool CmdClient::getClientValues(WickrBotClients *client)
     } while (chkClientsUserExists(temp));
     client->user = temp;
 
-#if 1
     // Get the password
     while (true) {
         client->password = getNewValue(client->password, tr("Enter the password"));
@@ -330,42 +421,10 @@ bool CmdClient::getClientValues(WickrBotClients *client)
             break;
         }
     }
-#endif
-
-#if 0 // Not needed anymore
-    // Get the transaction ID
-    while (true) {
-        client->transactionID = getNewValue(client->transactionID, tr("Enter the transaction ID (for new client)"));
-
-        // Check if the user wants to quit the action
-        if (handleQuit(client->transactionID, &quit) && quit) {
-            return false;
-        }
-        break;
-    }
-#endif
 
     // The client name will be the username.  Replace the "@" character with the "_"
     client->name = client->user;
     client->name.replace("@", "_");
-
-#if 0
-    // Get a unique client name
-    do {
-        temp = getNewValue(client->name, tr("Enter an unique Name for this client (this is a local name, not the Wickr ID)"));
-
-        // Check if the user wants to quit the action
-        if (handleQuit(temp, &quit) && quit) {
-            return false;
-        }
-
-        // Allow the user to re-use the same name if it was previously set
-        if (! client->name.isEmpty()  && client->name == temp) {
-            break;
-        }
-    } while (chkClientsNameExists(temp));
-    client->name = temp;
-#endif
 
     // Determine the client type
     QStringList possibleClientTypes = WBIOServerCommon::getAvailableClientApps();
@@ -391,14 +450,8 @@ bool CmdClient::getClientValues(WickrBotClients *client)
     if (provisionApp != "") {
         QStringList arguments;
 
-#if 1
         arguments.append(client->user);
         arguments.append(client->password);
-#else
-        arguments.append(QString("-wickrname=%1").arg(client->user));
-        arguments.append(QString("-clientname=%1").arg(client->name));
-        arguments.append(QString("-processname=%1").arg(WBIOServerCommon::getClientProcessName(client)));
-#endif
 
         m_exec = new QProcess();
 
@@ -422,171 +475,197 @@ bool CmdClient::getClientValues(WickrBotClients *client)
     } else {
     }
 
-    if (m_basicConfig) {
-        return !quit;
+    bool getInterfaceInfo;
+    if (!m_basicConfig) {
+        getInterfaceInfo = true;
+    } else {
+        // For basic configuration prompt the user if they want to add HTTP interface (default: no)
+        while (true) {
+            QString temp = getNewValue("no", tr("Do you want to use the HTTP API?"), CHECK_BOOL);
+            if (temp.toLower() == "yes" || temp.toLower() == "y") {
+                getInterfaceInfo = true;
+                break;
+            }
+            if (temp.toLower() == "no" || temp.toLower() == "n" || temp.isEmpty()) {
+                getInterfaceInfo = false;
+                break;
+            }
+
+            // Check if the user wants to quit the action
+            if (handleQuit(temp, &quit) && quit) {
+                return false;
+            }
+        }
     }
 
-    // Generate the API Key, with a random value
-    client->apiKey = WickrIOTokens::getRandomString(16);
+    if (getInterfaceInfo) {
 
-    // Get the list of possible interfaces
-    QStringList ifaceList = WickrIOConsoleClientHandler::getNetworkInterfaceList();
+        // Generate the API Key, with a random value
+        client->apiKey = WickrIOTokens::getRandomString(16);
 
-    // Get a unique interface and port pair
-    while (true) {
-#if 1   // Will default to "localhost"
-        client->iface = "localhost";
-        QString ifaceinput = "localhost";
-#else
-        QString ifaceinput = getNewValue(client->iface, tr("Enter the interface (list to see possible interfaces)"));
-
-        // Check if the user wants to quit the action
-        if (handleQuit(ifaceinput, &quit) && quit) {
-            return false;
-        }
-
-        if (ifaceinput.toLower() == "list" || ifaceinput == "?") {
-            foreach (QString iface, ifaceList) {
-                qDebug() << "CONSOLE:" << iface;
-            }
-            continue;
-        }
-
-        if (!ifaceList.contains(ifaceinput)) {
-            qDebug() << "CONSOLE:" << ifaceinput << "not found in the list of interfaces!";
-            continue;
-        }
+#if 0 // Defaulting to localhost
+        // Get the list of possible interfaces
+        QStringList ifaceList = WickrIOConsoleClientHandler::getNetworkInterfaceList();
 #endif
 
-        QString port = getNewValue(QString::number(client->port), tr("Enter the IP port number"), CHECK_INT);
+        // Get a unique interface and port pair
+        while (true) {
+    #if 1   // Will default to "localhost"
+            client->iface = "localhost";
+            QString ifaceinput = "localhost";
+    #else
+            QString ifaceinput = getNewValue(client->iface, tr("Enter the interface (list to see possible interfaces)"));
 
-        // Check if the user wants to quit the action
-        if (handleQuit(port, &quit) && quit) {
-            return false;
-        }
+            // Check if the user wants to quit the action
+            if (handleQuit(ifaceinput, &quit) && quit) {
+                return false;
+            }
 
-        int portinput = port.toInt();
+            if (ifaceinput.toLower() == "list" || ifaceinput == "?") {
+                foreach (QString iface, ifaceList) {
+                    qDebug() << "CONSOLE:" << iface;
+                }
+                continue;
+            }
 
-        // Check if used the same values, if so continue on to the next field
-        if (!client->iface.isEmpty() && (client->iface == ifaceinput && client->port == portinput)) {
+            if (!ifaceList.contains(ifaceinput)) {
+                qDebug() << "CONSOLE:" << ifaceinput << "not found in the list of interfaces!";
+                continue;
+            }
+    #endif
+
+            QString port = getNewValue(QString::number(client->port), tr("Enter the IP port number"), CHECK_INT);
+
+            // Check if the user wants to quit the action
+            if (handleQuit(port, &quit) && quit) {
+                return false;
+            }
+
+            int portinput = port.toInt();
+
+            // Check if used the same values, if so continue on to the next field
+            if (!client->iface.isEmpty() && (client->iface == ifaceinput && client->port == portinput)) {
+                break;
+            }
+
+            if (chkClientsInterfaceExists(ifaceinput, portinput)) {
+                qDebug() << "CONSOLE:Port number is used already!";
+                continue;
+            }
+
+            client->iface = ifaceinput;
+            client->port = portinput;
+
             break;
         }
 
-        if (chkClientsInterfaceExists(ifaceinput, portinput)) {
-            qDebug() << "CONSOLE:Interface and port combination used already!";
-            continue;
-        }
-
-        client->iface = ifaceinput;
-        client->port = portinput;
-
-        break;
-    }
-
-    // Get the interface type (HTTP or HTTPS)
-    while (true) {
-        QString ifacetype;
-        ifacetype = getNewValue(client->getIfaceTypeStr(), tr("Enter the interface type"));
-        if (ifacetype.toLower() == "https") {
-            client->isHttps = true;
-            if (m_sslSettings.sslKeyFile.isEmpty() || m_sslSettings.sslCertFile.isEmpty()) {
-                qDebug() << "CONSOLE:WARNING: SSL has not been setup! Go to the Advanced settings first!";
-            }
-        } else if (ifacetype.toLower() == "http") {
-            client->isHttps = false;
-        } else {
-            qDebug() << "CONSOLE:Invalid interface type, enter either HTTP or HTTPS";
-            continue;
-
-        }
-        break;
-    }
-
-    // Get the SSL Key and Cert values
-    if (client->isHttps) {
-        client->sslKeyFile = m_sslSettings.sslKeyFile;
-        client->sslCertFile = m_sslSettings.sslCertFile;
-    }
-
-    QList<WickrIOConsoleUser *> cusers = m_operation->m_ioDB->getConsoleUsers();
-    if (cusers.length() > 0) {
-        int curindex = -1;
-        QString temp;
-        if (client->console_id != 0) {
-            int cnt=0;
-            for (WickrIOConsoleUser *cuser : cusers) {
-                if (cuser->id == client->console_id) {
-                    curindex = cnt;
-                    break;
-                }
-                cnt++;
-            }
-        } else {
-            curindex = -1;
-        }
-        temp = getNewValue(curindex == -1 ? "n" : "y", tr("Associate with a console user?"));
-        if (handleQuit(temp, &quit) && quit) {
-        } else if (temp == "y") {
-            // Associate with a console user
-            while (true) {
-                qDebug() << "CONSOLE:Possible console user choices:";
-                int cnt=0;
-                for (WickrIOConsoleUser *cuser : cusers) {
-                    QString data = QString("CONSOLE:  index=%1, Name=%2").arg(cnt++).arg(cuser->user);
-                    qDebug() << qPrintable(data);
-                }
-                temp = getNewValue(curindex == -1 ? "" : QString::number(curindex), tr("Enter the index of the console user"), CHECK_INT);
-                if (handleQuit(temp, &quit) && quit) {
-                    break;
-                }
-                int inputIndex = temp.toInt();
-                if (inputIndex < 0 || inputIndex >= cusers.length()) {
-                    qDebug() << "CONSOLE:Invalid index value entered!";
-                } else {
-                    curindex = inputIndex;
-                    break;
-                }
-            }
-        } else {
-            curindex = -1;
-        }
-
-        // If the user is NOT quitting then update the console ID
-        if (!quit) {
-            if (curindex == -1) {
-                client->console_id = 0;
-            } else {
-                client->console_id = cusers.at(curindex)->id;
-            }
-        }
-
-        // Cleanup the allocated memory
-        for (WickrIOConsoleUser *cuser : cusers) {
-            delete cuser;
-        }
-    }
-
-    // Inbox handling can be turned off for Welcome Bots (only)
-    //check whether type is welcome_bot to see if need to find parser
-    if(client->binary.startsWith( "welcome_bot")){
+        // Get the interface type (HTTP or HTTPS)
         while (true) {
-            QString handleInbox;
-            QStringList trueFalseChoices;
-            trueFalseChoices << "true" << "false";
-            handleInbox = getNewValue(client->getHandleInboxStr(), tr("Does client support inbox handling?"), CHECK_LIST, trueFalseChoices);
-            if (handleInbox.toLower() == "true") {
-                client->m_handleInbox = true;
-            } else if (handleInbox.toLower() == "false") {
-                client->m_handleInbox = false;
+            QString ifacetype;
+            ifacetype = getNewValue(client->getIfaceTypeStr(), tr("Enter the interface type"));
+            if (ifacetype.toLower() == "https") {
+                client->isHttps = true;
+                if (m_sslSettings.sslKeyFile.isEmpty() || m_sslSettings.sslCertFile.isEmpty()) {
+                    qDebug() << "CONSOLE:WARNING: SSL has not been setup! Go to the Advanced settings first!";
+                }
+            } else if (ifacetype.toLower() == "http") {
+                client->isHttps = false;
             } else {
-                qDebug() << "CONSOLE:Invalid input, enter either true or false";
+                qDebug() << "CONSOLE:Invalid interface type, enter either HTTP or HTTPS";
                 continue;
 
             }
             break;
         }
-    } else {
-        client->m_handleInbox = true;
+
+        // Get the SSL Key and Cert values
+        if (client->isHttps) {
+            client->sslKeyFile = m_sslSettings.sslKeyFile;
+            client->sslCertFile = m_sslSettings.sslCertFile;
+        }
+
+#if 0 // Need to figure out how we want to set console users
+        QList<WickrIOConsoleUser *> cusers = m_operation->m_ioDB->getConsoleUsers();
+        if (cusers.length() > 0) {
+            int curindex = -1;
+            QString temp;
+            if (client->console_id != 0) {
+                int cnt=0;
+                for (WickrIOConsoleUser *cuser : cusers) {
+                    if (cuser->id == client->console_id) {
+                        curindex = cnt;
+                        break;
+                    }
+                    cnt++;
+                }
+            } else {
+                curindex = -1;
+            }
+            temp = getNewValue(curindex == -1 ? "n" : "y", tr("Associate with a console user?"));
+            if (handleQuit(temp, &quit) && quit) {
+            } else if (temp == "y") {
+                // Associate with a console user
+                while (true) {
+                    qDebug() << "CONSOLE:Possible console user choices:";
+                    int cnt=0;
+                    for (WickrIOConsoleUser *cuser : cusers) {
+                        QString data = QString("CONSOLE:  index=%1, Name=%2").arg(cnt++).arg(cuser->user);
+                        qDebug() << qPrintable(data);
+                    }
+                    temp = getNewValue(curindex == -1 ? "" : QString::number(curindex), tr("Enter the index of the console user"), CHECK_INT);
+                    if (handleQuit(temp, &quit) && quit) {
+                        break;
+                    }
+                    int inputIndex = temp.toInt();
+                    if (inputIndex < 0 || inputIndex >= cusers.length()) {
+                        qDebug() << "CONSOLE:Invalid index value entered!";
+                    } else {
+                        curindex = inputIndex;
+                        break;
+                    }
+                }
+            } else {
+                curindex = -1;
+            }
+
+            // If the user is NOT quitting then update the console ID
+            if (!quit) {
+                if (curindex == -1) {
+                    client->console_id = 0;
+                } else {
+                    client->console_id = cusers.at(curindex)->id;
+                }
+            }
+
+            // Cleanup the allocated memory
+            for (WickrIOConsoleUser *cuser : cusers) {
+                delete cuser;
+            }
+        }
+#endif
+
+        // Inbox handling can be turned off for Welcome Bots (only)
+        //check whether type is welcome_bot to see if need to find parser
+        if(client->binary.startsWith( "welcome_bot")){
+            while (true) {
+                QString handleInbox;
+                QStringList trueFalseChoices;
+                trueFalseChoices << "true" << "false";
+                handleInbox = getNewValue(client->getHandleInboxStr(), tr("Does client support inbox handling?"), CHECK_LIST, trueFalseChoices);
+                if (handleInbox.toLower() == "true") {
+                    client->m_handleInbox = true;
+                } else if (handleInbox.toLower() == "false") {
+                    client->m_handleInbox = false;
+                } else {
+                    qDebug() << "CONSOLE:Invalid input, enter either true or false";
+                    continue;
+
+                }
+                break;
+            }
+        } else {
+            client->m_handleInbox = true;
+        }
     }
 
     /*
@@ -607,7 +686,10 @@ bool CmdClient::getClientValues(WickrBotClients *client)
             QDir fullPath(it.next());
             QString dirName = fullPath.dirName();
             for (WBIOBotTypes *botType : botTypes) {
-                if (botType->name() == dirName) {
+                /* If this bot is installed and it doesn't need HTTP API,
+                 * or needs HTTP API and HTTP iface is configured
+                 */
+                if (botType->name() == dirName && (getInterfaceInfo || !botType->useHttpApi())) {
                     supportedIntegrations.append(botType);
                 }
             }
@@ -676,7 +758,7 @@ bool CmdClient::getClientValues(WickrBotClients *client)
         QString swPath = WBIOServerCommon::getBotSoftwarePath(client->botType);
         if (!swPath.isEmpty()) {
             qDebug() << "CONSOLE:**********************************************************************";
-            qDebug().noquote().nospace() << "CONSOLE:Begin setup of " << client->botType << " software for " << client->name;
+            qDebug().noquote().nospace() << "CONSOLE:Begin setup of " << client->botType << " software for " << client->user;
 
             QString destPath = QString(WBIO_CLIENT_BOTDIR_FORMAT)
                     .arg(WBIO_DEFAULT_DBLOCATION)
@@ -693,67 +775,18 @@ bool CmdClient::getClientValues(WickrBotClients *client)
             }
 
             // First copy the software to the client directory
-            qDebug().noquote().nospace() << "CONSOLE:Copying " << client->botType << " software for " << client->name;
-
-            {
-                // Create a process to extract the software
-                QProcess *unarchive = new QProcess(this);
-
-                QString command = QString("tar -xf %1 -C %2").arg(swPath).arg(destPath);
-                unarchive->setProcessChannelMode(QProcess::MergedChannels);
-                unarchive->start(command, QIODevice::ReadWrite);
-
-                // Wait for it to start
-                if(!unarchive->waitForStarted()) {
-                    qDebug() << QString("CONSOLE:Failed to install %1 software!").arg(client->botType);
-                    return false;
-                }
-
-                // Continue reading the data until EOF reached
-                QByteArray data;
-
-                while(unarchive->waitForReadyRead())
-                    data.append(unarchive->readAll());
-
-                // Output the data
-                qDebug().noquote().nospace() << "CONSOLE:" << data;
+            if (! integrationCopySW(client, swPath, destPath)) {
+                return false;
             }
 
             // Second peform the installer if one does exist
-            qDebug().noquote().nospace() << "CONSOLE:Installing " << client->botType << " software for " << client->name;
-            {
-                QStringList installOutput;
-                QString installer = WBIOServerCommon::getBotInstaller(client->botType);
-                if (!installer.isEmpty()){
-                    QString installerFullPath = QString("%1/%2").arg(destPath).arg(installer);
-                    // Create a process to run the installer
-                    QProcess *runInstaller = new QProcess(this);
-                    runInstaller->setProcessChannelMode(QProcess::MergedChannels);
-                    runInstaller->setWorkingDirectory(destPath);
-                    runInstaller->start(installerFullPath, QIODevice::ReadWrite);
-
-                    // Wait for it to start
-                    if(!runInstaller->waitForStarted()) {
-                        qDebug() << QString("CONSOLE:Failed to run %1").arg(installer);
-                        return false;
-                    }
-
-                    while(runInstaller->waitForReadyRead()) {
-                        QString bytes = QString(runInstaller->readAll());
-                        installOutput.append(bytes);
-                    }
-                }
+            if (! integrationInstall(client, destPath)) {
+                return false;
             }
 
             // Third peform the configure if one does exist
-            qDebug().noquote().nospace() << "CONSOLE:Begin configuration of " << client->botType << " software for " << client->name;
-            QString configure = WBIOServerCommon::getBotConfigure(client->botType);
-            if (!configure.isEmpty()){
-                QString configureFullpath = QString("%1/%2").arg(destPath).arg(configure);
-                if (!runBotScript(destPath, configureFullpath, client)) {
-                    qDebug().noquote().nospace() << "CONSOLE:Failed to configure " << client->botType;
-                    return false;
-                }
+            if (! integrationConfigure(client, destPath)) {
+                return false;
             }
 
             qDebug().noquote().nospace() << "CONSOLE:End of setup of " << client->botType << " software for " << client->name;
@@ -889,11 +922,15 @@ CmdClient::runBotScript(const QString& destPath, const QString& configure, Wickr
 
                         if (prompt == "WICKRIO_AUTH_TOKEN") {
                             QString authValue;
+#if 0 // Ignoring authentication for now
                             // Get the basic authentication value (user:pw), should use token though
                             if (!getAuthValue(client, true, authValue)) {
                                 runScript->close();
                                 return false;
                             }
+#else
+                            authValue = "admin:admin";
+#endif
 
                             authValue.append("\n");
                             runScript->write(authValue.toLatin1());
@@ -1074,7 +1111,7 @@ void CmdClient::deleteClient(int clientIndex)
                 }
             }
 
-            qDebug() << "CONSOLE:Deleting client" << client->name;
+            qDebug() << "CONSOLE:Deleting client" << client->user;
 
             if (! m_operation->m_ioDB->deleteClientUsingName(m_clients.at(clientIndex)->name)) {
                 qDebug() << "CONSOLE:There was a problem deleting the client!";
@@ -1227,7 +1264,7 @@ void CmdClient::pauseClient(int clientIndex, bool force)
             if (state.ipc_port == 0) {
                 qDebug() << "CONSOLE:Client does not have an IPC port defined, cannot pause!";
             } else if (state.state == PROCSTATE_RUNNING) {
-                QString prompt = QString(tr("Do you really want to pause the client with the name %1")).arg(client->name);
+                QString prompt = QString(tr("Do you really want to pause the client with the name %1")).arg(client->user);
                 QString response = getNewValue("", prompt);
                 if (response.toLower() == "y" || response.toLower() == "yes") {
                     if (! sendClientCmd(state.ipc_port, WBIO_IPCCMDS_PAUSE)) {
@@ -1276,7 +1313,7 @@ void CmdClient::startClient(int clientIndex, bool force)
 
         if (m_operation->m_ioDB->getProcessState(processName, &state)) {
             if (state.state == PROCSTATE_PAUSED || force) {
-                QString prompt = QString(tr("Do you really want to start the client with the name %1")).arg(client->name);
+                QString prompt = QString(tr("Do you really want to start the client with the name %1")).arg(client->user);
                 QString response = getNewValue("", prompt);
                 if (response.toLower() == "y" || response.toLower() == "yes") {
                     // Check if the database password has been created.
@@ -1323,3 +1360,229 @@ void CmdClient::startClient(int clientIndex, bool force)
         }
     }
 }
+
+/**
+ * @brief CmdClient::upgradeClient
+ * This function will modify an exist client.
+ * @param clientIndex
+ */
+void CmdClient::upgradeClient(int clientIndex)
+{
+    if (validateIndex(clientIndex)) {
+        WickrBotClients *client;
+        WickrBotProcessState state;
+        client = m_clients.at(clientIndex);
+
+        // Make sure there is integration software is installed
+        if (client->botType.isEmpty()) {
+            qDebug() << "CONSOLE:Client does not have integration software installed!";
+            return;
+        }
+
+        QString processName = WBIOServerCommon::getClientProcessName(client);
+        if (!m_operation->m_ioDB->getProcessState(processName, &state)) {
+            qDebug() << "CONSOLE:Cannot client's process state!";
+            return;
+        }
+
+        if (state.state == PROCSTATE_RUNNING) {
+            qDebug() << "CONSOLE:Cannot upgrade a running client! Please stop the client.";
+            return;
+        }
+
+        unsigned newBotVer = m_integrationVersions.value(client->botType, 0);
+        QString  newBotVerString;
+        getVersionString(newBotVer, newBotVerString);
+
+        unsigned curBotVer = 0;
+        QString  curBotVerString;
+
+
+        QString destPath = QString(WBIO_CLIENT_BOTDIR_FORMAT)
+                .arg(WBIO_DEFAULT_DBLOCATION)
+                .arg(client->name)
+                .arg(client->botType);
+        QFile curHubotVersionFile(QString("%1/VERSION").arg(destPath));
+        if (curHubotVersionFile.exists()) {
+            curBotVer = getVersionNumber(&curHubotVersionFile);
+        }
+        getVersionString(curBotVer, curBotVerString);
+
+        qDebug().noquote().nospace() << "CONSOLE:Upgrading from version " << curBotVerString << " to version " << newBotVerString;
+        while (true) {
+            // If the record was not updated to the database then ask the user to try again
+            QString response = getNewValue("", tr("Okay to proceed?"));
+            if (response.toLower() == "n" || response.toLower() == "no") {
+                return;
+            }
+            if (response.toLower() == "y" || response.toLower() == "yes") {
+                break;
+            }
+            qDebug() << "CONSOLE:Enter either 'y' or 'n'";
+        }
+
+        // Start the upgrade process
+        QString upgradeCmd = WBIOServerCommon::getBotUpgradeCmd(client->botType);
+
+        if (upgradeCmd.isEmpty()) {
+            qDebug() << "CONSOLE:There is no upgrade script!";
+            return;
+        }
+
+        // Get the software into the appropriate location
+        QString swPath = WBIOServerCommon::getBotSoftwarePath(client->botType);
+        if (swPath.isEmpty()) {
+            qDebug() << "CONSOLE:Cannot find software path!";
+            return;
+        }
+
+        // Location where new software is extracted to, before the upgrade
+        QString tmpDestPath = QString(WBIO_CLIENT_BOTDIR_TMP_FORMAT)
+                .arg(WBIO_DEFAULT_DBLOCATION)
+                .arg(client->name)
+                .arg(client->botType);
+
+        // Create the directory for the integration software
+        QDir destDir(tmpDestPath);
+        if (!destDir.exists()) {
+            if (!destDir.mkpath(tmpDestPath)) {
+                qDebug() << "CONSOLE:Failed to create directory for integration bot software!";
+                return;
+            }
+        }
+
+        // First copy the software to the temporary location of the client's integration directory
+        if (! integrationCopySW(client, swPath, tmpDestPath)) {
+            return;
+        }
+
+        // Second perform the upgrade, by moving the software
+        if (! integrationUpgrade(client, destPath, tmpDestPath)) {
+            return;
+        }
+
+        // Third peform the installer if one does exist
+        if (! integrationInstall(client, destPath)) {
+            return;
+        }
+
+        // Lastly, peform the configure if one does exist
+        if (! integrationConfigure(client, destPath)) {
+            return;
+        }
+    }
+}
+
+bool
+CmdClient::integrationCopySW(WickrBotClients *client, const QString& swPath, const QString& destPath)
+{
+    qDebug().noquote().nospace() << "CONSOLE:Copying " << client->botType << " software for " << client->user;
+    {
+        // Create a process to extract the software
+        QProcess *unarchive = new QProcess(this);
+
+        QString command = QString("tar -xf %1 -C %2").arg(swPath).arg(destPath);
+        unarchive->setProcessChannelMode(QProcess::MergedChannels);
+        unarchive->start(command, QIODevice::ReadWrite);
+
+        // Wait for it to start
+        if(!unarchive->waitForStarted()) {
+            qDebug() << QString("CONSOLE:Failed to install %1 software!").arg(client->botType);
+            return false;
+        }
+
+        // Continue reading the data until EOF reached
+        QByteArray data;
+
+        while(unarchive->waitForReadyRead())
+            data.append(unarchive->readAll());
+
+        // Output the data
+        qDebug().noquote().nospace() << "CONSOLE:" << data;
+    }
+    return true;
+}
+
+bool
+CmdClient::integrationInstall(WickrBotClients *client, const QString& destPath)
+{
+    // peform the installer if one does exist
+    qDebug().noquote().nospace() << "CONSOLE:Installing " << client->botType << " software for " << client->user;
+    {
+        QStringList installOutput;
+        QString installer = WBIOServerCommon::getBotInstaller(client->botType);
+        if (!installer.isEmpty()){
+            QString installerFullPath = QString("%1/%2").arg(destPath).arg(installer);
+            // Create a process to run the installer
+            QProcess *runInstaller = new QProcess(this);
+            runInstaller->setProcessChannelMode(QProcess::MergedChannels);
+            runInstaller->setWorkingDirectory(destPath);
+            runInstaller->start(installerFullPath, QIODevice::ReadWrite);
+
+            // Wait for it to start
+            if(!runInstaller->waitForStarted()) {
+                qDebug() << QString("CONSOLE:Failed to run %1").arg(installer);
+                return false;
+            }
+
+            while(runInstaller->waitForReadyRead()) {
+                QString bytes = QString(runInstaller->readAll());
+                installOutput.append(bytes);
+            }
+        }
+    }
+    return true;
+}
+
+bool
+CmdClient::integrationConfigure(WickrBotClients *client, const QString& destPath)
+{
+    qDebug().noquote().nospace() << "CONSOLE:Begin configuration of " << client->botType << " software for " << client->user;
+    QString configure = WBIOServerCommon::getBotConfigure(client->botType);
+    if (!configure.isEmpty()){
+        QString configureFullpath = QString("%1/%2").arg(destPath).arg(configure);
+        if (!runBotScript(destPath, configureFullpath, client)) {
+            qDebug().noquote().nospace() << "CONSOLE:Failed to configure " << client->botType;
+            return false;
+        }
+    }
+    return true;
+}
+
+bool
+CmdClient::integrationUpgrade(WickrBotClients *client, const QString& curSWPath, const QString& newSWPath)
+{
+    // peform the upgrade if one does exist
+    qDebug().noquote().nospace() << "CONSOLE:Upgrading " << client->botType << " software for " << client->user;
+    {
+        QStringList upgradeOutput;
+        QString upgrader = WBIOServerCommon::getBotUpgradeCmd(client->botType);
+        if (!upgrader.isEmpty()){
+            QString upgraderFullPath = QString("%1/%2").arg(newSWPath).arg(upgrader);
+            // Create a process to run the installer
+            QProcess *runUpgrader = new QProcess(this);
+            runUpgrader->setProcessChannelMode(QProcess::MergedChannels);
+            runUpgrader->setWorkingDirectory(newSWPath);
+            QStringList args;
+            args.append(curSWPath);
+            args.append(newSWPath);
+            runUpgrader->start(upgraderFullPath, args, QIODevice::ReadWrite);
+
+            // Wait for it to start
+            if(!runUpgrader->waitForStarted()) {
+                qDebug() << QString("CONSOLE:Failed to run %1").arg(upgrader);
+                return false;
+            }
+
+            while(runUpgrader->waitForReadyRead()) {
+                QString bytes = QString(runUpgrader->readAll());
+                upgradeOutput.append(bytes);
+            }
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
+
+

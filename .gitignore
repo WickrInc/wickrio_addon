@@ -1,4 +1,5 @@
 autobuild-*/
+build
 
 .DS_Store
 .AppleDouble
@@ -39,3 +40,7 @@ export/*
 localRepo/*
 
 CMakeLists.txt.user
+
+node_modules
+package-lock.json
+

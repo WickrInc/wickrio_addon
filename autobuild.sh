@@ -316,7 +316,7 @@ make $bldtype.install
 #
 # Build the node addon
 #
-(cd clients/nodejs/addons/wickrio_node.js_addon; rm -rf build; npm install; cmake-js rebuild)
+(cd integrations/nodejs/addon; rm -rf build; npm install; cmake-js rebuild)
 
 #
 # Deploy this thing
@@ -357,19 +357,22 @@ if test ! -z "$doCoreBot" ; then
 fi
 
 echo "Getting the Hubot integration software from the wickr-integrations submodule"
-(cd $abs/wickr-integrations; ./compress.sh $output $version)
-hubotsoftware=$output/hubot_$version.tar.gz
+mkdir -p $output/hubot
+(cd $abs/wickr-integrations; ./compress.sh $output/hubot $version)
+hubotswdir=$output/hubot
+hubotsoftware=$output/hubot/hubot_$version.tar.gz
+hubotversion=$output/hubot/VERSION
 
 if test ! -z "$wickrIODockerDeb" ; then
     echo "Create docker package for $product $btype"
     build_number=`cat $abs/BUILD_NUMBER`
     binary_dir="$abs/$build"
-    $abs/docker/installer/linux/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$hubotsoftware" "$deploy"
+    $abs/docker/installer/linux/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$hubotswdir" "$deploy"
 fi
 
 echo "going to create the integration software package"
 build_number=`cat $abs/BUILD_NUMBER`
-$abs/integrations/installer/linux/scripts/deploy64 $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$hubotsoftware" "$deploy"
+$abs/integrations/installer/linux/scripts/deploy64 $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$hubotswdir" "$deploy"
 
 echo "going to create $btype for services"
 build_number=`cat $abs/BUILD_NUMBER`
@@ -382,7 +385,13 @@ $abs/services/installer/linux/scripts/consoleCmd_deploy64 $binary_dir $build_num
 echo "going to create Qt library package"
 $abs/platforms/linux/debian/wickrqt/deploy64 "$deploy"
 
-(cd $deploy ; zip -r "$output/bots-${version}.zip" *.deb *.sha256)
+echo "going to create the Samples package"
+(cd $abs/integrations/nodejs/installer; ./generate $build_number "$deploy")
+
+#
+# create the package for deployment
+#
+(cd $deploy ; zip -r "$output/bots-${version}.zip" *.deb *.sha256 *.tar.gz)
 
 echo "ZIP File: $output/bots-${version}.zip"
 

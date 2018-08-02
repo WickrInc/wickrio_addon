@@ -1,7 +1,0 @@
-node_modules
-build
-CMakeLists.txt.user*
-package-lock.json
-bot_iface_test.cpp
-bot_iface_test.js
-receivedMessages.log

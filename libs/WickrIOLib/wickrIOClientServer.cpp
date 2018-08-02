@@ -263,7 +263,7 @@ bool WickrIOClientServer::clientNeedsStart(WickrBotClients *client)
             m_operation->log_handler->log(QString("Seconds since last status:%1").arg(QString::number(secs)));
 #endif
             // If less than timeout (3 minutes) then return failed, since the process is still running
-            if (!m_operation->force && secs < m_operation->m_appTimeOut) {
+            if (!m_operation->csStarted && !m_operation->force && secs < m_operation->m_appTimeOut) {
                 // Return false to identify that it is already active and does not need to be started
 #ifdef DEBUG_TRACE
                 qDebug() << "Leaving clientNeedsStart: secs is < 120 or no force!";
@@ -651,6 +651,11 @@ bool WickrIOClientServer::getClients(bool start)
             }
         }
     }
+
+    // Turn off the Client Server started flag, if was set.
+    if (m_operation->csStarted)
+        m_operation->csStarted = false;
+
     return allClientsStart;
 }
 

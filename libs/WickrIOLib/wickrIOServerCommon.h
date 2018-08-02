@@ -9,6 +9,8 @@
 #include "wickrbotclients.h"
 #include "wickrIOParsers.h"
 
+#define BOT_HUBOT_SOFTWARE      "/usr/lib/wickr/integrations/software/hubot/software.tar.gz"
+
 /**
  * @brief The WBIOBotTypes class
  * This class is used to identify the hardcoded types of Bots supported (i.e. hubot, supportbot)
@@ -17,35 +19,41 @@
 class WBIOBotTypes
 {
 public:
-    WBIOBotTypes(const QString& name, const QString& type, const QString& msgIface,
+    WBIOBotTypes(const QString& name, const QString& type, bool useHttpApi, const QString& msgIface,
                  const QString& swLoc,
                  const QString& installer, const QString& configure,
-                 const QString& startCmd, const QString& stopCmd) :
+                 const QString& startCmd, const QString& stopCmd, const QString& upgradeCmd) :
         m_name(name),
         m_type(type),
+        m_useHttpApi(useHttpApi),
         m_msgIface(msgIface),
         m_swLocation(swLoc),
         m_installer(installer),
         m_configure(configure),
         m_startCmd(startCmd),
-        m_stopCmd(stopCmd) {}
+        m_stopCmd(stopCmd),
+        m_upgradeCmd(upgradeCmd) {}
 
     QString m_name;
     QString m_type;
+    bool    m_useHttpApi;
     QString m_msgIface;
     QString m_swLocation;
     QString m_installer;
     QString m_configure;
     QString m_startCmd;
     QString m_stopCmd;
+    QString m_upgradeCmd;
 
     QString name()       { return m_name; }
     QString type()       { return m_type; }
+    bool    useHttpApi() { return m_useHttpApi; }
     QString swLocation() { return m_swLocation; }
     QString installer()  { return m_installer; }
     QString configure()  { return m_configure; }
     QString startCmd()   { return m_startCmd; }
     QString stopCmd()    { return m_stopCmd; }
+    QString upgradeCmd() { return m_upgradeCmd; }
 };
 
 
@@ -114,6 +122,7 @@ public:
     static QString getBotConfigure(const QString& botType);
     static QString getBotStartCmd(const QString& botType);
     static QString getBotStopCmd(const QString& botType);
+    static QString getBotUpgradeCmd(const QString& botType);
     static QString getBotMsgIface(const QString& botType);
 
 private:

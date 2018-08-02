@@ -53,6 +53,7 @@ WickrIOClientServerProcess::~WickrIOClientServerProcess()
 void
 WickrIOClientServerProcess::processStarted()
 {
+    m_clientServer.m_operation->csStarted = true;
     m_clientServer.processStarted();
 }
 

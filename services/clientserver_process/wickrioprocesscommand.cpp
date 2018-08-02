@@ -1,5 +1,6 @@
 #include <QTextStream>
 #include <QDebug>
+#include <QIODevice>
 
 #include "wickrioprocesscommand.h"
 #if 1

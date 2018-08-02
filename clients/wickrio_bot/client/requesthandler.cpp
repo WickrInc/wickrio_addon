@@ -66,6 +66,7 @@ void RequestHandler::service(stefanfrings::HttpRequest& request, stefanfrings::H
     }
     setupResponse(request, response);
 
+#if 0   // Ignore authentication for now
     // Get the Console User from the database
     WickrIOConsoleUser cUser;
 
@@ -79,6 +80,7 @@ void RequestHandler::service(stefanfrings::HttpRequest& request, stefanfrings::H
             return;
         }
     }
+#endif
 
     // Parse the path
     QList<QByteArray> pathSplit = path.split('/');
@@ -247,152 +249,64 @@ RequestHandler::processSendMessage(stefanfrings::HttpRequest& request, stefanfri
 void
 RequestHandler::processGetMessages(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response)
 {
-    QByteArray paramStart = request.getParameter(APIPARAM_START);
     QByteArray paramCount = request.getParameter(APIPARAM_COUNT);
+    int count;
 
-    // Validate the API Key
-    if (paramStart.length() == 0 || paramCount.length() == 0) {
-        sendFailure(400, "Missing parameters", response);
+    // Validate the parameters
+    if (paramCount.length() != 0) {
+        count = paramCount.toInt();
+        if (count <= 0) {
+            sendFailure(400, "Invalid count value", response);
+            return;
+        }
+    } else {
+        count = 1;
+    }
+
+    WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
+    if (db == NULL) {
+        sendFailure(500, "Internal Error: Failed to cast database!", response);
         return;
     }
-    int start = paramStart.toInt();
-    int count = paramCount.toInt();
-    int messagesRecv = 0;
+
+    QList<int> msgIDs = db->getMessageIDs(m_operation->m_client->id);
     QJsonArray messageArrayValue;
 
-    WickrConvoList *curConvos = WickrCore::WickrConvo::getConvoList();
+    // Make sure the start is less than the number of IDs retrieved
+    if (msgIDs.size() == 0) {
+    } else {
+        int pos=0;
+        while (pos < count) {
+            // If there are no more messages then we are done
+            if (pos >= msgIDs.count())
+                break;
 
-    // TODO: Should there be a semaphore to control access to this?
-    if (curConvos != NULL) {
-        QList<QString> keys = curConvos->acquireKeyList();
+            WickrIOMessage rxMsg;
+            if (db->getMessage(msgIDs.at(pos), &rxMsg)) {
+                QJsonObject messageValue;
+                QJsonDocument doc = QJsonDocument::fromJson(rxMsg.json.toUtf8());
 
-        // Process each of the convos
-        for (int cid=0; cid < keys.size(); cid++) {
-            perftests[0]->start("Per convo");
-
-            WickrCore::WickrConvo *currentConvo = (WickrCore::WickrConvo *)curConvos->value( keys.at(cid) );
-            WickrMessageList *themessages = currentConvo->getMessages();
-
-#if 0
-            long msgcount = themessages->size();
-
-            m_operation->log_handler->log(QString("CurrentConvo: id %1, vgroupTag: %2, allusersstring: %3, timestamp %4")
-                                    .arg(currentConvo->getID())
-                                    .arg(currentConvo->getVGroupTag())
-                                    .arg(currentConvo->getAllUsersString())
-                                    .arg(currentConvo->getLastTimestampString()));
-            m_operation->log_handler->log((QString("Msgs (%1), Unread (%2)")
-                                      .arg(QString::number(msgcount))
-                                     .arg(QString::number(currentConvo->getUnreadMessageCount()))));
-
-            WickrCore::WickrUser *lastuser = currentConvo->getLastUser();
-            if( lastuser ) {
-                m_operation->log_handler->log(QString("primary name: %1").arg(lastuser->getPrimaryName()));
-                m_operation->log_handler->log(QString("key ID Long: %1").arg(lastuser->getKeyIdentityLong()));
-                m_operation->log_handler->log(QString("User ID Hash:").arg(lastuser->getUserIDHash()));
-            }
-#endif
-perftests[1]->start("acquireKeylist");
-            QList<QString> keys = themessages->acquireKeyList();
-perftests[1]->stop();
-
-            for( int i=0; i<keys.size(); i++) {
-                WickrCore::WickrMessage *msg = (WickrCore::WickrMessage *)themessages->value(keys.at(i));
-
-                if( !msg )
-                    continue;
-
-                // Only handle inbox messages
-                if( !msg->isInbox() )
-                    continue;
-
-perftests[4]->start("Message handling");
-
-                // Unlock the message
-//perftests[2]->start("unlock");
-//                WickrStatus msgstatus = msg->unlock();
-//perftests[2]->stop();
-//                if( msgstatus.isError() ) {
-//                    QString errorString = QString("Message id %1 failed: %2").arg(msg->getID()).arg(msgstatus.getValue());
-//                    continue;
-//                }
-
-                QString inboxState;
-
-                WickrCore::WickrInbox *inbox = (WickrCore::WickrInbox *)msg;
-//                inbox->isUnlockRequired();
-
-                if (inbox->getInboxState() == WICKR_INBOX_OPENED) {
-                    WickrMsgClass mclass = msg->getMsgClass();
-                    if( mclass == MsgClass_Text ) {
-                        QJsonObject messageValue;
-
-perftests[3]->start("getCachedText");
-                        QString txt = msg->getCachedText();
-perftests[3]->stop();
-//                        qDebug() << txt;
-
-                        if (messagesRecv >= start && messagesRecv < (start+count)) {
-                            messageValue.insert(APIJSON_MSGID, messagesRecv);
-                            messageValue.insert(APIJSON_MSGTEXT, txt);
-
-                            // Get the sender of this message
-                            WickrCore::WickrUser *sender = inbox->getSenderUser();
-                            messageValue.insert(APIJSON_MSGSENDER, sender->getUserID());
-
-                            // Setup the users array
-                            QList<WickrCore::WickrUser *>users = currentConvo->getAllUsers();
-                            QJsonArray usersArray;
-
-                            for (WickrCore::WickrUser *user : users) {
-                                QJsonObject userEntry;
-
-                                userEntry.insert(APIJSON_NAME, user->getUserID());
-                                usersArray.append(userEntry);
-                            }
-                            QJsonObject myUserEntry;
-                            myUserEntry.insert(APIJSON_NAME, m_operation->m_client->user);
-                            usersArray.append(myUserEntry);
-
-                            messageValue.insert(APIJSON_MSGUSERS, usersArray);
-
-                            // Message timestamp
-                            long timestamp = msg->getMsgTimestamp();
-                            QDateTime msgDate;
-                            msgDate.setMSecsSinceEpoch((quint64)timestamp * 1000l);
-                            // get the "hh:mm ap" format based on locale
-                            QString statusText = msgDate.toString( QLocale::system().dateTimeFormat(QLocale::ShortFormat));
-                            messageValue.insert(APIJSON_MSGTIME, statusText);
-
-                            // Message micro seconds
-                            long usec = msg->getMsgUsec();
-                            QString msg_ts = QString("%1.%2").arg(timestamp).arg(usec);
-                            messageValue.insert(APIJSON_MSG_TS, msg_ts);
-
-                            messageArrayValue.append(messageValue);
-                        }
-
-#if 0
-                        if( msg->hasAttachments() ) {
-                            QList<WickrCore::WickrAttachment*> attachments = msg->getAttachments();
-                            qDebug() << "Message has" << attachments.size() << "attachments";
-                            for( int i=0; i < attachments.size(); i++ ) {
-                                WickrCore::WickrAttachment *att = attachments.at(i);
-                                qDebug() << i << ": id" << att->getID() << "type" << att->getType() << "bytes" <<att->getData().length();
-                            }
-                        }
-#endif
+                // check validity of the document
+                if (!doc.isNull()) {
+                    if(doc.isObject()) {
+                        messageValue = doc.object();
+                        pos++;
+                        messageArrayValue.append(messageValue);
+                    } else {
+                        qDebug() << "Document is not an object!";
                     }
-
-                    messagesRecv++;
+                } else {
+                    qDebug() << "Invalid JSONn";
                 }
-                perftests[4]->stop();
 
+                db->deleteMessage(rxMsg.id, true);
+            } else {
+                break;
             }
         }
-
-        perftests[0]->stop();
     }
+
+
 
     QJsonObject jsonObject;
     jsonObject.insert(APIJSON_MESSAGES, messageArrayValue);

@@ -1,4 +1,0 @@
-node_modules
-CMakeLists.txt.user*
-package-lock.json
-receivedMessages.log
