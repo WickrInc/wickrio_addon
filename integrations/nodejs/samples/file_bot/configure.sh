@@ -2,4 +2,4 @@
 
 echo "prompt: Please enter your client bot's username:"
 read input
-export CLIENT_BOT_USERNAME=${input}   #Find an alternative
+echo ${input} >client_bot_username.txt

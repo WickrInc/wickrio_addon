@@ -81,17 +81,14 @@ return new Promise((resolve, reject) => {
         try {
           var os = await fs.statSync(rMessage.file.localfilename);
           break;
-          if (os !== undefined) {
-            fs.closeSync(os);
-            break;
-          } else {
-            continue;
-          }
         } catch (err) {
           continue;
         }
       }
       var cp = await fs.copyFileSync(rMessage.file.localfilename, 'files/' + rMessage.file.filename);
+      var msg = rMessage.file.filename + "successfully saved to directory!";
+      var sMessage = addon.cmdSend1to1Message(userArr, msg, ttl, bor);
+
     } else
       console.log(rMessage);
   }
