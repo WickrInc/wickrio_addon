@@ -34,9 +34,6 @@ return new Promise((resolve, reject) => {
 
 }).then(async result => {
   console.log(result);
-  // var sMessage = addon.cmdSend1to1Message(members, message, ttl , bor);
-  // console.log(sMessage);
-
   //Infinite loop waiting for incoming messgaes into the bot
   for (;;) {
     try {
@@ -44,35 +41,57 @@ return new Promise((resolve, reject) => {
       if (rMessage === "{ }" || rMessage === "" || !rMessage) {
         continue;
       } else {
+        var bor = "9000";
+        var ttl = "9000";
         rMessage = JSON.parse(rMessage);
-        var request = rMessage.message;
         var sender = rMessage.sender;
         var userArr = [];
         userArr.push(sender);
-
       }
     } catch (err) {
       console.log(err);
     }
-    // var received = await JSON.parse(rMessage);
     if (rMessage === "{ }" || rMessage === "" || !rMessage) {
       continue;
-    } else if (request === '/list') {
-      var fileArr = [];
-      var bor = "9000";
-      var ttl = "9000";
-      fileArr.push('List of files in the given directory:');
-      var answer;
-      fs.readdirSync('.').forEach(file => {
-        console.log(file);
-        fileArr.push(file.toString());
-      });
-      fileArr = fileArr.join('\n');
-      var sMessage = addon.cmdSend1to1Message(userArr, fileArr, ttl, bor);
-      console.log(sMessage);
-    } else if (request === '/get') {
-      var attachment = request.split(" ");
-      console.log(addon.cmdSend1to1Attachment(userArr, attachment[1], "", ttl, bor));
+    } else if (rMessage.message) {
+      var request = rMessage.message.split(" ");
+      if (request[0] === '/list') {
+        var fileArr = [];
+        fileArr.push('List of files in the given directory:');
+        var answer;
+        fs.readdirSync('files/').forEach(file => {
+          fileArr.push(file.toString());
+        });
+        fileArr = fileArr.join('\n');
+        var sMessage = addon.cmdSend1to1Message(userArr, fileArr, ttl, bor);
+        console.log(sMessage);
+      } else if (request[0] === '/get') {
+        var attachment = request[1].toString().trim();
+        console.log('attachment:', attachment);
+        console.log(addon.cmdSend1to1Attachment(userArr, __dirname + '/files/' + attachment, "", ttl, bor));
+      } else if (request[0] === '/help') {
+        var help = "/help - List all available commands\n" +
+         "/list - List all available files\n" +
+         "/get FILE_NAME - Retrieve the specified file\n";
+        var sMessage = addon.cmdSend1to1Message(userArr, help, ttl, bor);
+      }
+    } else if (rMessage.file) {
+      // console.log(rMessage.file.localfilename);
+      for (;;) {
+        try {
+          var os = await fs.statSync(rMessage.file.localfilename);
+          break;
+          if (os !== undefined) {
+            fs.closeSync(os);
+            break;
+          } else {
+            continue;
+          }
+        } catch (err) {
+          continue;
+        }
+      }
+      var cp = await fs.copyFileSync(rMessage.file.localfilename, 'files/' + rMessage.file.filename);
     } else
       console.log(rMessage);
   }
