@@ -1,4 +1,5 @@
-Release Notes from v4.26-release to v4.41.30-3:
+Release Notes from v4.26-release to v4.41.31-2:
+  * Add filebot sample
   * Remove the check and prompt if the IPC value is 0
   * Add start and stop to welcomeBot
   * Add check for client bot's name argument
