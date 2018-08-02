@@ -318,7 +318,6 @@ void cmdModifyRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
         ttl = std::string(*param6);
         v8::String::Utf8Value param7(args[6]->ToString());
         bor = std::string(*param7);
-        // cout << endl << vGroupID << endl << members[0] << endl <<title << endl << description << endl << ttl << endl << bor << endl;
         botIface->cmdStringModifyRoom(command, vGroupID, members, moderators, title, description, ttl, bor);
         if (botIface->send(command, response) != BotIface::SUCCESS) {
                 response = botIface->getLastErrorString();
