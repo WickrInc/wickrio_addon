@@ -520,6 +520,26 @@ bool CmdClient::getClientValues(WickrBotClients *client)
     } else {
     }
 
+    // See if the user wants to use the autologin capability
+    qDebug() << "CONSOLE:The autologin capability allows you to start a bot without having to enter the password,\nafter the initial login.";
+    qDebug() << "CONSOLE:Warning: The bot client's password is NOT saved to disk, but it is less secure.";
+    while (true) {
+        QString temp = getNewValue("yes", tr("Do you want to use autologin?"), CHECK_BOOL);
+        if (temp.toLower() == "yes" || temp.toLower() == "y") {
+            client->m_autologin = true;
+            break;
+        }
+        if (temp.toLower() == "no" || temp.toLower() == "n" || temp.isEmpty()) {
+            client->m_autologin = false;
+            break;
+        }
+
+        // Check if the user wants to quit the action
+        if (handleQuit(temp, &quit) && quit) {
+            return false;
+        }
+    }
+
     bool getInterfaceInfo;
     if (!m_basicConfig) {
         getInterfaceInfo = true;
@@ -914,50 +934,15 @@ CmdClient::getAuthValue(WickrBotClients *client, bool basic, QString& authValue)
 }
 
 /**
- * @brief CmdClient::runBotScript
- * This function will run the input script. The script has commands in it to identify if input
- * is required.
- * @param destPath
- * @param configure
+ * @brief CmdClient::readLineFromProcess
+ * This function will process input from a running process, ignoring the newline character.
+ * If the process stops running it will return a false value.  If multiple lines are read
+ * in then only one line, up to the newline character, will be returned. Other lines will be
+ * returned the next time this function is called.
+ * @param process
+ * @param line
  * @return
  */
-bool
-CmdClient::runBotScriptNEW(const QString& destPath, const QString& configure, WickrBotClients *client)
-{
-    // Values associated with the CallbackURL
-    QString cbackEndPoint;
-    QString cbackPort;
-
-    // Create a process to run the configure
-    QProcess *runScript = new QProcess(this);
-
-    connect(runScript, &QProcess::errorOccurred, [=](QProcess::ProcessError error) {
-        qDebug() << "CONSOLE:error enum val = " << error;
-    });
-
-    QStringList arguments;
-    runScript->setInputChannelMode(QProcess::ForwardedInputChannel);
-    runScript->startDetached(configure, arguments, destPath);
-
-    // Wait for it to start
-    if(!runScript->waitForStarted()) {
-        qDebug() << QString("CONSOLE:Failed to run %1").arg(configure);
-        return false;
-    }
-
-
-    if (runScript->waitForFinished(-1)) {
-        qDebug() << QString("CONSOLE:done");
-    }
-
-    // If the callback valuee are set then create the callback url for this client
-    if (!cbackEndPoint.isEmpty() && !cbackPort.isEmpty()) {
-        client->m_callbackString = QString("http://localhost:%1%2").arg(cbackPort).arg(cbackEndPoint);
-    }
-    return true;
-}
-
-
 bool
 CmdClient::readLineFromProcess(QProcess *process, QString& line)
 {
@@ -967,22 +952,27 @@ CmdClient::readLineFromProcess(QProcess *process, QString& line)
     if (savedBytes.length() > 0) {
         line = QString(savedBytes.takeFirst());
     } else {
-        // Pause for 1 second
         QThread::sleep(1);
 
-        if (process->waitForReadyRead(-1)) {
-            QByteArray bytes = process->readAll();
+        while (process->state() == QProcess::Running) {
+            if (process->waitForReadyRead(250)) {
+                QByteArray bytes = process->readAll();
 
-            QList<QByteArray> lines = bytes.split('\n');
+                QList<QByteArray> lines = bytes.split('\n');
 
-            if (lines.size() == 0) {
-                line = "";
-                savedBytes.clear();
-            } else {
-                line = QString(lines.takeFirst());
-                savedBytes = lines;
+                if (lines.size() == 0) {
+                    line = "";
+                    savedBytes.clear();
+                } else {
+                    line = QString(lines.takeFirst());
+                    savedBytes = lines;
+                }
+                return true;
             }
-        } else {
+        }
+
+        if (process->state() != QProcess::Running) {
+            savedBytes.clear();
             return false;
         }
     }
@@ -990,7 +980,14 @@ CmdClient::readLineFromProcess(QProcess *process, QString& line)
     return true;
 }
 
-
+/**
+ * @brief CmdClient::runBotScript
+ * This function will run the input script. The script has commands in it to identify if input
+ * is required.
+ * @param destPath
+ * @param configure
+ * @return
+ */
 bool
 CmdClient::runBotScript(const QString& destPath, const QString& configure, WickrBotClients *client)
 {
@@ -1027,45 +1024,39 @@ CmdClient::runBotScript(const QString& destPath, const QString& configure, Wickr
 
                 if (inputList.size() > 1 && inputList[0].toLower() == "prompt") {
                     bool promptForValue = false;
-                    if (inputList.size() == 3) {
-                        QString prompt = inputList[2].remove(QRegExp("[\\n\\t\\r]")).replace(" ", "");
-
-                        if (prompt == "WICKRIO_AUTH_TOKEN") {
-                            QString authValue;
+                    if (bytes.contains("WICKRIO_AUTH_TOKEN")) {
+                        QString authValue;
 #if 0 // Ignoring authentication for now
-                            // Get the basic authentication value (user:pw), should use token though
-                            if (!getAuthValue(client, true, authValue)) {
-                                runScript->close();
-                                return false;
-                            }
+                        // Get the basic authentication value (user:pw), should use token though
+                        if (!getAuthValue(client, true, authValue)) {
+                            runScript->close();
+                            return false;
+                        }
 #else
-                            authValue = "admin:admin";
+                        authValue = "admin:admin";
 #endif
 
-                            authValue.append("\n");
-                            runScript->write(authValue.toLatin1());
-                        } else if (prompt == "WICKRIO_SERVER") {
-                            QString server = QString("%1://%2:%3/Apps/%5\n")
-                                    .arg(client->isHttps ? "https" : "http")
-                                    .arg(client->iface)
-                                    .arg(client->port)
-                                    .arg(client->apiKey);
-                            runScript->write(server.toLatin1());
-                        } else if (prompt == "HUBOT_NAME") {
-                            QString botName = QString("%1_hubot\n").arg(client->name);
-                            runScript->write(botName.toLatin1());
-                        } else if (prompt == "HUBOT_URL_ENDPOINT") {
-                            cbackEndPoint = QString("/Apps/%1").arg(client->port);
-                            QString endpoint = QString("%1\n").arg(cbackEndPoint);
-                            runScript->write(endpoint.toLatin1());
-                        } else if (prompt == "HUBOT_URL_PORT") {
-                            QString cbackPortPrompt = QString("Enter the port the %1 integration will listen on").arg(client->botType);
-                            cbackPort = getNewValue(cbackPort, cbackPortPrompt);
-                            QString outString = QString("%1\n").arg(cbackPort);
-                            runScript->write(outString.toLatin1());
-                        } else {
-                            promptForValue = true;
-                        }
+                        authValue.append("\n");
+                        runScript->write(authValue.toLatin1());
+                    } else if (bytes.contains("WICKRIO_SERVER")) {
+                        QString server = QString("%1://%2:%3/Apps/%5\n")
+                                .arg(client->isHttps ? "https" : "http")
+                                .arg(client->iface)
+                                .arg(client->port)
+                                .arg(client->apiKey);
+                        runScript->write(server.toLatin1());
+                    } else if (bytes.contains("HUBOT_NAME")) {
+                        QString botName = QString("%1_hubot\n").arg(client->name);
+                        runScript->write(botName.toLatin1());
+                    } else if (bytes.contains("HUBOT_URL_ENDPOINT")) {
+                        cbackEndPoint = QString("/Apps/%1").arg(client->port);
+                        QString endpoint = QString("%1\n").arg(cbackEndPoint);
+                        runScript->write(endpoint.toLatin1());
+                    } else if (bytes.contains("HUBOT_URL_PORT")) {
+                        QString cbackPortPrompt = QString("Enter the port the %1 integration will listen on").arg(client->botType);
+                        cbackPort = getNewValue(cbackPort, cbackPortPrompt);
+                        QString outString = QString("%1\n").arg(cbackPort);
+                        runScript->write(outString.toLatin1());
                     } else {
                         promptForValue = true;
                     }
@@ -1458,7 +1449,6 @@ void CmdClient::startClient(int clientIndex, bool force)
                         settings->endGroup();
                         settings->sync();
                     }
-
                     if (! m_operation->m_ioDB->updateProcessState(processName, 0, PROCSTATE_DOWN)) {
                         qDebug() << "CONSOLE:Failed to change start of client in database!";
                     }

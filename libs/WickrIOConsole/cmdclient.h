@@ -46,8 +46,6 @@ private:
 
     bool sendClientCmd(int port, const QString& cmd);
 
-    bool runBotScriptNEW(const QString& destPath, const QString& configure, WickrBotClients *client);
-
     bool readLineFromProcess(QProcess *process, QString& line);
     bool runBotScript(const QString& destPath, const QString& configure, WickrBotClients *client);
 
@@ -79,6 +77,9 @@ private:
     QMap<QString, unsigned>  m_integrationVersions;
 
     QProcess *m_exec;
+
+    bool                    m_clientStateChanged = false;
+    QString                 m_clientState;
 
     void updateIntegrationVersion();
 
