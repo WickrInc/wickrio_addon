@@ -69,7 +69,7 @@ return new Promise((resolve, reject) => {
          "/get FILE_NAME - Retrieve the specified file\n";
         var sMessage = addon.cmdSend1to1Message(userArr, help, ttl, bor);
       }
-    } else if (rMessage.file) {
+    } else if (rMessage.file && rMessage !== prevMessage) {
       // console.log(rMessage.file.localfilename);
       for (;;) {
         try {
@@ -82,6 +82,7 @@ return new Promise((resolve, reject) => {
       var cp = await fs.copyFileSync(rMessage.file.localfilename, 'files/' + rMessage.file.filename);
       var msg = "File named: '"+ rMessage.file.filename + "' successfully saved to directory!";
       var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
+      var prevMessage = rMessage;
       console.log(sMessage);
     } else
       console.log(rMessage);
