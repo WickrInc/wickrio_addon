@@ -60,7 +60,7 @@ return new Promise((resolve, reject) => {
             var sMessage = addon.cmdSend1to1Message(userArr, fileArr, ttl, bor);
             console.log(sMessage);
           } else if (request[0] === '/get') {
-            var attachment = request[1].toString().trim();
+            var attachment = rMessage.message.substr(rMessage.message.indexOf(' ') + 1);
             console.log('attachment:', attachment);
             try {
               var as = await fs.accessSync('files/' + attachment, fs.constants.R_OK | fs.constants.W_OK);
@@ -73,11 +73,15 @@ return new Promise((resolve, reject) => {
             }
             console.log(addon.cmdSend1to1Attachment(userArr, __dirname + '/files/' + attachment, "", ttl, bor));
           } else if (request[0] === '/delete') {
-            var attachment = request[1].toString().trim();
+            var attachment = rMessage.message.substr(rMessage.message.indexOf(' ') + 1);
             console.log('attachment:', attachment);
+            if (attachment === '*') {
+              var msg = "Sorry, I'm not allowed to delete all the files in the directory.";
+              var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
+              continue;
+            }
             try {
               var os = await fs.statSync('files/' + attachment);
-              break;
             } catch (err) {
               var msg = attachment + ' does not exist!';
               console.error(msg);
