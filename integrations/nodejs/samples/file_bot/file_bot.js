@@ -47,13 +47,7 @@ return new Promise((resolve, reject) => {
         var sender = rMessage.sender;
         var userArr = [];
         userArr.push(sender);
-      }
-    } catch (err) {
-      console.log(err);
-    }
-    if (rMessage === "{ }" || rMessage === "" || !rMessage) {
-      continue;
-    } else if (rMessage.message) {
+      if (rMessage.message) {
       var request = rMessage.message.split(" ");
       if (request[0] === '/list') {
         var fileArr = [];
@@ -87,10 +81,14 @@ return new Promise((resolve, reject) => {
       }
       var cp = await fs.copyFileSync(rMessage.file.localfilename, 'files/' + rMessage.file.filename);
       var msg = "File named: '"+ rMessage.file.filename + "' successfully saved to directory!";
-      var sMessage = addon.cmdSend1to1Message(userArr, msg, ttl, bor);
+      var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
       console.log(sMessage);
     } else
       console.log(rMessage);
+    }
+  } catch (err) {
+    console.log(err);
+  }
   }
 }).catch(error => {
   console.log('Error: ', error);
