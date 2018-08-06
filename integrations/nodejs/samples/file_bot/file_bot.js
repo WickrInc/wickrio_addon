@@ -62,16 +62,37 @@ return new Promise((resolve, reject) => {
           } else if (request[0] === '/get') {
             var attachment = request[1].toString().trim();
             console.log('attachment:', attachment);
+            try {
+              var as = await fs.accessSync('files/' + attachment, fs.constants.R_OK | fs.constants.W_OK);
+              console.log('can read/write');
+            } catch (err) {
+              var msg = attachment + ' does not exist!';
+              console.error(msg);
+              var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
+              continue;
+            }
             console.log(addon.cmdSend1to1Attachment(userArr, __dirname + '/files/' + attachment, "", ttl, bor));
           } else if (request[0] === '/delete') {
             var attachment = request[1].toString().trim();
             console.log('attachment:', attachment);
-            try{
-            var rm = await fs.unlinkSync('files/' + attachment);
-          } catch(err){
-            var sMessage = await addon.cmdSend1to1Message(userArr, err, ttl, bor);
-            continue;
-          }
+            try {
+              var os = await fs.statSync('files/' + attachment);
+              break;
+            } catch (err) {
+              var msg = attachment + ' does not exist!';
+              console.error(msg);
+              var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
+              continue;
+            }
+            try {
+              var rm = await fs.unlinkSync('files/' + attachment);
+            } catch (err) {
+              if (err) {
+                throw err;
+                var sMessage = await addon.cmdSend1to1Message(userArr, err, ttl, bor);
+                continue;
+              }
+            }
             var msg = "File named: '" + attachment + "' was deleted successfully!";
             var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
           } else if (request[0] === '/help') {
