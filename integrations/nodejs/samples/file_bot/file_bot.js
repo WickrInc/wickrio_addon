@@ -63,13 +63,20 @@ return new Promise((resolve, reject) => {
         var attachment = request[1].toString().trim();
         console.log('attachment:', attachment);
         console.log(addon.cmdSend1to1Attachment(userArr, __dirname + '/files/' + attachment, "", ttl, bor));
+      } else if (request[0] === '/delete') {
+        var attachment = request[1].toString().trim();
+        console.log('attachment:', attachment);
+        var rm = await fs.unlinkSync('files/' + attachment);
+        var msg = "File named: '"+ attachment + "' was deleted successfully!";
+        var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
       } else if (request[0] === '/help') {
         var help = "/help - List all available commands\n" +
-         "/list - List all available files\n" +
-         "/get FILE_NAME - Retrieve the specified file\n";
+         "/list - Lists all available files\n" +
+         "/get FILE_NAME - Retrieve the specified file\n" +
+         "/delete FILE_NAME - Deletes the specified file\n";
         var sMessage = addon.cmdSend1to1Message(userArr, help, ttl, bor);
       }
-    } else if (rMessage.file && rMessage !== prevMessage) {
+    } else if (rMessage.file && JSON.stringify(rMessage) !== JSON.stringify(prevMessage)) {
       // console.log(rMessage.file.localfilename);
       for (;;) {
         try {
