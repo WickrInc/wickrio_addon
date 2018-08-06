@@ -71,7 +71,7 @@ return new Promise((resolve, reject) => {
               var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
               continue;
             }
-            console.log(addon.cmdSend1to1Attachment(userArr, __dirname + '/files/' + attachment, "", ttl, bor));
+            console.log(addon.cmdSend1to1Attachment(userArr, __dirname + '/files/' + attachment, attachment, ttl, bor));
           } else if (request[0] === '/delete') {
             var attachment = rMessage.message.substr(rMessage.message.indexOf(' ') + 1);
             console.log('attachment:', attachment);
@@ -120,8 +120,10 @@ return new Promise((resolve, reject) => {
           var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
           var prevMessage = rMessage;
           console.log(sMessage);
-        } else
+        } else{
           console.log(rMessage);
+          continue;
+        }
       }
     } catch (err) {
       console.log(err);
