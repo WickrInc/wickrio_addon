@@ -47,56 +47,60 @@ return new Promise((resolve, reject) => {
         var sender = rMessage.sender;
         var userArr = [];
         userArr.push(sender);
-      if (rMessage.message) {
-      var request = rMessage.message.split(" ");
-      if (request[0] === '/list') {
-        var fileArr = [];
-        fileArr.push('List of files in the given directory:');
-        var answer;
-        fs.readdirSync('files/').forEach(file => {
-          fileArr.push(file.toString());
-        });
-        fileArr = fileArr.join('\n');
-        var sMessage = addon.cmdSend1to1Message(userArr, fileArr, ttl, bor);
-        console.log(sMessage);
-      } else if (request[0] === '/get') {
-        var attachment = request[1].toString().trim();
-        console.log('attachment:', attachment);
-        console.log(addon.cmdSend1to1Attachment(userArr, __dirname + '/files/' + attachment, "", ttl, bor));
-      } else if (request[0] === '/delete') {
-        var attachment = request[1].toString().trim();
-        console.log('attachment:', attachment);
-        var rm = await fs.unlinkSync('files/' + attachment);
-        var msg = "File named: '"+ attachment + "' was deleted successfully!";
-        var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
-      } else if (request[0] === '/help') {
-        var help = "/help - List all available commands\n" +
-         "/list - Lists all available files\n" +
-         "/get FILE_NAME - Retrieve the specified file\n" +
-         "/delete FILE_NAME - Deletes the specified file\n";
-        var sMessage = addon.cmdSend1to1Message(userArr, help, ttl, bor);
+        if (rMessage.message) {
+          var request = rMessage.message.split(" ");
+          if (request[0] === '/list') {
+            var fileArr = [];
+            fileArr.push('List of files in the given directory:');
+            var answer;
+            fs.readdirSync('files/').forEach(file => {
+              fileArr.push(file.toString());
+            });
+            fileArr = fileArr.join('\n');
+            var sMessage = addon.cmdSend1to1Message(userArr, fileArr, ttl, bor);
+            console.log(sMessage);
+          } else if (request[0] === '/get') {
+            var attachment = request[1].toString().trim();
+            console.log('attachment:', attachment);
+            console.log(addon.cmdSend1to1Attachment(userArr, __dirname + '/files/' + attachment, "", ttl, bor));
+          } else if (request[0] === '/delete') {
+            var attachment = request[1].toString().trim();
+            console.log('attachment:', attachment);
+            try{
+            var rm = await fs.unlinkSync('files/' + attachment);
+          } catch(err){
+            var sMessage = await addon.cmdSend1to1Message(userArr, err, ttl, bor);
+            continue;
+          }
+            var msg = "File named: '" + attachment + "' was deleted successfully!";
+            var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
+          } else if (request[0] === '/help') {
+            var help = "/help - List all available commands\n" +
+              "/list - Lists all available files\n" +
+              "/get FILE_NAME - Retrieve the specified file\n" +
+              "/delete FILE_NAME - Deletes the specified file\n";
+            var sMessage = addon.cmdSend1to1Message(userArr, help, ttl, bor);
+          }
+        } else if (rMessage.file && JSON.stringify(rMessage) !== JSON.stringify(prevMessage)) {
+          for (;;) {
+            try {
+              var os = await fs.statSync(rMessage.file.localfilename);
+              break;
+            } catch (err) {
+              continue;
+            }
+          }
+          var cp = await fs.copyFileSync(rMessage.file.localfilename, 'files/' + rMessage.file.filename);
+          var msg = "File named: '" + rMessage.file.filename + "' successfully saved to directory!";
+          var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
+          var prevMessage = rMessage;
+          console.log(sMessage);
+        } else
+          console.log(rMessage);
       }
-    } else if (rMessage.file && JSON.stringify(rMessage) !== JSON.stringify(prevMessage)) {
-      // console.log(rMessage.file.localfilename);
-      for (;;) {
-        try {
-          var os = await fs.statSync(rMessage.file.localfilename);
-          break;
-        } catch (err) {
-          continue;
-        }
-      }
-      var cp = await fs.copyFileSync(rMessage.file.localfilename, 'files/' + rMessage.file.filename);
-      var msg = "File named: '"+ rMessage.file.filename + "' successfully saved to directory!";
-      var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
-      var prevMessage = rMessage;
-      console.log(sMessage);
-    } else
-      console.log(rMessage);
+    } catch (err) {
+      console.log(err);
     }
-  } catch (err) {
-    console.log(err);
-  }
   }
 }).catch(error => {
   console.log('Error: ', error);
