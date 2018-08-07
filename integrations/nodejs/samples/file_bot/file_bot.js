@@ -113,7 +113,7 @@ return new Promise((resolve, reject) => {
         } else if (rMessage.file && JSON.stringify(rMessage) !== JSON.stringify(prevMessage)) {
           for (;;) {
             try {
-              var os = await fileExists.sync(rMessage.file.localfilename);
+              var exists = await fileExists.sync(rMessage.file.localfilename);
               if(exists)
                 break;
               else
