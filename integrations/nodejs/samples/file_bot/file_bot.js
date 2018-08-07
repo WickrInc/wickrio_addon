@@ -1,6 +1,7 @@
 var addon = require('wickrio_addon');
 var prompt = require('prompt');
 var fs = require('fs');
+var fileExists = require('file-exists');
 prompt.start();
 module.exports = addon;
 
@@ -112,10 +113,13 @@ return new Promise((resolve, reject) => {
         } else if (rMessage.file && JSON.stringify(rMessage) !== JSON.stringify(prevMessage)) {
           for (;;) {
             try {
-              var os = await fs.statSync(rMessage.file.localfilename);
-              break;
+              var os = await fileExists.sync(rMessage.file.localfilename);
+              if(exists)
+                break;
+              else
+                continue;
             } catch (err) {
-              continue;
+              console.error(err);
             }
           }
           var cp = await fs.copyFileSync(rMessage.file.localfilename, 'files/' + rMessage.file.filename);
