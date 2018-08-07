@@ -36,7 +36,6 @@ return new Promise((resolve, reject) => {
   console.log(result);
   //Infinite loop waiting for incoming messgaes into the bot
   for (;;) {
-    try {
       var rMessage = addon.cmdGetReceivedMessage();
       if (rMessage === "{ }" || rMessage === "" || !rMessage) {
         continue;
@@ -61,23 +60,23 @@ return new Promise((resolve, reject) => {
             console.log(sMessage);
           } else if (request[0] === '/get') {
             var attachment = rMessage.message.substr(rMessage.message.indexOf(' ') + 1);
-            console.log('attachment:', attachment);
             try {
               var as = await fs.accessSync('files/' + attachment, fs.constants.R_OK | fs.constants.W_OK);
-              console.log('can read/write');
+              console.log('can access', attachment);
             } catch (err) {
               var msg = attachment + ' does not exist!';
               console.error(msg);
               var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
+              console.log(sMessage);
               continue;
             }
             console.log(addon.cmdSend1to1Attachment(userArr, __dirname + '/files/' + attachment, attachment, ttl, bor));
           } else if (request[0] === '/delete') {
             var attachment = rMessage.message.substr(rMessage.message.indexOf(' ') + 1);
-            console.log('attachment:', attachment);
             if (attachment === '*') {
               var msg = "Sorry, I'm not allowed to delete all the files in the directory.";
               var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
+              console.log(sMessage);
               continue;
             }
             try {
@@ -86,6 +85,7 @@ return new Promise((resolve, reject) => {
               var msg = attachment + ' does not exist!';
               console.error(msg);
               var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
+              console.log(sMessage);
               continue;
             }
             try {
@@ -94,17 +94,20 @@ return new Promise((resolve, reject) => {
               if (err) {
                 throw err;
                 var sMessage = await addon.cmdSend1to1Message(userArr, err, ttl, bor);
+                console.log(sMessage);
                 continue;
               }
             }
             var msg = "File named: '" + attachment + "' was deleted successfully!";
             var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
+            console.log(sMessage);
           } else if (request[0] === '/help') {
             var help = "/help - List all available commands\n" +
               "/list - Lists all available files\n" +
               "/get FILE_NAME - Retrieve the specified file\n" +
               "/delete FILE_NAME - Deletes the specified file\n";
             var sMessage = addon.cmdSend1to1Message(userArr, help, ttl, bor);
+            console.log(sMessage);
           }
         } else if (rMessage.file && JSON.stringify(rMessage) !== JSON.stringify(prevMessage)) {
           for (;;) {
@@ -125,9 +128,6 @@ return new Promise((resolve, reject) => {
           continue;
         }
       }
-    } catch (err) {
-      console.log(err);
-    }
   }
 }).catch(error => {
   console.log('Error: ', error);
