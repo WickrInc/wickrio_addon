@@ -2,6 +2,7 @@ var addon = require('wickrio_addon');
 var fs = require('fs');
 var prompt = require('prompt');
 prompt.start();
+process.title = "complianceBot";
 module.exports = addon;
 
 return new Promise((resolve, reject) => {

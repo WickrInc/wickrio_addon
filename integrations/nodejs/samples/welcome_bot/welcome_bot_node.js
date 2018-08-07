@@ -35,16 +35,8 @@ return new Promise((resolve, reject) => {
     }
   };
   if (process.argv[2] === undefined) {
-    return new Promise((resolve, reject) => {
-      prompt.get(schema, function(err, result) {
-        resolve(result.client_bot_username);
-      });
-    }).then(result => {
-      var response = addon.clientInit(result);
-      resolve(response);
-    }).catch(error => {
-      console.log('Error: ', error);
-    });
+    var response = addon.clientInit(process.env.CLIENT_BOT_USERNAME);
+    resolve(response);
   } else {
     var response = addon.clientInit(process.argv[2]);
     resolve(response);

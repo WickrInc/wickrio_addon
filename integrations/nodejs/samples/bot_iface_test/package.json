@@ -7,5 +7,9 @@
   "dependencies": {
     "prompt": "^1.0.0",
     "wickrio_addon": "file:../../addon"
+  },
+  "scripts": {
+    "start": "node bot_iface_test.js",
+    "stop": "pkill --signal SIGINT ifaceTest"
   }
 }

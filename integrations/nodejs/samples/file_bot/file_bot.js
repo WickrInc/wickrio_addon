@@ -3,6 +3,7 @@ var prompt = require('prompt');
 var fs = require('fs');
 var fileExists = require('file-exists');
 prompt.start();
+process.title = "fileBot";
 module.exports = addon;
 
 return new Promise((resolve, reject) => {
