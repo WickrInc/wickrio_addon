@@ -195,9 +195,7 @@ Client::Client(QWidget *parent) :
                     msg->addButton(tr("Cancel"), 1);
                     msg->setText(tr("Are you sure you want to pause the client for %1").arg(name));
                     if (msg->exec() == 0) {
-                        if (state.ipc_port != 0) {
-                            ipc->sendMessage(state.ipc_port, WBIO_IPCCMDS_PAUSE);
-                        }
+                        ipc->sendMessage(updateClient->name, WBIO_IPCCMDS_PAUSE);
                     }
                 } else {
                     if (state.state == PROCSTATE_PAUSED) {

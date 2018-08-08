@@ -14,13 +14,10 @@ public:
 
     // Server functions
     bool startServer();
-    int getServerPort();
 
     // Client functions
-    bool sendMessage(int ipc_port, const QString &message);
-    QByteArray getResponse(int ipc_port, bool *result);
-
-    bool check();
+    bool sendMessage(const QString& dest, const QString &message);
+    QByteArray getResponse(const QString& source, bool *result);
 
 signals:
     void signalGotMessage(const QString &message, int peerPort);

@@ -1,8 +1,6 @@
 #ifndef WICKRBOTSETTINGS
 #define WICKRBOTSETTINGS
 
-#define WBSETTINGS_GENERAL_HEADER      "general"
-
 #define WBSETTINGS_DATABASE_HEADER      "database"
 #define WBSETTINGS_DATABASE_DIRNAME     "dirName"
 
@@ -28,6 +26,7 @@
 #define WBSETTINGS_USER_PT_LEGACY       "legacy"
 #define WBSETTINGS_USER_PT_BOT          "bot"
 #define WBSETTINGS_USER_PT_DEFAULT      "bot"
+#define WBSETTINGS_USER_AUTOLOGIN       "autologin"
 
 #define WBSETTINGS_CONFIG_HEADER        "configuration"
 #define WBSETTINGS_CONFIG_DORECEIVE     "doreceive"

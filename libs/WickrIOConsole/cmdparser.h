@@ -48,7 +48,7 @@ private:
 
     bool validateIndex(int parserIndex);
 
-    bool sendParserCmd(int port, const QString& cmd);
+    bool sendParserCmd(const QString& dest, const QString& cmd);
 
 };
 

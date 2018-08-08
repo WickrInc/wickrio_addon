@@ -28,10 +28,10 @@ public:
     bool clientNeedsStart(WickrBotClients *client);
     bool parserNeedsStart(WickrBotProcessState *process);
     bool startClient(WickrBotClients *client);
-    bool stopClient(const WickrBotProcessState& state);
+    bool stopClient(const QString& name);
     bool startParser(QString processName, QString appName);
 
-    bool sendClientCmd(int port, const QString& cmd);
+    bool sendClientCmd(const QString& dest, const QString& cmd);
 
     OperationData       *m_operation = nullptr;
     QTimer              *m_processTimer = nullptr;

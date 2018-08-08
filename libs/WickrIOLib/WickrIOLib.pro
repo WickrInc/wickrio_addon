@@ -82,6 +82,7 @@ INCLUDEPATH += $$DEPTH/wickr-sdk/libs/qbson
 INCLUDEPATH += $$DEPTH/wickr-sdk/libs/libbson
 INCLUDEPATH += $$DEPTH/wickr-sdk/libs/cloud/qcloud
 INCLUDEPATH += $$DEPTH/shared/common
+INCLUDEPATH += $$DEPTH/libs/nzmqt/include
 
 INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD

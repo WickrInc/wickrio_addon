@@ -5,14 +5,17 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
+#include "nzmqt/nzmqt.hpp"
+
 #include "wickrIOIPCService.h"
 #include "wickrbotprocessstate.h"
 #include "wickrIOCommon.h"
 
-WickrIOIPCService::WickrIOIPCService() :
+WickrIOIPCService::WickrIOIPCService(const QString& name, bool isClient) :
     m_lock(QReadWriteLock::Recursive),
-    m_state(WickrServiceState::SERVICE_UNINITIALIZED),
-    m_ipcThread(nullptr)
+    m_name(name),
+    m_isClient(isClient),
+    m_state(WickrServiceState::SERVICE_UNINITIALIZED)
 {
     qRegisterMetaType<WickrServiceState>("WickrServiceState");
     qRegisterMetaType<WickrApplicationState>("WickrApplicationState");
@@ -42,12 +45,13 @@ void WickrIOIPCService::startThreads()
     QWriteLocker lockGuard(&m_lock);
 
     // Allocate threads
-    m_ipcThread = new WickrIOIPCThread(&m_thread, this);
+    m_ipcRxThread = new WickrIOIPCRecvThread(&m_thread, this);
+    m_ipcTxThread = new WickrIOIPCSendThread(&m_thread, this);
 
     // connect the thread signals to the service signals
-    connect(m_ipcThread, &WickrIOIPCThread::signalGotPauseRequest, this, &WickrIOIPCService::signalGotPauseRequest);
-    connect(m_ipcThread, &WickrIOIPCThread::signalGotStopRequest,  this, &WickrIOIPCService::signalGotStopRequest);
-    connect(m_ipcThread, &WickrIOIPCThread::signalReceivedMessage, this, &WickrIOIPCService::signalReceivedMessage);
+    connect(m_ipcRxThread, &WickrIOIPCRecvThread::signalGotPauseRequest, this, &WickrIOIPCService::signalGotPauseRequest);
+    connect(m_ipcRxThread, &WickrIOIPCRecvThread::signalGotStopRequest,  this, &WickrIOIPCService::signalGotStopRequest);
+    connect(m_ipcRxThread, &WickrIOIPCRecvThread::signalReceivedMessage, this, &WickrIOIPCService::signalReceivedMessage);
 
     // Perform startup here, creating and configuring ressources.
     m_thread.start();
@@ -55,10 +59,11 @@ void WickrIOIPCService::startThreads()
 
 bool WickrIOIPCService::isRunning()
 {
-    if (m_ipcThread != nullptr) {
-        return m_ipcThread->isRunning();
+    if (m_ipcRxThread == nullptr  || m_ipcTxThread == nullptr ||
+        !m_ipcRxThread->isRunning() || !m_ipcTxThread->isRunning()) {
+        return false;
     }
-    return false;
+    return true;
 }
 
 void WickrIOIPCService::startIPC(OperationData *operation)
@@ -88,25 +93,28 @@ void WickrIOIPCService::stopThreads()
 void WickrIOIPCService::shutdown()
 {
     QEventLoop wait_loop;
-    connect(m_ipcThread, &WickrIOIPCThread::signalNotRunning, &wait_loop, &QEventLoop::quit);
-    emit signalShutdown();
+    connect(m_ipcRxThread, &WickrIOIPCRecvThread::signalNotRunning, &wait_loop, &QEventLoop::quit);
+    emit signalShutdownRecv();
 
-    qDebug() << "WickrIOIPC Service shutdown: starting to wait";
+    qDebug() << "WickrIORecvIPC Service shutdown: starting to wait";
     // Wait for the thread to signal it is done
     wait_loop.exec();
-    qDebug() << "WickrIOIPC Service shutdown: finished waiting";
+    qDebug() << "WickrIORecvIPC Service shutdown: finished waiting";
+
+    QEventLoop wait_loop_tx;
+    connect(m_ipcTxThread, &WickrIOIPCSendThread::signalNotRunning, &wait_loop_tx, &QEventLoop::quit);
+    emit signalShutdownSend();
+
+    qDebug() << "WickrIOSendIPC Service shutdown: starting to wait";
+    // Wait for the thread to signal it is done
+    wait_loop_tx.exec();
+    qDebug() << "WickrIOSendIPC Service shutdown: finished waiting";
 }
 
-bool
-WickrIOIPCService::check()
+bool WickrIOIPCService::sendMessage(const QString& dest, bool isClient, const QString& message)
 {
-    QEventLoop wait_loop;
-    connect(m_ipcThread, &WickrIOIPCThread::signalIPCCheckDone, &wait_loop, &QEventLoop::quit);
-    emit signalIPCCheck();
-
-    // Wait for the thread to signal it is done
-    wait_loop.exec();
-    return m_ipcThread->ipcCheck();
+    emit signalSendMessage(dest, isClient, message);
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -117,80 +125,60 @@ WickrIOIPCService::check()
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-WickrIOIPCThread::WickrIOIPCThread(QThread *thread, WickrIOIPCService *ipcSvc) :
+WickrIOIPCRecvThread::WickrIOIPCRecvThread(QThread *thread, WickrIOIPCService *ipcSvc) :
     m_lock(QReadWriteLock::Recursive),
-    m_parent(ipcSvc),
-    m_operation(nullptr),
-    m_ipcCheck(false)
+    m_parent(ipcSvc)
 {
-    thread->setObjectName("WickrIOIPCThread");
+    thread->setObjectName("WickrIOIPCRecvThread");
     this->moveToThread(thread);
 
     // Signal to cleanup worker
     connect(thread, &QThread::finished, this, &QObject::deleteLater);
 
     // Catch the shutdown signal
-    connect(ipcSvc, &WickrIOIPCService::signalShutdown, this, &WickrIOIPCThread::slotShutdown);
-    connect(ipcSvc, &WickrIOIPCService::signalStartIPC, this, &WickrIOIPCThread::slotStartIPC);
-    connect(ipcSvc, &WickrIOIPCService::signalIPCCheck, this, &WickrIOIPCThread::slotIPCCheck);
+    connect(ipcSvc, &WickrIOIPCService::signalShutdownRecv, this, &WickrIOIPCRecvThread::slotShutdown);
+    connect(ipcSvc, &WickrIOIPCService::signalStartIPC, this, &WickrIOIPCRecvThread::slotStartIPC);
 }
 
 /**
- * @brief WickrIOIPCThread::~WickrIOIPCThread
+ * @brief WickrIOIPCRecvThread::~WickrIOIPCRecvThread
  * Destructor
  */
-WickrIOIPCThread::~WickrIOIPCThread() {
+WickrIOIPCRecvThread::~WickrIOIPCRecvThread() {
     qDebug() << "WickrIOIPC THREAD: Worker Destroyed.";
 }
 
 void
-WickrIOIPCThread::slotShutdown()
+WickrIOIPCRecvThread::slotShutdown()
 {
     emit signalNotRunning();
 }
 
 void
-WickrIOIPCThread::slotIPCCheck()
+WickrIOIPCRecvThread::slotStartIPC(OperationData *operation)
 {
-    if (m_ipc != NULL) {
-        m_ipcCheck = m_ipc->check();
-    } else {
-        m_ipcCheck = true;
-    }
+    m_operation = operation;
+    m_operation->log_handler->log("Started WickrIOIPCRecvThread");
 
-    emit signalIPCCheckDone();
+
+    m_zctx = nzmqt::createDefaultContext();
 }
 
 void
-WickrIOIPCThread::slotStartIPC(OperationData *operation)
+WickrIOIPCRecvThread::slotMessageReceived(const QList<QByteArray>& messages)
 {
-    m_operation = operation;
-    m_operation->log_handler->log("Started WickrIOIPCThread");
-
-    m_ipc = new WickrBotIPC();
-    m_ipc->startServer();
-
-    m_operation->log_handler->log(QString("server port=%1").arg(m_ipc->getServerPort()));
-
-    if (m_operation->m_botDB != NULL && m_operation->m_botDB->isOpen()) {
-        m_operation->m_botDB->setProcessIPC(m_operation->processName, m_ipc->getServerPort());
-    } else {
-        m_operation->log_handler->log("WickrIOIPCThread: database is not open yet!");
-    }
-
-    m_operation->log_handler->log("WickrIOIPCThread: processStartedA");
-    QObject::connect(m_ipc, &WickrBotIPC::signalGotMessage, [=](const QString &message, int peerPort) {
-        Q_UNUSED(peerPort);
+    qDebug() << "entered slotMessageReceived!";
+    for (QByteArray message : messages) {
         if (message == WBIO_IPCCMDS_STOP) {
             m_operation->log_handler->log(QString("GOT MESSAGE: %1").arg(WBIO_IPCCMDS_STOP));
-            m_operation->log_handler->log("WickrIOIPCThread::processStarted: QUITTING");
+            m_operation->log_handler->log("WickrIOIPCRecvThread::processStarted: QUITTING");
             emit signalGotStopRequest();
         } else if (message == WBIO_IPCCMDS_PAUSE) {
             m_operation->log_handler->log(QString("GOT MESSAGE: %1").arg(WBIO_IPCCMDS_PAUSE));
-            m_operation->log_handler->log("WickrIOIPCThread::processStarted: PAUSING");
+            m_operation->log_handler->log("WickrIOIPCRecvThread::processStarted: PAUSING");
             emit signalGotPauseRequest();
         } else {
-            QStringList pieces = message.split("=");
+            QStringList pieces = QString(message).split('=');
             if (pieces.size() == 2) {
                 QString type = pieces.at(0);
                 QString value = pieces.at(1);
@@ -200,8 +188,111 @@ WickrIOIPCThread::slotStartIPC(OperationData *operation)
                 m_operation->log_handler->log("GOT MESSAGE: invalid message:" + message);
             }
         }
-    });
-    m_operation->log_handler->log("WickrIOIPCThread: processStartedB");
+
+        QList<QByteArray> reply;
+
+        reply += "Message received";
+        m_zsocket->sendMessage(reply);
+    }
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+
+WickrIOIPCSendThread::WickrIOIPCSendThread(QThread *thread, WickrIOIPCService *ipcSvc) :
+    m_lock(QReadWriteLock::Recursive),
+    m_parent(ipcSvc)
+{
+    thread->setObjectName("WickrIOIPCSendThread");
+    this->moveToThread(thread);
+
+    // Signal to cleanup worker
+    connect(thread, &QThread::finished, this, &QObject::deleteLater);
+
+    // Catch the shutdown signal
+    connect(ipcSvc, &WickrIOIPCService::signalShutdownSend, this, &WickrIOIPCSendThread::slotShutdown);
+    connect(ipcSvc, &WickrIOIPCService::signalStartIPC, this, &WickrIOIPCSendThread::slotStartIPC);
+    connect(ipcSvc, &WickrIOIPCService::signalSendMessage, this, &WickrIOIPCSendThread::slotSendMessage);
+}
+
+/**
+ * @brief WickrIOIPCSendThread::~WickrIOIPCSendThread
+ * Destructor
+ */
+WickrIOIPCSendThread::~WickrIOIPCSendThread() {
+    qDebug() << "WickrIOIPC THREAD: Worker Destroyed.";
+}
+
+void
+WickrIOIPCSendThread::slotShutdown()
+{
+    emit signalNotRunning();
+}
+
+void
+WickrIOIPCSendThread::slotStartIPC(OperationData *operation)
+{
+    m_operation = operation;
+    m_operation->log_handler->log("Started WickrIOIPCSendThread");
+
+    m_zctx = nzmqt::createDefaultContext();
+    m_zctx->start();
+}
+
+nzmqt::ZMQSocket *
+WickrIOIPCSendThread::createSendSocket(const QString& dest, bool isClient)
+{
+    nzmqt::ZMQSocket *zsocket;
+
+    zsocket = m_txMap.value(dest);
+
+    // iff the socket exists return it
+    if (zsocket != nullptr) {
+        return zsocket;
+    }
+
+    zsocket = m_zctx->createSocket(nzmqt::ZMQSocket::TYP_REQ, this);
+    zsocket->setObjectName(QString("%1.Socket.socket(REQ)").arg(dest));
+    connect(zsocket, &nzmqt::ZMQSocket::messageReceived,
+            this, &WickrIOIPCSendThread::slotMessageReceived, Qt::QueuedConnection);
+
+    QString queueName;
+    if (isClient) {
+        queueName = QString(WBIO_IPCCLIENT_RXSOCKET_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(dest);
+    } else {
+        queueName = QString(WBIO_IPCSERVER_RXSOCKET_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(dest);
+    }
+
+    zsocket->connectTo(queueName);
+
+    m_txMap.insert(dest, zsocket);
+    return zsocket;
+}
+
+void
+WickrIOIPCSendThread::slotSendMessage(const QString& dest, bool isClient, const QString& message)
+{
+    nzmqt::ZMQSocket *zsocket = createSendSocket(dest, isClient);
+    if (zsocket != nullptr) {
+        QByteArray request = message.toLocal8Bit();
+        zsocket->sendMessage(request);
+        emit signalRequestSent();
+    } else {
+        emit signalRequestFailed();
+    }
+}
+
+
+void
+WickrIOIPCSendThread::slotMessageReceived(const QList<QByteArray>& messages)
+{
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////

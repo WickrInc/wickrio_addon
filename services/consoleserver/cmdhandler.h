@@ -57,7 +57,7 @@ private:
 
     bool addClientData(WickrBotClients *newClient);
 
-    bool sendClientCmd(int port, const QString& cmd);
+    bool sendClientCmd(const QString& name, const QString& cmd);
 
     void updateSSLSettings();
     void generateNewKey(WickrIOConsoleUser *cUser);

@@ -20,8 +20,6 @@ public:
     int process_id;
     int state;
     QDateTime last_update;
-
-    int ipc_port;
 };
 
 #define PROCSTATE_RESET     100     // Client is to be reset, action as opposed to a state

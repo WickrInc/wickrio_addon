@@ -558,12 +558,6 @@ void CmdParser::deleteParser(int parserIndex)
                 if (response.toLower() == "n") {
                     return;
                  }
-            } else if (state.ipc_port == 0 && state.state != PROCSTATE_PAUSED) {
-                qDebug() << "CONSOLE:Parser does not have an IPC port defined, will not be able to stop WickrIO parser process!";
-                QString response = getNewValue("", "Do you want to continue? (y or n)");
-                if (response.toLower() == "n") {
-                    return;
-                }
             }
 
             qDebug() << "CONSOLE:Deleting parser" << parser->name;
@@ -651,12 +645,12 @@ void CmdParser::modifyParser(int parserIndex)
  * @param cmd
  * @return
  */
-bool CmdParser::sendParserCmd(int port, const QString& cmd)
+bool CmdParser::sendParserCmd(const QString& dest, const QString& cmd)
 {
     m_parserMsgInProcess = true;
     m_parserMsgSuccess = false;
 
-    if (! m_operation->m_ipc->sendMessage(port, cmd)) {
+    if (! m_operation->m_ipc->sendMessage(dest, cmd)) {
         return false;
     }
 
@@ -696,13 +690,11 @@ void CmdParser::pauseParser(int parserIndex)
         QString processName = WBIOServerCommon::getParserProcessName(parser);
 
         if (m_operation->m_ioDB->getProcessState(processName, &state)) {
-            if (state.ipc_port == 0) {
-                qDebug() << "CONSOLE:Parser does not have an IPC port defined, cannot pause!";
-            } else if (state.state == PROCSTATE_RUNNING) {
+            if (state.state == PROCSTATE_RUNNING) {
                 QString prompt = QString(tr("Do you really want to pause the parser with the name %1?")).arg(parser->name);
                 QString response = getNewValue("", prompt);
                 if (response.toLower() == "y" || response.toLower() == "yes") {
-                    if (! sendParserCmd(state.ipc_port, WBIO_IPCCMDS_PAUSE)) {
+                    if (! sendParserCmd(parser->name, WBIO_IPCCMDS_PAUSE)) {
                         qDebug() << "CONSOLE:Failed to send message to parser!";
                     }
                 }

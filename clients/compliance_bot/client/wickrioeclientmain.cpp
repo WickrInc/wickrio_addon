@@ -386,11 +386,7 @@ WickrIOEClientMain::sendConsoleMsg(const QString& cmd, const QString& value)
 {
     QString message = QString("%1=%2").arg(cmd).arg(value);
 
-    WickrBotProcessState state;
-    if (!m_operation->m_botDB->getProcessState(WBIO_PROVISION_TARGET, &state))
-        return false;
-
-    if (! m_txIPC.sendMessage(state.ipc_port, message)) {
+    if (! m_txIPC.sendMessage(WBIO_PROVISION_TARGET, message)) {
         return false;
     }
 
@@ -433,10 +429,6 @@ void WickrIOEClientMain::setIPC(WickrIOIPCService *ipc)
 
 void WickrIOEClientMain::slotDoTimerWork()
 {
-    if (m_rxIPC != NULL && m_rxIPC->isRunning()) {
-        m_rxIPC->check();
-    }
-
     m_timerStatsTicker++;
 }
 

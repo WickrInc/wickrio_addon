@@ -92,7 +92,7 @@ WickrBotDatabase::createRelationalTables()
     // Check if the process state table exists already, if not create it
     if (! m_db.tables().contains(QLatin1String(DB_STATE_TABLE))) {
         QSqlQuery query(m_db);
-        if (!query.exec("CREATE TABLE process_state (id int primary key, process text NOT NULL UNIQUE, process_id int, state int, ipc_port int, last_update timestamp)")) {
+        if (!query.exec("CREATE TABLE process_state (id int primary key, process text NOT NULL UNIQUE, process_id int, state int, last_update timestamp)")) {
             qDebug() << "create process_state table failed, query error=" << query.lastError();
             query.finish();
             return false;
@@ -505,7 +505,7 @@ WickrBotDatabase::getProcessState(const QString &process, WickrBotProcessState *
     bool retval = false;
     int retryCnt = 5;
 
-    QString queryString = "SELECT id,process_id,state,last_update,ipc_port FROM process_state WHERE process = ?";
+    QString queryString = "SELECT id,process_id,state,last_update FROM process_state WHERE process = ?";
     QSqlQuery *query;
     bool connectionError;
 
@@ -545,7 +545,6 @@ WickrBotDatabase::getProcessState(const QString &process, WickrBotProcessState *
             state->state = query->value(2).toInt();
             state->last_update = query->value(3).toDateTime();
             state->process = process;
-            state->ipc_port = query->value(4).toInt();
             retval = true;
         }
         query->finish();
@@ -656,28 +655,6 @@ WickrBotDatabase::deleteProcessState(const QString& process) {
         return false;
     }
 
-    int numRows = query.numRowsAffected();
-    query.finish();
-    return (numRows > 0);
-}
-
-
-
-bool
-WickrBotDatabase::setProcessIPC(const QString &process, int ipc_port) {
-    if (!initialized)
-        return false;
-
-    QSqlQuery query(m_db);
-    QString queryString = QString("UPDATE process_state SET ipc_port=%1 WHERE process='%2'")
-            .arg(ipc_port)
-            .arg(process);
-    if (!query.exec(queryString)) {
-        QSqlError error = query.lastError();
-        qDebug() << "setProcessIPC: SQL error" << error;
-        query.finish();
-        return false;
-    }
     int numRows = query.numRowsAffected();
     query.finish();
     return (numRows > 0);
@@ -927,7 +904,7 @@ WickrBotDatabase::getProcessStates()
   if (!initialized)
     return processes;
 
-  QString queryString = "SELECT id,process,process_id, state, ipc_port, last_update FROM process_state";
+  QString queryString = "SELECT id,process,process_id, state, last_update FROM process_state";
   QSqlQuery *query = new QSqlQuery(m_db);
   query->prepare(queryString);
 
@@ -954,7 +931,6 @@ WickrBotDatabase::getProcess(QSqlQuery *query, WickrBotProcessState* processStat
   processState->process       = query->value(rec.indexOf("process")).toString();
   processState->process_id    = query->value(rec.indexOf("process_id")).toInt();
   processState->state         = query->value(rec.indexOf("state")).toInt();
-  processState->ipc_port      = query->value(rec.indexOf("ipc_port")).toInt();
   processState->last_update   = query->value(rec.indexOf("last_update")).toDateTime();
 
 }

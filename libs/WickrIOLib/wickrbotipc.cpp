@@ -8,18 +8,6 @@ WickrBotIPC::WickrBotIPC(QObject *parent) :
 {
 }
 
-bool WickrBotIPC::check()
-{
-    bool retVal = true;
-    if (m_server != NULL) {
-        if (! m_server->isListening()) {
-            qDebug() << "WickrBotIPC: IPC server is NOT listening anymore!";
-            retVal = false;
-        }
-    }
-    return retVal;
-}
-
 bool WickrBotIPC::startServer()
 {
     m_server = new QTcpServer(this);
@@ -61,18 +49,8 @@ void WickrBotIPC::slotNewConnection()
     }
 }
 
-bool WickrBotIPC::sendMessage(int ipc_port, const QString &message)
+bool WickrBotIPC::sendMessage(const QString& dest, const QString &message)
 {
-    m_socket = new QTcpSocket(this);
-    connect(m_socket, &QTcpSocket::connected, this, &WickrBotIPC::slotReadyToSend);
-    connect(m_socket, static_cast<void(QAbstractSocket::*)(QAbstractSocket::SocketError)>(&QAbstractSocket::error),
-        [=](QAbstractSocket::SocketError socketError){
-            qDebug() << "Received socket error:" << socketError;
-            emit signalSendError();
-        });
-
-    m_socket->connectToHost("localhost", ipc_port);
-    m_sendMessage = message;
     return true;
 }
 
@@ -99,27 +77,10 @@ void WickrBotIPC::slotReadyToSend()
 }
 
 
-QByteArray WickrBotIPC::getResponse(int ipc_port, bool *result)
+QByteArray WickrBotIPC::getResponse(const QString& source, bool *result)
 {
     QByteArray bytes;
-
-    m_socket = new QTcpSocket(this);
-    m_socket->connectToHost("localhost", ipc_port);
-
-    if (m_socket->waitForReadyRead(-1)) {
-        bytes = m_socket->readAll();
-        *result = true;
-    } else {
-        *result = false;
-    }
     return bytes;
 }
 
 
-int WickrBotIPC::getServerPort()
-{
-    if (m_server != NULL) {
-        return (int)m_server->serverPort();
-    }
-    return 0;
-}

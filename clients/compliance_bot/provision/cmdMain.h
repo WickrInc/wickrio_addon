@@ -46,7 +46,7 @@ private:
     void pauseClient(int clientIndex);
     void configClient(int clientIndex);
 
-    bool sendClientCmd(int port, const QString& cmd);
+    bool sendClientCmd(const QString& name, const QString& cmd);
     bool sendClientServerCmd(const QString& cmd);
 
 public slots:
