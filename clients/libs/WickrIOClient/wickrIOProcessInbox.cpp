@@ -82,6 +82,8 @@ WickrIOProcessInbox::processControlMsg(QJsonObject& jsonObject,  WickrCore::Wick
         return processChangeRoomConfigMsg(jsonObject, (WickrCore::WickrGroupControlChangeRoomConfiguration *)ctrlMsg);
     case WickrCore::WickrControlMessage::DELETEROOM:
         break;
+    case WickrCore::WickrControlMessage::DELETEMSG:
+        return processDeleteMessageMsg(jsonObject, (WickrCore::WickrGroupControlDeleteMessage *)ctrlMsg);
     case WickrCore::WickrControlMessage::SYNC_RECOVERY_REQ:
         break;
     case WickrCore::WickrControlMessage::SYNC_RECOVERY_RSP:
@@ -94,6 +96,18 @@ WickrIOProcessInbox::processControlMsg(QJsonObject& jsonObject,  WickrCore::Wick
         return false;
     }
 
+    return true;
+}
+
+bool
+WickrIOProcessInbox::processDeleteMessageMsg(QJsonObject& jsonObject,  WickrCore::WickrGroupControlDeleteMessage *ctrlMsg)
+{
+    QJsonObject ctrlJsonObject;
+    ctrlJsonObject.insert(APIJSON_CTRL_MSGTYPE, MsgType_Ctrl_DeleteMessage);
+    ctrlJsonObject.insert(APIJSON_CTRL_MSGID, ctrlMsg->msgID());
+    ctrlJsonObject.insert(APIJSON_CTRL_ISRECALL, ctrlMsg->isRecall());
+
+    jsonObject.insert(APIJSON_CTRL_HEADER, ctrlJsonObject);
     return true;
 }
 
