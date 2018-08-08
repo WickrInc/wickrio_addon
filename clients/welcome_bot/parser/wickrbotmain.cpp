@@ -137,7 +137,7 @@ void WickrBotMain::stopAndExit(int procState)
 
 WickrBotParserIPC::WickrBotParserIPC()
 {
-    m_IPC = new WickrIOIPCService();
+    m_IPC = new WickrIOIPCService(WBIO_PARSER_TARGET, false);
 }
 
 WickrBotParserIPC::~WickrBotParserIPC()

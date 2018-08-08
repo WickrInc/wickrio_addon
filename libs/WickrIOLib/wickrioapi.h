@@ -109,7 +109,7 @@
 #define APIJSON_STATID_PNDCBOUT "pending_callback_messages"
 #define APIJSON_STATID_MSGCNT   "message_count"
 #define APIJSON_STATUS_USER     "statususer"
-#define APIJSON_STATUS_USER     "runtime"
+#define APIJSON_STATUS_RUNTIME  "runtime"
 
 #define APIJSON_KEYVER_HEADER   "keyverify"
 #define APIJSON_KEYVER_MSGTYPE  "msgtype"

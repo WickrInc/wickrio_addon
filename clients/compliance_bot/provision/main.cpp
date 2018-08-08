@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
                                     " " << ClientVersionInfo::getBuildString();
 #endif
 
-    rxIPC = new WickrIOIPCService();
+    rxIPC = new WickrIOIPCService(WBIO_PROVISION_TARGET, false);
     rxIPC->startIPC(operation);
 
 

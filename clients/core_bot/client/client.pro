@@ -102,6 +102,10 @@ include($${DEPTH}/libs/QtWebApp/QtWebApp.pri)
 #
 include($${DEPTH}/libs/SMTPEmail/SMTPEmail.pri)
 
+#
+# Zero MQ Qt library
+#
+include($${DEPTH}/libs/nzmqt/nzmqt.pri)
 
 TEMPLATE = app
 
@@ -164,6 +168,7 @@ win32 {
     LIBPATH += $$DEPTH/wickr-sdk/libs/qsqlcipher_wickr/
 }
 LIBS += -lqsqlcipher_wickr
+LIBS += -lzmq
 
 # sqlcipher
 

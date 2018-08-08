@@ -102,7 +102,6 @@ int main(int argc, char *argv[])
         secureJson = "secex_json:8q$&M4[d^;2R";
     }
 
-    QString username;
     QString appname = WBIO_CLIENT_TARGET;
     QString orgname = WBIO_ORGANIZATION;
 
@@ -142,14 +141,16 @@ int main(int argc, char *argv[])
         } else if (cmd.startsWith("-processname")) {
             operation->processName = cmd.remove("-processname=");
         } else if (cmd.startsWith("-clientname")) {
-            QString clientName = cmd.remove("-clientname=");
+            operation->wickrID = cmd.remove("-clientname=");
+            QString localName = operation->wickrID;
+            localName.replace("@", "_");
             wbConfigFile = QString(WBIO_CLIENT_SETTINGS_FORMAT)
                     .arg(WBIO_DEFAULT_DBLOCATION)
-                    .arg(clientName);
+                    .arg(localName);
             clientDbPath = QString(WBIO_CLIENT_DBDIR_FORMAT)
                     .arg(WBIO_DEFAULT_DBLOCATION)
-                    .arg(clientName);
-            argOutputFile = QString(WBIO_CLIENT_WORKINGDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(clientName);
+                    .arg(localName);
+            argOutputFile = QString(WBIO_CLIENT_OUTFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(localName);
         }
     }
 
@@ -160,11 +161,7 @@ int main(int argc, char *argv[])
             if( cmd == "-?" || cmd == "-help" || cmd == "--help" )
                 usage();
 
-            if( cmd.startsWith("-user=") ) {
-                username = cmd.remove("-user=");
-                WickrUtil::setTestAccountMode(username);
-            }
-            else if( cmd == "-noexclusive" ) {
+            if( cmd == "-noexclusive" ) {
                 WickrDBAdapter::setDatabaseExclusiveOpenStatus(false);
             }
         }
@@ -225,10 +222,6 @@ int main(int argc, char *argv[])
                                   clientType,
                                   clientDbPath);
 
-    if( !username.isEmpty() ) {
-        WickrDBAdapter::setDBName( WickrDBAdapter::getDBName() + "." + username );
-    }
-
     // If the user did not set the config file then lets try a default location
     if (wbConfigFile.isEmpty()) {
         wbConfigFile = searchConfigFile();
@@ -243,6 +236,21 @@ int main(int argc, char *argv[])
 
     // Save the settings to the operation data
     operation->m_settings = settings;
+
+    if (operation->wickrID.isEmpty()) {
+        settings->beginGroup(WBSETTINGS_USER_HEADER);
+        operation->wickrID = settings->value(WBSETTINGS_USER_USER, "").toString();
+        settings->endGroup();
+
+        if (operation->wickrID.isEmpty()) {
+            qDebug() << "User or password is not set";
+            exit(1);
+        }
+    }
+
+    WickrUtil::setTestAccountMode(operation->wickrID);
+    WickrDBAdapter::setDBName( WickrDBAdapter::getDBName() + "." + operation->wickrID );
+
 
     // Get the appropriate database location
     if (operation->databaseDir.isEmpty()) {

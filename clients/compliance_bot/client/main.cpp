@@ -109,7 +109,6 @@ int main(int argc, char *argv[])
         secureJson = "secex_json:8q$&M4[d^;2R";
     }
 
-    QString username;
     QString wickrname;
     QString appname = WBIO_BOT_TARGET;
     QString orgname = WBIO_ORGANIZATION;
@@ -151,14 +150,16 @@ int main(int argc, char *argv[])
         } else if (cmd.startsWith("-processname")) {
             operation->processName = cmd.remove("-processname=");
         } else if (cmd.startsWith("-clientname")) {
-            QString clientName = cmd.remove("-clientname=");
+            operation->wickrID = cmd.remove("-clientname=");
+            QString localName = operation->wickrID;
+            localName.replace("@", "_");
             wbConfigFile = QString(WBIO_CLIENT_SETTINGS_FORMAT)
                     .arg(WBIO_DEFAULT_DBLOCATION)
-                    .arg(clientName);
+                    .arg(localName);
             clientDbPath = QString(WBIO_CLIENT_DBDIR_FORMAT)
                     .arg(WBIO_DEFAULT_DBLOCATION)
-                    .arg(clientName);
-            argOutputFile = QString(WBIO_CLIENT_OUTFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(clientName);
+                    .arg(localName);
+            argOutputFile = QString(WBIO_CLIENT_OUTFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(localName);
         }
     }
 
@@ -250,25 +251,19 @@ int main(int argc, char *argv[])
     // Save the settings to the operation data
     operation->m_settings = settings;
 
-    if (username.isEmpty()) {
+    if (operation->wickrID.isEmpty()) {
         settings->beginGroup(WBSETTINGS_USER_HEADER);
-        username = settings->value(WBSETTINGS_USER_USER, "").toString();
+        operation->wickrID = settings->value(WBSETTINGS_USER_USER, "").toString();
         settings->endGroup();
 
-        if (username.isEmpty()) {
+        if (operation->wickrID.isEmpty()) {
             qDebug() << "User or password is not set";
             exit(1);
         }
     }
 
-    WickrUtil::setTestAccountMode(username);
-
-    WickrDBAdapter::setDBName( WickrDBAdapter::getDBName() + "." + username );
-
-
-
-
-
+    WickrUtil::setTestAccountMode(operation->wickrID);
+    WickrDBAdapter::setDBName( WickrDBAdapter::getDBName() + "." + operation->wickrID );
 
 
     // Get the appropriate database location

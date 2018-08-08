@@ -30,6 +30,9 @@ public:
     // Destructor
     virtual ~WickrIOClientRuntime();
 
+    // method to pass the operation data to the singleton
+    void setOperationData(OperationData *operation);
+
     // Runtime Init/Shutdown API
     static void init(OperationData *operation);
     static void shutdown();
@@ -88,11 +91,11 @@ private:
     bool                    m_initialized;
     OperationData           *m_operation;
 
-    WickrIOCallbackService      *m_callbackSvc;
-    WickrIOFileDownloadService  *m_fileDownloadSvc;
-    WickrIOIPCService           *m_ipcSvc;
-    WickrIOWatchdogService      *m_watchdogSvc;
-    WickrIOProvisionHdlr        *m_provisionHdlr;
+    WickrIOCallbackService      *m_callbackSvc = nullptr;
+    WickrIOFileDownloadService  *m_fileDownloadSvc = nullptr;
+    WickrIOIPCService           *m_ipcSvc = nullptr;
+    WickrIOWatchdogService      *m_watchdogSvc = nullptr;
+    WickrIOProvisionHdlr        *m_provisionHdlr = nullptr;
 
     // Client runtime flags
     bool    m_removeSentEncryptedFiles = false;
