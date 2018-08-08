@@ -1,6 +1,7 @@
 var addon = require('wickrio_addon');
 var prompt = require('prompt');
 prompt.start();
+process.title = "exampleApp";
 module.exports = addon;
 
 return new Promise((resolve, reject) => {

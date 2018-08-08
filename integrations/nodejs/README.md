@@ -21,8 +21,9 @@ To build the WickrIO Node.js addon do the following:
 
 Running a sample:
 1. cd to the specific example
-2. run "npm install"
-3. run "node <sample.js file>"
+2. run "./install.sh"
+3. run "./start.sh"
+  a. Optional: can run sample app with client bot's name like this: "node <sample.js file> <client_bot_username>"
 
 
 

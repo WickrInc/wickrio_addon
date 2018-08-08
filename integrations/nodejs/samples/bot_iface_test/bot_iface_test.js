@@ -1,6 +1,7 @@
 var addon = require('wickrio_addon');
 var prompt = require('prompt');
 prompt.start();
+process.title = "ifaceTest";
 module.exports = addon;
 
 return new Promise((resolve, reject) => {
@@ -34,9 +35,9 @@ return new Promise((resolve, reject) => {
 }).then(result => {
 console.log(result);
 var vGroupID = "S4b87ee9e90aba8557ace71794438220927fab70b7ef2a242f96688234ac253f";
-var members = ['wickraaron@wickrautomation.com'];
+var members = ['wickraaron002@wickrautomation.com'];
 var members1;
-var moderators = ['wickraaron@wickrautomation.com'];
+var moderators = ['wickraaron002@wickrautomation.com'];
 var bor = "600";
 var ttl = "100";
 var title = "West World";
@@ -60,11 +61,11 @@ var displayname = "Logo.png";
 // console.log(addon.cmdDeleteGroupConvo(vGroupID));
 // console.log(addon.cmdGetReceivedMessage());
 // console.log(addon.cmdSend1to1Message(members, message, ttl , bor));
-console.log(addon.cmdSend1to1Attachment(members, attachment, "", ttl, bor));
+console.log(addon.cmdSend1to1Attachment(members, attachment, "package.jsonnn", ttl, bor));
 console.log(addon.cmdSend1to1Attachment(members, attachmentURL, displayname, ttl, bor));
 // console.log(addon.cmdSendRoomMessage(vGroupID, message, ttl, bor));
 // console.log(addon.cmdSendRoomAttachment(vGroupID, attachment, "", ttl, bor));
-console.log(addon.cmdSendRoomAttachment(vGroupID, attachmentURL, displayname, ttl, bor));
+// console.log(addon.cmdSendRoomAttachment(vGroupID, attachmentURL, displayname, ttl, bor));
 // console.log(addon.closeClient());
 }).catch(error => {
       console.log('Error: ', error);
