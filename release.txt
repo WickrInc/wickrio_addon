@@ -1,4 +1,6 @@
-Release Notes from v4.26-release to v4.41.31-2:
+Release Notes from v4.26-release to v4.42.1-2:
+  * Improve fileBot
+  * Ported changes to save delete and recall messages [ci skip]
   * Add filebot sample
   * Remove the check and prompt if the IPC value is 0
   * Add start and stop to welcomeBot
