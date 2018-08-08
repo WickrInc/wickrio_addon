@@ -224,13 +224,14 @@ WickrIOJScriptThread::slotStartScript()
 void
 WickrIOJScriptThread::slotMessageReceived(const QList<QByteArray>& messages)
 {
-    qDebug() << "entered slotMessageReceived!";
+//    qDebug() << "entered slotMessageReceived!";
     for (QByteArray mesg : messages) {
         QString response = processRequest(mesg);
 
         QList<QByteArray> reply;
         reply += response.toLocal8Bit();
-        qDebug() << "Replier::sendReply> " << response;
+        if (response.length() > 0)
+            qDebug() << "Replier::sendReply> " << response;
         m_zsocket->sendMessage(reply);
     }
 }
