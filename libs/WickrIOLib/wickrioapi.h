@@ -138,6 +138,8 @@
 #define APIJSON_CTRL_CHGMASK    "changemask"
 #define APIJSON_CTRL_ADDUSERS   "addedusers"
 #define APIJSON_CTRL_DELUSERS   "deletedusers"
+#define APIJSON_CTRL_MSGID      "msgid"
+#define APIJSON_CTRL_ISRECALL   "isrecall"
 
 #define APIJSON_FILE_HEADER     "file"
 #define APIJSON_FILE_FILENAME   "filename"
