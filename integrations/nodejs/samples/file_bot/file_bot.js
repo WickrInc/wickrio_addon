@@ -6,6 +6,10 @@ prompt.start();
 process.title = "fileBot";
 module.exports = addon;
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 return new Promise((resolve, reject) => {
   var schema = {
     properties: {
@@ -38,6 +42,7 @@ return new Promise((resolve, reject) => {
   console.log(result);
   //Infinite loop waiting for incoming messgaes into the bot
   for (;;) {
+    await sleep(1000);
       var rMessage = addon.cmdGetReceivedMessage();
       if (rMessage === "{ }" || rMessage === "" || !rMessage) {
         continue;
@@ -111,7 +116,7 @@ return new Promise((resolve, reject) => {
             var sMessage = addon.cmdSend1to1Message(userArr, help, ttl, bor);
             console.log(sMessage);
           }
-        } else if (rMessage.file && JSON.stringify(rMessage) !== JSON.stringify(prevMessage)) {
+        } else if (rMessage.file) {
           for (;;) {
             try {
               var exists = await fileExists.sync(rMessage.file.localfilename);
@@ -126,7 +131,6 @@ return new Promise((resolve, reject) => {
           var cp = await fs.copyFileSync(rMessage.file.localfilename, 'files/' + rMessage.file.filename);
           var msg = "File named: '" + rMessage.file.filename + "' successfully saved to directory!";
           var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
-          var prevMessage = rMessage;
           console.log(sMessage);
         } else{
           console.log(rMessage);
