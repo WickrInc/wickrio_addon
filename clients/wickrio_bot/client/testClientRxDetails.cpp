@@ -112,10 +112,10 @@ bool TestClientRxDetails::processMessage(WickrDBObject *item)
 
             if (processMsg) {
                 QJsonObject jsonObject;
-                bool failedProcessing = false;
+                bool saveMessage = true;
 
                 if (!WickrIOProcessInbox::processCommonFields(jsonObject, msg)) {
-                    failedProcessing = true;
+                    saveMessage = false;
                 } else {}
 
                 // Setup the users array
@@ -145,17 +145,16 @@ bool TestClientRxDetails::processMessage(WickrDBObject *item)
                     QString txt = msg->getCachedText();
                     jsonObject.insert(APIJSON_MESSAGE, txt);
                 } else if (mclass == MsgClass_File) {
-                    if (!WickrIOProcessInbox::processFileMsg(jsonObject,  inbox)) {
-                        //TODO: what to do if this returns false
-                        failedProcessing = true;
-                    } else {
+                    //
+                    saveMessage = false;
+                    if (WickrIOProcessInbox::processFileMsg(jsonObject,  inbox)) {
                         // For file messages the content is sent to another thread
                         deleteMsg = true;
                     }
                 }
 
 
-                if (! failedProcessing) {
+                if (saveMessage) {
                     QJsonDocument saveDoc(jsonObject);
 
                     int msgID = db->insertMessage(msg->getMsgTimestamp(), m_operation->m_client->id, saveDoc.toJson(QJsonDocument::Compact), (int)msg->getMsgClass(), 0);
