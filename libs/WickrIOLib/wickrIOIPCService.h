@@ -26,6 +26,9 @@ class WickrIOIPCService : public QObject
 {
     Q_OBJECT
 
+    friend class WickrIOIPCRecvThread;
+    friend class WickrIOIPCSendThread;
+
 public:
     explicit WickrIOIPCService(const QString& name, bool isClient);
     virtual ~WickrIOIPCService();
@@ -46,6 +49,7 @@ private:
     mutable QReadWriteLock m_lock;
 
     QString                 m_name;
+    QString                 m_wickrID;
     bool                    m_isClient;
 
     WickrServiceState       m_state;

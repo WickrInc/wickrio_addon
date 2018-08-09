@@ -17,6 +17,9 @@ WickrIOIPCService::WickrIOIPCService(const QString& name, bool isClient) :
     m_isClient(isClient),
     m_state(WickrServiceState::SERVICE_UNINITIALIZED)
 {
+    m_wickrID = m_name;
+    m_name.replace("@", "_");
+
     qRegisterMetaType<WickrServiceState>("WickrServiceState");
     qRegisterMetaType<WickrApplicationState>("WickrApplicationState");
 
@@ -166,6 +169,50 @@ WickrIOIPCRecvThread::slotStartIPC(OperationData *operation)
 
 
     m_zctx = nzmqt::createDefaultContext();
+
+    m_zsocket = m_zctx->createSocket(nzmqt::ZMQSocket::TYP_REP, this);
+    m_zsocket->setObjectName(QString("%1.Socket.socket(REP)").arg(m_parent->m_name));
+    connect(m_zsocket, &nzmqt::ZMQSocket::messageReceived,
+            this, &WickrIOIPCRecvThread::slotMessageReceived, Qt::QueuedConnection);
+
+    m_zctx->start();
+
+    QString queueDirName;
+    QString queueName;
+    QString queueFileName;
+
+    if (m_parent->m_isClient) {
+        queueDirName = QString(WBIO_IPCCLIENT_SOCKETDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(m_parent->m_name);
+    } else {
+        queueDirName = QString(WBIO_IPCSERVER_SOCKETDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(m_parent->m_name);
+    }
+    QDir queueDir(queueDirName);
+    if (!queueDir.exists()) {
+        if (!queueDir.mkpath(queueDirName)) {
+            qDebug() << "Cannot create message queue directory!";
+        }
+    }
+    if (m_parent->m_isClient) {
+        queueName = QString(WBIO_IPCCLIENT_RXSOCKET_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(m_parent->m_name);
+    } else {
+        queueName = QString(WBIO_IPCSERVER_RXSOCKET_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(m_parent->m_name);
+    }
+    m_zsocket->bindTo(queueName);
+
+    // Set the permission of the queue file so that normal user programs can access
+    if (m_parent->m_isClient) {
+        queueFileName = QString(WBIO_IPCCLIENT_SOCKETFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(m_parent->m_name);
+    } else {
+        queueFileName = QString(WBIO_IPCSERVER_SOCKETFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(m_parent->m_name);
+    }
+    QFile zmqFile(queueFileName);
+    if(!zmqFile.setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner |
+                               QFile::ReadUser | QFile::WriteUser | QFile::ExeUser  |
+                               QFile::ReadGroup | QFile::WriteGroup | QFile::ExeGroup |
+                               QFile::ReadOther | QFile::WriteOther | QFile::ExeOther)) {
+        qDebug("Something wrong setting permissions of the queue file!");
+    }
+
 }
 
 void
