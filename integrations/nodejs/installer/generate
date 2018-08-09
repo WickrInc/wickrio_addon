@@ -55,11 +55,11 @@ mkdir -p $sample_dir
 #
 # Create the sample software tree
 #
-mkdir -p $sample_dir/addon
-cp ../addon/CMakeLists.txt $sample_dir/addon
-cp ../addon/package.json $sample_dir/addon
-mkdir -p $sample_dir/addon/src
-cp ../addon/src/bot_iface_node.cpp $sample_dir/addon/src
+mkdir -p $sample_dir/wickrio_addon
+cp ../wickrio_addon/CMakeLists.txt $sample_dir/wickrio_addon
+cp ../wickrio_addon/package.json $sample_dir/wickrio_addon
+mkdir -p $sample_dir/wickrio_addon/src
+cp ../wickrio_addon/src/bot_iface_node.cpp $sample_dir/wickrio_addon/src
 cp -R ../samples $sample_dir
 cp ../README.md $sample_dir
 
