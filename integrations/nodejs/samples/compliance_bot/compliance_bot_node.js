@@ -4,7 +4,7 @@ var fs = require('fs');
 process.title = "complianceBot";
 module.exports = addon;
 
-return new Promise((resolve, reject) => {
+return new Promise(async (resolve, reject) => {
     if (process.argv[2] === undefined) {
       var client = await fs.readFileSync('client_bot_username.txt', 'utf-8');
       client = client.trim();
