@@ -6,6 +6,10 @@
   "private": true,
   "dependencies": {
     "prompt": "^1.0.0",
-    "wickrio_addon": "file:../../addon"
+    "wickrio_addon": "file:../../wickrio_addon"
+  },
+  "scripts": {
+    "start": "node example_app_node.js",
+    "stop": "pkill --signal SIGINT exampleApp"
   }
 }
