@@ -1,4 +1,5 @@
 var addon = require('wickrio_addon');
+var fs = require('fs');
 
 process.title = "ifaceTest";
 module.exports = addon;
