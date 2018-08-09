@@ -25,7 +25,7 @@ for (;;) {
   }
   else{
     console.log(message);
-    fs.writeFile("receivedMessages.log", message, function(err){
+    fs.appendFile("receivedMessages.log", message, 'utf8',function(err){
       if(err)
         return console.log(err);
     });

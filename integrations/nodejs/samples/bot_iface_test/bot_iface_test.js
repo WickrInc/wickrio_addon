@@ -44,7 +44,7 @@ var displayname = "Logo.png";
 // console.log(addon.cmdDeleteGroupConvo(vGroupID));
 // console.log(addon.cmdGetReceivedMessage());
 // console.log(addon.cmdSend1to1Message(members, message, ttl , bor));
-console.log(addon.cmdSend1to1Attachment(members, attachment, "package.jsonnn", ttl, bor));
+console.log(addon.cmdSend1to1Attachment(members, attachment, "", ttl, bor));
 console.log(addon.cmdSend1to1Attachment(members, attachmentURL, displayname, ttl, bor));
 // console.log(addon.cmdSendRoomMessage(vGroupID, message, ttl, bor));
 // console.log(addon.cmdSendRoomAttachment(vGroupID, attachment, "", ttl, bor));
