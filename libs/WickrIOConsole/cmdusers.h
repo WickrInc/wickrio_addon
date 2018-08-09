@@ -6,7 +6,6 @@
 #include <QString>
 #include <QSettings>
 
-#include "wickrbotipc.h"
 #include "wickriodatabase.h"
 #include "wickrIOAppSettings.h"
 #include "cmdbase.h"

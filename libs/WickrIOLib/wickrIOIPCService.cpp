@@ -53,6 +53,9 @@ void WickrIOIPCService::startThreads()
     connect(m_ipcRxThread, &WickrIOIPCRecvThread::signalGotStopRequest,  this, &WickrIOIPCService::signalGotStopRequest);
     connect(m_ipcRxThread, &WickrIOIPCRecvThread::signalReceivedMessage, this, &WickrIOIPCService::signalReceivedMessage);
 
+    connect(m_ipcTxThread, &WickrIOIPCSendThread::signalRequestSent,     this, &WickrIOIPCService::signalMessageSent);
+    connect(m_ipcTxThread, &WickrIOIPCSendThread::signalRequestFailed,   this, &WickrIOIPCService::signalMessageSendFailure);
+
     // Perform startup here, creating and configuring ressources.
     m_thread.start();
 }
@@ -158,7 +161,8 @@ void
 WickrIOIPCRecvThread::slotStartIPC(OperationData *operation)
 {
     m_operation = operation;
-    m_operation->log_handler->log("Started WickrIOIPCRecvThread");
+    if (m_operation != nullptr)
+        m_operation->log_handler->log("Started WickrIOIPCRecvThread");
 
 
     m_zctx = nzmqt::createDefaultContext();
@@ -170,22 +174,30 @@ WickrIOIPCRecvThread::slotMessageReceived(const QList<QByteArray>& messages)
     qDebug() << "entered slotMessageReceived!";
     for (QByteArray message : messages) {
         if (message == WBIO_IPCCMDS_STOP) {
-            m_operation->log_handler->log(QString("GOT MESSAGE: %1").arg(WBIO_IPCCMDS_STOP));
-            m_operation->log_handler->log("WickrIOIPCRecvThread::processStarted: QUITTING");
+            if (m_operation != nullptr) {
+                m_operation->log_handler->log(QString("GOT MESSAGE: %1").arg(WBIO_IPCCMDS_STOP));
+                m_operation->log_handler->log("WickrIOIPCRecvThread::processStarted: QUITTING");
+            }
             emit signalGotStopRequest();
         } else if (message == WBIO_IPCCMDS_PAUSE) {
-            m_operation->log_handler->log(QString("GOT MESSAGE: %1").arg(WBIO_IPCCMDS_PAUSE));
-            m_operation->log_handler->log("WickrIOIPCRecvThread::processStarted: PAUSING");
+            if (m_operation != nullptr) {
+                m_operation->log_handler->log(QString("GOT MESSAGE: %1").arg(WBIO_IPCCMDS_PAUSE));
+                m_operation->log_handler->log("WickrIOIPCRecvThread::processStarted: PAUSING");
+            }
             emit signalGotPauseRequest();
         } else {
             QStringList pieces = QString(message).split('=');
             if (pieces.size() == 2) {
                 QString type = pieces.at(0);
                 QString value = pieces.at(1);
-                m_operation->log_handler->log(QString("GOT MESSAGE: %1").arg(type));
+                if (m_operation != nullptr) {
+                    m_operation->log_handler->log(QString("GOT MESSAGE: %1").arg(type));
+                }
                 emit signalReceivedMessage(type, value);
             } else {
-                m_operation->log_handler->log("GOT MESSAGE: invalid message:" + message);
+                if (m_operation != nullptr) {
+                    m_operation->log_handler->log("GOT MESSAGE: invalid message:" + message);
+                }
             }
         }
 
@@ -240,7 +252,9 @@ void
 WickrIOIPCSendThread::slotStartIPC(OperationData *operation)
 {
     m_operation = operation;
-    m_operation->log_handler->log("Started WickrIOIPCSendThread");
+    if (m_operation != nullptr) {
+        m_operation->log_handler->log("Started WickrIOIPCSendThread");
+    }
 
     m_zctx = nzmqt::createDefaultContext();
     m_zctx->start();

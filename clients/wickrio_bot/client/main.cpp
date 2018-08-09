@@ -8,6 +8,8 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QCoreApplication>
+#include <QtPlugin>
+#include <QLibraryInfo>
 
 #include "session/wickrSession.h"
 #include "user/wickrApp.h"
@@ -17,6 +19,7 @@
 #include "clientversioninfo.h"
 #include "testClientConfigInfo.h"
 #include "wickrIOClientRuntime.h"
+#include "wickrIOIPCRuntime.h"
 #include "testClientRxDetails.h"
 #include "wickrIOJScriptService.h"
 
@@ -47,18 +50,6 @@ extern QString getAppVersion();
 OperationData *operation = NULL;
 RequestHandler *requestHandler = NULL;
 stefanfrings::HttpListener *httpListener = NULL;
-
-// TODO: UPDATE THIS
-static void
-usage()
-{
-    qDebug() << "Args are [-cmd|-gui(default)|-both][-noexclusive][-user=userid] [-script=scriptfile] [-crypt] [-nocrypt]";
-    qDebug() << "If you specify a userid, the database will be named" << WickrDBAdapter::getDBName() + "." + "userid";
-    qDebug() << "If you specify a script file, it will run to completion, then command line will run";
-    qDebug() << "If you specify -noexclusive, the db will not be locked for exclusive open";
-    qDebug() << "By default, in debug mode, the database will not be encrypted (-nocrypt)";
-    exit(0);
-}
 
 /** Search the configuration file */
 QString
@@ -180,9 +171,6 @@ int main(int argc, char *argv[])
     if( isVERSIONDEBUG() ) {
         for( int argidx = 1; argidx < argc; argidx++ ) {
             QString cmd(argv[argidx]);
-
-            if( cmd == "-?" || cmd == "-help" || cmd == "--help" )
-                usage();
 
             if( cmd == "-noexclusive" ) {
                 WickrDBAdapter::setDatabaseExclusiveOpenStatus(false);
@@ -387,6 +375,7 @@ int main(int argc, char *argv[])
      */
     WickrIOClientRuntime::init(operation);
     WickrIOClientRuntime::setFileSendCleanup(true);
+    WickrIOIPCRuntime::init(operation);
 
     /*
      * Start the Javascript service and attach to the Client Runtime
@@ -413,8 +402,8 @@ int main(int argc, char *argv[])
      * connection, so that other processes can stop this client.
      */
     QObject::connect(WICKRBOT, &WickrIOClientMain::signalStarted, [=]() {
-        WickrIOClientRuntime::startIPC();
-        WICKRBOT->setIPC(WickrIOClientRuntime::ipcSvc());
+        WickrIOIPCRuntime::startIPC();
+        WICKRBOT->setIPC(WickrIOIPCRuntime::ipcSvc());
     });
 
 
@@ -450,6 +439,7 @@ int main(int argc, char *argv[])
     /*
      * Shutdown the wickrIO Client Runtime
      */
+    WickrIOIPCRuntime::shutdown();
     WickrIOClientRuntime::shutdown();
 
     httpListener->deleteLater();

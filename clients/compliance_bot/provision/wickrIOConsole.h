@@ -15,7 +15,7 @@ class WickrIOConsoleService : public QObject
 {
     Q_OBJECT
 public:
-    explicit WickrIOConsoleService(QCoreApplication *app, int argc, char **argv, OperationData *operation, WickrIOIPCService *rxIPC);
+    explicit WickrIOConsoleService(QCoreApplication *app, int argc, char **argv, OperationData *operation, WickrIOIPCService *ipcSvc);
     virtual ~WickrIOConsoleService();
 
     void startConsole();
@@ -24,7 +24,7 @@ public:
     int                 m_argc;
     char                **m_argv;
     OperationData       *m_operation;
-    WickrIOIPCService     *m_rxIPC;
+    WickrIOIPCService   *m_ipcSvc;
 
 private:
     QThread                m_thread;

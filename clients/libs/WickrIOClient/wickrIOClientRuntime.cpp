@@ -27,8 +27,6 @@ WickrIOClientRuntime::~WickrIOClientRuntime() {
 void
 WickrIOClientRuntime::setOperationData(OperationData *operation) {
     m_operation = operation;
-    if (m_ipcSvc == nullptr)
-        m_ipcSvc = new WickrIOIPCService(operation->wickrID, true);
 }
 
 void
@@ -68,8 +66,6 @@ void WickrIOClientRuntime::init(OperationData *operation) {
  * Will shutdown runtime, cleaning up all resources.
  */
 void WickrIOClientRuntime::shutdown() {
-    WickrIOClientRuntime::get().ipcSvc()->shutdown();
-
     // Tell the watchdog service to shutdown
     WickrIOClientRuntime::get().wdSvc()->shutdown();
 
@@ -109,20 +105,6 @@ WickrIOClientRuntime::fdSvcDownloadFile(WickrIORxDownloadFile *dload) {
     fdSvc()->downloadFile(dload);
     return true;
 }
-
-/**
- * @brief WickrIO Interprocess Communications Service API
- */
-WickrIOIPCService*
-WickrIOClientRuntime::ipcSvc() {
-    return WickrIOClientRuntime::get().m_ipcSvc;
-}
-
-bool
-WickrIOClientRuntime::startIPC() {
-    ipcSvc()->startIPC(operationData());
-}
-
 
 
 /**

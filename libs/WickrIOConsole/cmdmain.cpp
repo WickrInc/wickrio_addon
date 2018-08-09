@@ -3,6 +3,9 @@
 #include <QDebug>
 #include <QEventLoop>
 #include <QTimer>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 
 #include "cmdmain.h"
 #include "wickrIOCommon.h"

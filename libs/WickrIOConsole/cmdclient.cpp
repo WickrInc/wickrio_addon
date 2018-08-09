@@ -12,7 +12,7 @@
 #include "wickrbotsettings.h"
 #include "consoleserver.h"
 #include "wickrIOConsoleClientHandler.h"
-#include "wickrIOIPCService.h"
+#include "wickrIOIPCRuntime.h"
 
 CmdClient::CmdClient(CmdOperation *operation) :
     m_operation(operation),
@@ -1288,15 +1288,17 @@ bool CmdClient::sendClientCmd(const QString& dest, const QString& cmd)
     m_clientMsgInProcess = true;
     m_clientMsgSuccess = false;
 
-    if (! m_operation->m_ipc->sendMessage(dest, cmd)) {
+    WickrIOIPCService *ipcSvc = WickrIOIPCRuntime::ipcSvc();
+
+    if (ipcSvc == nullptr || ! ipcSvc->sendMessage(dest, true, cmd)) {
         return false;
     }
 
     QTimer timer;
     QEventLoop loop;
 
-    loop.connect(m_operation->m_ipc, SIGNAL(signalSentMessage()), SLOT(quit()));
-    loop.connect(m_operation->m_ipc, SIGNAL(signalSendError()), SLOT(quit()));
+    loop.connect(ipcSvc, SIGNAL(signalMessageSent()), SLOT(quit()));
+    loop.connect(ipcSvc, SIGNAL(signalMessageSendFailure()), SLOT(quit()));
     connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
 
     int loopCount = 6;

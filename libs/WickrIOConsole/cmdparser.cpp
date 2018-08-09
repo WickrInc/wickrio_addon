@@ -1,9 +1,12 @@
+#include <QTimer>
+
 #include "cmdparser.h"
 #include "wickrIOCommon.h"
 #include "wickrIOServerCommon.h"
 #include "wickrbotsettings.h"
 #include "consoleserver.h"
 #include "wickrIOConsoleParserHandler.h"
+#include "wickrIOIPCRuntime.h"
 
 CmdParser::CmdParser(CmdOperation *operation) :
     m_operation(operation)
@@ -650,15 +653,17 @@ bool CmdParser::sendParserCmd(const QString& dest, const QString& cmd)
     m_parserMsgInProcess = true;
     m_parserMsgSuccess = false;
 
-    if (! m_operation->m_ipc->sendMessage(dest, cmd)) {
+    WickrIOIPCService *ipcSvc = WickrIOIPCRuntime::ipcSvc();
+
+    if (ipcSvc == nullptr || ! ipcSvc->sendMessage(dest, false, cmd)) {
         return false;
     }
 
     QTimer timer;
     QEventLoop loop;
 
-    loop.connect(m_operation->m_ipc, SIGNAL(signalSentMessage()), SLOT(quit()));
-    loop.connect(m_operation->m_ipc, SIGNAL(signalSendError()), SLOT(quit()));
+    loop.connect(ipcSvc, SIGNAL(signalMessageSent()), SLOT(quit()));
+    loop.connect(ipcSvc, SIGNAL(signalMessageSendFailure()), SLOT(quit()));
     connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
 
     int loopCount = 6;

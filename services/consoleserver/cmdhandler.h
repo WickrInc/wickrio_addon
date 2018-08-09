@@ -7,7 +7,6 @@
 #include <QSettings>
 
 #include "wickriohttp.h"
-#include "wickrbotipc.h"
 #include "wickriodatabase.h"
 #include "operationdata.h"
 #include "wickrioconsoleuser.h"
@@ -74,7 +73,6 @@ private:
     QSettings *m_settings;
     WickrIOSSLSettings m_sslSettings;
     QString m_appNm;
-    WickrBotIPC *m_ipc;
 
     // Client Message handling values
     bool m_clientMsgSuccess;

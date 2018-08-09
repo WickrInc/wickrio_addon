@@ -7,7 +7,6 @@
 #include <QTimer>
 
 #include <operationdata.h>
-#include <wickrbotipc.h>
 #include "wickrIOIPCService.h"
 
 #define UPDATE_STATUS_SECS  60

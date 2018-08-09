@@ -8,6 +8,8 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QCoreApplication>
+#include <QtPlugin>
+#include <QLibraryInfo>
 
 #include "session/wickrSession.h"
 #include "user/wickrApp.h"

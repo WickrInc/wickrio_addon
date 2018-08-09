@@ -1,3 +1,5 @@
+#include <QJsonArray>
+
 #include "wickrIOProcessInbox.h"
 #include "wickrioapi.h"
 #include "wickrIOFileDownloadService.h"

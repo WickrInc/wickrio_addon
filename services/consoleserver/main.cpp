@@ -13,6 +13,7 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <QProcess>
+#include <QtPlugin>
 
 #include <QSqlQuery>
 #include <QSqlError>
@@ -28,6 +29,7 @@
 #include "wickrbotutils.h"
 #include "wickrbotsettings.h"
 #include "consoleserverservice.h"
+#include "wickrIOIPCRuntime.h"
 #include "loghandler.h"
 
 
@@ -114,6 +116,8 @@ int main(int argc, char *argv[])
         }
     }
 
+    WickrIOIPCRuntime::init(WBIO_CONSOLESERVER_TARGET, false);
+
     if (systemd) {
         qDebug() << "Starting in systemd mode!";
         curService = &service;
@@ -126,6 +130,9 @@ int main(int argc, char *argv[])
     } else {
         svcret = service.exec();
     }
+
+    WickrIOIPCRuntime::shutdown();
+
 #else
     svcret = service.exec();
 #endif

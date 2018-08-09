@@ -8,6 +8,8 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QCoreApplication>
+#include <QtPlugin>
+#include <QLibraryInfo>
 
 #include "session/wickrSession.h"
 #include "user/wickrApp.h"
@@ -17,7 +19,7 @@
 #include "clientversioninfo.h"
 #include "complianceClientConfigInfo.h"
 #include "wickrIOClientRuntime.h"
-
+#include "wickrIOIPCRuntime.h"
 
 #ifdef WICKR_PLUGIN_SUPPORT
 Q_IMPORT_PLUGIN(WickrPlugin)
@@ -352,6 +354,7 @@ int main(int argc, char *argv[])
      * Start the wickrIO Client Runtime
      */
     WickrIOClientRuntime::init(operation);
+    WickrIOIPCRuntime::init(operation);
 
     // Make sure that attachments are saved
     WickrIOClientRuntime::cbSvcSetSaveAttachment(true);
@@ -383,8 +386,8 @@ int main(int argc, char *argv[])
      * connection, so that other processes can stop this client.
      */
     QObject::connect(WICKRBOT, &WickrIOEClientMain::signalStarted, [=]() {
-        WickrIOClientRuntime::startIPC();
-        WICKRBOT->setIPC(WickrIOClientRuntime::ipcSvc());
+        WickrIOIPCRuntime::startIPC();
+        WICKRBOT->setIPC(WickrIOIPCRuntime::ipcSvc());
     });
 
     /*
@@ -407,6 +410,7 @@ int main(int argc, char *argv[])
     /*
      * Shutdown the wickrIO Client Runtime
      */
+    WickrIOIPCRuntime::shutdown();
     WickrIOClientRuntime::shutdown();
 
     httpListener->deleteLater();

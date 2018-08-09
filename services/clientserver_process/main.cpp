@@ -13,6 +13,7 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <QProcess>
+#include <QtPlugin>
 
 #include <QSqlQuery>
 #include <QSqlError>

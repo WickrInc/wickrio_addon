@@ -9,7 +9,6 @@
 
 #include "wickrbotdatabase.h"
 #include "operationdata.h"
-#include "wickrbotipc.h"
 
 // Forward declaration
 class WickrIOIPCRecvThread;
@@ -68,6 +67,9 @@ signals:
     void signalGotStopRequest();
     void signalGotPauseRequest();
     void signalReceivedMessage(QString type, QString value);
+
+    void signalMessageSent();
+    void signalMessageSendFailure();
 
 public slots:
 };

@@ -8,6 +8,8 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QCoreApplication>
+#include <QtPlugin>
+#include <QLibraryInfo>
 
 #include "session/wickrSession.h"
 #include "user/wickrApp.h"
@@ -18,6 +20,7 @@
 #include "welcomeClientConfigInfo.h"
 
 #include "wickrIOClientRuntime.h"
+#include "wickrIOIPCRuntime.h"
 #include "welcomeClientRxDetails.h"
 
 #include "common/wickrUtil.h"
@@ -369,6 +372,7 @@ int main(int argc, char *argv[])
      * Start the wickrIO Client Runtime
      */
     WickrIOClientRuntime::init(operation);
+    WickrIOIPCRuntime::init(operation);
 
     // Create the receive details object
     WelcomeClientRxDetails *rxDetails = new WelcomeClientRxDetails(operation);
@@ -387,8 +391,8 @@ int main(int argc, char *argv[])
      * connection, so that other processes can stop this client.
      */
     QObject::connect(WICKRBOT, &WickrIOClientMain::signalStarted, [=]() {
-        WickrIOClientRuntime::startIPC();
-        WICKRBOT->setIPC(WickrIOClientRuntime::ipcSvc());
+        WickrIOIPCRuntime::startIPC();
+        WICKRBOT->setIPC(WickrIOIPCRuntime::ipcSvc());
     });
 
     /*
@@ -411,6 +415,7 @@ int main(int argc, char *argv[])
     /*
      * Shutdown the wickrIO Client Runtime
      */
+    WickrIOIPCRuntime::shutdown();
     WickrIOClientRuntime::shutdown();
 
     httpListener->deleteLater();

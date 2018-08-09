@@ -3,12 +3,16 @@
 #include <QDebug>
 #include <QEventLoop>
 #include <QTimer>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonDocument>
 
 #include "cmdhandler.h"
 #include "wickrIOCommon.h"
 #include "wickrIOServerCommon.h"
 #include "wickrbotsettings.h"
 #include "wickrIOConsoleClientHandler.h"
+#include "wickrIOIPCRuntime.h"
 #include "wickriodatabase.h"
 #include "wickrioapi.h"
 
@@ -709,18 +713,19 @@ CmdHandler::updateClient(WickrIOConsoleUser *pCUser, const QString& clientID, st
  */
 bool CmdHandler::sendClientCmd(const QString& name, const QString& cmd)
 {
-    WickrBotIPC *m_ipc = new WickrBotIPC();
     bool retval = false;
 
     m_clientMsgInProcess = true;
     m_clientMsgSuccess = false;
 
-    if (m_ipc->sendMessage(name, cmd)) {
+    WickrIOIPCService *ipcSvc = WickrIOIPCRuntime::ipcSvc();
+
+    if (ipcSvc != nullptr && ipcSvc->sendMessage(name, true, cmd)) {
         QTimer timer;
         QEventLoop loop;
 
-        loop.connect(m_ipc, SIGNAL(signalSentMessage()), SLOT(quit()));
-        loop.connect(m_ipc, SIGNAL(signalSendError()), SLOT(quit()));
+        loop.connect(ipcSvc, SIGNAL(signalMessageSent()), SLOT(quit()));
+        loop.connect(ipcSvc, SIGNAL(signalMessageSendFailure()), SLOT(quit()));
         connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
 
         int loopCount = 6;
@@ -738,7 +743,6 @@ bool CmdHandler::sendClientCmd(const QString& name, const QString& cmd)
         }
         retval = true;
     }
-    m_ipc->deleteLater();
 
     return retval;
 }

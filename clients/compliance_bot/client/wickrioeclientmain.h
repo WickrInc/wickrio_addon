@@ -65,11 +65,9 @@ private:
     int m_timerStatsTicker;
     QString m_serverName;
 
-    WickrBotIPC             m_txIPC;
-    WickrIOIPCService       *m_rxIPC;
-    WickrIOReceiveThread    *m_rxThread;
-
-    bool    m_waitingForPassword;
+    WickrIOIPCService       *m_ipcSvc = nullptr;
+    WickrIOReceiveThread    *m_rxThread = nullptr;
+    bool                    m_waitingForPassword = false;
 
     // Timer definitions
     void startTimer()

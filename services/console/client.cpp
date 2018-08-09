@@ -5,7 +5,6 @@
 #include "wickrIOCommon.h"
 
 #include "client.h"
-#include "wickrbotipc.h"
 #include "wickrbotmessagebox.h"
 #include "wickrbotsettings.h"
 #include "consoleserver.h"
@@ -16,6 +15,7 @@
 #include "ui_console_dialog.h"
 #include "wickrIOCommon.h"
 #include "wickrIOServerCommon.h"
+#include "wickrIOIPCRuntime.h"
 
 extern bool isVERSIONDEBUG();
 
@@ -41,8 +41,6 @@ Client::Client(QWidget *parent) :
 #elif defined(WICKR_QA)
     this->setWindowTitle("WickrIO Server Console");
 #endif
-
-    ipc = new WickrBotIPC();
 
     setupConsoleArea();
 
@@ -195,7 +193,9 @@ Client::Client(QWidget *parent) :
                     msg->addButton(tr("Cancel"), 1);
                     msg->setText(tr("Are you sure you want to pause the client for %1").arg(name));
                     if (msg->exec() == 0) {
-                        ipc->sendMessage(updateClient->name, WBIO_IPCCMDS_PAUSE);
+                        WickrIOIPCService *ipcSvc = WickrIOIPCRuntime::ipcSvc();
+                        if (ipcSvc != nullptr)
+                            ipcSvc->sendMessage(updateClient->name, true, WBIO_IPCCMDS_PAUSE);
                     }
                 } else {
                     if (state.state == PROCSTATE_PAUSED) {
@@ -311,11 +311,6 @@ Client::~Client()
     if (m_settings != NULL) {
         m_settings->deleteLater();
         m_settings = NULL;
-    }
-
-    if (ipc != NULL) {
-        ipc->deleteLater();
-        ipc = NULL;
     }
 
     // Close the database and release the memory associated with it

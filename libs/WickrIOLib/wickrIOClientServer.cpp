@@ -11,6 +11,7 @@
 #include "wickrIOClientServer.h"
 #include "wickrIOCommon.h"
 #include "wickrIOServerCommon.h"
+#include "wickrIOIPCRuntime.h"
 
 //#define DEBUG_TRACE 1
 
@@ -295,17 +296,18 @@ bool WickrIOClientServer::clientNeedsStart(WickrBotClients *client)
 bool
 WickrIOClientServer::sendClientCmd(const QString& dest, const QString& cmd)
 {
-    qDebug() << "Sending password to client";
-    WickrBotIPC ipc;
-    if (! m_ipcSvc->sendMessage(dest, true, WBIO_IPCCMDS_STOP)) {
+    WickrIOIPCService *ipcSvc = WickrIOIPCRuntime::ipcSvc();
+
+    qDebug() << "Sending command to client";
+    if (ipcSvc == nullptr || !ipcSvc->sendMessage(dest, true, cmd)) {
         return false;
     }
 
     QTimer timer;
     QEventLoop loop;
 
-    loop.connect(&ipc, SIGNAL(signalSentMessage()), SLOT(quit()));
-    loop.connect(&ipc, SIGNAL(signalSendError()), SLOT(quit()));
+    loop.connect(ipcSvc, SIGNAL(signalMessageSent()), SLOT(quit()));
+    loop.connect(ipcSvc, SIGNAL(signalMessageSendFailure()), SLOT(quit()));
     connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
 
     int loopCount = 6;

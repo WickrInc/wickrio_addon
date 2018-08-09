@@ -8,6 +8,8 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QCoreApplication>
+#include <QtPlugin>
+#include <QLibraryInfo>
 
 #include "session/wickrSession.h"
 #include "user/wickrApp.h"
@@ -17,6 +19,7 @@
 #include "clientversioninfo.h"
 #include "coreClientConfigInfo.h"
 #include "wickrIOClientRuntime.h"
+#include "wickrIOIPCRuntime.h"
 #include "coreClientRxDetails.h"
 
 #ifdef WICKR_PLUGIN_SUPPORT
@@ -31,7 +34,6 @@ extern void wickr_powersetup(void);
 #include <httpserver/httplistener.h>
 
 #include "wickrIOClientMain.h"
-#include "wickrIOIPCService.h"
 #include "wickrbotutils.h"
 #include "operationdata.h"
 
@@ -338,6 +340,7 @@ int main(int argc, char *argv[])
      * Start the wickrIO Client Runtime
      */
     WickrIOClientRuntime::init(operation);
+    WickrIOIPCRuntime::init(operation);
 
     // Create the receive details object
     CoreClientRxDetails *rxDetails = new CoreClientRxDetails(operation);
@@ -356,8 +359,8 @@ int main(int argc, char *argv[])
      * connection, so that other processes can stop this client.
      */
     QObject::connect(WICKRBOT, &WickrIOClientMain::signalStarted, [=]() {
-        WickrIOClientRuntime::startIPC();
-        WICKRBOT->setIPC(WickrIOClientRuntime::ipcSvc());
+        WickrIOIPCRuntime::startIPC();
+        WICKRBOT->setIPC(WickrIOIPCRuntime::ipcSvc());
     });
 
     /*
@@ -380,6 +383,7 @@ int main(int argc, char *argv[])
     /*
      * Shutdown the wickrIO Client Runtime
      */
+    WickrIOIPCRuntime::shutdown();
     WickrIOClientRuntime::shutdown();
 
     httpListener->deleteLater();

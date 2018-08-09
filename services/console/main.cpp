@@ -1,9 +1,12 @@
 
 #include <QApplication>
 #include <QCoreApplication>
+#include <QtPlugin>
+
 #include "client.h"
 #include "cmdmain.h"
 #include "wickrIOServerCommon.h"
+#include "wickrIOIPCRuntime.h"
 
 extern bool isVERSIONDEBUG();
 
@@ -22,6 +25,7 @@ Q_IMPORT_PLUGIN(QSQLCipherDriverPlugin)
 int main(int argc, char *argv[])
 {
     bool cmdInterface = false;
+    int returnval = 0;
 
     for( int argidx = 1; argidx < argc; argidx++ ) {
         QString cmd(argv[argidx]);
@@ -30,6 +34,8 @@ int main(int argc, char *argv[])
             cmdInterface = true;
         }
     }
+
+    WickrIOIPCRuntime::init(WBIO_CONSOLE_TARGET, false);
 
     if (cmdInterface) {
         qInstallMessageHandler(redirectedOutput);
@@ -47,9 +53,11 @@ int main(int argc, char *argv[])
 
         Client *client = new Client();
         client->show();
-        int returnval = app.exec();
+        returnval = app.exec();
         client->deleteLater();
-
-        return returnval;
     }
+
+    WickrIOIPCRuntime::shutdown();
+
+    return returnval;
 }

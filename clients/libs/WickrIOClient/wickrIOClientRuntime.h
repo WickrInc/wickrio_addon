@@ -6,7 +6,6 @@
 #include "wickrIOServiceBase.h"
 #include "wickrIOCallbackService.h"
 #include "wickrIOFileDownloadService.h"
-#include "wickrIOIPCService.h"
 #include "wickrIOWatchdogService.h"
 #include "wickrIOProvisionHdlr.h"
 
@@ -55,12 +54,6 @@ public:
     static bool fdSvcDownloadFile(WickrIORxDownloadFile *dload);
 
     /**
-     * IPC Service API
-     */
-    static WickrIOIPCService *ipcSvc();
-    static bool startIPC();
-
-    /**
      * Watchdog Service API
      */
     static WickrIOWatchdogService* wdSvc();
@@ -88,12 +81,11 @@ public:
 
 private:
     // Runtime resources
-    bool                    m_initialized;
-    OperationData           *m_operation;
+    bool                        m_initialized = false;
+    OperationData               *m_operation = nullptr;
 
     WickrIOCallbackService      *m_callbackSvc = nullptr;
     WickrIOFileDownloadService  *m_fileDownloadSvc = nullptr;
-    WickrIOIPCService           *m_ipcSvc = nullptr;
     WickrIOWatchdogService      *m_watchdogSvc = nullptr;
     WickrIOProvisionHdlr        *m_provisionHdlr = nullptr;
 

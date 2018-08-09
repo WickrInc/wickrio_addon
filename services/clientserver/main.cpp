@@ -16,11 +16,13 @@
 
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QtPlugin>
 
 #ifdef Q_OS_LINUX
 #include <signal.h>
 #include <unistd.h>
 #endif
+
 
 #include "operationdata.h"
 #include "wickrIOCommon.h"

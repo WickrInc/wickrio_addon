@@ -7,7 +7,6 @@
 #include <QSettings>
 
 #include "cmdbase.h"
-#include "wickrbotipc.h"
 #include "wickriodatabase.h"
 #include "wickrIOAppSettings.h"
 #include "cmdoperation.h"
