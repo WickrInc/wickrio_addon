@@ -436,13 +436,15 @@ void WickrIOProvisionHdlr::checkEmail()
 void WickrIOProvisionHdlr::registerWithPassword(const QString &newPassword)
 {
     if (!newPassword.isEmpty() && (!m_email.isEmpty() || !m_username.isEmpty())) {
+        qDebug().noquote().nospace() << "CONSOLE:Begin registration with password.";
+
         // TODO: OLD CODE WAS DOING A RESET
         if (m_mode == OnPremMode) {
             m_currentStep = Step::finished;  // If anyone asks, we are done!
             emit signalRegisterOnPrem(m_username, m_password, newPassword, !m_userExists ? m_passwordSalt : QString(), m_transID, !m_userExists, m_userExists);
         } else if (m_mode == CloudMode || m_mode == ForgotPasswordMode) {
             m_currentStep = Step::loggingIn;
-            emit signalRegisterEnterprise(m_email, newPassword, m_transID, true, false, (m_mode == ForgotPasswordMode));  // Begins a process that eventually calls WickrIOProvisionHdlr::loginComplete()
+            emit signalRegisterEnterprise(m_email, newPassword, m_passwordSalt, m_transID, true, false, (m_mode == ForgotPasswordMode));  // Begins a process that eventually calls WickrIOProvisionHdlr::loginComplete()
         }
     }
 }

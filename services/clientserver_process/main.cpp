@@ -34,6 +34,7 @@
 
 #include "wickrioclientserverprocess.h"
 #include "wickrioprocesscommand.h"
+#include "wickrIOIPCRuntime.h"
 
 #ifdef Q_OS_LINUX
 WickrIOClientServerProcess *curService;
@@ -125,6 +126,8 @@ int main(int argc, char *argv[])
     OperationData *pOperation = new OperationData();
     pOperation->processName = WBIO_CLIENTSERVER_TARGET;
 
+    WickrIOIPCRuntime::init(WBIO_CLIENTSERVER_TARGET, false);
+
     WICKRIOCLIENTSERVERPROCESS = new WickrIOClientServerProcess(pOperation);
     WICKRIOCLIENTSERVERPROCESS->start();
     WICKRIOPROCESSCOMMAND = new WickrIOProcessCommand(pOperation);
@@ -135,6 +138,8 @@ int main(int argc, char *argv[])
                      Qt::QueuedConnection);
 
     svcret = app->exec();
+
+    WickrIOIPCRuntime::shutdown();
 
     qDebug() << "Leaving Client Service";
     return svcret;

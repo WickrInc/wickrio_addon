@@ -254,9 +254,9 @@ WBIOServerCommon::initClientApps()
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("welcome_bot",         nullptr,                "welcome_parser",      false, false));
 
         // Initialize the Core bots (mother bot)
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("core_botAlpha",       nullptr,                nullptr,               false, true));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("core_botBeta",        nullptr,                nullptr,               false, true));
-        WBIOServerCommon::m_botApps.append(new WBIOClientApps("core_bot",            nullptr,                nullptr,               false, true));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("core_botAlpha",       "core_provAlpha",       nullptr,               false, true));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("core_botBeta",        "core_provBeta",        nullptr,               false, true));
+        WBIOServerCommon::m_botApps.append(new WBIOClientApps("core_bot",            "core_prov",            nullptr,               false, true));
 
         // If the hubot software is installed then add it to the list of available integrations
         if (QFile(BOT_HUBOT_SOFTWARE).exists()) {

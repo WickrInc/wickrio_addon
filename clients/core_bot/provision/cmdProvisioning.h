@@ -12,7 +12,7 @@ class CmdProvisioning : public CmdBase
 public:
     explicit CmdProvisioning(WickrBotClients *client);
 
-    bool runCommands();
+    bool runCommands(int argc, char *argv[]);
     void status();
 
     WickrBotClients  *m_client;
