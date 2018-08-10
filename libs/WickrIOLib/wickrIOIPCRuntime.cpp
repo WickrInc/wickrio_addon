@@ -17,12 +17,19 @@ WickrIOIPCRuntime::~WickrIOIPCRuntime() {
 }
 
 void
+WickrIOIPCRuntime::setOperationData(OperationData *operation)
+{
+    m_operation = operation;
+}
+
+void
 WickrIOIPCRuntime::setEndpointInfo(const QString& name, bool isClient) {
     m_isClient = isClient;
     m_name = name;
 
     if (m_ipcSvc == nullptr) {
         m_ipcSvc = new WickrIOIPCService(name, isClient);
+        m_ipcSvc->startIPC(WickrIOIPCRuntime::operationData());
     }
     m_initialized = true;
 }
@@ -36,6 +43,7 @@ void
 WickrIOIPCRuntime::init(OperationData *operation) {
     // Instantiate runtime
     WickrIOIPCRuntime& me = WickrIOIPCRuntime::get();
+    me.setOperationData(operation);
     me.setEndpointInfo(operation->wickrID, true);
 }
 
