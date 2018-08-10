@@ -7,8 +7,5 @@
   "dependencies": {
     "cmake-js": "^3.7.3",
     "nan": "^2.10.0"
-  },
-  "scripts": {
-    "install": "cmake-js compile"
   }
 }

@@ -6,7 +6,7 @@
   "private": true,
   "dependencies": {
     "prompt": "^1.0.0",
-    "wickrio_addon": "file:../../addon"
+    "wickrio_addon": "file:../../wickrio_addon"
   },
   "scripts": {
     "start": "node bot_iface_test.js",
