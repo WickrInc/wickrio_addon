@@ -91,6 +91,8 @@ private:
 
     void stopAndExit(int procState);
 
+    bool sendConsoleMsg(const QString& cmd, const QString& value);
+
 private slots:
     void slotDoTimerWork();
     void slotLoginSuccess();

@@ -245,7 +245,7 @@ int main(int argc, char *argv[])
         settings->endGroup();
 
         if (operation->wickrID.isEmpty()) {
-            qDebug() << "User or password is not set";
+            qDebug() << "User ID is not set in settings file!";
             exit(1);
         }
     }

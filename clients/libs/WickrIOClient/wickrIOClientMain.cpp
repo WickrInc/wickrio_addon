@@ -22,6 +22,7 @@
 #include "clientconfigurationinfo.h"
 #include "clientversioninfo.h"
 #include "wickrIOCommon.h"
+#include "wickrIOIPCRuntime.h"
 
 WickrIOClientMain *WickrIOClientMain::theBot;
 
@@ -220,6 +221,8 @@ void WickrIOClientMain::slotDatabaseLoadDone(WickrDatabaseLoadContext *context)
         wdSvc->setLoggedIn(true);
     }
 
+    sendConsoleMsg(WBIO_IPCMSGS_STATE, "loggedin");
+
     // Update switchboard login credentials (login is performed only if not already logged in)
     WickrCore::WickrRuntime::swbSvcLogin(WickrCore::WickrSession::getActiveSession()->getSwitchboardServer(),
                                          WickrCore::WickrUser::getSelfUser()->getServerIDHash(),
@@ -328,6 +331,8 @@ void WickrIOClientMain::slotMessageDownloadStatusUpdate(int msgsDownloaded)
  */
 void WickrIOClientMain::stopAndExitSlot()
 {
+    sendConsoleMsg(WBIO_IPCMSGS_STATE, "stopping");
+
     stopAndExit(PROCSTATE_DOWN);
 }
 
@@ -366,6 +371,40 @@ void WickrIOClientMain::processStarted()
 
     if (! startTheClient())
         stopAndExit(PROCSTATE_DOWN);
+}
+
+bool
+WickrIOClientMain::sendConsoleMsg(const QString& cmd, const QString& value)
+{
+    WickrIOIPCService *ipcSvc = WickrIOIPCRuntime::ipcSvc();
+
+    QString message = QString("%1=%2").arg(cmd).arg(value);
+
+    if (ipcSvc == nullptr || !ipcSvc->sendMessage(WBIO_CLIENTSERVER_TARGET, false, message)) {
+        return false;
+    }
+
+    QTimer timer;
+    QEventLoop loop;
+
+    loop.connect(ipcSvc, SIGNAL(signalMessageSent()), SLOT(quit()));
+    loop.connect(ipcSvc, SIGNAL(signalMessageSendFailure()), SLOT(quit()));
+    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+
+    int loopCount = 6;
+
+    while (loopCount-- > 0) {
+        timer.start(10000);
+        loop.exec();
+
+        if (timer.isActive()) {
+            timer.stop();
+            break;
+        } else {
+            qDebug() << "Timed out waiting for stop client message to send!";
+        }
+    }
+    return true;
 }
 
 /**
@@ -420,6 +459,7 @@ void
 WickrIOClientMain::slotServiceNotLoggedIn()
 {
     m_operation->postEvent("Thread has not been able to log in for extended period of time.", false);
+    sendConsoleMsg(WBIO_IPCMSGS_STATE, "stopping");
 
     stopAndExit(PROCSTATE_DOWN);
 }

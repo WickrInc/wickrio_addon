@@ -77,10 +77,15 @@ bool WickrIOClientServer::configureService()
     m_operation->log_handler->log("Database size", m_operation->m_botDB->size());
     m_operation->log_handler->log("Generated messages", m_operation->messageCount);
 
+#if 0
     // Setup the IPC Service
     m_ipcSvc = new WickrIOIPCService(WBIO_CLIENTSERVER_TARGET, false);
     m_ipcSvc->startIPC(m_operation);
     connect(m_ipcSvc, &WickrIOIPCService::signalReceivedMessage, this, &WickrIOClientServer::slotRxIPCMessage);
+#else
+    WickrIOIPCService *ipcSvc = WickrIOIPCRuntime::ipcSvc();
+    connect(ipcSvc, &WickrIOIPCService::signalReceivedMessage, this, &WickrIOClientServer::slotRxIPCMessage);
+#endif
 
     m_isConfigured = true;
 
@@ -338,37 +343,36 @@ bool WickrIOClientServer::stopClient(const QString& name)
 #ifdef DEBUG_TRACE
     qDebug() << "Entered stopClient:" << client->user;
 #endif
+    WickrIOIPCService *ipcSvc = WickrIOIPCRuntime::ipcSvc();
     // Send message to all clients to stop them
-    bool retVal = m_ipcSvc->sendMessage(name, true, WBIO_IPCCMDS_STOP);
+    if (ipcSvc == nullptr || ! ipcSvc->sendMessage(name, true, WBIO_IPCCMDS_STOP))
+        return false;
 
-#if 1
-#else
-        QTimer timer;
-        QEventLoop loop;
+    QTimer timer;
+    QEventLoop loop;
 
-        loop.connect(&ipc, SIGNAL(signalSentMessage()), SLOT(quit()));
-        loop.connect(&ipc, SIGNAL(signalSendError()), SLOT(quit()));
-        connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+    loop.connect(ipcSvc, SIGNAL(signalMessageSent()), SLOT(quit()));
+    loop.connect(ipcSvc, SIGNAL(signalMessageSendFailure()), SLOT(quit()));
+    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
 
-        int loopCount = 6;
+    int loopCount = 6;
 
-        while (loopCount-- > 0) {
-            timer.start(10000);
-            loop.exec();
+    while (loopCount-- > 0) {
+        timer.start(10000);
+        loop.exec();
 
-            if (timer.isActive()) {
-                timer.stop();
-                break;
-            } else {
-                qDebug() << "Timed out waiting for stop client message to send!";
-            }
+        if (timer.isActive()) {
+            timer.stop();
+            break;
+        } else {
+            qDebug() << "Timed out waiting for stop client message to send!";
         }
-#endif
+    }
 
 #ifdef DEBUG_TRACE
     qDebug() << "Leaving stopClient: retVal=" << retVal;
 #endif
-    return retVal;
+    return true;
 }
 
 /**

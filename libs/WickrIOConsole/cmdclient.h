@@ -87,6 +87,8 @@ private slots:
     void slotCmdFinished(int, QProcess::ExitStatus);
     void slotCmdOutputRx();
 
+    void slotReceivedMessage(QString type, QString value);
+
 };
 
 #endif // CMDCLIENT_H

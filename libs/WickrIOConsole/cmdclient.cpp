@@ -1318,6 +1318,19 @@ bool CmdClient::sendClientCmd(const QString& dest, const QString& cmd)
 }
 
 /**
+ * @brief slotGotMessage
+ * @param type
+ * @param value
+ */
+void CmdClient::slotReceivedMessage(QString type, QString value)
+{
+    if (type.toLower() == WBIO_IPCMSGS_STATE) {
+        qDebug() << "Client changed state to" << value;
+        m_clientStateChanged = true;
+        m_clientState = value;
+    }
+}
+/**
  * @brief CmdClient::pauseClient
  * This function is used to pause a running client
  * @param clientIndex
@@ -1471,6 +1484,12 @@ void CmdClient::startClient(int clientIndex, bool force)
                                 continue;
                             }
 
+                            qint64 startTime = QDateTime::currentSecsSinceEpoch();
+                            qint64 lastTime = startTime;
+
+                            WickrIOIPCService *ipcSvc = WickrIOIPCRuntime::ipcSvc();
+                            connect(ipcSvc, &WickrIOIPCService::signalReceivedMessage, this, &CmdClient::slotReceivedMessage);
+
                             // It is running lets send the password to it now
                             QString pwstring = WickrIOIPCCommands::getPasswordString(m_operation->m_appNm, password);
                             sendClientCmd(client->name, pwstring);
@@ -1485,8 +1504,21 @@ void CmdClient::startClient(int clientIndex, bool force)
                                         qDebug().noquote() << QString("CONSOLE:%1 to login!").arg(client->name);
                                     }
                                     break;
+                                } else {
+                                    qint64 curTime = QDateTime::currentSecsSinceEpoch();
+                                    if (curTime > startTime + 60) {
+                                        qDebug() << "CONSOLE:Waited for over 60 seconds, quiting!";
+                                        break;
+                                    }
+                                    if (curTime > lastTime + 5) {
+                                        qDebug() << "CONSOLE:Waiting";
+                                        lastTime = curTime;
+                                    }
                                 }
                             }
+
+                            disconnect(ipcSvc, &WickrIOIPCService::signalReceivedMessage, this, &CmdClient::slotReceivedMessage);
+
                             break;
                         }
 

@@ -40,8 +40,6 @@ public:
     int                 m_backOff;
     bool                m_isConfigured = false;
 
-    WickrIOIPCService   *m_ipcSvc = nullptr;
-
     QString             m_clientState;
     bool                m_clientStateChanged;
 
