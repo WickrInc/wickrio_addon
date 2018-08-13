@@ -473,6 +473,13 @@ void WickrIOClientMain::stopAndExit(int procState)
 {
     m_operation->postEvent("Shutting down", false);
 
+    if (!m_autologin) {
+        WickrCore::WickrSession::clearPasswordCache();
+        WickrCore::WickrSession::clearCacheKeys();
+        WickrCore::WickrSession::clearCachedDbKey();
+
+    }
+
     // Set the process state for after the shutdown
     WickrIOClientRuntime::wdSetShutdownState(procState);
 
@@ -722,6 +729,7 @@ bool WickrIOClientMain::parseSettings(QSettings *settings)
     m_user = user;
     m_password = password;
     m_userName = username;
+    m_autologin = autologin;
 
     // there is no password set
     if (password.isEmpty()) {
@@ -736,6 +744,9 @@ bool WickrIOClientMain::parseSettings(QSettings *settings)
                 m_waitingForPassword = true;
                 return true;
             }
+        } else {
+            m_waitingForPassword = true;
+            return true;
         }
     }
 

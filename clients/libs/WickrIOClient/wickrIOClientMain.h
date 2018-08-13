@@ -75,6 +75,7 @@ private:
     QString m_user;
     QString m_password;
     QString m_userName;
+    bool    m_autologin = false;
 
     // Timer definitions
     void startTimer()
