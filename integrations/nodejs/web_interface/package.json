@@ -1,0 +1,31 @@
+{
+  "name": "wickrio_web_api",
+  "version": "1.0.0",
+  "description": "WickrIO Web Interface Node.JS API",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Wickr",
+    "API",
+    "web",
+    "interface",
+    "javascript",
+    "node"
+  ],
+  "author": "Aaron Mishiyev",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.3",
+    "mongodb": "^3.1.1",
+    "wickrio_addon": "file:../wickrio_addon"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.3"
+  },
+    "scripts": {
+    "dev": "nodemon server.js"
+  }
+}
