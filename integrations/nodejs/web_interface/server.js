@@ -2,6 +2,7 @@ const express        = require('express');
 const MongoClient    = require('mongodb').MongoClient;
 const bodyParser     = require('body-parser');
 const addon          = require('wickrio_addon');
+const fs             = require('fs');
 const app            = express();
 
 const port = 8000;
