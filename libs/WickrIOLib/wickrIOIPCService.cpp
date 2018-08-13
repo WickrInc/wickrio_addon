@@ -123,6 +123,11 @@ bool WickrIOIPCService::sendMessage(const QString& dest, bool isClient, const QS
     return true;
 }
 
+void WickrIOIPCService::closeClientConnection(const QString& dest)
+{
+    emit signalCloseConnection(dest);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -220,6 +225,11 @@ WickrIOIPCRecvThread::slotMessageReceived(const QList<QByteArray>& messages)
 {
     qDebug() << "entered slotMessageReceived!";
     for (QByteArray message : messages) {
+        // Send reply before processing the received message
+        QList<QByteArray> reply;
+        reply += "Message received";
+        m_zsocket->sendMessage(reply);
+
         if (message == WBIO_IPCCMDS_STOP) {
             if (m_operation != nullptr) {
                 m_operation->log_handler->log(QString("GOT MESSAGE: %1").arg(WBIO_IPCCMDS_STOP));
@@ -248,10 +258,6 @@ WickrIOIPCRecvThread::slotMessageReceived(const QList<QByteArray>& messages)
             }
         }
 
-        QList<QByteArray> reply;
-
-        reply += "Message received";
-        m_zsocket->sendMessage(reply);
     }
 }
 
@@ -342,8 +348,17 @@ WickrIOIPCSendThread::slotSendMessage(const QString& dest, bool isClient, const 
 {
     nzmqt::ZMQSocket *zsocket = createSendSocket(dest, isClient);
     if (zsocket != nullptr) {
+        if (! zsocket->isConnected()) {
+            qDebug() << "Socket is NOT connected!";
+            m_txMap.remove(dest);
+            zsocket = createSendSocket(dest, isClient);
+            if (zsocket == nullptr) {
+                qDebug().nospace().noquote() << "Cannot create Socket for " << dest;
+            }
+        }
         QByteArray request = message.toLocal8Bit();
         zsocket->sendMessage(request);
+
         emit signalRequestSent();
     } else {
         emit signalRequestFailed();
@@ -354,6 +369,16 @@ WickrIOIPCSendThread::slotSendMessage(const QString& dest, bool isClient, const 
 void
 WickrIOIPCSendThread::slotMessageReceived(const QList<QByteArray>& messages)
 {
+    for (QByteArray message : messages) {
+        qDebug() << "WickrIOIPCSendThread::slotMessageReceived: received response:" << message;
+    }
+}
+
+void
+WickrIOIPCSendThread::slotCloseConnection(const QString& dest)
+{
+    if (m_txMap.count() > 0 && m_txMap.contains(dest))
+        m_txMap.remove(dest);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////

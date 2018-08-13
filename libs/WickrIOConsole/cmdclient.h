@@ -45,6 +45,7 @@ private:
     bool validateIndex(int clientIndex);
 
     bool sendClientCmd(const QString& dest, const QString& cmd);
+    void closeClientIPC(const QString& dest);
 
     bool readLineFromProcess(QProcess *process, QString& line);
     bool runBotScript(const QString& destPath, const QString& configure, WickrBotClients *client);

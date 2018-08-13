@@ -1317,6 +1317,14 @@ bool CmdClient::sendClientCmd(const QString& dest, const QString& cmd)
     return true;
 }
 
+void CmdClient::closeClientIPC(const QString& dest)
+{
+    WickrIOIPCService *ipcSvc = WickrIOIPCRuntime::ipcSvc();
+
+    if (ipcSvc != nullptr)
+        ipcSvc->closeClientConnection(dest);
+}
+
 /**
  * @brief slotGotMessage
  * @param type
@@ -1337,76 +1345,93 @@ void CmdClient::slotReceivedMessage(QString type, QString value)
  */
 void CmdClient::pauseClient(int clientIndex, bool force)
 {
-    if (validateIndex(clientIndex)) {
-        WickrBotClients *client = m_clients.at(clientIndex);
-        WickrBotProcessState state;
-        QString processName = WBIOServerCommon::getClientProcessName(client);
+    if (!validateIndex(clientIndex)) {
+       qDebug() << "CONSOLE:Invalid client index!";
+       return;
+    }
 
-        // check if there is a integration bot set, if so stop it from running
-        if (!client->botType.isEmpty()) {
-            QString stopCmd = WBIOServerCommon::getBotStopCmd(client->botType);
-            if (!stopCmd.isEmpty()) {
-                QString destPath = QString(WBIO_CLIENT_BOTDIR_FORMAT)
-                        .arg(WBIO_DEFAULT_DBLOCATION)
-                        .arg(client->name)
-                        .arg(client->botType);
-                QString stopFullPath = QString("%1/%2").arg(destPath).arg(stopCmd);
-
-                qDebug() << "**********************************";
-                qDebug() << QString("Stopping %1").arg(stopFullPath);
-
-                // Create the argument list for the start script, the client's Wickr ID
-                QStringList arguments;
-                arguments.append(client->user);
-
-                // Create a process to run the stop script
-                QProcess *runBotStopCmd = new QProcess(this);
-                runBotStopCmd->setProcessChannelMode(QProcess::MergedChannels);
-                runBotStopCmd->setWorkingDirectory(destPath);
-                runBotStopCmd->start(stopFullPath, arguments, QIODevice::ReadWrite);
-
-                // Wait for it to start
-                if(!runBotStopCmd->waitForStarted()) {
-                    qDebug() << "Failed to run %1";
-                } else {
-                    QStringList stopOutput;
-
-                    while(runBotStopCmd->waitForReadyRead()) {
-                        QString bytes = QString(runBotStopCmd->readAll());
-                        stopOutput.append(bytes);
-                    }
-                }
-
-                qDebug() << "Done stopping the integration bot!";
-                qDebug() << "**********************************";
-            }
-        }
+    WickrBotClients *client = m_clients.at(clientIndex);
+    WickrBotProcessState state;
+    QString processName = WBIOServerCommon::getClientProcessName(client);
 
 
-        if (m_operation->m_ioDB->getProcessState(processName, &state)) {
-            if (state.state == PROCSTATE_RUNNING) {
+
+
+    if (m_operation->m_ioDB->getProcessState(processName, &state)) {
+        if (state.state == PROCSTATE_RUNNING) {
+            while (true) {
                 QString prompt = QString(tr("Do you really want to pause the client with the name %1")).arg(client->user);
                 QString response = getNewValue("", prompt);
-                if (response.toLower() == "y" || response.toLower() == "yes") {
-                    if (! sendClientCmd(client->name, WBIO_IPCCMDS_PAUSE)) {
-                        qDebug() << "CONSOLE:Failed to send message to client!";
-                    }
+                if (response.toLower() == "n" || response.toLower() == "no") {
+                    return;
                 }
-            } else {
-                if (!force) {
-                    qDebug() << "CONSOLE:Client must be running to pause it!";
-                } else {
-                    if (! m_operation->m_ioDB->updateProcessState(processName, 0, PROCSTATE_PAUSED)) {
-                        qDebug() << "CONSOLE:Failed to change start of client in database!";
-                    } else {
-                        qDebug() << "CONSOLE:Client state was force set to paused.";
-                        qDebug() << "CONSOLE:Please verify the client process is not running.";
-                    }
+                if (response.toLower() == "y" || response.toLower() == "yes") {
+                    break;
                 }
             }
         } else {
-            qDebug() << "CONSOLE:Could not get the clients state!";
+            if (!force) {
+                qDebug() << "CONSOLE:Client must be running to pause it!";
+            } else {
+                if (! m_operation->m_ioDB->updateProcessState(processName, 0, PROCSTATE_PAUSED)) {
+                    qDebug() << "CONSOLE:Failed to change start of client in database!";
+                } else {
+                    qDebug() << "CONSOLE:Client state was force set to paused.";
+                    qDebug() << "CONSOLE:Please verify the client process is not running.";
+                }
+            }
+            return;
         }
+    } else {
+        qDebug() << "CONSOLE:Could not get the clients state!";
+        return;
+    }
+
+    // check if there is a integration bot set, if so stop it from running
+    if (!client->botType.isEmpty()) {
+        QString stopCmd = WBIOServerCommon::getBotStopCmd(client->botType);
+        if (!stopCmd.isEmpty()) {
+            QString destPath = QString(WBIO_CLIENT_BOTDIR_FORMAT)
+                    .arg(WBIO_DEFAULT_DBLOCATION)
+                    .arg(client->name)
+                    .arg(client->botType);
+            QString stopFullPath = QString("%1/%2").arg(destPath).arg(stopCmd);
+
+            qDebug() << "**********************************";
+            qDebug() << QString("Stopping %1").arg(stopFullPath);
+
+            // Create the argument list for the start script, the client's Wickr ID
+            QStringList arguments;
+            arguments.append(client->user);
+
+            // Create a process to run the stop script
+            QProcess *runBotStopCmd = new QProcess(this);
+            runBotStopCmd->setProcessChannelMode(QProcess::MergedChannels);
+            runBotStopCmd->setWorkingDirectory(destPath);
+            runBotStopCmd->start(stopFullPath, arguments, QIODevice::ReadWrite);
+
+            // Wait for it to start
+            if(!runBotStopCmd->waitForStarted()) {
+                qDebug() << "Failed to run %1";
+            } else {
+                QStringList stopOutput;
+
+                while(runBotStopCmd->waitForReadyRead()) {
+                    QString bytes = QString(runBotStopCmd->readAll());
+                    stopOutput.append(bytes);
+                }
+            }
+
+            qDebug() << "Done stopping the integration bot!";
+            qDebug() << "**********************************";
+        }
+    }
+
+
+    if (! sendClientCmd(client->name, WBIO_IPCCMDS_PAUSE)) {
+        qDebug() << "CONSOLE:Failed to send message to client!";
+    } else {
+        closeClientIPC(client->name);
     }
 }
 

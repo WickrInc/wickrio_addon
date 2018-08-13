@@ -38,6 +38,7 @@ public:
     bool isRunning();
 
     bool sendMessage(const QString& dest, bool isClient, const QString& message);
+    void closeClientConnection(const QString& dest);
 
     // Accessors
     const QString name() { return m_name; }
@@ -66,6 +67,7 @@ signals:
     void signalShutdownRecv();
     void signalStartIPC(OperationData *operation);
     void signalSendMessage(const QString& dest, bool isClient, const QString& message);
+    void signalCloseConnection(const QString& dest);
 
     // Signals that should be caught by users of this service
     void signalGotStopRequest();
@@ -188,6 +190,7 @@ public slots:
     void slotStartIPC(OperationData *operation);
     void slotSendMessage(const QString& dest, bool isClient, const QString& message);
     void slotMessageReceived(const QList<QByteArray>& messages);
+    void slotCloseConnection(const QString& dest);
 
 };
 

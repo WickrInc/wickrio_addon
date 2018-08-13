@@ -229,7 +229,7 @@ int main(int argc, char *argv[])
 
     settings->beginGroup(WBSETTINGS_USER_HEADER);
     settings->setValue(WBSETTINGS_USER_USER, client.user);
-    settings->setValue(WBSETTINGS_USER_PASSWORD, client.password);      //TODO: THIS NEEDS TO BE REMOVED
+//    settings->setValue(WBSETTINGS_USER_PASSWORD, client.password);      //TODO: THIS NEEDS TO BE REMOVED
     settings->setValue(WBSETTINGS_USER_USERNAME, client.name);
     settings->endGroup();
 
