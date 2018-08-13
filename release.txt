@@ -1,4 +1,4 @@
-Release Notes from v4.26-release to v4.42.2-2:
+Release Notes from v4.26-release to v4.42.2-3:
   * Make Wickr Node.js addon distributable
   * Improve fileBot
   * Ported changes to save delete and recall messages [ci skip]
