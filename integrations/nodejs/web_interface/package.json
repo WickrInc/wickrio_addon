@@ -4,7 +4,7 @@
   "description": "WickrIO Web Interface Node.JS API",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon server.js"
   },
   "keywords": [
     "Wickr",
@@ -24,8 +24,5 @@
   },
   "devDependencies": {
     "nodemon": "^1.18.3"
-  },
-    "scripts": {
-    "dev": "nodemon server.js"
   }
 }
