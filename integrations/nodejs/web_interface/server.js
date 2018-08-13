@@ -7,6 +7,21 @@ const app            = express();
 const port = 8000;
 var api_key = process.env.API_KEY;
 
+return new Promise(async (resolve, reject) => {
+  if (process.argv[2] === undefined) {
+    var client = await fs.readFileSync('client_bot_username.txt', 'utf-8');
+    client = client.trim();
+    var response = await addon.clientInit(client);
+    resolve(response);
+  } else {
+    var response = await addon.clientInit(process.argv[2]);
+    resolve(response);
+  }
+
+}).then(result => {
+  console.log(result);
+
+
 app.listen(port, () => {
   console.log('We are live on ' + port);
 });
@@ -51,4 +66,7 @@ app.post("/Apps/"+ api_key + "/Messages", function(req, res){
    }
   }
 
+});
+}).catch(error => {
+  console.log('Error: ', error);
 });
