@@ -1430,9 +1430,8 @@ void CmdClient::pauseClient(int clientIndex, bool force)
 
     if (! sendClientCmd(client->name, WBIO_IPCCMDS_PAUSE)) {
         qDebug() << "CONSOLE:Failed to send message to client!";
-    } else {
-        closeClientIPC(client->name);
     }
+    closeClientIPC(client->name);
 }
 
 /**

@@ -49,18 +49,6 @@ OperationData *operation = NULL;
 RequestHandler *requestHandler = NULL;
 stefanfrings::HttpListener *httpListener = NULL;
 
-// TODO: UPDATE THIS
-static void
-usage()
-{
-    qDebug() << "Args are [-cmd|-gui(default)|-both][-noexclusive][-user=userid] [-script=scriptfile] [-crypt] [-nocrypt]";
-    qDebug() << "If you specify a userid, the database will be named" << WickrDBAdapter::getDBName() + "." + "userid";
-    qDebug() << "If you specify a script file, it will run to completion, then command line will run";
-    qDebug() << "If you specify -noexclusive, the db will not be locked for exclusive open";
-    qDebug() << "By default, in debug mode, the database will not be encrypted (-nocrypt)";
-    exit(0);
-}
-
 /** Search the configuration file */
 QString
 searchConfigFile() {
@@ -86,6 +74,20 @@ searchConfigFile() {
     }
     return retFile;
 #endif
+}
+
+void
+dropOutput(QtMsgType type, const QMessageLogContext &, const QString & )
+{
+    //in this function, you can write the message to any stream!
+    switch (type) {
+    case QtDebugMsg:
+    case QtWarningMsg:
+    case QtCriticalMsg:
+        break;
+    case QtFatalMsg:
+        abort();
+    }
 }
 
 Q_IMPORT_PLUGIN(QSQLCipherDriverPlugin)
@@ -156,12 +158,13 @@ int main(int argc, char *argv[])
         }
     }
 
+    // Drop all output for now
+    if (!operation->debug)
+        qInstallMessageHandler(dropOutput);
+
     if( isVERSIONDEBUG() ) {
         for( int argidx = 1; argidx < argc; argidx++ ) {
             QString cmd(argv[argidx]);
-
-            if( cmd == "-?" || cmd == "-help" || cmd == "--help" )
-                usage();
 
             if( cmd == "-noexclusive" ) {
                 WickrDBAdapter::setDatabaseExclusiveOpenStatus(false);

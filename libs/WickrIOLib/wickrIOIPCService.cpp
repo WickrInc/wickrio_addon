@@ -162,6 +162,16 @@ WickrIOIPCRecvThread::~WickrIOIPCRecvThread() {
 void
 WickrIOIPCRecvThread::slotShutdown()
 {
+    if (m_zsocket != nullptr) {
+        m_zsocket->close();
+        m_zsocket = nullptr;
+    }
+    if (m_zctx != nullptr && !m_zctx->isStopped()) {
+        m_zctx->stop();
+        m_zctx->deleteLater();
+    }
+    m_zctx = nullptr;
+
     emit signalNotRunning();
 }
 
@@ -172,11 +182,11 @@ WickrIOIPCRecvThread::slotStartIPC(OperationData *operation)
     if (m_operation != nullptr)
         m_operation->log_handler->log("Started WickrIOIPCRecvThread");
 
-
     m_zctx = nzmqt::createDefaultContext();
 
     m_zsocket = m_zctx->createSocket(nzmqt::ZMQSocket::TYP_REP, this);
     m_zsocket->setObjectName(QString("%1.Socket.socket(REP)").arg(m_parent->m_name));
+    m_zsocket->setOption(nzmqt::ZMQSocket::OPT_LINGER, 100);
     connect(m_zsocket, &nzmqt::ZMQSocket::messageReceived,
             this, &WickrIOIPCRecvThread::slotMessageReceived, Qt::QueuedConnection);
 
@@ -285,6 +295,7 @@ WickrIOIPCSendThread::WickrIOIPCSendThread(QThread *thread, WickrIOIPCService *i
     connect(ipcSvc, &WickrIOIPCService::signalShutdownSend, this, &WickrIOIPCSendThread::slotShutdown);
     connect(ipcSvc, &WickrIOIPCService::signalStartIPC, this, &WickrIOIPCSendThread::slotStartIPC);
     connect(ipcSvc, &WickrIOIPCService::signalSendMessage, this, &WickrIOIPCSendThread::slotSendMessage);
+    connect(ipcSvc, &WickrIOIPCService::signalCloseConnection, this, &WickrIOIPCSendThread::slotCloseConnection);
 }
 
 /**
@@ -298,7 +309,11 @@ WickrIOIPCSendThread::~WickrIOIPCSendThread() {
 void
 WickrIOIPCSendThread::slotShutdown()
 {
-    emit signalNotRunning();
+    if (m_zctx != nullptr && !m_zctx->isStopped()) {
+        m_zctx->stop();
+        m_zctx->deleteLater();
+    }
+    m_zctx = nullptr;    emit signalNotRunning();
 }
 
 void
@@ -327,6 +342,7 @@ WickrIOIPCSendThread::createSendSocket(const QString& dest, bool isClient)
 
     zsocket = m_zctx->createSocket(nzmqt::ZMQSocket::TYP_REQ, this);
     zsocket->setObjectName(QString("%1.Socket.socket(REQ)").arg(dest));
+    zsocket->setOption(nzmqt::ZMQSocket::OPT_LINGER, 100);
     connect(zsocket, &nzmqt::ZMQSocket::messageReceived,
             this, &WickrIOIPCSendThread::slotMessageReceived, Qt::QueuedConnection);
 
@@ -354,10 +370,12 @@ WickrIOIPCSendThread::slotSendMessage(const QString& dest, bool isClient, const 
             zsocket = createSendSocket(dest, isClient);
             if (zsocket == nullptr) {
                 qDebug().nospace().noquote() << "Cannot create Socket for " << dest;
+                return;
             }
         }
         QByteArray request = message.toLocal8Bit();
         zsocket->sendMessage(request);
+        qDebug().nospace().noquote() << "WickrIOIPCSendThread::slotSendMessage: Sent msg to " << dest;
 
         emit signalRequestSent();
     } else {
@@ -377,8 +395,14 @@ WickrIOIPCSendThread::slotMessageReceived(const QList<QByteArray>& messages)
 void
 WickrIOIPCSendThread::slotCloseConnection(const QString& dest)
 {
-    if (m_txMap.count() > 0 && m_txMap.contains(dest))
+    if (m_txMap.count() > 0 && m_txMap.contains(dest)) {
+        nzmqt::ZMQSocket *zsocket = m_txMap.value(dest);
+        if (zsocket != nullptr) {
+            zsocket->close();
+        }
+
         m_txMap.remove(dest);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
