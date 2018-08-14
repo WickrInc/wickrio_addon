@@ -82,6 +82,7 @@ INCLUDEPATH += $$DEPTH/wickr-sdk/libs/qbson
 INCLUDEPATH += $$DEPTH/wickr-sdk/libs/libbson
 INCLUDEPATH += $$DEPTH/wickr-sdk/libs/cloud/qcloud
 INCLUDEPATH += $$DEPTH/shared/common
+INCLUDEPATH += $$DEPTH/libs/nzmqt/include
 
 INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
@@ -105,7 +106,6 @@ HEADERS += \
     operationdata.h \
     filedownloader.h \
     createjson.h \
-    wickrbotipc.h \
     wickrbotutils.h \
     wickrbotsettings.h \
     wickrbotlib.h \
@@ -120,7 +120,8 @@ HEADERS += \
     wickrioconsoleuser.h  \
     wickriotokens.h  \
     wickriomessage.h \
-    wickrbotclientdatabase.h
+    wickrbotclientdatabase.h \
+    wickrIOIPCRuntime.h
 
 SOURCES += \
     wickrIOAppSettings.cpp \
@@ -136,7 +137,6 @@ SOURCES += \
     operationdata.cpp \
     filedownloader.cpp \
     createjson.cpp \
-    wickrbotipc.cpp \
     wickrbotutils.cpp \
     perftest.cpp \
     wickrbotstatistics.cpp \
@@ -149,4 +149,5 @@ SOURCES += \
     wickrioconsoleuser.cpp  \
     wickriotokens.cpp  \
     wickriomessage.cpp \
-    wickrbotclientdatabase.cpp
+    wickrbotclientdatabase.cpp \
+    wickrIOIPCRuntime.cpp

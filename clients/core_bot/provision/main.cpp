@@ -8,6 +8,8 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QCoreApplication>
+#include <QtPlugin>
+#include <QLibraryInfo>
 
 #include "session/wickrSession.h"
 #include "user/wickrApp.h"
@@ -89,13 +91,18 @@ int main(int argc, char *argv[])
     QString appname = WBIO_PROVISION_TARGET;
     QString orgname = WBIO_ORGANIZATION;
 
+#if defined(WICKR_MESSENGER)
+    wickrProductSetProductType(PRODUCT_TYPE_MESSENGER);
+#elif defined(WICKR_ENTERPRISE)
     wickrProductSetProductType(PRODUCT_TYPE_BOT);
+#endif
     WickrURLs::setDefaultBaseURLs(ClientConfigurationInfo::DefaultBaseURL,
                                   ClientConfigurationInfo::DefaultDirSearchBaseURL);
 
     bool debugOutput = false;
 
     QString clientDbPath("");
+    QString suffix;
     QString wbConfigFile("");
 
     for( int argidx = 1; argidx < argc; argidx++ ) {
@@ -105,6 +112,9 @@ int main(int argc, char *argv[])
             clientDbPath = cmd.remove("-clientdbdir=");
         } else if (cmd.startsWith("-config=")) {
             wbConfigFile = cmd.remove("-config=");
+        } else if (cmd.startsWith("-suffix")) {
+            suffix = cmd.remove("-suffix=");
+            WickrUtil::setTestAccountMode(suffix);
         } else if (cmd == "-debug") {
             debugOutput = true;
         }
@@ -129,7 +139,7 @@ int main(int argc, char *argv[])
     /*
      * Get input from the user
      */
-    if (!provisioningInput.runCommands()) {
+    if (!provisioningInput.runCommands(argc, argv)) {
         exit(1);
     }
 
@@ -219,7 +229,7 @@ int main(int argc, char *argv[])
 
     settings->beginGroup(WBSETTINGS_USER_HEADER);
     settings->setValue(WBSETTINGS_USER_USER, client.user);
-    settings->setValue(WBSETTINGS_USER_PASSWORD, client.password);      //TODO: THIS NEEDS TO BE REMOVED
+//    settings->setValue(WBSETTINGS_USER_PASSWORD, client.password);      //TODO: THIS NEEDS TO BE REMOVED
     settings->setValue(WBSETTINGS_USER_USERNAME, client.name);
     settings->endGroup();
 
@@ -288,6 +298,10 @@ int main(int argc, char *argv[])
     QObject::connect(WICKRBOT, &WickrIOEClientMain::signalLoginSuccess, [=]() {
         qDebug() << "CONSOLE:Successfully logged in as new user!";
         qDebug() << "CONSOLE:Our work is done here, logging off!";
+        app->quit();
+    });
+    QObject::connect(WICKRBOT, &WickrIOEClientMain::signalLoginFailure, [=]() {
+        qDebug() << "CONSOLE:Failed to create or login new user!";
         app->quit();
     });
     WICKRBOT->start();

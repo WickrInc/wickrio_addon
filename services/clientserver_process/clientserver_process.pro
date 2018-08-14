@@ -3,6 +3,11 @@ COMMON = $${DEPTH}/shared/common
 CONSOLESRC = ../console
 INCLUDEPATH += $${COMMON}
 
+#
+# Zero MQ Qt library
+#
+include($${DEPTH}/libs/nzmqt/nzmqt.pri)
+
 CONFIG(release,release|debug) {
     QMAKE_RPATHDIR += /usr/lib/wio_docker_services
 }
@@ -150,6 +155,7 @@ win32 {
 } else {
     LIBPATH += $$DEPTH/wickr-sdk/libs/qsqlcipher_wickr/
     INCLUDEPATH += $$DEPTH/wickr-sdk/platforms/linux/include
+    LIBS += -lzmq
 }
 LIBS += -lqsqlcipher_wickr
 

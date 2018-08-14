@@ -109,7 +109,7 @@
 #define APIJSON_STATID_PNDCBOUT "pending_callback_messages"
 #define APIJSON_STATID_MSGCNT   "message_count"
 #define APIJSON_STATUS_USER     "statususer"
-#define APIJSON_STATUS_USER     "runtime"
+#define APIJSON_STATUS_RUNTIME  "runtime"
 
 #define APIJSON_KEYVER_HEADER   "keyverify"
 #define APIJSON_KEYVER_MSGTYPE  "msgtype"
@@ -138,6 +138,8 @@
 #define APIJSON_CTRL_CHGMASK    "changemask"
 #define APIJSON_CTRL_ADDUSERS   "addedusers"
 #define APIJSON_CTRL_DELUSERS   "deletedusers"
+#define APIJSON_CTRL_MSGID      "msgid"
+#define APIJSON_CTRL_ISRECALL   "isrecall"
 
 #define APIJSON_FILE_HEADER     "file"
 #define APIJSON_FILE_FILENAME   "filename"

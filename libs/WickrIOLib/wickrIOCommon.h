@@ -43,9 +43,18 @@
 #define WBIO_CLIENT_BOTDIR_FORMAT       "%1/clients/%2/integration/%3"
 #define WBIO_CLIENT_BOTDIR_TMP_FORMAT   "%1/clients/%2/integration/%3.new"
 
+// ZeroMQ definitions for the node.js interface
 #define WBIO_CLIENT_RXSOCKET_FORMAT     "ipc://%1/clients/%2/tmp/0"
 #define WBIO_CLIENT_SOCKETDIR_FORMAT    "%1/clients/%2/tmp"
 #define WBIO_CLIENT_SOCKETFILE_FORMAT   "%1/clients/%2/tmp/0"
+
+// ZeroMZ definitions for the WickrIO IPC
+#define WBIO_IPCCLIENT_RXSOCKET_FORMAT     "ipc://%1/clients/%2/tmp/1"
+#define WBIO_IPCCLIENT_SOCKETDIR_FORMAT    "%1/clients/%2/tmp"
+#define WBIO_IPCCLIENT_SOCKETFILE_FORMAT   "%1/clients/%2/tmp/1"
+#define WBIO_IPCSERVER_RXSOCKET_FORMAT     "ipc://%1/tmp/%2/1"
+#define WBIO_IPCSERVER_SOCKETDIR_FORMAT    "%1/tmp/%2"
+#define WBIO_IPCSERVER_SOCKETFILE_FORMAT   "%1/tmp/%2/1"
 
 #ifdef Q_OS_WIN
 #define WBIO_DEFAULT_DBLOCATION         TBD
@@ -56,8 +65,16 @@
 #else
 #if defined(WICKR_DEBUG)
 #define WBIO_DEFAULT_DBLOCATION         "/opt/WickrIODebug"
+#define WBIO_CUSTOMBOT_DIR              "/opt/WickrIODebug/integrations/custom"
+#define WBIO_CUSTOMBOT_SWDIR            "/opt/WickrIODebug/integrations/custom/%1"
+#define WBIO_CUSTOMBOT_SWFILE           "/opt/WickrIODebug/integrations/custom/%1/software.tar.gz"
+#define WBIO_CUSTOMBOT_VERSIONFILE      "/opt/WickrIODebug/integrations/custom/%1/VERSION"
 #else
 #define WBIO_DEFAULT_DBLOCATION         "/opt/WickrIO"
+#define WBIO_CUSTOMBOT_DIR              "/opt/WickrIO/integrations/custom"
+#define WBIO_CUSTOMBOT_SWDIR            "/opt/WickrIO/integrations/custom/%1"
+#define WBIO_CUSTOMBOT_SWFILE           "/opt/WickrIO/integrations/custom/%1/software.tar.gz"
+#define WBIO_CUSTOMBOT_VERSIONFILE      "/opt/WickrIO/integrations/custom/%1/VERSION"
 #endif
 #endif
 

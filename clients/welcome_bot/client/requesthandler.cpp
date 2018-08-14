@@ -1,7 +1,7 @@
+#include <QJsonArray>
 
 #include "requesthandler.h"
 #include "wickrbotjsondata.h"
-#include "wickrbotipc.h"
 #include "wickrIOClientMain.h"
 #include "wickrioapi.h"
 
@@ -650,6 +650,7 @@ RequestHandler::processDeleteRoom(const QString &clientID, stefanfrings::HttpRes
 void
 RequestHandler::processGetRooms(const QString &clientID, stefanfrings::HttpResponse& response)
 {
+    Q_UNUSED(clientID);
 #if 0
     QByteArray paramStart = request.getParameter(APIPARAM_START);
     QByteArray paramCount = request.getParameter(APIPARAM_COUNT);

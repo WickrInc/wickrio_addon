@@ -7,6 +7,11 @@ INCLUDEPATH += $${COMMON}
 #
 include(../services.pri)
 
+#
+# Zero MQ Qt library
+#
+include($${DEPTH}/libs/nzmqt/nzmqt.pri)
+
 wickr_messenger {
     DEFINES += WICKR_MESSENGER=1
 }
@@ -97,8 +102,15 @@ include($${DEPTH}/libs/WickrIOLib/WickrIOLib.pri)
 #
 include($${DEPTH}/libs/WickrIOGUI/WickrIOGUI.pri)
 
+INCLUDEPATH += $$DEPTH/wickr-sdk/export
+INCLUDEPATH += $$DEPTH/wickr-sdk/export/Wickr
+INCLUDEPATH += $$DEPTH/wickr-sdk/src
+INCLUDEPATH += $$DEPTH/wickr-sdk/libs/qbson
+INCLUDEPATH += $$DEPTH/wickr-sdk/libs/libbson
+
 QT += widgets
 QT += network
+QT += websockets
 QT += sql
 
 HEADERS += \
@@ -136,6 +148,9 @@ win32 {
     else:LIBPATH += $$DEPTH/wickr-sdk/libs/qsqlcipher_wickr/release
 } else {
     LIBPATH += $$DEPTH/wickr-sdk/libs/qsqlcipher_wickr/
+    INCLUDEPATH += $$DEPTH/wickr-sdk/platforms/linux/include
+
+    LIBS += -lzmq
 }
 LIBS += -lqsqlcipher_wickr
 

@@ -1,5 +1,6 @@
 #include <QTextStream>
 #include <QDebug>
+#include <QProcess>
 
 #include "cmdMain.h"
 #include "wickrIOBot.h"
@@ -8,13 +9,13 @@
 #include "complianceClientConfigInfo.h"
 #include "wickrbotutils.h"
 
-CmdMain::CmdMain(QCoreApplication *app, int argc, char **argv, OperationData *operation) :
+CmdMain::CmdMain(QCoreApplication *app, int argc, char **argv, OperationData *operation, WickrIOIPCService *ipcSvc) :
     m_app(app),
     m_argc(argc),
     m_argv(argv),
-    m_txIPC(this),
     m_cmdOperation(operation),
-    m_cmdServer(&m_cmdOperation)
+    m_cmdServer(&m_cmdOperation),
+    m_ipcSvc(ipcSvc)
 {
 }
 
@@ -164,8 +165,6 @@ CmdMain::runCommands()
             }
         }
     }
-
-    m_rxIPC->deleteLater();
     return true;
 }
 
@@ -341,7 +340,7 @@ CmdMain::startClient(int clientIndex, bool force)
 
                         // It is running lets send the password to it now
                         QString pwstring = WickrIOIPCCommands::getPasswordString(WBIO_PROVISION_TARGET, password);
-                        sendClientCmd(state.ipc_port, pwstring);
+                        sendClientCmd(client->name, pwstring);
 
                         // Send client information to the Client Server
                         {
@@ -397,13 +396,11 @@ CmdMain::pauseClient(int clientIndex)
         QString processName = client->getProcessName();
 
         if (m_cmdOperation.m_ioDB->getProcessState(processName, &state)) {
-            if (state.ipc_port == 0) {
-                qDebug() << "CONSOLE:Client does not have an IPC port defined, cannot pause!";
-            } else if (state.state == PROCSTATE_RUNNING) {
+            if (state.state == PROCSTATE_RUNNING) {
                 QString prompt = QString(tr("Do you really want to pause the client with the name %1")).arg(client->name);
                 QString response = getNewValue("", prompt);
                 if (response.toLower() == "y" || response.toLower() == "yes") {
-                    if (! sendClientCmd(state.ipc_port, WBIO_IPCCMDS_PAUSE)) {
+                    if (! sendClientCmd(client->name, WBIO_IPCCMDS_PAUSE)) {
                         qDebug() << "CONSOLE:Failed to send message to client!";
                     }
                 }
@@ -426,11 +423,7 @@ CmdMain::pauseClient(int clientIndex)
 bool
 CmdMain::sendClientServerCmd(const QString& cmd)
 {
-    WickrBotProcessState state;
-    if (!m_cmdOperation.m_ioDB->getProcessState(WBIO_CLIENTSERVER_TARGET, &state)) {
-        return false;
-    }
-    return sendClientCmd(state.ipc_port, cmd);
+    return sendClientCmd(WBIO_CLIENTSERVER_TARGET, cmd);
 }
 
 /**
@@ -442,20 +435,20 @@ CmdMain::sendClientServerCmd(const QString& cmd)
  * @return
  */
 bool
-CmdMain::sendClientCmd(int port, const QString& cmd)
+CmdMain::sendClientCmd(const QString& name, const QString& cmd)
 {
     m_clientMsgInProcess = true;
     m_clientMsgSuccess = false;
 
-    if (! m_txIPC.sendMessage(port, cmd)) {
+    if (m_ipcSvc == nullptr || ! m_ipcSvc->sendMessage(name, true, cmd)) {
         return false;
     }
 
     QTimer timer;
     QEventLoop loop;
 
-    loop.connect(&m_txIPC, SIGNAL(signalSentMessage()), SLOT(quit()));
-    loop.connect(&m_txIPC, SIGNAL(signalSendError()), SLOT(quit()));
+    loop.connect(m_ipcSvc, SIGNAL(signalMessageSent()), SLOT(quit()));
+    loop.connect(m_ipcSvc, SIGNAL(signalMessageSendFailure()), SLOT(quit()));
     connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
 
     int loopCount = 6;

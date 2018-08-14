@@ -1,7 +1,7 @@
+#include <QJsonArray>
 
 #include "requesthandler.h"
 #include "wickrbotjsondata.h"
-#include "wickrbotipc.h"
 #include "wickrioeclientmain.h"
 #include "wickrioapi.h"
 

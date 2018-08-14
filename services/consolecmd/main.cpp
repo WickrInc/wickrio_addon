@@ -1,7 +1,10 @@
 
 #include <QCoreApplication>
+#include <QtPlugin>
+
 #include "cmdmain.h"
 #include "wickrIOServerCommon.h"
+#include "wickrIOIPCRuntime.h"
 
 extern bool isVERSIONDEBUG();
 
@@ -24,6 +27,8 @@ int main(int argc, char *argv[])
 
     coreapp.setOrganizationName(WBIO_ORGANIZATION);
     coreapp.setApplicationName(WBIO_CONSOLE_TARGET);
+    WickrIOIPCRuntime::init(WBIO_CONSOLE_TARGET, false);
+
     CmdMain cmdmain;
     if (argc > 1) {
         QString commands(argv[1]);
@@ -31,4 +36,6 @@ int main(int argc, char *argv[])
     } else {
         cmdmain.runCommands();
     }
+
+    WickrIOIPCRuntime::shutdown();
 }

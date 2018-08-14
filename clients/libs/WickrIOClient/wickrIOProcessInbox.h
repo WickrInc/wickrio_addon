@@ -30,6 +30,7 @@ public:
     static bool processChangeRoomConfigMsg(QJsonObject& jsonObject,  WickrCore::WickrGroupControlChangeRoomConfiguration *ctrlMsg);
     static bool processChangeMembersMsg(QJsonObject& jsonObject,  WickrCore::WickrGroupControlChangeMembers *ctrlMsg);
 
+    static bool processDeleteMessageMsg(QJsonObject& jsonObject,  WickrCore::WickrGroupControlDeleteMessage *ctrlMsg);
 };
 
 #endif // WICKRIOPROCESSINBOX_H

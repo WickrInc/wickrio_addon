@@ -32,6 +32,7 @@ WickrIOProcessCommand::processStarted()
     options.append("-basic");
 
     // Print out a list of the clients
+    cmdClient.runCommands(options, "ports");
     cmdClient.runCommands(options, "list");
     cmdClient.runCommands(options);
 #else

@@ -1,12 +1,12 @@
 #include "wickrIOConsole.h"
 #include "cmdMain.h"
 
-WickrIOConsoleService::WickrIOConsoleService(QCoreApplication *app, int argc, char **argv, OperationData *operation, WickrIOIPCService *rxIPC) :
+WickrIOConsoleService::WickrIOConsoleService(QCoreApplication *app, int argc, char **argv, OperationData *operation, WickrIOIPCService *ipcSvc) :
     m_app(app),
     m_argc(argc),
     m_argv(argv),
     m_operation(operation),
-    m_rxIPC(rxIPC)
+    m_ipcSvc(ipcSvc)
 {
     // Start threads
     startThreads();
@@ -89,9 +89,9 @@ WickrIOConsoleThread::~WickrIOConsoleThread() {
 void
 WickrIOConsoleThread::slotStartConsole()
 {
-    CmdMain mainCommands(m_parent->m_app, m_parent->m_argc, m_parent->m_argv, m_parent->m_operation);
+    CmdMain mainCommands(m_parent->m_app, m_parent->m_argc, m_parent->m_argv, m_parent->m_operation, m_parent->m_ipcSvc);
 
-    connect(m_parent->m_rxIPC, &WickrIOIPCService::signalReceivedMessage, &mainCommands, &CmdMain::signalReceivedMessage);
+    connect(m_parent->m_ipcSvc, &WickrIOIPCService::signalReceivedMessage, &mainCommands, &CmdMain::signalReceivedMessage);
 
     mainCommands.runCommands();
 

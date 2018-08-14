@@ -11,6 +11,7 @@
 #include "cmdbase.h"
 #include "cmdoperation.h"
 #include "cmdconsole.h"
+#include "cmdintegration.h"
 
 #include <QProcess>
 
@@ -31,6 +32,7 @@ private:
     void addClient();
     void deleteClient(int clientIndex);
     void listClients();
+    void listInboundPorts();
     void modifyClient(int clientIndex);
     void pauseClient(int clientIndex, bool force);
     void startClient(int clientIndex, bool force);
@@ -42,14 +44,17 @@ private:
 
     bool validateIndex(int clientIndex);
 
-    bool sendClientCmd(int port, const QString& cmd);
+    bool sendClientCmd(const QString& dest, const QString& cmd);
+    void closeClientIPC(const QString& dest);
 
+    bool readLineFromProcess(QProcess *process, QString& line);
     bool runBotScript(const QString& destPath, const QString& configure, WickrBotClients *client);
 
     bool getAuthValue(WickrBotClients *client, bool basic, QString& authValue);
 
     unsigned getVersionNumber(QFile *versionFile);
     void getVersionString(unsigned versionNum, QString& versionString);
+    void integrationUpdateVersionFile(const QString& path, const QString& version);
 
     // Integration bot commands
     bool integrationCopySW(WickrBotClients *client, const QString& swPath, const QString& destPath);
@@ -58,8 +63,9 @@ private:
     bool integrationUpgrade(WickrBotClients *client, const QString& curSWPath, const QString& newSWPath);
 
 private:
-    CmdOperation *m_operation;
-    WickrIOSSLSettings m_sslSettings;
+    CmdOperation        *m_operation;
+    CmdIntegration      m_cmdIntegration;
+    WickrIOSSLSettings  m_sslSettings;
 
     // Client Message handling values
     bool    m_clientMsgSuccess;
@@ -73,9 +79,16 @@ private:
 
     QProcess *m_exec;
 
+    bool                    m_clientStateChanged = false;
+    QString                 m_clientState;
+
+    void updateIntegrationVersion();
+
 private slots:
     void slotCmdFinished(int, QProcess::ExitStatus);
     void slotCmdOutputRx();
+
+    void slotReceivedMessage(QString type, QString value);
 
 };
 

@@ -5,6 +5,8 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QCoreApplication>
+#include <QtPlugin>
+#include <QLibraryInfo>
 
 #include "clientconfigurationinfo.h"
 #include "clientversioninfo.h"
@@ -35,7 +37,7 @@ extern void wickr_powersetup(void);
 #include "operationdata.h"
 
 OperationData           *operation = NULL;
-WickrIOIPCService         *rxIPC;
+WickrIOIPCService       *rxIPC;
 WickrIOConsoleService   *consoleSvc;
 
 void redirectedOutput(QtMsgType type, const QMessageLogContext &, const QString & str)
@@ -109,9 +111,8 @@ int main(int argc, char *argv[])
                                     " " << ClientVersionInfo::getBuildString();
 #endif
 
-    rxIPC = new WickrIOIPCService();
+    rxIPC = new WickrIOIPCService(WBIO_PROVISION_TARGET, false);
     rxIPC->startIPC(operation);
-
 
     consoleSvc = new WickrIOConsoleService(app, argc, argv, operation, rxIPC);
     consoleSvc->startConsole();

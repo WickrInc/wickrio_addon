@@ -3,12 +3,16 @@
 #include <QDebug>
 #include <QEventLoop>
 #include <QTimer>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonDocument>
 
 #include "cmdhandler.h"
 #include "wickrIOCommon.h"
 #include "wickrIOServerCommon.h"
 #include "wickrbotsettings.h"
 #include "wickrIOConsoleClientHandler.h"
+#include "wickrIOIPCRuntime.h"
 #include "wickriodatabase.h"
 #include "wickrioapi.h"
 
@@ -707,20 +711,21 @@ CmdHandler::updateClient(WickrIOConsoleUser *pCUser, const QString& clientID, st
  * @param cmd
  * @return
  */
-bool CmdHandler::sendClientCmd(int port, const QString& cmd)
+bool CmdHandler::sendClientCmd(const QString& name, const QString& cmd)
 {
-    WickrBotIPC *m_ipc = new WickrBotIPC();
     bool retval = false;
 
     m_clientMsgInProcess = true;
     m_clientMsgSuccess = false;
 
-    if (m_ipc->sendMessage(port, cmd)) {
+    WickrIOIPCService *ipcSvc = WickrIOIPCRuntime::ipcSvc();
+
+    if (ipcSvc != nullptr && ipcSvc->sendMessage(name, true, cmd)) {
         QTimer timer;
         QEventLoop loop;
 
-        loop.connect(m_ipc, SIGNAL(signalSentMessage()), SLOT(quit()));
-        loop.connect(m_ipc, SIGNAL(signalSendError()), SLOT(quit()));
+        loop.connect(ipcSvc, SIGNAL(signalMessageSent()), SLOT(quit()));
+        loop.connect(ipcSvc, SIGNAL(signalMessageSendFailure()), SLOT(quit()));
         connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
 
         int loopCount = 6;
@@ -738,7 +743,6 @@ bool CmdHandler::sendClientCmd(int port, const QString& cmd)
         }
         retval = true;
     }
-    m_ipc->deleteLater();
 
     return retval;
 }
@@ -870,6 +874,7 @@ CmdHandler::addClientData(WickrBotClients *newClient)
     settings->setValue(WBSETTINGS_USER_PASSWORD, newClient->password);
     settings->setValue(WBSETTINGS_USER_USERNAME, newClient->name);
     settings->setValue(WBSETTINGS_USER_TRANSACTIONID, newClient->transactionID);
+    settings->setValue(WBSETTINGS_USER_AUTOLOGIN, newClient->m_autologin);
     settings->endGroup();
 
     settings->beginGroup(WBSETTINGS_DATABASE_HEADER);
@@ -926,10 +931,8 @@ CmdHandler::pauseClient(WickrBotClients *client)
     QString processName = WBIOServerCommon::getClientProcessName(client);
 
     if (m_operation->m_botDB->getProcessState(processName, &state)) {
-        if (state.ipc_port == 0) {
-            qDebug() << "Client does not have an IPC port defined, cannot pause!";
-        } else if (state.state == PROCSTATE_RUNNING) {
-            if (sendClientCmd(state.ipc_port, WBIO_IPCCMDS_PAUSE)) {
+        if (state.state == PROCSTATE_RUNNING) {
+            if (sendClientCmd(client->name, WBIO_IPCCMDS_PAUSE)) {
                 return true;
             }
             qDebug() << "Failed to send message to client!";

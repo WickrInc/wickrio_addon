@@ -7,7 +7,6 @@
 #include <QSettings>
 
 #include "wickriohttp.h"
-#include "wickrbotipc.h"
 #include "wickriodatabase.h"
 #include "operationdata.h"
 #include "wickrioconsoleuser.h"
@@ -57,7 +56,7 @@ private:
 
     bool addClientData(WickrBotClients *newClient);
 
-    bool sendClientCmd(int port, const QString& cmd);
+    bool sendClientCmd(const QString& name, const QString& cmd);
 
     void updateSSLSettings();
     void generateNewKey(WickrIOConsoleUser *cUser);
@@ -74,7 +73,6 @@ private:
     QSettings *m_settings;
     WickrIOSSLSettings m_sslSettings;
     QString m_appNm;
-    WickrBotIPC *m_ipc;
 
     // Client Message handling values
     bool m_clientMsgSuccess;

@@ -5,7 +5,6 @@
 #include <QCoreApplication>
 #include <QString>
 #include <QSettings>
-#include "wickrbotipc.h"
 #include "wickriodatabase.h"
 #include "wickrIOAppSettings.h"
 #include "operationdata.h"
@@ -22,7 +21,6 @@ public:
     QSettings *m_settings;
     QString m_dbLocation;
     QString m_appNm;
-    WickrBotIPC *m_ipc;
     WickrIOClientDatabase *m_ioDB;
 
     // Some applications rely on this class to maintain DB stuff

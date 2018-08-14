@@ -363,8 +363,8 @@ bool WickrBotJsonData::processSendMessageJsonDoc(const QJsonObject &operationObj
         m_statususer = value.toString();
     }
 
-    if (operationObject.contains(APIJSON_STATUS_USER)) {
-        value = operationObject[APIJSON_STATUS_USER];
+    if (operationObject.contains(APIJSON_STATUS_RUNTIME)) {
+        value = operationObject[APIJSON_STATUS_RUNTIME];
 
         // Use the current date and time if the one is invalid
         m_runTime = value.toVariant().toDateTime();

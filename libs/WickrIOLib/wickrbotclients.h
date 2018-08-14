@@ -35,7 +35,9 @@ public:
     bool    m_handleInbox=false;    // true if client should handle inbox messages, depends on client
     bool    onPrem=false;
 
-    int console_id=0;               // ID of the associated Console User or 0
+    int     console_id=0;           // ID of the associated Console User or 0
+
+    bool    m_autologin=true;       // Automatic login, DB Password is saved
 
 public:
     QString getIfaceTypeStr() { return isHttps ? QString("HTTPS") : QString("HTTP"); }

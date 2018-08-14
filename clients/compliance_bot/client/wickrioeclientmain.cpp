@@ -19,6 +19,7 @@
 #include "common/wickrRuntime.h"
 
 #include "wickrIOClientRuntime.h"
+#include "wickrIOIPCRuntime.h"
 #include "clientconfigurationinfo.h"
 #include "clientversioninfo.h"
 #include "complianceClientConfigInfo.h"
@@ -37,8 +38,6 @@ WickrIOEClientMain *WickrIOEClientMain::theBot;
 WickrIOEClientMain::WickrIOEClientMain(OperationData *operation) :
     m_operation(operation),
     m_loginHdlr(operation, ClientVersionInfo::versionForLogin()),
-    m_txIPC(this),
-    m_rxIPC(0),
     m_timerStatsTicker(0),
     m_waitingForPassword(false)
 {
@@ -384,21 +383,19 @@ void WickrIOEClientMain::processStarted()
 bool
 WickrIOEClientMain::sendConsoleMsg(const QString& cmd, const QString& value)
 {
+    WickrIOIPCService *ipcSvc = WickrIOIPCRuntime::ipcSvc();
+
     QString message = QString("%1=%2").arg(cmd).arg(value);
 
-    WickrBotProcessState state;
-    if (!m_operation->m_botDB->getProcessState(WBIO_PROVISION_TARGET, &state))
-        return false;
-
-    if (! m_txIPC.sendMessage(state.ipc_port, message)) {
+    if (ipcSvc == nullptr || !ipcSvc->sendMessage(WBIO_PROVISION_TARGET, false, message)) {
         return false;
     }
 
     QTimer timer;
     QEventLoop loop;
 
-    loop.connect(&m_txIPC, SIGNAL(signalSentMessage()), SLOT(quit()));
-    loop.connect(&m_txIPC, SIGNAL(signalSendError()), SLOT(quit()));
+    loop.connect(ipcSvc, SIGNAL(signalMessageSent()), SLOT(quit()));
+    loop.connect(ipcSvc, SIGNAL(signalMessageSendFailure()), SLOT(quit()));
     connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
 
     int loopCount = 6;
@@ -425,7 +422,7 @@ WickrIOEClientMain::sendConsoleMsg(const QString& cmd, const QString& value)
  */
 void WickrIOEClientMain::setIPC(WickrIOIPCService *ipc)
 {
-    m_rxIPC = ipc;
+    m_ipcSvc = ipc;
     connect(ipc, &WickrIOIPCService::signalGotStopRequest, this, &WickrIOEClientMain::stopAndExitSlot);
     connect(ipc, &WickrIOIPCService::signalGotPauseRequest, this, &WickrIOEClientMain::pauseAndExitSlot);
     connect(ipc, &WickrIOIPCService::signalReceivedMessage, this, &WickrIOEClientMain::slotReceivedMessage);
@@ -433,10 +430,6 @@ void WickrIOEClientMain::setIPC(WickrIOIPCService *ipc)
 
 void WickrIOEClientMain::slotDoTimerWork()
 {
-    if (m_rxIPC != NULL && m_rxIPC->isRunning()) {
-        m_rxIPC->check();
-    }
-
     m_timerStatsTicker++;
 }
 

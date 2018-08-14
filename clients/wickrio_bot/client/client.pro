@@ -161,6 +161,7 @@ win32 {
     LIBPATH += $$DEPTH/wickr-sdk/libs/qsqlcipher_wickr/
 }
 LIBS += -lqsqlcipher_wickr
+LIBS += -lzmq
 
 # sqlcipher
 

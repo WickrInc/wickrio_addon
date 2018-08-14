@@ -15,6 +15,11 @@ INCLUDEPATH += $${COMMON}
 #
 include($${DEPTH}/libs/qamqpsrc/qamqpsrc.pri)
 
+#
+# Zero MQ Qt library
+#
+include($${DEPTH}/libs/nzmqt/nzmqt.pri)
+
 linux-g++* {
     CONFIG(release,release|debug) {
         QMAKE_RPATHDIR += /usr/lib/wio_welcome_bot
@@ -112,6 +117,7 @@ LIBPATH += $$DEPTH/wickr-sdk/libs/qsqlcipher_wickr/
 LIBS += -lsqlcipher
 LIBS += -lqsqlcipher_wickr
 LIBS += -lsqlite3
+LIBS += -lzmq
 
 SOURCES += \
     main.cpp \

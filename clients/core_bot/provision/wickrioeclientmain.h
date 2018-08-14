@@ -96,6 +96,8 @@ private slots:
     void slotMessageDownloadStatusStart(int msgsToDownload);
     void slotMessageDownloadStatusUpdate(int msgsDownloaded);
 
+    void slotRegisterOnline(bool online);
+
 signals:
     void signalStarted();
     void signalExit();

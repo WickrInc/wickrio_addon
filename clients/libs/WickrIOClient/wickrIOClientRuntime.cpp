@@ -9,7 +9,6 @@ WickrIOClientRuntime::WickrIOClientRuntime() {
     // Allocate resources
     m_callbackSvc = new WickrIOCallbackService();
     m_fileDownloadSvc = new WickrIOFileDownloadService();
-    m_ipcSvc = new WickrIOIPCService();
     m_watchdogSvc = new WickrIOWatchdogService();
     m_provisionHdlr = new WickrIOProvisionHdlr();
 
@@ -23,6 +22,11 @@ WickrIOClientRuntime::WickrIOClientRuntime() {
 WickrIOClientRuntime::~WickrIOClientRuntime() {
     if (m_initialized)
         cleanupResources();
+}
+
+void
+WickrIOClientRuntime::setOperationData(OperationData *operation) {
+    m_operation = operation;
 }
 
 void
@@ -49,7 +53,7 @@ WickrIOClientRuntime::redirectedOutput(QtMsgType type, const QMessageLogContext 
 void WickrIOClientRuntime::init(OperationData *operation) {
     // Instantiate runtime
     WickrIOClientRuntime& me = WickrIOClientRuntime::get();
-    me.m_operation = operation;
+    me.setOperationData(operation);
 
     if (!operation->log_handler->logGetOutput().isEmpty()) {
         operation->log_handler->log(QString("Redirecting output to %1").arg(operation->log_handler->logGetOutput()));
@@ -62,8 +66,6 @@ void WickrIOClientRuntime::init(OperationData *operation) {
  * Will shutdown runtime, cleaning up all resources.
  */
 void WickrIOClientRuntime::shutdown() {
-    WickrIOClientRuntime::get().ipcSvc()->shutdown();
-
     // Tell the watchdog service to shutdown
     WickrIOClientRuntime::get().wdSvc()->shutdown();
 
@@ -103,20 +105,6 @@ WickrIOClientRuntime::fdSvcDownloadFile(WickrIORxDownloadFile *dload) {
     fdSvc()->downloadFile(dload);
     return true;
 }
-
-/**
- * @brief WickrIO Interprocess Communications Service API
- */
-WickrIOIPCService*
-WickrIOClientRuntime::ipcSvc() {
-    return WickrIOClientRuntime::get().m_ipcSvc;
-}
-
-bool
-WickrIOClientRuntime::startIPC() {
-    ipcSvc()->startIPC(operationData());
-}
-
 
 
 /**

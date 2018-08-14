@@ -13,7 +13,6 @@
 #include "addclientdialog.h"
 #include "addconsoleuserdialog.h"
 #include "advanceddialog.h"
-#include "wickrbotipc.h"
 #include "webserver.h"
 #include "configureconsoleserverdialog.h"
 #include "consoleserver.h"
@@ -82,8 +81,6 @@ private:
     int m_consoleUsersSelectedRow;
 
     QTimer *m_updateTimer;
-
-    WickrBotIPC *ipc;
 
     QString m_appNm;
 

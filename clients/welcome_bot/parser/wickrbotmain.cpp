@@ -60,9 +60,6 @@ void WickrBotMain::doTimerWork()
         QCoreApplication::exit(1);
     }
 
-    if (m_rxIPC != NULL && m_rxIPC->isRunning()) {
-        m_rxIPC->check();
-    }
     if (m_qamqp == NULL) {
         m_qamqp = new WBParse_QAMQPQueue(m_operation);
     } else {
@@ -140,7 +137,7 @@ void WickrBotMain::stopAndExit(int procState)
 
 WickrBotParserIPC::WickrBotParserIPC()
 {
-    m_IPC = new WickrIOIPCService();
+    m_IPC = new WickrIOIPCService(WBIO_PARSER_TARGET, false);
 }
 
 WickrBotParserIPC::~WickrBotParserIPC()

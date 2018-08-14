@@ -8,6 +8,8 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QCoreApplication>
+#include <QtPlugin>
+#include <QLibraryInfo>
 
 #include "session/wickrSession.h"
 #include "user/wickrApp.h"
@@ -17,6 +19,7 @@
 #include "clientversioninfo.h"
 #include "testClientConfigInfo.h"
 #include "wickrIOClientRuntime.h"
+#include "wickrIOIPCRuntime.h"
 #include "testClientRxDetails.h"
 #include "wickrIOJScriptService.h"
 
@@ -47,18 +50,6 @@ extern QString getAppVersion();
 OperationData *operation = NULL;
 RequestHandler *requestHandler = NULL;
 stefanfrings::HttpListener *httpListener = NULL;
-
-// TODO: UPDATE THIS
-static void
-usage()
-{
-    qDebug() << "Args are [-cmd|-gui(default)|-both][-noexclusive][-user=userid] [-script=scriptfile] [-crypt] [-nocrypt]";
-    qDebug() << "If you specify a userid, the database will be named" << WickrDBAdapter::getDBName() + "." + "userid";
-    qDebug() << "If you specify a script file, it will run to completion, then command line will run";
-    qDebug() << "If you specify -noexclusive, the db will not be locked for exclusive open";
-    qDebug() << "By default, in debug mode, the database will not be encrypted (-nocrypt)";
-    exit(0);
-}
 
 /** Search the configuration file */
 QString
@@ -117,7 +108,6 @@ int main(int argc, char *argv[])
         secureJson = "secex_json:8q$&M4[d^;2R";
     }
 
-    QString username;
     QString appname = WBIO_CLIENT_TARGET;
     QString orgname = WBIO_ORGANIZATION;
 
@@ -161,14 +151,16 @@ int main(int argc, char *argv[])
         } else if (cmd.startsWith("-processname")) {
             operation->processName = cmd.remove("-processname=");
         } else if (cmd.startsWith("-clientname")) {
-            QString clientName = cmd.remove("-clientname=");
+            operation->wickrID = cmd.remove("-clientname=");
+            QString localName = operation->wickrID;
+            localName.replace("@", "_");
             wbConfigFile = QString(WBIO_CLIENT_SETTINGS_FORMAT)
                     .arg(WBIO_DEFAULT_DBLOCATION)
-                    .arg(clientName);
+                    .arg(localName);
             clientDbPath = QString(WBIO_CLIENT_DBDIR_FORMAT)
                     .arg(WBIO_DEFAULT_DBLOCATION)
-                    .arg(clientName);
-            argOutputFile = QString(WBIO_CLIENT_OUTFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(clientName);
+                    .arg(localName);
+            argOutputFile = QString(WBIO_CLIENT_OUTFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(localName);
         }
     }
 
@@ -180,14 +172,7 @@ int main(int argc, char *argv[])
         for( int argidx = 1; argidx < argc; argidx++ ) {
             QString cmd(argv[argidx]);
 
-            if( cmd == "-?" || cmd == "-help" || cmd == "--help" )
-                usage();
-
-            if( cmd.startsWith("-user=") ) {
-                username = cmd.remove("-user=");
-                WickrUtil::setTestAccountMode(username);
-            }
-            else if( cmd == "-noexclusive" ) {
+            if( cmd == "-noexclusive" ) {
                 WickrDBAdapter::setDatabaseExclusiveOpenStatus(false);
             }
         }
@@ -239,10 +224,6 @@ int main(int argc, char *argv[])
     // Set the path where the Device ID will be set
     WickrUtil::botDeviceDir = clientDbPath;
 
-    if( !username.isEmpty() ) {
-        WickrDBAdapter::setDBName( WickrDBAdapter::getDBName() + "." + username );
-    }
-
     // If the user did not set the config file then lets try a default location
     if (wbConfigFile.isEmpty()) {
         wbConfigFile = searchConfigFile();
@@ -258,6 +239,18 @@ int main(int argc, char *argv[])
     // Save the settings to the operation data
     operation->m_settings = settings;
 
+    if (operation->wickrID.isEmpty()) {
+        settings->beginGroup(WBSETTINGS_USER_HEADER);
+        operation->wickrID = settings->value(WBSETTINGS_USER_USER, "").toString();
+        settings->endGroup();
+
+        if (operation->wickrID.isEmpty()) {
+            qDebug() << "User ID is not set in settings file!";
+            exit(1);
+        }
+    }
+
+    WickrDBAdapter::setDBName( WickrDBAdapter::getDBName() + "." + operation->wickrID );
 
     // Product Type: for legacy and testing purposes we will support using client users
     int productType;
@@ -382,6 +375,7 @@ int main(int argc, char *argv[])
      */
     WickrIOClientRuntime::init(operation);
     WickrIOClientRuntime::setFileSendCleanup(true);
+    WickrIOIPCRuntime::init(operation);
 
     /*
      * Start the Javascript service and attach to the Client Runtime
@@ -408,8 +402,8 @@ int main(int argc, char *argv[])
      * connection, so that other processes can stop this client.
      */
     QObject::connect(WICKRBOT, &WickrIOClientMain::signalStarted, [=]() {
-        WickrIOClientRuntime::startIPC();
-        WICKRBOT->setIPC(WickrIOClientRuntime::ipcSvc());
+        WickrIOIPCRuntime::startIPC();
+        WICKRBOT->setIPC(WickrIOIPCRuntime::ipcSvc());
     });
 
 
@@ -445,6 +439,7 @@ int main(int argc, char *argv[])
     /*
      * Shutdown the wickrIO Client Runtime
      */
+    WickrIOIPCRuntime::shutdown();
     WickrIOClientRuntime::shutdown();
 
     httpListener->deleteLater();

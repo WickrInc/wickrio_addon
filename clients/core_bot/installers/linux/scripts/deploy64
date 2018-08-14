@@ -122,6 +122,7 @@ mkdir -p $appdata
 # Copy the executables
 #
 cp -a ${build_dir}/clients/core_bot/client/core_bot$BldType $bindir
+cp -a ${build_dir}/clients/core_bot/provision/provision$BldType $bindir/core_prov$BldType
 
 #
 # TODO: Will need shared libraries

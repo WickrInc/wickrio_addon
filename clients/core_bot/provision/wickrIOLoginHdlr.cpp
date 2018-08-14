@@ -97,9 +97,13 @@ void WickrIOLoginHdlr::slotRegisterOnPrem(const QString &username, const QString
  * @param sync
  * @param isRekey
  */
-void WickrIOLoginHdlr::slotRegisterUser(const QString &wickrid, const QString &password, const QString &transactionid, bool newUser, bool sync, bool isRekey)
+void WickrIOLoginHdlr::slotRegisterUser(const QString &wickrid, const QString &password, const QString &salt, const QString &transactionid, bool newUser, bool sync, bool isRekey)
 {
-    WickrEnterpriseRegistrationParameters regParams(wickrid, transactionid, NULL);
+    qDebug().noquote().nospace() << "CONSOLE:Begin register user context.";
+
+    QString hash = !salt.isEmpty() ? cryptoGetHash(password, salt) : QString();
+
+    WickrEnterpriseRegistrationParameters regParams(wickrid, transactionid, hash);
     WickrPreRegistrationData *preRegData;
     if (m_preRegDataIface != NULL) {
         preRegData = m_preRegDataIface->getPreRegData();
@@ -143,8 +147,9 @@ void WickrIOLoginHdlr::initiateLogin()
                 emit signalLoginFailed();
             } else {
                 qDebug() << "Starting registration to create user " << userid;
+                QString salt;
 
-                slotRegisterUser(userid, password, transid, true, false, false);
+                slotRegisterUser(userid, password, salt, transid, true, false, false);
             }
         } else {
             // If the database exists then just login
@@ -153,8 +158,8 @@ void WickrIOLoginHdlr::initiateLogin()
 
                 slotLoginStart(userid, password);
             } else {
-                QString transID;
-                slotRegisterUser(userid, password, transID, false, true, false);
+                QString transID, salt;
+                slotRegisterUser(userid, password, salt, transID, false, true, false);
             }
         }
     }
@@ -172,12 +177,16 @@ void WickrIOLoginHdlr::slotRegistrationDone(WickrRegisterUserContext *c)
 
     if(!c->isSuccess()) {
         // If we failed because of something other than bad credentials then show the result
-        if (c->apiCode().getValue() != BAD_SYNC_CREDENTIALS) {
-            qDebug() << c->errorString();
+        if (c->apiCode().getValue() == BAD_SYNC_CREDENTIALS) {
+            qDebug().noquote().nospace() << "CONSOLE:" << c->errorString();
+            emit signalLoginFailed();
+        } else {
+            qDebug().noquote().nospace() << "CONSOLE:" << c->errorString();
             emit signalOnlineFlag(false);
         }
     } else {
         // GET Arguments: <wickrid> <password>
+        qDebug().noquote().nospace() << "CONSOLE:Successfully created user";
         QString wickrid  = c->getArg(arg_USERID).toString();
         QString password = c->getArg(arg_PASSWORD).toString();
         slotLoginStart( wickrid, password );
@@ -205,7 +214,8 @@ void WickrIOLoginHdlr::slotLoginStart(const QString& username, const QString& pa
             QString unused = "UNUSED";
             QString user = username;
             QString pass = password;
-            slotRegisterUser(user, pass, unused, false, true, false);
+            QString salt;
+            slotRegisterUser(user, pass, salt, unused, false, true, false);
         }
         return;
     }

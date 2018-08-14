@@ -21,6 +21,8 @@
 #include "wickrIOClientRuntime.h"
 #include "clientconfigurationinfo.h"
 #include "clientversioninfo.h"
+#include "wickrIOCommon.h"
+#include "wickrIOIPCRuntime.h"
 
 WickrIOClientMain *WickrIOClientMain::theBot;
 
@@ -219,6 +221,8 @@ void WickrIOClientMain::slotDatabaseLoadDone(WickrDatabaseLoadContext *context)
         wdSvc->setLoggedIn(true);
     }
 
+    sendConsoleMsg(WBIO_IPCMSGS_STATE, "loggedin");
+
     // Update switchboard login credentials (login is performed only if not already logged in)
     WickrCore::WickrRuntime::swbSvcLogin(WickrCore::WickrSession::getActiveSession()->getSwitchboardServer(),
                                          WickrCore::WickrUser::getSelfUser()->getServerIDHash(),
@@ -327,6 +331,8 @@ void WickrIOClientMain::slotMessageDownloadStatusUpdate(int msgsDownloaded)
  */
 void WickrIOClientMain::stopAndExitSlot()
 {
+    sendConsoleMsg(WBIO_IPCMSGS_STATE, "stopping");
+
     stopAndExit(PROCSTATE_DOWN);
 }
 
@@ -340,6 +346,24 @@ void WickrIOClientMain::pauseAndExitSlot()
     stopAndExit(PROCSTATE_PAUSED);
 }
 
+void WickrIOClientMain::slotReceivedMessage(QString type, QString value)
+{
+    if (type.toLower() == WBIO_IPCMSGS_PASSWORD) {
+        // Check if we are waiting for the password to proceed with the login
+        qDebug() << "Proceeding with the login";
+        if (m_waitingForPassword) {
+            m_waitingForPassword = false;
+
+            QMap<QString,QString> qmapval = WickrIOIPCCommands::parsePasswordValue(value);
+            if (qmapval.size() > 0) {
+                m_password = qmapval.value(WBIO_BOTINFO_PASSWORD);
+                m_loginHdlr.addLogin(m_user, m_password, m_userName, "");
+                m_loginHdlr.initiateLogin();
+            }
+        }
+    }
+}
+
 
 void WickrIOClientMain::processStarted()
 {
@@ -347,6 +371,40 @@ void WickrIOClientMain::processStarted()
 
     if (! startTheClient())
         stopAndExit(PROCSTATE_DOWN);
+}
+
+bool
+WickrIOClientMain::sendConsoleMsg(const QString& cmd, const QString& value)
+{
+    WickrIOIPCService *ipcSvc = WickrIOIPCRuntime::ipcSvc();
+
+    QString message = QString("%1=%2").arg(cmd).arg(value);
+
+    if (ipcSvc == nullptr || !ipcSvc->sendMessage(WBIO_CLIENTSERVER_TARGET, false, message)) {
+        return false;
+    }
+
+    QTimer timer;
+    QEventLoop loop;
+
+    loop.connect(ipcSvc, SIGNAL(signalMessageSent()), SLOT(quit()));
+    loop.connect(ipcSvc, SIGNAL(signalMessageSendFailure()), SLOT(quit()));
+    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+
+    int loopCount = 6;
+
+    while (loopCount-- > 0) {
+        timer.start(10000);
+        loop.exec();
+
+        if (timer.isActive()) {
+            timer.stop();
+            break;
+        } else {
+            qDebug() << "Timed out waiting for stop client message to send!";
+        }
+    }
+    return true;
 }
 
 /**
@@ -360,6 +418,7 @@ void WickrIOClientMain::setIPC(WickrIOIPCService *ipc)
     m_wickrIPC = ipc;
     connect(ipc, &WickrIOIPCService::signalGotStopRequest, this, &WickrIOClientMain::stopAndExitSlot);
     connect(ipc, &WickrIOIPCService::signalGotPauseRequest, this, &WickrIOClientMain::pauseAndExitSlot);
+    connect(ipc, &WickrIOIPCService::signalReceivedMessage, this, &WickrIOClientMain::slotReceivedMessage);
 }
 
 void WickrIOClientMain::slotDoTimerWork()
@@ -377,10 +436,6 @@ void WickrIOClientMain::slotDoTimerWork()
             emit signalExit();
             return;
         }
-    }
-
-    if (m_wickrIPC != NULL && m_wickrIPC->isRunning()) {
-        m_wickrIPC->check();
     }
 
     if (m_eventService != nullptr && !m_eventService->isHealthy()) {
@@ -404,6 +459,7 @@ void
 WickrIOClientMain::slotServiceNotLoggedIn()
 {
     m_operation->postEvent("Thread has not been able to log in for extended period of time.", false);
+    sendConsoleMsg(WBIO_IPCMSGS_STATE, "stopping");
 
     stopAndExit(PROCSTATE_DOWN);
 }
@@ -416,6 +472,13 @@ WickrIOClientMain::slotServiceNotLoggedIn()
 void WickrIOClientMain::stopAndExit(int procState)
 {
     m_operation->postEvent("Shutting down", false);
+
+    if (!m_autologin) {
+        WickrCore::WickrSession::clearPasswordCache();
+        WickrCore::WickrSession::clearCacheKeys();
+        WickrCore::WickrSession::clearCachedDbKey();
+
+    }
 
     // Set the process state for after the shutdown
     WickrIOClientRuntime::wdSetShutdownState(procState);
@@ -503,7 +566,9 @@ bool WickrIOClientMain::startTheClient()
     // TASK SERVICE: Utility service login here (to ensure rest api available)
     WickrCore::WickrRuntime::taskSvcLogin();
 
-    m_loginHdlr.initiateLogin();
+    if (!m_waitingForPassword) {
+        m_loginHdlr.initiateLogin();
+    }
 
     emit signalStarted();
     return true;
@@ -648,19 +713,45 @@ bool WickrIOClientMain::parseSettings(QSettings *settings)
      * Parse out the settings associated with the User
      */
     settings->beginGroup(WBSETTINGS_USER_HEADER);
-
     QString user = settings->value(WBSETTINGS_USER_USER, "").toString();
     QString password = settings->value(WBSETTINGS_USER_PASSWORD, "").toString();
     QString username = settings->value(WBSETTINGS_USER_USERNAME, "").toString();
     QString transactionID = settings->value(WBSETTINGS_USER_TRANSACTIONID, "").toString();
+    bool autologin = settings->value(WBSETTINGS_USER_AUTOLOGIN, true).toBool();
+    settings->endGroup();
 
     if (user.isEmpty()) {
         qDebug() << "User name is not set";
         return false;
     }
-    m_loginHdlr.addLogin(user, password, username, transactionID);
 
-    settings->endGroup();
+    // Save for use in main
+    m_user = user;
+    m_password = password;
+    m_userName = username;
+    m_autologin = autologin;
+
+    // there is no password set
+    if (password.isEmpty()) {
+        // If we are using autologin check if the db password exists
+        if (autologin) {
+            // Check if the database password has been created.
+            // If not then will need the client's password to start.
+            QString clientDbDir = QString(WBIO_CLIENT_DBDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(username);
+            QString dbKeyFileName = QString("%1/dkd.wic").arg(clientDbDir);
+            QFile dbKeyFile(dbKeyFileName);
+            if (!dbKeyFile.exists()) {
+                m_waitingForPassword = true;
+                return true;
+            }
+        } else {
+            m_waitingForPassword = true;
+            return true;
+        }
+    }
+
+    m_loginHdlr.addLogin(user, password, username, transactionID);
+    m_waitingForPassword = false;
 
     /*
      * Parse out the settings associated with general configuration

@@ -4,7 +4,6 @@
 #include "cmdbase.h"
 #include "wickrbotclients.h"
 #include "wickriodatabase.h"
-#include "wickrbotipc.h"
 #include "wickrIOIPCService.h"
 #include "operationdata.h"
 #include "cmdserver.h"
@@ -13,7 +12,7 @@ class CmdMain : public CmdBase
 {
     Q_OBJECT
 public:
-    CmdMain(QCoreApplication *app, int argc, char **argv, OperationData *operation);
+    CmdMain(QCoreApplication *app, int argc, char **argv, OperationData *operation, WickrIOIPCService *ipcSvc);
     ~CmdMain();
 
     bool runCommands();
@@ -24,8 +23,7 @@ private:
     char                **m_argv;
 
     QList<WickrBotClients *> m_clients;
-    WickrBotIPC             m_txIPC;
-    WickrIOIPCService       *m_rxIPC;
+    WickrIOIPCService       *m_ipcSvc;
 
     QString                 m_clientState;
     bool                    m_clientStateChanged;
@@ -46,7 +44,7 @@ private:
     void pauseClient(int clientIndex);
     void configClient(int clientIndex);
 
-    bool sendClientCmd(int port, const QString& cmd);
+    bool sendClientCmd(const QString& name, const QString& cmd);
     bool sendClientServerCmd(const QString& cmd);
 
 public slots:
