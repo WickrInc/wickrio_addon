@@ -11,6 +11,7 @@
 #include "wickrIOClientServer.h"
 #include "wickrIOCommon.h"
 #include "wickrIOServerCommon.h"
+#include "wickrIOIPCRuntime.h"
 
 //#define DEBUG_TRACE 1
 
@@ -76,10 +77,15 @@ bool WickrIOClientServer::configureService()
     m_operation->log_handler->log("Database size", m_operation->m_botDB->size());
     m_operation->log_handler->log("Generated messages", m_operation->messageCount);
 
+#if 0
     // Setup the IPC Service
-    m_ipcSvc = new WickrIOIPCService();
+    m_ipcSvc = new WickrIOIPCService(WBIO_CLIENTSERVER_TARGET, false);
     m_ipcSvc->startIPC(m_operation);
     connect(m_ipcSvc, &WickrIOIPCService::signalReceivedMessage, this, &WickrIOClientServer::slotRxIPCMessage);
+#else
+    WickrIOIPCService *ipcSvc = WickrIOIPCRuntime::ipcSvc();
+    connect(ipcSvc, &WickrIOIPCService::signalReceivedMessage, this, &WickrIOClientServer::slotRxIPCMessage);
+#endif
 
     m_isConfigured = true;
 
@@ -293,19 +299,20 @@ bool WickrIOClientServer::clientNeedsStart(WickrBotClients *client)
 }
 
 bool
-WickrIOClientServer::sendClientCmd(int port, const QString& cmd)
+WickrIOClientServer::sendClientCmd(const QString& dest, const QString& cmd)
 {
-    qDebug() << "Sending password to client";
-    WickrBotIPC ipc;
-    if (! ipc.sendMessage(port, cmd)) {
+    WickrIOIPCService *ipcSvc = WickrIOIPCRuntime::ipcSvc();
+
+    qDebug() << "Sending command to client";
+    if (ipcSvc == nullptr || !ipcSvc->sendMessage(dest, true, cmd)) {
         return false;
     }
 
     QTimer timer;
     QEventLoop loop;
 
-    loop.connect(&ipc, SIGNAL(signalSentMessage()), SLOT(quit()));
-    loop.connect(&ipc, SIGNAL(signalSendError()), SLOT(quit()));
+    loop.connect(ipcSvc, SIGNAL(signalMessageSent()), SLOT(quit()));
+    loop.connect(ipcSvc, SIGNAL(signalMessageSendFailure()), SLOT(quit()));
     connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
 
     int loopCount = 6;
@@ -331,50 +338,41 @@ WickrIOClientServer::sendClientCmd(int port, const QString& cmd)
  * @param client
  * @return
  */
-bool WickrIOClientServer::stopClient(const WickrBotProcessState& state)
+bool WickrIOClientServer::stopClient(const QString& name)
 {
 #ifdef DEBUG_TRACE
-    qDebug() << "Entered stopClient:" << state.process << ", ipc_port=" << state.ipc_port;
+    qDebug() << "Entered stopClient:" << client->user;
 #endif
+    WickrIOIPCService *ipcSvc = WickrIOIPCRuntime::ipcSvc();
     // Send message to all clients to stop them
-    bool retVal = true;
+    if (ipcSvc == nullptr || ! ipcSvc->sendMessage(name, true, WBIO_IPCCMDS_STOP))
+        return false;
 
-    if (state.ipc_port != 0) {
-        // Setup the IPC Client to communicate with the clients
-        WickrBotIPC ipc;
+    QTimer timer;
+    QEventLoop loop;
 
-        // TODO: Need to wait to see if the message returns successfully!!!
-        retVal = ipc.sendMessage(state.ipc_port, WBIO_IPCCMDS_STOP);
+    loop.connect(ipcSvc, SIGNAL(signalMessageSent()), SLOT(quit()));
+    loop.connect(ipcSvc, SIGNAL(signalMessageSendFailure()), SLOT(quit()));
+    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
 
-#if 1
-#else
-        QTimer timer;
-        QEventLoop loop;
+    int loopCount = 6;
 
-        loop.connect(&ipc, SIGNAL(signalSentMessage()), SLOT(quit()));
-        loop.connect(&ipc, SIGNAL(signalSendError()), SLOT(quit()));
-        connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+    while (loopCount-- > 0) {
+        timer.start(10000);
+        loop.exec();
 
-        int loopCount = 6;
-
-        while (loopCount-- > 0) {
-            timer.start(10000);
-            loop.exec();
-
-            if (timer.isActive()) {
-                timer.stop();
-                break;
-            } else {
-                qDebug() << "Timed out waiting for stop client message to send!";
-            }
+        if (timer.isActive()) {
+            timer.stop();
+            break;
+        } else {
+            qDebug() << "Timed out waiting for stop client message to send!";
         }
-#endif
     }
 
 #ifdef DEBUG_TRACE
     qDebug() << "Leaving stopClient: retVal=" << retVal;
 #endif
-    return retVal;
+    return true;
 }
 
 /**
@@ -520,7 +518,7 @@ bool WickrIOClientServer::startClient(WickrBotClients *client)
                 // It is running lets send the password to it now
                 QString password = m_clientPasswords.value(processName);
                 QString pwstring = WickrIOIPCCommands::getPasswordString(WBIO_CLIENTSERVER_TARGET, password);
-                sendClientCmd(state.ipc_port, pwstring);
+                sendClientCmd(client->name, pwstring);
 
                 // Need to check that the password worked
                 while (true) {
@@ -622,7 +620,7 @@ bool WickrIOClientServer::getClients(bool start)
                 if(startClient(client) == false)
                     allClientsStart = false;
             } else {
-                stopClient(state);
+                stopClient(client->name);
             }
             //check whether type is welcome_bot to see if need to find parser
             if(client->binary.startsWith( "welcome_bot")){
@@ -645,7 +643,7 @@ bool WickrIOClientServer::getClients(bool start)
                     }
                     else{
                         //If start is false, shutdown parsers
-                        stopClient(*process);
+                        stopClient(parserName);
                     }
                     process->deleteLater();
                 }

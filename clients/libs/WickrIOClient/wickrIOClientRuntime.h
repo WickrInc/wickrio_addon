@@ -6,7 +6,6 @@
 #include "wickrIOServiceBase.h"
 #include "wickrIOCallbackService.h"
 #include "wickrIOFileDownloadService.h"
-#include "wickrIOIPCService.h"
 #include "wickrIOWatchdogService.h"
 #include "wickrIOProvisionHdlr.h"
 
@@ -30,6 +29,9 @@ public:
     // Destructor
     virtual ~WickrIOClientRuntime();
 
+    // method to pass the operation data to the singleton
+    void setOperationData(OperationData *operation);
+
     // Runtime Init/Shutdown API
     static void init(OperationData *operation);
     static void shutdown();
@@ -50,12 +52,6 @@ public:
      */
     static WickrIOFileDownloadService *fdSvc();
     static bool fdSvcDownloadFile(WickrIORxDownloadFile *dload);
-
-    /**
-     * IPC Service API
-     */
-    static WickrIOIPCService *ipcSvc();
-    static bool startIPC();
 
     /**
      * Watchdog Service API
@@ -85,14 +81,13 @@ public:
 
 private:
     // Runtime resources
-    bool                    m_initialized;
-    OperationData           *m_operation;
+    bool                        m_initialized = false;
+    OperationData               *m_operation = nullptr;
 
-    WickrIOCallbackService      *m_callbackSvc;
-    WickrIOFileDownloadService  *m_fileDownloadSvc;
-    WickrIOIPCService           *m_ipcSvc;
-    WickrIOWatchdogService      *m_watchdogSvc;
-    WickrIOProvisionHdlr        *m_provisionHdlr;
+    WickrIOCallbackService      *m_callbackSvc = nullptr;
+    WickrIOFileDownloadService  *m_fileDownloadSvc = nullptr;
+    WickrIOWatchdogService      *m_watchdogSvc = nullptr;
+    WickrIOProvisionHdlr        *m_provisionHdlr = nullptr;
 
     // Client runtime flags
     bool    m_removeSentEncryptedFiles = false;

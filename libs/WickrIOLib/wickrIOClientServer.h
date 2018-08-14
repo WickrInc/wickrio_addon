@@ -7,7 +7,6 @@
 #include <QTimer>
 
 #include <operationdata.h>
-#include <wickrbotipc.h>
 #include "wickrIOIPCService.h"
 
 #define UPDATE_STATUS_SECS  60
@@ -28,10 +27,10 @@ public:
     bool clientNeedsStart(WickrBotClients *client);
     bool parserNeedsStart(WickrBotProcessState *process);
     bool startClient(WickrBotClients *client);
-    bool stopClient(const WickrBotProcessState& state);
+    bool stopClient(const QString& name);
     bool startParser(QString processName, QString appName);
 
-    bool sendClientCmd(int port, const QString& cmd);
+    bool sendClientCmd(const QString& dest, const QString& cmd);
 
     OperationData       *m_operation = nullptr;
     QTimer              *m_processTimer = nullptr;
@@ -40,8 +39,6 @@ public:
     int                 m_backOffCntDwn;
     int                 m_backOff;
     bool                m_isConfigured = false;
-
-    WickrIOIPCService   *m_ipcSvc = nullptr;
 
     QString             m_clientState;
     bool                m_clientStateChanged;

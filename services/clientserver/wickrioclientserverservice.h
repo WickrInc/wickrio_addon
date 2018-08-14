@@ -8,7 +8,6 @@
 
 #include <qtservice/qtservice.h>
 #include <operationdata.h>
-#include <wickrbotipc.h>
 #include "wickrIOIPCService.h"
 #include "wickrIOClientServer.h"
 

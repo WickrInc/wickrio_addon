@@ -372,3 +372,4 @@ INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/libs/qbson
 INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/libs/libbson
 INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/libs/cloud/qcloud
 INCLUDEPATH += $$PWD/$${DEPTH}/wickr-sdk/libs/WickrProto
+

@@ -44,7 +44,8 @@ private:
 
     bool validateIndex(int clientIndex);
 
-    bool sendClientCmd(int port, const QString& cmd);
+    bool sendClientCmd(const QString& dest, const QString& cmd);
+    void closeClientIPC(const QString& dest);
 
     bool readLineFromProcess(QProcess *process, QString& line);
     bool runBotScript(const QString& destPath, const QString& configure, WickrBotClients *client);
@@ -86,6 +87,8 @@ private:
 private slots:
     void slotCmdFinished(int, QProcess::ExitStatus);
     void slotCmdOutputRx();
+
+    void slotReceivedMessage(QString type, QString value);
 
 };
 

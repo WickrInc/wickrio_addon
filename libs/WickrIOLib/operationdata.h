@@ -26,6 +26,7 @@ public:
 
 public:
     QString processName;
+    QString wickrID;            // The associated wickr client ID name
     bool debug = false;
     bool force = false;
 

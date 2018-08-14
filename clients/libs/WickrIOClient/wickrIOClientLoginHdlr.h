@@ -24,8 +24,8 @@ public:
     WickrBotLogin(const QString& name, const QString& pass, const QString& userName, const QString& transID) :
         m_name(name),
         m_pass(pass),
-        m_transID(transID),
-        m_userName(userName) {}
+        m_userName(userName),
+        m_transID(transID) {}
 };
 
 typedef enum { LoggedOut, InProcess, LoggedIn, LoggingOut, LoginsFailed } WickrIOClientLoginState;

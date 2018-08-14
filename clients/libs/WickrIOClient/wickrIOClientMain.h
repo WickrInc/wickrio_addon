@@ -71,6 +71,12 @@ private:
     WickrIORxService    *m_rxService = nullptr;
     WickrIORxDetails    *m_rxDetails = nullptr;
 
+    bool    m_waitingForPassword = false;
+    QString m_user;
+    QString m_password;
+    QString m_userName;
+    bool    m_autologin = false;
+
     // Timer definitions
     void startTimer()
     {
@@ -86,6 +92,8 @@ private:
 
     void stopAndExit(int procState);
 
+    bool sendConsoleMsg(const QString& cmd, const QString& value);
+
 private slots:
     void slotDoTimerWork();
     void slotLoginSuccess();
@@ -95,6 +103,7 @@ private slots:
     void processStarted();
     void stopAndExitSlot();
     void pauseAndExitSlot();
+    void slotReceivedMessage(QString type, QString value);
 
     void slotSwitchboardServiceState(WickrServiceState state, SBSessionStatus sessionStatus, const QString& text);
     void slotMessageServiceState(WickrServiceState state);

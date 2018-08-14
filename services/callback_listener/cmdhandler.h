@@ -7,7 +7,6 @@
 #include <QSettings>
 
 #include <httpserver/httprequesthandler.h>
-#include "wickrbotipc.h"
 #include "wickrbotdatabase.h"
 #include "operationdata.h"
 

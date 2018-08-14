@@ -7,6 +7,11 @@ INCLUDEPATH += $${COMMON}
 #
 include(../services.pri)
 
+#
+# Zero MQ Qt library
+#
+include($${DEPTH}/libs/nzmqt/nzmqt.pri)
+
 CONFIG += c++11
 
 CONFIG -= console
@@ -143,6 +148,8 @@ win32 {
 } else {
     LIBPATH += $$DEPTH/wickr-sdk/libs/qsqlcipher_wickr/
     INCLUDEPATH += $$DEPTH/wickr-sdk/platforms/linux/include
+
+    LIBS += -lzmq
 }
 LIBS += -lqsqlcipher_wickr
 

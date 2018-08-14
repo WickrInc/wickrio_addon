@@ -10,7 +10,7 @@ TEMPLATE = lib
 QT += multimediawidgets
 QT -= gui
 QT += sql
-QT += network
+QT += network websockets
 
 VERSION = 1.0.1
 

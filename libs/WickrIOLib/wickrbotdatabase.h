@@ -38,7 +38,6 @@ public:
     bool insertProcessState(const QString &process, int process_id, int state);
     bool updateProcessState(const QString &process, int process_id, int state);
     bool deleteProcessState(const QString& process);
-    bool setProcessIPC(const QString &process, int ipc_port);
 
     WickrBotClients *getClient(int id);
     WickrBotClients *getClientUsingApiKey(QString apiKey);

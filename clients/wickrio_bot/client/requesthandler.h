@@ -3,7 +3,6 @@
 
 #include "wickriohttp.h"
 #include "operationdata.h"
-#include "wickrbotipc.h"
 #include "wickrIOAPIInterface.h"
 #include "messaging/wickrConvo.h"
 

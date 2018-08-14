@@ -1,5 +1,6 @@
 #include <QDebug>
 #include <QString>
+#include <QtPlugin>
 
 #include "inittest.h"
 #include "clientconfigurationinfo.h"
