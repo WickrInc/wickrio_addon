@@ -42,7 +42,7 @@ version="${maj}.${min}.${pat}-${bld}"
 echo version=$version
 
 prefix=~/tmp/wio_nodejs_samples
-sample_dir=$prefix/nodejs_samples
+dst_sample_dir=$prefix/nodejs_samples
 
 tar_file=$prefix/WickrIO_nodejs_samples_${version}.tar.gz
 
@@ -50,31 +50,66 @@ tar_file=$prefix/WickrIO_nodejs_samples_${version}.tar.gz
 rm -rf $prefix
 
 # Create the appropriate directories in the target location
-mkdir -p $sample_dir
+mkdir -p $dst_sample_dir
 
 #
 # Create the sample software tree
 #
-mkdir -p $sample_dir/wickrio_addon
-cp ../wickrio_addon/CMakeLists.txt $sample_dir/wickrio_addon
-cp ../wickrio_addon/package.json $sample_dir/wickrio_addon
-mkdir -p $sample_dir/wickrio_addon/src
-cp ../wickrio_addon/src/bot_iface_node.cpp $sample_dir/wickrio_addon/src
-cp -R ../samples $sample_dir
-cp ../README.md $sample_dir
+mkdir -p $dst_sample_dir/wickrio_addon
+cp ../wickrio_addon/CMakeLists.txt $dst_sample_dir/wickrio_addon
+cp ../wickrio_addon/package.json $dst_sample_dir/wickrio_addon
+mkdir -p $dst_sample_dir/wickrio_addon/src
+cp ../wickrio_addon/src/bot_iface_node.cpp $dst_sample_dir/wickrio_addon/src
+cp -R ../samples $dst_sample_dir
+cp ../README.md $dst_sample_dir
 
 #
 # Create and copy the appropriate exports
 #
-mkdir -p ${sample_dir}/exports/libs
-mkdir -p ${sample_dir}/exports/include
-cp ../../../clients/libs/WickrIOClientAPI/build/libWickrIOClientAPI.a ${sample_dir}/exports/libs
-cp ../../../clients/libs/WickrIOClientAPI/src/bot_iface.h ${sample_dir}/exports/include
+mkdir -p ${dst_sample_dir}/exports/libs
+mkdir -p ${dst_sample_dir}/exports/include
+cp ../../../clients/libs/WickrIOClientAPI/build/libWickrIOClientAPI.a ${dst_sample_dir}/exports/libs
+cp ../../../clients/libs/WickrIOClientAPI/src/bot_iface.h ${dst_sample_dir}/exports/include
+
+#
+# Create the importable software images for each of the samples. These can be used in
+# the WickrIO system, and used as examples of how to import custom integrations.
+#
+mkdir -p $dst_sample_dir/imports
+samples_dir=$current/../samples
+
+compliance_bot_sample=$samples_dir/compliance_bot
+if test -f "$compliance_bot_sample/generate.sh" ; then
+    echo "generating software.tar.gz for compliance_bot sample"
+    cd $compliance_bot_sample
+    mkdir $samples_dir/compliance_bot
+    ./generate.sh $samples_dir/compliance_bot
+    cd $current
+fi
+
+file_bot_sample=$samples_dir/file_bot
+if test -f "$file_bot_sample/generate.sh" ; then
+    echo "generating software.tar.gz for file_bot sample"
+    cd $file_bot_sample
+    mkdir $samples_dir/file_bot
+    ./generate.sh $samples_dir/file_bot
+    cd $current
+fi
+
+welcome_bot_sample=$samples_dir/welcome_bot
+if test -f "$welcome_bot_sample/generate.sh" ; then
+    echo "generating software.tar.gz for welcome_bot sample"
+    cd $welcome_bot_sample
+    mkdir $samples_dir/welcome_bot
+    ./generate.sh $samples_dir/welcome_bot
+    cd $current
+fi
+
 
 #
 # Create the actual package
 #
-cd ${sample_dir}
+cd ${dst_sample_dir}
 tar -zcvf ${tar_file} *
 
 #

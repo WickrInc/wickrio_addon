@@ -324,7 +324,7 @@ bool CmdIntegration::addIntegration(const QString& updateName)
 
     QDir botSwDir(QString(WBIO_CUSTOMBOT_SWDIR).arg(iName));
     if (!botSwDir.exists()) {
-        if (! botSwDir.mkpath( botSwDir.absolutePath())) {
+        if (! botSwDir.mkpath(botSwDir.absolutePath())) {
             qDebug() << "CONSOLE:Cannot create directory for the new integration!";
             return true;
         }

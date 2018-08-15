@@ -1,0 +1,15 @@
+{
+  "name": "example_app",
+  "version": "1.0.0",
+  "description": "Wickr sample JavaScript",
+  "main": "example_app_node.js",
+  "private": true,
+  "dependencies": {
+    "prompt": "^1.0.0",
+    "wickrio_addon": "file:./wickrio_addon"
+  },
+  "scripts": {
+    "start": "node example_app_node.js",
+    "stop": "pkill --signal SIGINT exampleApp"
+  }
+}

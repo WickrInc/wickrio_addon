@@ -1,0 +1,16 @@
+{
+  "name": "file_bot",
+  "version": "1.0.0",
+  "description": "Wickr sample JavaScript File Bot",
+  "main": "file_bot.js",
+  "private": true,
+  "dependencies": {
+    "file-exists": "^5.0.1",
+    "prompt": "^1.0.0",
+    "wickrio_addon": "file:./wickrio_addon"
+  },
+  "scripts": {
+    "start": "node file_bot.js",
+    "stop": "pkill --signal SIGINT fileBot"
+  }
+}
