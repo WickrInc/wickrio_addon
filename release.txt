@@ -1,4 +1,4 @@
-Release Notes from v4.26-release to v4.42.6-2:
+Release Notes from v4.26-release to v4.42.6-3:
   * Add distribution method for samples - Aaron-nodejs02
   * Update the generate script to all the generate.sh files in the samples…
   * Fix compliance bot
