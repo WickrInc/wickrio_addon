@@ -3,7 +3,7 @@ echo This script should run to set the build number for nightly alpha builds!
 
 . ./PREP-SET-BRANCHES
 
-echo "wickr-wickrio branch = ${WICKRWICKRIO}"
+echo "wickr-wickrio branch = ${WICKRWICKRIOBRANCH}"
 echo "wickr-sdk branch     = ${WICKRSDKBRANCH}"
 echo "wickr-core-c branch  = ${WICKRCOREBRANCH}"
 echo "wickr-integrations branch  = ${WICKRINTEGRATIONSBRANCH}"
