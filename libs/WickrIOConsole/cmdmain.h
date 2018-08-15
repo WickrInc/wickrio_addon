@@ -21,7 +21,8 @@ class CmdMain : public CmdBase
 {
     Q_OBJECT
 public:
-    explicit CmdMain(OperationData*pOperation=nullptr);
+    explicit CmdMain(OperationData*pOperation);
+    explicit CmdMain(const QString& appName);
 
     bool runCommands(QString commands=QString());
 

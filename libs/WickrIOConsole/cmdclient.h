@@ -44,7 +44,7 @@ private:
 
     bool validateIndex(int clientIndex);
 
-    bool sendClientCmd(const QString& dest, const QString& cmd);
+    bool sendIPCCmd(const QString& dest, bool isClient, const QString& cmd);
     void closeClientIPC(const QString& dest);
 
     bool readLineFromProcess(QProcess *process, QString& line);

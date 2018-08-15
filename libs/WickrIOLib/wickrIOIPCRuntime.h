@@ -27,7 +27,8 @@ public:
     static bool startIPC();
 
     // Component accessors
-    static OperationData *operationData();
+    static OperationData    *operationData();
+    static QString          name();
 
 private:
     // Runtime resources

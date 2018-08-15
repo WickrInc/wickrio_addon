@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     coreapp.setApplicationName(WBIO_CONSOLE_TARGET);
     WickrIOIPCRuntime::init(WBIO_CONSOLE_TARGET, false);
 
-    CmdMain cmdmain;
+    CmdMain cmdmain(WBIO_CONSOLE_TARGET);
     if (argc > 1) {
         QString commands(argv[1]);
         cmdmain.runCommands(commands);

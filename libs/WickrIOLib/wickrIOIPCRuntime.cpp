@@ -94,6 +94,11 @@ WickrIOIPCRuntime::operationData() {
     return WickrIOIPCRuntime::get().m_operation;
 }
 
+QString
+WickrIOIPCRuntime::name() {
+    return WickrIOIPCRuntime::get().m_name;
+}
+
 
 /**
  * @brief WickrIO Interprocess Communications Service API
