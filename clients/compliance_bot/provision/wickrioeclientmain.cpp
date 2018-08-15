@@ -427,9 +427,6 @@ void WickrIOEClientMain::slotMessageServiceState(WickrServiceState state)
         }
         m_personalize.setFirstLogin(false);
 #endif
-
-        // MESSAGE CHECK: Perform initial message check
-        WickrCore::WickrRuntime::msgSvcScheduleCheck(ON_LOGIN);
         break;
 
     case WickrServiceState::SERVICE_LOGGED_OUT:
@@ -493,8 +490,7 @@ void WickrIOEClientMain::slotOnLoginMsgSynchronizationComplete()
                                          WickrCore::WickrUser::getSelfUser()->getServerIDHash(),
                                          WickrCore::WickrSession::getActiveSession()->getAppID(),
                                          WickrCore::WickrSession::getActiveSession()->getSwitchboardToken(),
-                                         WickrCore::WickrSession::getActiveSession()->getNetworkIdFromLogin(),
-                                         false);
+                                         WickrCore::WickrSession::getActiveSession()->getNetworkIdFromLogin());
 }
 
 /**

@@ -377,8 +377,7 @@ void WickrIORxThread::startSwitchboard()
                                          WickrCore::WickrUser::getSelfUser()->getServerIDHash(),
                                          WickrCore::WickrSession::getActiveSession()->getAppID(),
                                          WickrCore::WickrSession::getActiveSession()->getSwitchboardToken(),
-                                         WickrCore::WickrSession::getActiveSession()->getNetworkIdFromLogin(),
-                                         true);
+                                         WickrCore::WickrSession::getActiveSession()->getNetworkIdFromLogin());
 }
 
 void WickrIORxThread::stopSwitchboard()

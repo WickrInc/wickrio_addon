@@ -8,7 +8,7 @@ CLIENTAPI_LIB = clients/libs/WickrIOClientAPI
 CLIENTAPI_CPPTEST = integrations/cpp/cpp_test
 NODEJS_ADDON = integrations/nodejs/wickrio_addon
 LOCALREPO = localRepo/$(WICKR_SDK)
-SDK_BRANCH = v4.41
+SDK_BRANCH = v4.52
 INTEGRATIONS_BRANCH = alpha
 
 ifeq ($(OS),Windows_NT)
