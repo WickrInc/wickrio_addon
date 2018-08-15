@@ -1,4 +1,6 @@
-Release Notes from v4.26-release to v4.52.1-2:
+Release Notes from v4.26-release to v4.52.1-3:
+  * Fix compliance bot
+  * Paul fix clientserver ipc
   * Commit initial work associated with using ZeroMQ instead of IPC code [ci skip]
   * Make Wickr Node.js addon distributable
   * Improve fileBot
