@@ -1,0 +1,4 @@
+#!/bin/sh
+
+./wickrio_addon/install.sh
+npm install

@@ -4,7 +4,8 @@
   "description": "WickrIO Web Interface Node.JS API",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "start": "nodemon server.js"
   },
   "keywords": [
     "Wickr",
