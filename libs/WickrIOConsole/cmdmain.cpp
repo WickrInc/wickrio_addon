@@ -25,6 +25,17 @@ CmdMain::CmdMain(OperationData*pOperation) :
 {
 }
 
+CmdMain::CmdMain(const QString& appName) :
+    m_cmdOperation(appName),
+    m_cmdClient(&m_cmdOperation),
+    m_cmdConsole(&m_cmdOperation),
+    m_cmdAdvanced(&m_cmdOperation),
+    m_cmdServer(&m_cmdOperation),
+    m_cmdParser(&m_cmdOperation),
+    m_cmdUsers(&m_cmdOperation)
+{
+}
+
 bool CmdMain::processCommand(QString cmd, QString subcmds)
 {
     bool retVal=true;

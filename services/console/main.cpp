@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
         coreapp.setOrganizationName(WBIO_ORGANIZATION);
         coreapp.setApplicationName(WBIO_CONSOLE_TARGET);
 
-        CmdMain cmdmain;
+        CmdMain cmdmain(WBIO_CONSOLE_TARGET);
         cmdmain.runCommands();
     } else {
         QApplication app(argc, argv);

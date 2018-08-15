@@ -30,6 +30,7 @@
 #include "wickrbotutils.h"
 #include "wickrbotsettings.h"
 #include "loghandler.h"
+#include "wickrIOIPCRuntime.h"
 
 extern bool isVERSIONDEBUG();
 
@@ -90,15 +91,7 @@ int main(int argc, char *argv[])
     QString dirname;
     QString logname;
 
-#ifdef Q_OS_WIN
-    dirname = QString("%1/%2/%3/logs")
-            .arg(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation))
-            .arg(WBIO_ORGANIZATION)
-            .arg(WBIO_GENERAL_TARGET);
-#elif defined(Q_OS_LINUX)
     dirname = QString("/opt/%1/logs").arg(WBIO_GENERAL_TARGET);
-#endif
-
     filename = QString("%1/%2.output").arg(dirname).arg(WBIO_CLIENTSERVER_TARGET);
     logname =  QString("%1/%2.log").arg(dirname).arg(WBIO_CLIENTSERVER_TARGET);
 
@@ -110,7 +103,6 @@ int main(int argc, char *argv[])
     int svcret;
 
 
-#ifdef Q_OS_LINUX
     for (int i=0; i<argc; i++) {
         qDebug() << "ARG[" << i+1 << "] =" << argv[i];
         QString cmd(argv[i]);
@@ -120,6 +112,7 @@ int main(int argc, char *argv[])
         }
     }
 
+    WickrIOIPCRuntime::init(WBIO_CLIENTSERVER_TARGET, false);
     if (systemd) {
         qDebug() << "Starting in systemd mode!";
         catchUnixSignals({SIGTSTP, SIGQUIT, SIGTERM});
@@ -137,11 +130,7 @@ int main(int argc, char *argv[])
 
         svcret = service.exec();
     }
-#else
-    WickrIOClientServerService service(argc, argv);
-
-    svcret = service.exec();
-#endif
+    WickrIOIPCRuntime::shutdown();
 
     qDebug() << "Leaving Service exec";
     return svcret;
