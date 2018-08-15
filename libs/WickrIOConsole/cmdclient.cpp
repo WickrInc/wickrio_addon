@@ -1276,21 +1276,21 @@ void CmdClient::modifyClient(int clientIndex)
 }
 
 /**
- * @brief CmdClient::sendClientCmd
+ * @brief CmdClient::sendIPCCmd
  * This function will send and wait for a successful sent of a message to a
  * client, with the input port number.
  * @param port
  * @param cmd
  * @return
  */
-bool CmdClient::sendClientCmd(const QString& dest, const QString& cmd)
+bool CmdClient::sendIPCCmd(const QString& dest, bool isClient, const QString& cmd)
 {
     m_clientMsgInProcess = true;
     m_clientMsgSuccess = false;
 
     WickrIOIPCService *ipcSvc = WickrIOIPCRuntime::ipcSvc();
 
-    if (ipcSvc == nullptr || ! ipcSvc->sendMessage(dest, true, cmd)) {
+    if (ipcSvc == nullptr || ! ipcSvc->sendMessage(dest, isClient, cmd)) {
         return false;
     }
 
@@ -1428,7 +1428,7 @@ void CmdClient::pauseClient(int clientIndex, bool force)
     }
 
 
-    if (! sendClientCmd(client->name, WBIO_IPCCMDS_PAUSE)) {
+    if (! sendIPCCmd(client->name, true, WBIO_IPCCMDS_PAUSE)) {
         qDebug() << "CONSOLE:Failed to send message to client!";
     }
     closeClientIPC(client->name);
@@ -1462,18 +1462,9 @@ void CmdClient::startClient(int clientIndex, bool force)
                 QString response = getNewValue("", prompt);
                 if (response.toLower() == "y" || response.toLower() == "yes") {
 
-
-
-
-
-
-#if 1
-                    if (! m_operation->m_ioDB->updateProcessState(processName, 0, PROCSTATE_DOWN)) {
-                        qDebug() << "CONSOLE:Failed to change start of client in database!";
-                        return;
-                    }
-
+                    // If the password is needed then prompt for it
                     bool getPassword = false;
+                    QString password;
                     if (client->m_autologin) {
                         // Check if the database password has been created.
                         // If not then will need the client's password to start.
@@ -1488,99 +1479,95 @@ void CmdClient::startClient(int clientIndex, bool force)
                     }
 
                     if (getPassword) {
-                        QString password;
                         do {
                             password = getNewValue("", "Enter password for this client:");
                             if (response == "quit") {
                                 return;
                             }
                         } while (password.isEmpty());
-
-                        m_clientStateChanged = false;
-
-                        while ( true ) {
-                            if (!m_operation->m_ioDB->getProcessState(processName, &state)) {
-                                // Can't get the process state, what to do
-                            }
-                            if (state.state != PROCSTATE_RUNNING) {
-                                qDebug().noquote() << QString("CONSOLE:Waiting for %1 to start").arg(client->user);
-                                QThread::sleep(1);
-                                continue;
-                            }
-
-                            qint64 startTime = QDateTime::currentSecsSinceEpoch();
-                            qint64 lastTime = startTime;
-
-                            WickrIOIPCService *ipcSvc = WickrIOIPCRuntime::ipcSvc();
-                            connect(ipcSvc, &WickrIOIPCService::signalReceivedMessage, this, &CmdClient::slotReceivedMessage);
-
-                            // It is running lets send the password to it now
-                            QString pwstring = WickrIOIPCCommands::getPasswordString(m_operation->m_appNm, password);
-                            sendClientCmd(client->name, pwstring);
-
-                            // Need to check that the password worked
-                            while (true) {
-                                QCoreApplication::processEvents();
-                                if (m_clientStateChanged) {
-                                    if (m_clientState == "loggedin") {
-                                        qDebug().noquote() << QString("CONSOLE:%1 is logged in").arg(client->name);
-                                    } else if (m_clientState == "stopping") {
-                                        qDebug().noquote() << QString("CONSOLE:%1 to login!").arg(client->name);
-                                    }
-                                    break;
-                                } else {
-                                    qint64 curTime = QDateTime::currentSecsSinceEpoch();
-                                    if (curTime > startTime + 60) {
-                                        qDebug() << "CONSOLE:Waited for over 60 seconds, quiting!";
-                                        break;
-                                    }
-                                    if (curTime > lastTime + 5) {
-                                        qDebug() << "CONSOLE:Waiting";
-                                        lastTime = curTime;
-                                    }
-                                }
-                            }
-
-                            disconnect(ipcSvc, &WickrIOIPCService::signalReceivedMessage, this, &CmdClient::slotReceivedMessage);
-
-                            break;
-                        }
-
                     }
 
-#else
-                    // Check if the database password has been created.
-                    // If not then will need the client's password to start.
-                    QString clientDbDir = QString(WBIO_CLIENT_DBDIR_FORMAT).arg(m_operation->m_dbLocation).arg(client->name);
-                    QString dbKeyFileName = QString("%1/dkd.wic").arg(clientDbDir);
-                    QFile dbKeyFile(dbKeyFileName);
-                    if (!dbKeyFile.exists()) {
-                        QString configFileName = QString(WBIO_CLIENT_SETTINGS_FORMAT).arg(m_operation->m_dbLocation).arg(client->name);
-                        QFile file(configFileName);
-                        if (!file.exists()) {
-                            qDebug() << "CONSOLE:Configuration file does not exist!";
+
+                    // If running as a client server then directly start the client
+                    if (m_operation->m_appNm ==  WBIO_CLIENTSERVER_TARGET) {
+
+                        if (! m_operation->m_ioDB->updateProcessState(processName, 0, PROCSTATE_DOWN)) {
+                            qDebug() << "CONSOLE:Failed to change start of client in database!";
                             return;
                         }
 
-                        QString password;
-                        do {
-                            password = getNewValue("", "Enter password for this client:");
-                            if (response == "quit") {
-                                return;
+                        if (getPassword) {
+                            m_clientStateChanged = false;
+
+                            while ( true ) {
+                                if (!m_operation->m_ioDB->getProcessState(processName, &state)) {
+                                    // Can't get the process state, what to do
+                                }
+                                if (state.state != PROCSTATE_RUNNING) {
+                                    qDebug().noquote() << QString("CONSOLE:Waiting for %1 to start").arg(client->user);
+                                    QThread::sleep(1);
+                                    continue;
+                                }
+
+                                qint64 startTime = QDateTime::currentSecsSinceEpoch();
+                                qint64 lastTime = startTime;
+
+                                WickrIOIPCService *ipcSvc = WickrIOIPCRuntime::ipcSvc();
+                                connect(ipcSvc, &WickrIOIPCService::signalReceivedMessage, this, &CmdClient::slotReceivedMessage);
+
+                                // It is running lets send the password to it now
+                                QString pwstring = WickrIOIPCCommands::getPasswordString(m_operation->m_appNm, password);
+                                sendIPCCmd(client->name, true, pwstring);
+
+                                // Need to check that the password worked
+                                while (true) {
+                                    QCoreApplication::processEvents();
+                                    if (m_clientStateChanged) {
+                                        if (m_clientState == "loggedin") {
+                                            qDebug().noquote() << QString("CONSOLE:%1 is logged in").arg(client->name);
+                                        } else if (m_clientState == "stopping") {
+                                            qDebug().noquote() << QString("CONSOLE:%1 to login!").arg(client->name);
+                                        }
+                                        break;
+                                    } else {
+                                        qint64 curTime = QDateTime::currentSecsSinceEpoch();
+                                        if (curTime > startTime + 60) {
+                                            qDebug() << "CONSOLE:Waited for over 60 seconds, quiting!";
+                                            break;
+                                        }
+                                        if (curTime > lastTime + 5) {
+                                            qDebug() << "CONSOLE:Waiting";
+                                            lastTime = curTime;
+                                        }
+                                    }
+                                }
+
+                                disconnect(ipcSvc, &WickrIOIPCService::signalReceivedMessage, this, &CmdClient::slotReceivedMessage);
+
+                                break;
                             }
-                        } while (password.isEmpty());
 
-                        QSettings * settings = new QSettings(configFileName, QSettings::NativeFormat);
-                        settings->beginGroup(WBSETTINGS_USER_HEADER);
-                        settings->setValue(WBSETTINGS_USER_PASSWORD, password);
-                        settings->endGroup();
-                        settings->sync();
-                    }
-                    if (! m_operation->m_ioDB->updateProcessState(processName, 0, PROCSTATE_DOWN)) {
-                        qDebug() << "CONSOLE:Failed to change start of client in database!";
-                    }
-#endif
+                        }
 
+                    }
+                    // Else this is running as a console, need to interace via the client server
+                    else {
+                        // If password is needed Send client information to the Client Server
+                        if (getPassword) {
+                            QString clientServerCmd;
+                            clientServerCmd = WickrIOIPCCommands::getBotInfoString(m_operation->m_appNm,
+                                                                                   client->name,
+                                                                                   client->getProcessName(),
+                                                                                   password);
+                            sendIPCCmd(WBIO_CLIENTSERVER_TARGET, false, clientServerCmd);
+                        }
+
+                        if (! m_operation->m_ioDB->updateProcessState(processName, 0, PROCSTATE_DOWN)) {
+                            qDebug() << "CONSOLE:Failed to change start of client in database!";
+                            return;
+                        }
+
+                    }
                 }
             } else if (state.state == PROCSTATE_DOWN){
                 qDebug() << "CONSOLE:Client is already waiting to start. The WickrIO Client Server should change the state to running.";

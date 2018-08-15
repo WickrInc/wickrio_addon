@@ -18,7 +18,14 @@ CmdOperation::CmdOperation(OperationData* operation, QObject *parent) :
     m_appNm = WBIO_CLIENTSERVER_TARGET;
     m_settings = WBIOServerCommon::getSettings();
     m_dbLocation = WBIOServerCommon::getDBLocation();
-    m_ioDB = NULL;
+}
+
+CmdOperation::CmdOperation(const QString& appName, QObject *parent) :
+    QObject(parent),
+    m_appNm(appName)
+{
+    m_settings = WBIOServerCommon::getSettings();
+    m_dbLocation = WBIOServerCommon::getDBLocation();
 }
 
 /**
