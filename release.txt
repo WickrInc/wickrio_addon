@@ -1,4 +1,11 @@
-Release Notes from v4.26-release to v4.52.2-2:
+Release Notes from v4.26-release to v4.52.2-3:
+  * Add bot mentioning parsing to file bot
+  * Prealpha v4.52
+  * # Conflicts:
+  * #   BUILD_NUMBER
+  * #   clients/libs/WickrIOClient/wickrBuildNumbers.h
+  * #   integrations/nodejs/installer/generate
+  * #   release.txt
   * Add distribution method for samples - Aaron-nodejs02
   * Update the generate script to all the generate.sh files in the samples…
   * Fix compliance bot
