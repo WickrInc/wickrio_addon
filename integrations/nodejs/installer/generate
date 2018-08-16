@@ -9,9 +9,11 @@
 set -e
 current=`dirname $0`
 cd $current
+pwd=`pwd`
 
 build_number=$1
-output_dir="$2"
+integrations_output_dir="$2"
+output_dir="$3"
 
 #
 # Make sure the version number is the correct length
@@ -25,6 +27,7 @@ fi
 # Debug display of input
 #
 echo build_number=$build_number
+echo integrations_output_dir=$integrations_output_dir
 
 #
 # Setup the version number(s)
@@ -75,33 +78,50 @@ cp ../../../clients/libs/WickrIOClientAPI/src/bot_iface.h ${dst_sample_dir}/expo
 # Create the importable software images for each of the samples. These can be used in
 # the WickrIO system, and used as examples of how to import custom integrations.
 #
-mkdir -p $dst_sample_dir/imports
-samples_dir=$current/../samples
+samples_dir=$pwd/../samples
 
 compliance_bot_sample=$samples_dir/compliance_bot
 if test -f "$compliance_bot_sample/generate.sh" ; then
     echo "generating software.tar.gz for compliance_bot sample"
+    mkdir -p $dst_sample_dir/imports/compliance_bot
     cd $compliance_bot_sample
     mkdir $samples_dir/compliance_bot
     ./generate.sh $samples_dir/compliance_bot
+
+    # generate into the integrations output directory
+    mkdir -p $integrations_output_dir/compliance_bot
+    ./generate.sh $integrations_output_dir/compliance_bot
+
     cd $current
 fi
 
 file_bot_sample=$samples_dir/file_bot
 if test -f "$file_bot_sample/generate.sh" ; then
     echo "generating software.tar.gz for file_bot sample"
+    mkdir -p $dst_sample_dir/imports/file_bot
     cd $file_bot_sample
     mkdir $samples_dir/file_bot
     ./generate.sh $samples_dir/file_bot
+
+    # generate into the integrations output directory
+    mkdir -p $integrations_output_dir/file_bot
+    ./generate.sh $integrations_output_dir/file_bot
+
     cd $current
 fi
 
 welcome_bot_sample=$samples_dir/welcome_bot
 if test -f "$welcome_bot_sample/generate.sh" ; then
     echo "generating software.tar.gz for welcome_bot sample"
+    mkdir -p  $dst_sample_dir/imports/welcome_bot
     cd $welcome_bot_sample
     mkdir $samples_dir/welcome_bot
     ./generate.sh $samples_dir/welcome_bot
+
+    # generate into the integrations output directory
+    mkdir -p $integrations_output_dir/welcome_bot
+    ./generate.sh $integrations_output_dir/welcome_bot
+
     cd $current
 fi
 

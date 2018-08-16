@@ -228,8 +228,7 @@ void WickrIOClientMain::slotDatabaseLoadDone(WickrDatabaseLoadContext *context)
                                          WickrCore::WickrUser::getSelfUser()->getServerIDHash(),
                                          WickrCore::WickrSession::getActiveSession()->getAppID(),
                                          WickrCore::WickrSession::getActiveSession()->getSwitchboardToken(),
-                                         WickrCore::WickrSession::getActiveSession()->getNetworkIdFromLogin(),
-                                         true);
+                                         WickrCore::WickrSession::getActiveSession()->getNetworkIdFromLogin());
 
     // Start the receive service
     m_rxService = new WickrIORxService(m_operation, m_rxDetails);
@@ -632,9 +631,6 @@ void WickrIOClientMain::slotMessageServiceState(WickrServiceState state)
         }
         m_personalize.setFirstLogin(false);
 #endif
-
-        // MESSAGE CHECK: Perform initial message check
-        WickrCore::WickrRuntime::msgSvcScheduleCheck(ON_LOGIN);
         break;
 
     case WickrServiceState::SERVICE_LOGGED_OUT:
@@ -702,8 +698,7 @@ void WickrIOClientMain::slotOnLoginMsgSynchronizationComplete()
                                          WickrCore::WickrUser::getSelfUser()->getServerIDHash(),
                                          WickrCore::WickrSession::getActiveSession()->getAppID(),
                                          WickrCore::WickrSession::getActiveSession()->getSwitchboardToken(),
-                                         WickrCore::WickrSession::getActiveSession()->getNetworkIdFromLogin(),
-                                         false);
+                                         WickrCore::WickrSession::getActiveSession()->getNetworkIdFromLogin());
 }
 
 

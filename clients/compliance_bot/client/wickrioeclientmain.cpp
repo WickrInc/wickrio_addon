@@ -230,8 +230,7 @@ void WickrIOEClientMain::slotDatabaseLoadDone(WickrDatabaseLoadContext *context)
                                          WickrCore::WickrUser::getSelfUser()->getServerIDHash(),
                                          WickrCore::WickrSession::getActiveSession()->getAppID(),
                                          WickrCore::WickrSession::getActiveSession()->getSwitchboardToken(),
-                                         WickrCore::WickrSession::getActiveSession()->getNetworkIdFromLogin(),
-                                         true);
+                                         WickrCore::WickrSession::getActiveSession()->getNetworkIdFromLogin());
 
     // Start the receive thread
     connect(m_rxThread, &WickrIOReceiveThread::signalProcessStarted, this, &WickrIOEClientMain::slotRxProcessStarted, Qt::QueuedConnection);
@@ -650,9 +649,6 @@ void WickrIOEClientMain::slotMessageServiceState(WickrServiceState state)
         }
         m_personalize.setFirstLogin(false);
 #endif
-
-        // MESSAGE CHECK: Perform initial message check
-        WickrCore::WickrRuntime::msgSvcScheduleCheck(ON_LOGIN);
         break;
 
     case WickrServiceState::SERVICE_LOGGED_OUT:
@@ -716,8 +712,7 @@ void WickrIOEClientMain::slotOnLoginMsgSynchronizationComplete()
                                          WickrCore::WickrUser::getSelfUser()->getServerIDHash(),
                                          WickrCore::WickrSession::getActiveSession()->getAppID(),
                                          WickrCore::WickrSession::getActiveSession()->getSwitchboardToken(),
-                                         WickrCore::WickrSession::getActiveSession()->getNetworkIdFromLogin(),
-                                         false);
+                                         WickrCore::WickrSession::getActiveSession()->getNetworkIdFromLogin());
 }
 
 bool WickrIOEClientMain::parseSettings(QSettings *settings)

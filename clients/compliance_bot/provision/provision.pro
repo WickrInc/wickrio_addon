@@ -235,13 +235,7 @@ linux-g++* {
 
     INCLUDEPATH += $$DEPTH/wickr-sdk/platforms/linux/include
     INCLUDEPATH += $$DEPTH
-    contains(QT_ARCH,x86_64) {
-        LIBS += -L$$PWD/$$DEPTH/wickr-sdk/platforms/linux/generic-64
-    }
-    else {
-        LIBS += -L$$PWD/$$DEPTH/wickr-sdk/platforms/linux/generic-32
-    }
-
+    LIBS += -L$$PWD/$$DEPTH/wickr-sdk/platforms/linux/generic-64
     LIBS += -L$$OUT_PWD/$$DEPTH/wickr-sdk/src -lwickr-sdk
     LIBS += -L$$PWD/$$DEPTH/wickr-sdk/platforms/linux/generic-64
     LIBS += -L$$PWD/$$DEPTH/wickr-sdk/platforms/linux/generic-64/$${BUILD_TYPE}
@@ -252,6 +246,7 @@ linux-g++* {
     LIBS += -lprotobuf
     LIBS += -lcrypto
     LIBS += -lwmmigrator -lcjson
+    LIBS += -lpsiphontunnel
 
     LIBS += -L$$OUT_PWD/$${DEPTH}/wickr-sdk/libs/qbson -lqbson \
             -L$$OUT_PWD/$${DEPTH}/wickr-sdk/libs/libbson -lbson \
