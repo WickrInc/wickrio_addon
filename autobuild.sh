@@ -298,6 +298,7 @@ esac
 build=autobuild-$btype
 deploy="$abs/$build/bots.deploy"
 output="$abs/autobuild-output/wickrio_$1_$2"
+integrations_output="$output/integrations/software"
 
 export PATH QTDIR INCLUDE LIB LIBPATH BUILD_CMD
 echo "building $type"
@@ -356,6 +357,9 @@ if test ! -z "$doCoreBot" ; then
     $abs/clients/core_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
 fi
 
+#====================================================================================================================================
+# Create the hubot integration software
+#
 echo "Getting the Hubot integration software from the wickr-integrations submodule"
 mkdir -p $output/hubot
 (cd $abs/wickr-integrations; ./compress.sh $output/hubot $version)
@@ -363,6 +367,17 @@ hubotswdir=$output/hubot
 hubotsoftware=$output/hubot/hubot_$version.tar.gz
 hubotversion=$output/hubot/VERSION
 
+#
+# Copy the hubot software to the integrations software director
+#
+mkdir -p $integrations_output/hubot
+cp $hubotsoftware $integrations_output/hubot/software.tar.gz
+cp $hubotversion $integrations_output/hubot
+
+
+#====================================================================================================================================
+# Create the Docker container image
+#
 if test ! -z "$wickrIODockerDeb" ; then
     echo "Create docker package for $product $btype"
     build_number=`cat $abs/BUILD_NUMBER`

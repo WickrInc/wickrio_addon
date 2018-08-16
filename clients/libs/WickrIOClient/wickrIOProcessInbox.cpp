@@ -33,11 +33,14 @@ WickrIOProcessInbox::processCommonFields(QJsonObject& jsonObject, WickrCore::Wic
     QString msg_ts = QString("%1.%2").arg(timestamp).arg(usec);
     jsonObject.insert(APIJSON_MSG_TS, msg_ts);
 
-
     // Get the sender of this message
     WickrCore::WickrUser *sender = msg->getSenderUser();
     jsonObject.insert(APIJSON_MSGSENDER, sender->getUserID());
 
+    // If mentioned save the flag
+    if (msg->isSelfMentioned()) {
+        jsonObject.insert(APIJSON_MSGMENTIONED, true);
+    }
     return true;
 }
 
