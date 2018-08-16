@@ -17,10 +17,10 @@ return new Promise(async (resolve, reject) => {
 
 }).then(result => {
 console.log(result);
-var vGroupID = "S4b87ee9e90aba8557ace71794438220927fab70b7ef2a242f96688234ac253f";
-var members = ['wickraaron002@wickrautomation.com'];
+var vGroupID = "S11fc5a644b5dd64e71ad670c49a164421eb3cfb0b383275cb14606e35c2508a";
+var members = ['wickraaron@wickrautomation.com'];
 var members1;
-var moderators = ['wickraaron002@wickrautomation.com'];
+var moderators = ['wickraaron@wickrautomation.com'];
 var bor = "600";
 var ttl = "100";
 var title = "West World";

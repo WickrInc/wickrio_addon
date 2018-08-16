@@ -43,4 +43,4 @@ CMakeLists.txt.user
 
 node_modules
 package-lock.json
-
+client_bot_username.txt
