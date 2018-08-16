@@ -36,8 +36,18 @@ return new Promise(async (resolve, reject) => {
         var userArr = [];
         userArr.push(sender);
         if (rMessage.message) {
-          var request = rMessage.message.split(" ");
-          if (request[0] === '/list') {
+          var request = rMessage.message;
+          console.log('request:',request);
+          var botMention = request.slice(/\/+([a-zA-Z]+)@([a-zA-Z]+)/);
+          var atSign = request.indexOf('@');
+          var firstSpace = request.indexOf(' ');
+          if(firstSpace === -1)
+            firstSpace = request.length;
+          var botName = request.slice(atSign, firstSpace + 1);
+          if(atSign === -1)
+            atSign = firstSpace;
+          var command = request.slice(0, atSign);
+          if (command === '/list' || command === '//list') {
             var fileArr = [];
             fileArr.push('List of files in the given directory:');
             var answer;
@@ -47,8 +57,8 @@ return new Promise(async (resolve, reject) => {
             fileArr = fileArr.join('\n');
             var sMessage = addon.cmdSend1to1Message(userArr, fileArr, ttl, bor);
             console.log(sMessage);
-          } else if (request[0] === '/get') {
-            var attachment = rMessage.message.substr(rMessage.message.indexOf(' ') + 1);
+          } else if (command === '/get' || command === '//get') {
+            var attachment = request.substr(firstSpace + 1);
             try {
               var as = await fs.accessSync('files/' + attachment, fs.constants.R_OK | fs.constants.W_OK);
               console.log('can access', attachment);
@@ -60,8 +70,8 @@ return new Promise(async (resolve, reject) => {
               continue;
             }
             console.log(addon.cmdSend1to1Attachment(userArr, __dirname + '/files/' + attachment, attachment, ttl, bor));
-          } else if (request[0] === '/delete') {
-            var attachment = rMessage.message.substr(rMessage.message.indexOf(' ') + 1);
+          } else if (command === '/delete' || command === '//delete') {
+            var attachment = request.substr(firstSpace + 1);
             if (attachment === '*') {
               var msg = "Sorry, I'm not allowed to delete all the files in the directory.";
               var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
@@ -90,7 +100,7 @@ return new Promise(async (resolve, reject) => {
             var msg = "File named: '" + attachment + "' was deleted successfully!";
             var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
             console.log(sMessage);
-          } else if (request[0] === '/help') {
+          } else if (command === '/help' || command === '//help') {
             var help = "/help - List all available commands\n" +
               "/list - Lists all available files\n" +
               "/get FILE_NAME - Retrieve the specified file\n" +
