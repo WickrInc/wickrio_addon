@@ -2,14 +2,16 @@
 echo This script should run to advance the build number
 echo Following this, clean everything and build everything!
 
-WICKRIOTOPBRANCH="alpha"
-WICKRSDKBRANCH="v4.41"
-WICKRCOREBRANCH="Desktop_v4.41"
+. ./PREP-SET-BRANCHES
+
+echo "wickr-wickrio branch = ${WICKRWICKRIOBRANCH}"
+echo "wickr-sdk branch     = ${WICKRSDKBRANCH}"
+echo "wickr-core branch    = ${WICKRCOREBRANCH}"
 
 # make sure we are in specified branch and up to date...
 set -e
-git checkout ${WICKRIOTOPBRANCH}
-git pull origin ${WICKRIOTOPBRANCH}
+git checkout ${WICKRWICKRIOBRANCH}
+git pull origin ${WICKRWICKRIOBRANCH}
 set +e
 
 #

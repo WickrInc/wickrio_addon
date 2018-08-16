@@ -13,7 +13,7 @@
 # $3 = build extension string (i.e. alpha)
 # $4 = build installation string (i.e. Alpha)
 # $5 = release build flag (true for release)
-# $6 = hubot integration software directory
+# $6 = integrations software directory
 # $7 = Output directory
 
 set -e
@@ -25,7 +25,7 @@ build_number=$2
 build_extension=$3
 install_extension=$4
 release_flag=$5
-hubotswdir=$6
+integrations_sw_dir=$6
 output_dir=$7
 
 if test -z "$release_flag" ; then
@@ -50,7 +50,7 @@ echo build_number=$build_number
 echo build_extension=$build_extension
 echo install_extension=$install_extension
 echo release_flag=$release_flag
-echo hubotswdir=$hubotswdir
+echo integrations_sw_dir=$integrations_sw_dir
 
 #
 # Setup the version number(s)
@@ -148,10 +148,9 @@ cp -a ${build_dir}/libs/qamqpsrc/libqamqp.* $libdir
 #
 # Copy the integrations software
 #
-if test -n "$hubotswdir" ; then
-  mkdir -p $dstintegrationsdir/software/hubot
-  cp -a $hubotswdir/*.tar.gz $dstintegrationsdir/software/hubot/software.tar.gz
-  cp -a $hubotswdir/VERSION $dstintegrationsdir/software/hubot
+if test -n "$integrations_sw_dir" ; then
+  mkdir -p $dstintegrationsdir/software
+  cp -r "$integrations_sw_dir/*" $dstintegrationsdir/software
 fi
 
 #

@@ -1,7 +1,7 @@
 #!/bin/sh
 echo Setting the branches for wickr-wickrio, sdk, core and integrations
 
-export WICKRWICKRIO="alpha"
-export WICKRSDKBRANCH="v4.41"
-export WICKRCOREBRANCH="v4.41"
+export WICKRWICKRIOBRANCH="prealpha_v4.52"
+export WICKRSDKBRANCH="v4.52"
+export WICKRCOREBRANCH="Desktop_v4.52"
 export WICKRINTEGRATIONSBRANCH="alpha"

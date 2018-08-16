@@ -298,6 +298,7 @@ esac
 build=autobuild-$btype
 deploy="$abs/$build/bots.deploy"
 output="$abs/autobuild-output/wickrio_$1_$2"
+integrations_output="$output/integrations/software"
 
 export PATH QTDIR INCLUDE LIB LIBPATH BUILD_CMD
 echo "building $type"
@@ -328,6 +329,9 @@ mkdir -p "$output"
 
 echo "Deploy directory: $deploy"
 
+#====================================================================================================================================
+# Create the Compliance Bot installer
+#
 if test ! -z "$doComplianceBot" ; then
     echo "Create compliance_bot for $product $btype"
     build_number=`cat $abs/BUILD_NUMBER`
@@ -335,6 +339,9 @@ if test ! -z "$doComplianceBot" ; then
     $abs/clients/compliance_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
 fi
 
+#====================================================================================================================================
+# Create the WickrIO Bot installer
+#
 if test ! -z "$doBroadcastBot" ; then
     echo "Create wickrio_bot for $product $btype"
     build_number=`cat $abs/BUILD_NUMBER`
@@ -342,6 +349,9 @@ if test ! -z "$doBroadcastBot" ; then
     $abs/clients/wickrio_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
 fi
 
+#====================================================================================================================================
+# Create the Welcome Bot installer
+#
 if test ! -z "$doWelcomeBot" ; then
     echo "Create welcome_bot for $product $btype"
     build_number=`cat $abs/BUILD_NUMBER`
@@ -349,6 +359,9 @@ if test ! -z "$doWelcomeBot" ; then
     $abs/clients/welcome_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
 fi
 
+#====================================================================================================================================
+# Create the Core Bot installer
+#
 if test ! -z "$doCoreBot" ; then
     echo "Create core_bot for $product $btype"
     build_number=`cat $abs/BUILD_NUMBER`
@@ -356,6 +369,9 @@ if test ! -z "$doCoreBot" ; then
     $abs/clients/core_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
 fi
 
+#====================================================================================================================================
+# Create the hubot integration software
+#
 echo "Getting the Hubot integration software from the wickr-integrations submodule"
 mkdir -p $output/hubot
 (cd $abs/wickr-integrations; ./compress.sh $output/hubot $version)
@@ -363,33 +379,56 @@ hubotswdir=$output/hubot
 hubotsoftware=$output/hubot/hubot_$version.tar.gz
 hubotversion=$output/hubot/VERSION
 
+#
+# Copy the hubot software to the integrations software director
+#
+mkdir -p $integrations_output/hubot
+cp $hubotsoftware $integrations_output/hubot/software.tar.gz
+cp $hubotversion $integrations_output/hubot
+
+echo "going to create the Samples package"
+(cd $abs/integrations/nodejs/installer; ./generate $build_number "$integrations_output" "$deploy")
+
+
+#====================================================================================================================================
+# Create the Docker container image
+#
 if test ! -z "$wickrIODockerDeb" ; then
     echo "Create docker package for $product $btype"
     build_number=`cat $abs/BUILD_NUMBER`
     binary_dir="$abs/$build"
-    $abs/docker/installer/linux/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$hubotswdir" "$deploy"
+    $abs/docker/installer/linux/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$integrations_output" "$deploy"
 fi
 
+#====================================================================================================================================
+# Create the Integrations Software Package
+#
 echo "going to create the integration software package"
 build_number=`cat $abs/BUILD_NUMBER`
 $abs/integrations/installer/linux/scripts/deploy64 $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$hubotswdir" "$deploy"
 
+#====================================================================================================================================
+# Create the Services Software Package
+#
 echo "going to create $btype for services"
 build_number=`cat $abs/BUILD_NUMBER`
 $abs/services/installer/linux/scripts/deploy64 $binary_dir $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$deploy"
 
+#====================================================================================================================================
+# Create the Console Software Package
+#
 echo "going to create $btype for console command package (for Docker)"
 build_number=`cat $abs/BUILD_NUMBER`
 $abs/services/installer/linux/scripts/consoleCmd_deploy64 $binary_dir $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$deploy"
 
+#====================================================================================================================================
+# Create the Wickr 64 Software Package
+#
 echo "going to create Qt library package"
 $abs/platforms/linux/debian/wickrqt/deploy64 "$deploy"
 
-echo "going to create the Samples package"
-(cd $abs/integrations/nodejs/installer; ./generate $build_number "$deploy")
-
-#
-# create the package for deployment
+#====================================================================================================================================
+# Create the package for deployment
 #
 (cd $deploy ; zip -r "$output/bots-${version}.zip" *.deb *.sha256 *.tar.gz)
 

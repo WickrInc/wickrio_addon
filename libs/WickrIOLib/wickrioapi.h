@@ -76,6 +76,7 @@
 #define APIJSON_MSGTEXT         "text"
 #define APIJSON_MSGSENDER       "sender"
 #define APIJSON_MSGRECEIVER     "receiver"
+#define APIJSON_MSGMENTIONED    "mentioned"
 #define APIJSON_MSGUSERS        "users"
 #define APIJSON_MSGTIME         "time"
 #define APIJSON_MSG_TS          "msg_ts"
