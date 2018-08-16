@@ -28,6 +28,7 @@ fi
 #
 echo build_number=$build_number
 echo integrations_output_dir=$integrations_output_dir
+echo output_dir=$output_dir
 
 #
 # Setup the version number(s)
@@ -85,7 +86,7 @@ if test -f "$compliance_bot_sample/generate.sh" ; then
     echo "generating software.tar.gz for compliance_bot sample"
     mkdir -p $dst_sample_dir/imports/compliance_bot
     cd $compliance_bot_sample
-    ./generate.sh $dst_samples_dir/imports/compliance_bot
+    ./generate.sh $dst_sample_dir/imports/compliance_bot
 
     # generate into the integrations output directory
     mkdir -p $integrations_output_dir/compliance_bot
