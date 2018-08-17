@@ -37,7 +37,6 @@ return new Promise(async (resolve, reject) => {
         userArr.push(sender);
         if (rMessage.message) {
           var request = rMessage.message;
-          console.log('request:',request);
           var botMention = request.slice(/\/+([a-zA-Z]+)@([a-zA-Z]+)/);
           var atSign = request.indexOf('@');
           var firstSpace = request.indexOf(' ');
