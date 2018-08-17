@@ -149,8 +149,10 @@ win32 {
 } else {
     LIBPATH += $$DEPTH/wickr-sdk/libs/qsqlcipher_wickr/
     INCLUDEPATH += $$DEPTH/wickr-sdk/platforms/linux/include
+    INCLUDEPATH += /usr/include
 
     LIBS += -lzmq
+    LIBS += -lreadline
 }
 LIBS += -lqsqlcipher_wickr
 

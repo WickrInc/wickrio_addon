@@ -22,8 +22,6 @@ CmdParser::CmdParser(CmdOperation *operation) :
  */
 bool CmdParser::runCommands(QString commands)
 {
-    QTextStream input(stdin);
-
     // If the database location is not set then get it
     if (! m_operation->openDatabase())  {
         qDebug() << "CONSOLE:Cannot open database!";
@@ -34,10 +32,7 @@ bool CmdParser::runCommands(QString commands)
     m_parsers = m_operation->m_ioDB->getParsers();
 
     while (true) {
-        qDebug() << "CONSOLE:Enter parser command:";
-        QString line = input.readLine();
-
-        line = line.trimmed();
+        QString line = getCommand("Enter parser command:");
         if (line.length() > 0) {
             QStringList args = line.split(" ");
             QString cmd = args.at(0).toLower();
