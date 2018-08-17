@@ -188,8 +188,6 @@ bool CmdClient::runCommands(const QStringList& options, QString commands)
     // Default to advanced configuration (for now)
     m_basicConfig = false;
 
-    QTextStream input(stdin);
-
     for (QString option : options) {
         if (option == "-basic") {
             m_basicConfig = true;
@@ -223,14 +221,14 @@ bool CmdClient::runCommands(const QStringList& options, QString commands)
 
     if (commands.isEmpty()) {
         while (true) {
+            QString prompt;
             if (m_root) {
-                qDebug() << "CONSOLE:Enter command:";
+                prompt = "Enter command:";
             } else {
-                qDebug() << "CONSOLE:Enter client command:";
+                prompt = "Enter client command:";
             }
-            QString line = input.readLine();
+            QString line = getCommand(prompt);
 
-            line = line.trimmed();
             if (line.length() > 0) {
                 QStringList args = line.split(" ");
                 if (!processCommand(args, isQuit)) {

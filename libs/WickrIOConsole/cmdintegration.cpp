@@ -90,8 +90,6 @@ bool CmdIntegration::processCommand(QStringList cmdList, bool &isquit)
  */
 bool CmdIntegration::runCommands(QString commands)
 {
-    QTextStream input(stdin);
-
     // If the database location is not set then get it
     if (! m_operation->openDatabase()) {
         qDebug() << "CONSOLE:Cannot open database!";
@@ -103,10 +101,7 @@ bool CmdIntegration::runCommands(QString commands)
 
     if (commands.isEmpty()) {
         while (true) {
-            qDebug() << "CONSOLE:Enter integration command:";
-            QString line = input.readLine();
-
-            line = line.trimmed();
+            QString line = getCommand("Enter integration command:");
             if (line.length() > 0) {
                 QStringList args = line.split(" ");
                 if (!processCommand(args, isQuit)) {

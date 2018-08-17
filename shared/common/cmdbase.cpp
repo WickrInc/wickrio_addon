@@ -4,6 +4,9 @@
 #include <QEventLoop>
 #include <QTimer>
 
+#include <readline/readline.h>
+#include <readline/history.h>
+
 #include "cmdbase.h"
 #include "wickrIOCommon.h"
 
@@ -89,10 +92,28 @@ QString CmdBase::getPassword(const QString& prompt)
         pass[i]=getch();
     }
 
-    std::cout<<"\n\n";
+    std::cout<<"\n";
 
     QString password = QString(pass, i);
     return password;
+}
+
+QString CmdBase::getCommand(const QString& prompt)
+{
+    QString lineInput;
+    char *response = readline(prompt.toStdString().c_str());
+
+    if (response != nullptr) {
+        lineInput = QString(response);
+        free(response);
+    }
+
+    lineInput = lineInput.trimmed();
+
+    if (lineInput.length() > 0) {
+        add_history(lineInput.toStdString().c_str());
+    }
+    return lineInput;
 }
 
 /**
@@ -106,18 +127,27 @@ QString CmdBase::getPassword(const QString& prompt)
 QString CmdBase::getNewValue(const QString& oldValue, const QString& prompt, CheckType check, QStringList choices, QString listDesc)
 {
     QString newValue("");
-
-    QTextStream s(stdin);
-
-    QString lineInput;
+    QString lineInput;    
 
     while (true) {
+        QString promptString;
         if (oldValue.isEmpty()) {
-            qDebug("CONSOLE:%s:", qPrintable(prompt));
+            promptString = QString("%1:").arg(prompt);
         } else {
-            qDebug("CONSOLE:%s (default: %s):", qPrintable(prompt), qPrintable(oldValue));
+            promptString = QString("%1 (default: %2):").arg(prompt).arg(oldValue);
         }
-        lineInput = s.readLine();
+
+        char *response = readline(promptString.toStdString().c_str());
+
+        if (response == nullptr || response[0] == NULL) {
+            lineInput = QString();
+        } else {
+            lineInput = QString(response);
+        }
+
+        if (response != nullptr)
+            free(response);
+
         if (!oldValue.isEmpty() && lineInput.isEmpty()) {
             newValue = oldValue;
             break;
