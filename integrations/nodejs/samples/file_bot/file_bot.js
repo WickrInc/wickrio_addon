@@ -37,15 +37,14 @@ return new Promise(async (resolve, reject) => {
         userArr.push(sender);
         if (rMessage.message) {
           var request = rMessage.message;
-          var botMention = request.slice(/\/+([a-zA-Z]+)@([a-zA-Z]+)/);
-          var atSign = request.indexOf('@');
-          var firstSpace = request.indexOf(' ');
-          if(firstSpace === -1)
-            firstSpace = request.length;
-          var botName = request.slice(atSign, firstSpace + 1);
-          if(atSign === -1)
-            atSign = firstSpace;
-          var command = request.slice(0, atSign);
+          var command = '', argument = '';
+          var parsedData = request.match(/(\/[a-zA-Z]+)(@[a-zA-Z]+)?(\s+)?(.*)$/);
+          if(parsedData !== null){
+            command = parsedData[1];
+            if(parsedData[4] !== ''){
+              argument = parsedData[4];
+          }
+          }
           if (command === '/list' || command === '//list') {
             var fileArr = [];
             fileArr.push('List of files in the given directory:');
@@ -57,10 +56,9 @@ return new Promise(async (resolve, reject) => {
             var sMessage = addon.cmdSend1to1Message(userArr, fileArr, ttl, bor);
             console.log(sMessage);
           } else if (command === '/get' || command === '//get') {
-            var attachment = request.substr(firstSpace + 1);
+            var attachment = argument;
             try {
               var as = await fs.accessSync('files/' + attachment, fs.constants.R_OK | fs.constants.W_OK);
-              console.log('can access', attachment);
             } catch (err) {
               var msg = attachment + ' does not exist!';
               console.error(msg);
@@ -70,7 +68,7 @@ return new Promise(async (resolve, reject) => {
             }
             console.log(addon.cmdSend1to1Attachment(userArr, __dirname + '/files/' + attachment, attachment, ttl, bor));
           } else if (command === '/delete' || command === '//delete') {
-            var attachment = request.substr(firstSpace + 1);
+            var attachment = argument;
             if (attachment === '*') {
               var msg = "Sorry, I'm not allowed to delete all the files in the directory.";
               var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
