@@ -80,7 +80,7 @@
 
 // The directory
 #define WBIO_INTEGRATIONS_DIR           "/usr/lib/wickr/integrations/software"
-
+#define WBIO_INTEGRATION_SWFILE         "%1/%2/software.tar.gz"                 // %1 is path, %2 is integration name
 /*
  * WickrIO IPC commands
  */

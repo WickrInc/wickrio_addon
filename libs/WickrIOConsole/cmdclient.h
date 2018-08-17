@@ -48,7 +48,7 @@ private:
     void closeClientIPC(const QString& dest);
 
     bool readLineFromProcess(QProcess *process, QString& line);
-    bool runBotScript(const QString& destPath, const QString& configure, WickrBotClients *client);
+    bool runBotScript(const QString& destPath, const QString& configure, WickrBotClients *client, const QStringList& args);
 
     bool getAuthValue(WickrBotClients *client, bool basic, QString& authValue);
 

@@ -23,6 +23,8 @@ protected:
     QString getNewValue(const QString& oldValue, const QString& prompt, CheckType check = CHECK_NONE,
             QStringList choices = QStringList(), QString listDesc = QString());
 
+    QString getPassword(const QString& prompt);
+
 };
 
 #endif // CMDBASE_H
