@@ -1,4 +1,7 @@
-Release Notes from v4.26-release to v4.52.2-6:
+Release Notes from v4.26-release to v4.52.3-2:
+  * Add regex bot mentioning and command processing for file_bot
+  * Support better command line, with a history and editing the command line [ci skip]
+  * Fix configure.sh, add VERSION files, add upgrade.sh for file_bot
   * Add bot mentioning parsing to file bot
   * Prealpha v4.52
   * # Conflicts:
