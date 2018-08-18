@@ -101,17 +101,31 @@ QString CmdBase::getPassword(const QString& prompt)
 QString CmdBase::getCommand(const QString& prompt)
 {
     QString lineInput;
-    char *response = readline(prompt.toStdString().c_str());
 
-    if (response != nullptr) {
-        lineInput = QString(response);
-        free(response);
-    }
+    while (true) {
+        char *response = readline(prompt.toStdString().c_str());
 
-    lineInput = lineInput.trimmed();
+        if (response != nullptr) {
+            lineInput = QString(response);
+            free(response);
+        }
 
-    if (lineInput.length() > 0) {
-        add_history(lineInput.toStdString().c_str());
+        lineInput = lineInput.trimmed();
+
+        if (lineInput.length() > 0) {
+            add_history(lineInput.toStdString().c_str());
+        }
+
+        if (lineInput != "history")
+            break;
+
+        // Handle history command
+        HIST_ENTRY **historyList = history_list();
+
+        if (historyList) {
+            for (int i = 0; historyList[i]; i++)
+              printf ("%d: %s\n", i + history_base, historyList[i]->line);
+        }
     }
     return lineInput;
 }
