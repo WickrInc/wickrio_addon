@@ -1,5 +1,5 @@
 #!/bin/sh
-if [ ! -d "$DIRECTORY" ]; then
+if [ ! -d "files" ]; then
   mkdir files
 fi
 npm install
