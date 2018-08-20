@@ -86,6 +86,32 @@ return new Promise(async (resolve, reject) => {
   });
 
 
+  app.get(endpoint + "/Messages", async function(req, res) {
+    var count = 1;
+    var index = 0;
+    if(req.query.count)
+      count = req.query.count;
+    var msgArray = [];
+    for(var i in count) {
+      console.log('count:',count)
+      for (;;) {
+        var message = addon.cmdGetReceivedMessage();
+        if (message === "{ }" || message === "" || !message) {
+          index++;
+          continue;
+        } else {
+          index++;
+          msgArray.push(JSON.parse(message));
+          console.log(message);
+          if (index >= count)
+            break;
+        }
+      }
+  }
+  console.log('msgArray.length:', msgArray.length);
+  res.send(msgArray);
+  });
+
   app.get(endpoint + "/Statistics", async function(req, res) {
     var statistics = await addon.cmdGetStatistics();
     res.send(statistics);
@@ -99,7 +125,6 @@ return new Promise(async (resolve, reject) => {
 
 
   app.post(endpoint + "/Rooms", async function(req, res) {
-    console.log('req.body:', req.body);
     var room = req.body.room;
     var title = room.title.toString();
     var description = room.description.toString();
@@ -121,6 +146,94 @@ return new Promise(async (resolve, reject) => {
     var car = await addon.cmdAddRoom(members, masters, title, description, ttl, bor);
     console.log(car);
     res.send(car);
+  });
+
+  app.get(endpoint + "/Rooms/:vGroupID", async function(req, res) {
+    var vGroupID = req.params.vGroupID;
+    res.send(await addon.cmdGetRoom(vGroupID));
+  });
+
+  app.get(endpoint + "/Rooms", async function(req, res) {
+    res.send(await addon.cmdGetRooms());
+  });
+
+  app.delete(endpoint + "/Rooms/:vGroupID", async function(req, res) {
+    var vGroupID = req.params.vGroupID;
+    var reason = req.query.reason;
+    if (reason === 'leave') {
+      var clr = await addon.cmdLeaveRoom(vGroupID);
+      if (clr === "")
+        res.send("Left room successfully");
+      else
+        res.send(clr);
+    } else {
+      var cdr = await addon.cmdDeleteRoom(vGroupID)
+      if (cdr === "")
+        res.send("Room deleted successfully");
+      else
+        res.send(cdr);
+    }
+  });
+
+  app.post(endpoint + "/Rooms/:vGroupID", async function(req, res) {
+    var vGroupID = req.params.vGroupID;
+    var ttl,
+      bor;
+    if (req.body.ttl)
+      ttl = req.body.ttl.toString();
+    if (req.bor)
+      bor = req.bor.toString();
+    var title = req.title.toString();
+    var description = req.body.description.toString();
+    var members = [],
+      masters = [];
+    for (var i in req.body.members) {
+      members.push(req.body.members[i].name);
+    }
+
+    for (var i in req.body.masters) {
+      masters.push(req.body.masters[i].name);
+    }
+    var cmr = await addon.cmdModifyRoom(vGroupID, members, moderators, title, description, ttl, bor);
+    res.send(cmr);
+  });
+
+  app.post(endpoint + "/GroupConvo", async function(req, res) {
+    var groupconvo = req.body.groupconvo;
+    var ttl = "",
+      bor = "";
+    if (groupconvo.ttl)
+      ttl = groupconvo.ttl.toString();
+    if (groupconvo.bor)
+      bor = groupconvo.bor.toString();
+    var members = [],
+      masters = [];
+    for (var i in groupconvo.members) {
+      members.push(groupconvo.members[i].name);
+    }
+    var car = await addon.cmdAddGroupConvo(members, ttl, bor);
+    console.log(car);
+    res.send(car);
+  });
+
+  app.get(endpoint + "/GroupConvo", async function(req, res) {
+    res.send(await addon.cmdGetGroupConvos());
+  });
+
+
+  app.get(endpoint + "/GroupConvo/:vGroupID", async function(req, res) {
+    var vGroupID = req.params.vGroupID;
+    res.send(await addon.cmdGetGroupConvo(vGroupID));
+  });
+
+
+  app.delete(endpoint + "/GroupConvo/:vGroupID", async function(req, res) {
+    var vGroupID = req.params.vGroupID;
+    var cdgc = await addon.cmdDeleteGroupConvo(vGroupID);
+    if (cdgc === "")
+      res.send("GroupConvo deleted successfully");
+    else
+      res.send(cdr);
   });
 
 }).catch(error => {
