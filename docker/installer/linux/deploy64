@@ -149,8 +149,8 @@ cp -a ${build_dir}/libs/qamqpsrc/libqamqp.* $libdir
 # Copy the integrations software
 #
 if test -n "$integrations_sw_dir" ; then
-  mkdir -p $dstintegrationsdir/software
-  cp -r "$integrations_sw_dir/*" $dstintegrationsdir/software
+  mkdir -p $dstintegrationsdir
+  cp -r "$integrations_sw_dir" "$dstintegrationsdir"
 fi
 
 #

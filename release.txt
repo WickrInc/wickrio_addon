@@ -1,4 +1,15 @@
-Release Notes from v4.26-release to v4.52.2-2:
+Release Notes from v4.26-release to v4.52.4-2:
+  * Fix install.sh scripts for file_bot
+  * Add regex bot mentioning and command processing for file_bot
+  * Support better command line, with a history and editing the command line [ci skip]
+  * Fix configure.sh, add VERSION files, add upgrade.sh for file_bot
+  * Add bot mentioning parsing to file bot
+  * Prealpha v4.52
+  * # Conflicts:
+  * #   BUILD_NUMBER
+  * #   clients/libs/WickrIOClient/wickrBuildNumbers.h
+  * #   integrations/nodejs/installer/generate
+  * #   release.txt
   * Add distribution method for samples - Aaron-nodejs02
   * Update the generate script to all the generate.sh files in the samples…
   * Fix compliance bot

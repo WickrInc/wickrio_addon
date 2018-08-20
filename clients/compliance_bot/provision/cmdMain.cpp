@@ -57,14 +57,9 @@ CmdMain::runCommands()
         return false;
     }
 
-    QTextStream input(stdin);
-
     while (true) {
         updateBotList();
-        qDebug() << "CONSOLE:Enter command [list, add, config, server, start, stop, update, quit]:";
-        QString line = input.readLine();
-
-        line = line.trimmed();
+        QString line = getCommand("Enter command [list, add, config, server, start, stop, update, quit]:");
         if (line.length() > 0) {
             QStringList args = line.split(" ");
             QString cmd = args.at(0).toLower();

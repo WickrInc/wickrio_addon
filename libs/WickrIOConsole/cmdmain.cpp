@@ -92,8 +92,6 @@ bool CmdMain::processCommand(QString cmd, QString subcmds)
  */
 bool CmdMain::runCommands(QString commands)
 {
-    QTextStream input(stdin);
-
     // If the database location is not set then get it
     if (! m_cmdOperation.openDatabase()) {
         qDebug() << "CONSOLE:Cannot open database!";
@@ -106,25 +104,25 @@ bool CmdMain::runCommands(QString commands)
 
     if (commands.isEmpty()) {
         while (true) {
+            QString prompt;
             if (m_hasMotherBotBinary) {
                 if(m_hasParserBinary){
-                    qDebug() << "CONSOLE:Enter one of [client, advanced, server, console, parser or users]:";
+                    prompt = "Enter one of [client, advanced, server, console, parser or users]:";
                 } else {
-                    qDebug() << "CONSOLE:Enter one of [client, advanced, server, console or users]:";
+                    prompt = "Enter one of [client, advanced, server, console or users]:";
                 }
             } else {
                 if(m_hasParserBinary){
-                    qDebug() << "CONSOLE:Enter one of [client, advanced, server, console or parser]:";
+                    prompt = "Enter one of [client, advanced, server, console or parser]:";
                 } else {
-                    qDebug() << "CONSOLE:Enter one of [client, advanced, server or console]:";
+                    prompt = "Enter one of [client, advanced, server or console]:";
                 }
             }
 
             // Get input from the user
-            QString line = input.readLine();
+            QString line = getCommand(prompt);
 
             // Breakup the input; handle options and other possible commands
-            line = line.trimmed();
             if (line.length() > 0) {
                 QStringList arglist = line.split(",");
                 QString cmd = arglist.at(0).toLower().trimmed();

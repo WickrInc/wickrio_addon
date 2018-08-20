@@ -8,7 +8,8 @@ fi
 mkdir -p temp/wickrio_addon
 cp package.json.distribution temp/package.json
 cp install.sh.distribution temp/install.sh
-cp start.sh stop.sh configure.sh file_bot.js temp
+cp start.sh stop.sh configure.sh file_bot.js VERSION temp
+cp VERSION $1/VERSION
 cd ../../wickrio_addon
 cp -r build/ install.sh ../samples/file_bot/temp/wickrio_addon
 cp package.json.distribution ../samples/file_bot/temp/wickrio_addon/package.json

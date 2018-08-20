@@ -25,8 +25,6 @@ bool CmdServer::runCommands(QString commands)
     if (m_consoleServer == NULL) {
         m_consoleServer = new ConsoleServer(m_cmdOperation->m_ioDB);
     }
-    QTextStream input(stdin);
-
     // If the database location is not set then get it
     if (! m_cmdOperation->openDatabase()) {
         qDebug() << "CONSOLE:Cannot open database!";
@@ -34,10 +32,7 @@ bool CmdServer::runCommands(QString commands)
     }
 
     while (true) {
-        qDebug() << "CONSOLE:Enter server command:";
-        QString line = input.readLine();
-
-        line = line.trimmed();
+        QString line = getCommand("Enter server command:");
         if (line.length() > 0) {
             QStringList args = line.split(" ");
             QString cmd = args.at(0).toLower();

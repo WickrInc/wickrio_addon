@@ -105,24 +105,24 @@ QString appName = WBIO_PARSER_TARGET;
 }
 
 QStringList
-WBIOServerCommon::getCustomIntegrationsList()
+WBIOServerCommon::getIntegrationsList(const QString& integrationDirectory)
 {
-    QStringList customIntegrations;
-    QDir customDir(WBIO_CUSTOMBOT_DIR);
+    QStringList integrations;
+    QDir customDir(integrationDirectory);
     if (customDir.exists()) {
         // Need to determine which integrations are available
-        QDirIterator it(WBIO_CUSTOMBOT_DIR, QDir::NoDotAndDotDot | QDir::Dirs);
+        QDirIterator it(integrationDirectory, QDir::NoDotAndDotDot | QDir::Dirs);
         while(it.hasNext()) {
             QDir fullPath(it.next());
             QString dirName = fullPath.dirName();
 
-            QFile botSw(QString(WBIO_CUSTOMBOT_SWFILE).arg(dirName));
+            QFile botSw(QString(WBIO_INTEGRATION_SWFILE).arg(integrationDirectory).arg(dirName));
             if (botSw.exists())
-                customIntegrations.append(dirName);
+                integrations.append(dirName);
         }
     }
 
-    return customIntegrations;
+    return integrations;
 }
 
 QList<WBIOBotTypes *>
@@ -190,7 +190,7 @@ WBIOServerCommon::updateIntegrations()
      */
 
     // See if there are any custom bots setup
-    QStringList customBots = getCustomIntegrationsList();
+    QStringList customBots = getIntegrationsList(WBIO_CUSTOMBOT_DIR);
     for (QString customBot : customBots) {
         QString botSw = QString(WBIO_CUSTOMBOT_SWFILE).arg(customBot);
 
@@ -258,22 +258,28 @@ WBIOServerCommon::initClientApps()
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("core_botBeta",        "core_provBeta",        nullptr,               false, true));
         WBIOServerCommon::m_botApps.append(new WBIOClientApps("core_bot",            "core_prov",            nullptr,               false, true));
 
-        // If the hubot software is installed then add it to the list of available integrations
-        if (QFile(BOT_HUBOT_SOFTWARE).exists()) {
-            WBIOBotTypes *hubot = new WBIOBotTypes("hubot", "hubot", false, true, APIURL_MSGRECVCBACK, BOT_HUBOT_SOFTWARE,
-                                                   "install.sh", "configure.sh", "start.sh", "stop.sh", "upgrade.sh" );
-            WBIOServerCommon::m_supportedBots.append(hubot);
+        // Get the list of packaged integrations
+        QStringList packagedBots = getIntegrationsList(WBIO_INTEGRATIONS_DIR);
+        for (QString pkgBot : packagedBots) {
+            QString botSw = QString(WBIO_INTEGRATION_SWFILE).arg(WBIO_INTEGRATIONS_DIR).arg(pkgBot);
 
-            // Add the hubot to the WickrIO bots
-            wickrIOAlpha->addBot(hubot);
-            wickrIOBeta->addBot(hubot);
-            wickrIOProd->addBot(hubot);
+            // Currently hubot uses the HTTP interface
+            bool usesHttp = (pkgBot == "hubot");
+
+            // Assume that all of the shell scripts are there
+            WBIOBotTypes *bot = new WBIOBotTypes(pkgBot, pkgBot, false, usesHttp, APIURL_MSGRECVCBACK, botSw,
+                                                 "install.sh", "configure.sh", "start.sh", "stop.sh", "upgrade.sh" );
+            WBIOServerCommon::m_supportedBots.append(bot);
+
+            // Add the custom bot to the WickrIO bots
+            wickrIOAlpha->addBot(bot);
+            wickrIOBeta->addBot(bot);
+            wickrIOProd->addBot(bot);
         }
 
-        // get any custom integrations
 
         // See if there are any custom bots setup
-        QStringList customBots = getCustomIntegrationsList();
+        QStringList customBots = getIntegrationsList(WBIO_CUSTOMBOT_DIR);
         for (QString customBot : customBots) {
             QString botSw = QString(WBIO_CUSTOMBOT_SWFILE).arg(customBot);
 

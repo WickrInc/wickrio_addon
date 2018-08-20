@@ -4,6 +4,9 @@
 #include <QEventLoop>
 #include <QTimer>
 
+#include <readline/readline.h>
+#include <readline/history.h>
+
 #include "cmdbase.h"
 #include "wickrIOCommon.h"
 
@@ -37,6 +40,96 @@ bool CmdBase::handleQuit(const QString& value, bool *quit)
     return false;
 }
 
+#include <unistd.h>   //_getch*/
+#include <termios.h>  //_getch*
+
+char getch(){
+    /*#include <unistd.h>   //_getch*/
+    /*#include <termios.h>  //_getch*/
+    char buf=0;
+    struct termios old={0};
+    fflush(stdout);
+    if(tcgetattr(0, &old)<0)
+        perror("tcsetattr()");
+    old.c_lflag&=~ICANON;
+    old.c_lflag&=~ECHO;
+    old.c_cc[VMIN]=1;
+    old.c_cc[VTIME]=0;
+    if(tcsetattr(0, TCSANOW, &old)<0)
+        perror("tcsetattr ICANON");
+    if(read(0,&buf,1)<0)
+        perror("read()");
+    old.c_lflag|=ICANON;
+    old.c_lflag|=ECHO;
+    if(tcsetattr(0, TCSADRAIN, &old)<0)
+        perror ("tcsetattr ~ICANON");
+//    printf("%c\n",buf);
+    return buf;
+ }
+
+#include    <iostream>
+
+QString CmdBase::getPassword(const QString& prompt)
+{
+    std::cout << prompt.toStdString().c_str();
+
+    QChar   pass[128];
+    int     i=0;
+
+    pass[0]=getch();
+    while(pass[i]!=13 && pass[i]!=10)
+    {
+        if (pass[i].isLetterOrNumber()) {
+            i++;
+            std::cout<<"*";
+        } else if (pass[i] == '\b' || pass[i] == 127) {
+            if (i > 0) {
+                std::cout<<"\b \b";
+                i--;
+            }
+        }
+
+        pass[i]=getch();
+    }
+
+    std::cout<<"\n";
+
+    QString password = QString(pass, i);
+    return password;
+}
+
+QString CmdBase::getCommand(const QString& prompt)
+{
+    QString lineInput;
+
+    while (true) {
+        char *response = readline(prompt.toStdString().c_str());
+
+        if (response != nullptr) {
+            lineInput = QString(response);
+            free(response);
+        }
+
+        lineInput = lineInput.trimmed();
+
+        if (lineInput.length() > 0) {
+            add_history(lineInput.toStdString().c_str());
+        }
+
+        if (lineInput != "history")
+            break;
+
+        // Handle history command
+        HIST_ENTRY **historyList = history_list();
+
+        if (historyList) {
+            for (int i = 0; historyList[i]; i++)
+              printf ("%d: %s\n", i + history_base, historyList[i]->line);
+        }
+    }
+    return lineInput;
+}
+
 /**
  * @brief CmdBase::getNewValue
  * Prompt user to imput a value. Display the old value if input.
@@ -48,18 +141,27 @@ bool CmdBase::handleQuit(const QString& value, bool *quit)
 QString CmdBase::getNewValue(const QString& oldValue, const QString& prompt, CheckType check, QStringList choices, QString listDesc)
 {
     QString newValue("");
-
-    QTextStream s(stdin);
-
-    QString lineInput;
+    QString lineInput;    
 
     while (true) {
+        QString promptString;
         if (oldValue.isEmpty()) {
-            qDebug("CONSOLE:%s:", qPrintable(prompt));
+            promptString = QString("%1:").arg(prompt);
         } else {
-            qDebug("CONSOLE:%s (default: %s):", qPrintable(prompt), qPrintable(oldValue));
+            promptString = QString("%1 (default: %2):").arg(prompt).arg(oldValue);
         }
-        lineInput = s.readLine();
+
+        char *response = readline(promptString.toStdString().c_str());
+
+        if (response == nullptr || response[0] == NULL) {
+            lineInput = QString();
+        } else {
+            lineInput = QString(response);
+        }
+
+        if (response != nullptr)
+            free(response);
+
         if (!oldValue.isEmpty() && lineInput.isEmpty()) {
             newValue = oldValue;
             break;

@@ -9,8 +9,6 @@
 #include "wickrbotclients.h"
 #include "wickrIOParsers.h"
 
-#define BOT_HUBOT_SOFTWARE      "/usr/lib/wickr/integrations/software/hubot/software.tar.gz"
-
 /**
  * @brief The WBIOBotTypes class
  * This class is used to identify the types of Bots supported (i.e. hubot, supportbot)
@@ -130,7 +128,7 @@ public:
     static QString getBotUpgradeCmd(const QString& botType);
     static QString getBotMsgIface(const QString& botType);
 
-    static QStringList getCustomIntegrationsList();
+    static QStringList getIntegrationsList(const QString& integrationDirectory);
     static void addCustomIntegration(const QString& customBot, bool httpIface=false);
 
 private:

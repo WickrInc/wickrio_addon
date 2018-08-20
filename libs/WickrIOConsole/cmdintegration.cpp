@@ -90,8 +90,6 @@ bool CmdIntegration::processCommand(QStringList cmdList, bool &isquit)
  */
 bool CmdIntegration::runCommands(QString commands)
 {
-    QTextStream input(stdin);
-
     // If the database location is not set then get it
     if (! m_operation->openDatabase()) {
         qDebug() << "CONSOLE:Cannot open database!";
@@ -103,10 +101,7 @@ bool CmdIntegration::runCommands(QString commands)
 
     if (commands.isEmpty()) {
         while (true) {
-            qDebug() << "CONSOLE:Enter integration command:";
-            QString line = input.readLine();
-
-            line = line.trimmed();
+            QString line = getCommand("Enter integration command:");
             if (line.length() > 0) {
                 QStringList args = line.split(" ");
                 if (!processCommand(args, isQuit)) {
@@ -183,10 +178,36 @@ CmdIntegration::validateVersion(const QString& version)
 
 /**
  * @brief CmdIntegration::listClients
- * This funciton will print out a list of the current clients from the database.
+ * This funciton will print out a list of the current integrations from the database.
  */
 void CmdIntegration::listIntegrations()
 {
+    // get the list of all integrations
+     QList<WBIOBotTypes *> allInts = WBIOServerCommon::getBotsSupported("wickrio_bot", false);
+
+     qDebug() << "CONSOLE:List of included integrations:";
+     for (WBIOBotTypes *curInt : allInts) {
+         if (curInt->customBot())
+             continue;
+         QFile versionFile(QString(WBIO_CUSTOMBOT_VERSIONFILE).arg(curInt->name()));
+         QString version;
+         if (versionFile.exists()) {
+             unsigned integrationVer = getVersionNumber(&versionFile);
+             if (integrationVer > 0) {
+                 getVersionString(integrationVer, version);
+             }
+         }
+
+         if (version.isEmpty()) {
+             qDebug().noquote().nospace() << QString("CONSOLE:  %1")
+                     .arg(curInt->name());
+         } else {
+             qDebug().noquote().nospace() << QString("CONSOLE:  %1, version=%3")
+                     .arg(curInt->name())
+                     .arg(version);
+         }
+     }
+
     // get the list of custom integrations
     m_customInts = WBIOServerCommon::getBotsSupported("wickrio_bot", true);
 
@@ -196,11 +217,10 @@ void CmdIntegration::listIntegrations()
     }
     qDebug() << "CONSOLE:Current list of custom integrations:";
 
-    QString version = "unknown";
     int cnt=0;
     for (WBIOBotTypes *customInt : m_customInts) {
-        QString botSw = QString(WBIO_CUSTOMBOT_SWFILE).arg(customInt->name());
         QFile versionFile(QString(WBIO_CUSTOMBOT_VERSIONFILE).arg(customInt->name()));
+        QString version;
         if (versionFile.exists()) {
             unsigned integrationVer = getVersionNumber(&versionFile);
             if (integrationVer > 0) {
@@ -208,10 +228,16 @@ void CmdIntegration::listIntegrations()
             }
         }
 
-        qDebug().noquote().nospace() << QString("CONSOLE: integration[%1] %2, version=%3")
-                .arg(cnt++)
-                .arg(customInt->name())
-                .arg(version);
+        if (version.isEmpty()) {
+            qDebug().noquote().nospace() << QString("CONSOLE:  [%1] %2")
+                    .arg(cnt++)
+                    .arg(customInt->name());
+        } else {
+            qDebug().noquote().nospace() << QString("CONSOLE:  [%1] %2, version=%3")
+                    .arg(cnt++)
+                    .arg(customInt->name())
+                    .arg(version);
+        }
     }
 }
 

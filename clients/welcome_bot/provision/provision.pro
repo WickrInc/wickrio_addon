@@ -231,6 +231,7 @@ linux-g++* {
 
     INCLUDEPATH += $$DEPTH/wickr-sdk/platforms/linux/include
     INCLUDEPATH += $$DEPTH
+    INCLUDEPATH += /usr/include
     contains(QT_ARCH,x86_64) {
         LIBS += -L$$PWD/$$DEPTH/wickr-sdk/platforms/linux/generic-64
     }
@@ -249,6 +250,7 @@ linux-g++* {
     LIBS += -lcrypto
     LIBS += -lwmmigrator -lcjson
     LIBS += -lpsiphontunnel
+    LIBS += -lreadline
 
     LIBS += -L$$OUT_PWD/$${DEPTH}/wickr-sdk/libs/qbson -lqbson \
             -L$$OUT_PWD/$${DEPTH}/wickr-sdk/libs/libbson -lbson \

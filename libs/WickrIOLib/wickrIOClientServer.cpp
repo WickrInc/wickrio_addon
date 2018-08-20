@@ -562,22 +562,9 @@ bool WickrIOClientServer::startClient(WickrBotClients *client)
             QStringList arguments;
             arguments.append(client->user);
 
-            // Create a process to run the installer
-            QProcess *runBotStartCmd = new QProcess(this);
-            runBotStartCmd->setProcessChannelMode(QProcess::MergedChannels);
-            runBotStartCmd->setWorkingDirectory(destPath);
-            runBotStartCmd->start(startFullPath, arguments, QIODevice::ReadWrite);
-
-            // Wait for it to start
-            if(!runBotStartCmd->waitForStarted()) {
-                qDebug() << "Failed to run %1";
+            if (!QProcess::startDetached(startFullPath, arguments, destPath)) {
+                qDebug() << QString("Failed to run %1").arg(startFullPath);
             } else {
-                QStringList startOutput;
-
-                while(runBotStartCmd->waitForReadyRead()) {
-                    QString bytes = QString(runBotStartCmd->readAll());
-                    startOutput.append(bytes);
-                }
             }
 
             m_operation->log_handler->log("Done starting!");
@@ -711,7 +698,7 @@ bool WickrIOClientServer::startParser(QString processName, QString appName)
     exec.setProcessChannelMode(QProcess::MergedChannels);
     if (exec.startDetached(appName, arguments)) {
         m_operation->log_handler->log(QString("Started parser %1").arg(processName));
-     return true;
+        return true;
     }
     else {
            m_operation->log_handler->log(QString("Could NOT start client for %1").arg(processName));

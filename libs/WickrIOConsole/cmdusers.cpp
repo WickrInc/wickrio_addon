@@ -25,8 +25,6 @@ CmdUsers::~CmdUsers()
  */
 bool CmdUsers::runCommands(QString commands)
 {
-    QTextStream input(stdin);
-
     // If the database location is not set then get it
     if (! m_operation->openDatabase()) {
         qDebug() << "CONSOLE:Cannot open database!";
@@ -34,10 +32,7 @@ bool CmdUsers::runCommands(QString commands)
     }
 
     while (true) {
-        qDebug() << "CONSOLE:Enter users command:";
-        QString line = input.readLine();
-
-        line = line.trimmed();
+        QString line = getCommand("Enter users command:");
         if (line.length() > 0) {
             QStringList args = line.split(" ");
             QString cmd = args.at(0).toLower();
