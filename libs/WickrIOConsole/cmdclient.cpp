@@ -445,13 +445,7 @@ bool CmdClient::getClientValues(WickrBotClients *client)
 
     // Get the password
     while (true) {
-        client->password = getNewValue("", tr("Enter the password"));
-
-        // Check if the user wants to quit the action
-        if (handleQuit(client->password, &quit) && quit) {
-            return false;
-        }
-
+        client->password = getPassword(tr("Enter the password:"));
         if (client->password.isEmpty() || client->password.length() < 4) {
             qDebug() << "CONSOLE:Password should be at least 4 characters long!";
         } else {

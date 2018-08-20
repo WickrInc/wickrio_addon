@@ -22,7 +22,7 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends apt-utils \
   && apt-get install -y --no-install-recommends libsqlcipher.dev \
   && apt-get install -y curl \
-  && curl -sL https://deb.nodesource.com/setup_9.x | bash - \
+  && curl -sL https://deb.nodesource.com/setup_8.x | bash - \
   && apt-get install -y nodejs \
   && npm install -g coffeescript pm2 coffee-script axios prompt fs path \
   && apt-get install -y openssl \

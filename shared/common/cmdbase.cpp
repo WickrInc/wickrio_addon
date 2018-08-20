@@ -71,7 +71,7 @@ char getch(){
 
 QString CmdBase::getPassword(const QString& prompt)
 {
-    qDebug("CONSOLE:%s:", qPrintable(prompt));
+    std::cout << prompt.toStdString().c_str();
 
     QChar   pass[128];
     int     i=0;
