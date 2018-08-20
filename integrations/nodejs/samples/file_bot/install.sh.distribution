@@ -1,4 +1,6 @@
 #!/bin/sh
-
+if [ ! -d "files" ]; then
+  mkdir files
+fi
 ./wickrio_addon/install.sh
 npm install
