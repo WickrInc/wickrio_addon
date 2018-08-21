@@ -1,4 +1,4 @@
-Release Notes from v4.26-release to v4.52.5-3:
+Release Notes from v4.26-release to v4.52.5-4:
   * Fix install.sh scripts for file_bot
   * Add regex bot mentioning and command processing for file_bot
   * Support better command line, with a history and editing the command line [ci skip]
