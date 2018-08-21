@@ -6,7 +6,7 @@ set -e
 current=`dirname $0`
 cd $current
 
-QTVER="5_9"
+QTVER="5_10"
 
 product=$1
 buildtype=$2

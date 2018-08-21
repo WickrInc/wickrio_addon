@@ -25,7 +25,7 @@ public:
      */
     static WickrIOProvisionHdlr* provHdlr();
     static void provHdlrBeginOnPrem(const QString username, const QString password, const QString regToken);
-    static void provHdlrBeginCloud(const QString &email, const QString password, const QString &inviteCode);
+    static void provHdlrBeginCloud(const QString &username, const QString password, const QString &inviteCode);
 
 private:
     // Runtime resources

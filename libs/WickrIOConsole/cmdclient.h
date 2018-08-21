@@ -85,7 +85,7 @@ private:
     void updateIntegrationVersion();
 
 private slots:
-    void slotCmdFinished(int, QProcess::ExitStatus);
+    void slotCmdFinished(int);
     void slotCmdOutputRx();
 
     void slotReceivedMessage(QString type, QString value);

@@ -965,7 +965,7 @@ WickrBotDatabase::insertClientsRecord(WickrBotClients *client) {
     int id = getNextID(DB_CLIENTS_TABLE);
 
 #if 0
-    QString queryString = "INSERT INTO clients (id, name, port, interface, api_key, user, isHttps, sslKeyFile, sslCertFile) VALUES (?, '?', ?, '?', '?', '?', '?', '?', '?', '?')";
+    QString queryString = "INSERT INTO clients (id, name, port, interface, api_key, user, isHttps, sslKeyFile, sslCertFile) VALUES (?, '?', ?, '?', '?', '?', ?, '?', '?')";
     QSqlQuery query(m_db);
     query.prepare(queryString);
     query.bindValue(0, id);
@@ -979,7 +979,7 @@ WickrBotDatabase::insertClientsRecord(WickrBotClients *client) {
     query.bindValue(8, client->sslCertFile);
 #else
     QSqlQuery query(m_db);
-    QString queryString = QString("INSERT INTO clients (id, name, port, interface, api_key, user, isHttps, sslKeyFile, sslCertFile, binary, integration_type) VALUES (%1, '%2', %3, '%4', '%5', '%6', '%7', %8, '%9', '%10', '%11', '%12')")
+    QString queryString = QString("INSERT INTO clients (id, name, port, interface, api_key, user, isHttps, sslKeyFile, sslCertFile, binary, integration_type) VALUES (%1, '%2', %3, '%4', '%5', '%6', %7, '%8', '%9', '%10', '%11')")
             .arg(id)
             .arg(client->name)
             .arg(client->port)

@@ -871,7 +871,7 @@ CmdHandler::addClientData(WickrBotClients *newClient)
 
     settings->beginGroup(WBSETTINGS_USER_HEADER);
     settings->setValue(WBSETTINGS_USER_USER, newClient->user);
-    settings->setValue(WBSETTINGS_USER_PASSWORD, newClient->password);
+//    settings->setValue(WBSETTINGS_USER_PASSWORD, newClient->password);
     settings->setValue(WBSETTINGS_USER_USERNAME, newClient->name);
     settings->setValue(WBSETTINGS_USER_TRANSACTIONID, newClient->transactionID);
     settings->setValue(WBSETTINGS_USER_AUTOLOGIN, newClient->m_autologin);

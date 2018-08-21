@@ -486,7 +486,7 @@ bool CmdClient::getClientValues(WickrBotClients *client)
 
         m_exec = new QProcess();
 
-        connect(m_exec, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(slotCmdFinished));
+        connect(m_exec, SIGNAL(finished(int)), this, SLOT(slotCmdFinished));
 //        connect(m_exec, SIGNAL(finished(int, QProcess::readyReadStandardOutput)), this, SLOT(slotCmdOutputRx));
 
         //Tests that process starts and closes alright
@@ -1086,7 +1086,7 @@ CmdClient::runBotScript(const QString& destPath, const QString& configure, Wickr
     return true;
 }
 
-void CmdClient::slotCmdFinished(int, QProcess::ExitStatus)
+void CmdClient::slotCmdFinished(int)
 {
     qDebug() << "process completed";
     m_exec->deleteLater();

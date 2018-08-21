@@ -76,7 +76,7 @@ WickrIOClientRuntime::provHdlrBeginOnPrem(const QString username, const QString 
 }
 
 void
-WickrIOClientRuntime::provHdlrBeginCloud(const QString &email, const QString password, const QString &inviteCode)
+WickrIOClientRuntime::provHdlrBeginCloud(const QString &username, const QString password, const QString &inviteCode)
 {
-    provHdlr()->cloudBegin(email, password, inviteCode);
+    provHdlr()->cloudBegin(username, password, inviteCode);
 }
