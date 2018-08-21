@@ -318,7 +318,18 @@ CmdMain::startClient(int clientIndex, bool force)
                 QProcess exec;
                 exec.setStandardOutputFile(outputFile);
                 exec.setProcessChannelMode(QProcess::MergedChannels);
+#ifdef QT5.9.4
                 if (exec.startDetached(command, arguments, workingDir)) {
+#else
+                QProcess process;
+                process.setProgram(command);
+                process.setArguments(arguments);
+
+                process.setStandardOutputFile(outputFile);
+                process.setStandardErrorFile(outputFile);
+                qint64 pid;
+                if (process.startDetached(&pid)) {
+#endif
                     qDebug().noquote() << QString("CONSOLE:Starting %1").arg(client->name);
                     QString prompt = QString("Enter password for %1").arg(client->name);
                     QString password = getNewValue("", prompt);

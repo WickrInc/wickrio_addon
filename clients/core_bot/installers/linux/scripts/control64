@@ -4,7 +4,7 @@ Section: net
 Priority: optional
 Version: VERSION
 Depends: libc6, libssl1.0.0, libicu55, libpcre16-3, libprotobuf-dev, libgl-dev
-Recommends: wickr-qt-5.9, wio-servicesSVCEXTEN
+Recommends: wickr-qt-5.10, wio-servicesSVCEXTEN
 Maintainer: Wickr Inc. <linux-support@wickr.com>
 Installed-Size: 200000
 Description: WickrIO Core Bot Client

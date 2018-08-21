@@ -493,10 +493,21 @@ bool WickrIOClientServer::startClient(WickrBotClients *client)
         qDebug() << "error enum val = " << error;
     });
 
-    exec.setStandardOutputFile(outputFile, QIODevice::Append);
-    exec.setStandardErrorFile(outputFile, QIODevice::Append);
-    exec.setProcessChannelMode(QProcess::MergedChannels);
+
+
+#ifdef QT5.9.4
     if (exec.startDetached(command, arguments, workingDir)) {
+#else
+    QProcess process;
+    process.setProgram(command);
+    process.setArguments(arguments);
+
+    process.setStandardOutputFile(outputFile);
+    process.setStandardErrorFile(outputFile);
+    qint64 pid;
+    if (process.startDetached(&pid)) {
+#endif
+
         m_operation->log_handler->log(QString("Started client for %1").arg(client->name));
 
         // For clients that require a password, send it over
@@ -562,10 +573,26 @@ bool WickrIOClientServer::startClient(WickrBotClients *client)
             QStringList arguments;
             arguments.append(client->user);
 
+#ifdef QT5.9.4
             if (!QProcess::startDetached(startFullPath, arguments, destPath)) {
                 qDebug() << QString("Failed to run %1").arg(startFullPath);
             } else {
             }
+#else
+            QProcess process;
+            process.setProgram(startFullPath);
+            process.setArguments(arguments);
+
+            process.setWorkingDirectory(destPath);
+            QString outputfile = QString(WBIO_INTEGRATION_OUTFILE_FORMAT)
+                    .arg(WBIO_DEFAULT_DBLOCATION)
+                    .arg(client->name);
+
+            process.setStandardOutputFile(outputfile);
+            process.setStandardErrorFile(outputfile);
+            qint64 pid;
+            process.startDetached(&pid);
+#endif
 
             m_operation->log_handler->log("Done starting!");
             m_operation->log_handler->log("**********************************");
@@ -685,28 +712,29 @@ bool WickrIOClientServer::startParser(QString processName, QString appName)
         return false;
     }
 
-
-    QProcess exec;
     QStringList arguments;
     arguments.append(QString("-appName=%1").arg(processName));
-    connect(&exec, &QProcess::errorOccurred, [=](QProcess::ProcessError error)
-    {
-        qDebug() << "Error enum value = " << error;
-    });
-    exec.setStandardOutputFile(outputFile, QIODevice::Append);
-    exec.setStandardErrorFile(outputFile, QIODevice::Append);
-    exec.setProcessChannelMode(QProcess::MergedChannels);
-    if (exec.startDetached(appName, arguments)) {
+
+#ifdef QT5.9.4
+    if (QProcess::startDetached(appName, arguments)) {
         m_operation->log_handler->log(QString("Started parser %1").arg(processName));
         return true;
     }
     else {
-           m_operation->log_handler->log(QString("Could NOT start client for %1").arg(processName));
-   #ifdef DEBUG_TRACE
-           qDebug() << "Leaving startParser: could not start!";
-   #endif
-           return false;
-       }
+        m_operation->log_handler->log(QString("Could NOT start client for %1").arg(processName));
+        return false;
+    }
+#else
+    QProcess process;
+    process.setProgram(appName);
+    process.setArguments(arguments);
+
+    process.setStandardOutputFile(outputFile);
+    process.setStandardErrorFile(outputFile);
+    qint64 pid;
+    process.startDetached(&pid);
+#endif
+
 }
 
 /**

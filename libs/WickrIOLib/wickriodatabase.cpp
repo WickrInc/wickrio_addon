@@ -531,7 +531,7 @@ WickrIOClientDatabase::getClients()
     if (!initialized)
         return clients;
 
-    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile,console_id,binary,integration_type FROM clients";
+    QString queryString = "SELECT id,name,port,interface,api_key,user,isHttps,sslKeyFile,sslCertFile,console_id,binary,integration_type FROM clients";
     QSqlQuery *query = new QSqlQuery(m_db);
     query->prepare(queryString);
 
@@ -596,7 +596,7 @@ WickrIOClientDatabase::getClientUsingName(QString name)
     if (!initialized)
         return client;
 
-    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile,console_id,binary,integration_type FROM clients WHERE name=?";
+    QString queryString = "SELECT id,name,port,interface,api_key,user,isHttps,sslKeyFile,sslCertFile,console_id,binary,integration_type FROM clients WHERE name=?";
     QSqlQuery query(m_db);
     query.prepare(queryString);
     query.bindValue(0, name);
@@ -650,7 +650,7 @@ WickrIOClientDatabase::getConsoleClients(int console_id)
     if (!initialized)
         return clients;
 
-    QString queryString = "SELECT id,name,port,interface,api_key,user,password,isHttps,sslKeyFile,sslCertFile,binary,integration_type FROM clients WHERE console_id = ?";
+    QString queryString = "SELECT id,name,port,interface,api_key,user,isHttps,sslKeyFile,sslCertFile,binary,integration_type FROM clients WHERE console_id = ?";
     QSqlQuery *query = new QSqlQuery(m_db);
     query->prepare(queryString);
     query->bindValue(0, console_id);

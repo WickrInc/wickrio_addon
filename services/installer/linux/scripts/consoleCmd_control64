@@ -3,7 +3,7 @@ Architecture: amd64
 Section: net
 Priority: optional
 Version: VERSION
-Depends: libc6, libssl1.0.0, libicu55, libpcre16-3, wickr-qt-5.9
+Depends: libc6, libssl1.0.0, libicu55, libpcre16-3, wickr-qt-5.10
 Maintainer: Wickr Inc. <linux-support@wickr.com>
 Installed-Size: 200000
 Description: WickrIO Console

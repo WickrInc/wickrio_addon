@@ -14,7 +14,7 @@
 # build directory is cleared by default on each run.
 
 
-QTVER="5.9"
+QTVER="5.10.1"
 DEVID="Wickr, LLC"
 API_TOKEN="25391301ec2541dfaa1ec0201127e52a"
 
@@ -104,7 +104,7 @@ case "$product" in
         ;;
 esac
 
-wickrQTDeb="wickr-qt_5.9.4_amd64.deb"
+wickrQTDeb="wickr-qt_5.10.1_amd64.deb"
 
 lin_appid=""
 case "$product-$btype" in
