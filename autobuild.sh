@@ -14,7 +14,7 @@
 # build directory is cleared by default on each run.
 
 
-QTVER="5.10.1"
+QTVER="5.10"
 DEVID="Wickr, LLC"
 API_TOKEN="25391301ec2541dfaa1ec0201127e52a"
 
