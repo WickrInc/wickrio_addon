@@ -1,5 +1,4 @@
 const express = require('express');
-const MongoClient = require('mongodb').MongoClient;
 const bodyParser = require('body-parser');
 const addon = require('wickrio_addon');
 const fs = require('fs');
@@ -57,11 +56,20 @@ return new Promise(async (resolve, reject) => {
         console.log('users:', users);
         console.log('attachment:', attachment);
         console.log('displayName:', displayName);
-        console.log(addon.cmdSend1to1Attachment(users, attachment, displayName, ttl, bor));
+        var s1t1a = await addon.cmdSend1to1Attachment(users, attachment, displayName, ttl, bor);
+        if(s1t1a === "")
+          res.send("OK 200")
+        else{
+          res.send(400 + " "+ s1t1a)
+        }
       } else {
         var message = req.body.message;
-        var csm = addon.cmdSend1to1Message(users, message, ttl, bor);
-        console.log(csm);
+        var csm = await addon.cmdSend1to1Message(users, message, ttl, bor);
+        if(csm === "")
+          res.send("OK 200")
+        else{
+          res.send(400 + " "+ csm)
+        }
       }
     } else if (req.body.vgroupid) {
       var vGroupID = req.body.vgroupid.toString();
@@ -77,40 +85,24 @@ return new Promise(async (resolve, reject) => {
         }
         console.log('attachment:', attachment);
         console.log('displayName:', displayName);
-        console.log(addon.cmdSendRoomAttachment(vGroupID, attachment, displayName, ttl, bor));
+        var csra = await addon.cmdSendRoomAttachment(vGroupID, attachment, displayName, ttl, bor);
+        if(csra === "")
+          res.send("OK 200")
+        else{
+          res.send(400 + " "+ csra)
+        }
       } else {
         var message = req.body.message;
-        console.log(addon.cmdSendRoomMessage(vGroupID, message, ttl, bor));
+        var csrm = await addon.cmdSendRoomMessage(vGroupID, message, ttl, bor);
+        if(csrm === "")
+          res.send("OK 200")
+        else{
+          res.send(400 + " "+ csrm)
+        }
       }
     }
   });
 
-
-  app.get(endpoint + "/Messages", async function(req, res) {
-    var count = 1;
-    var index = 0;
-    if(req.query.count)
-      count = req.query.count;
-    var msgArray = [];
-    for(var i in count) {
-      console.log('count:',count)
-      for (;;) {
-        var message = addon.cmdGetReceivedMessage();
-        if (message === "{ }" || message === "" || !message) {
-          index++;
-          continue;
-        } else {
-          index++;
-          msgArray.push(JSON.parse(message));
-          console.log(message);
-          if (index >= count)
-            break;
-        }
-      }
-  }
-  console.log('msgArray.length:', msgArray.length);
-  res.send(msgArray);
-  });
 
   app.get(endpoint + "/Statistics", async function(req, res) {
     var statistics = await addon.cmdGetStatistics();
@@ -177,24 +169,31 @@ return new Promise(async (resolve, reject) => {
 
   app.post(endpoint + "/Rooms/:vGroupID", async function(req, res) {
     var vGroupID = req.params.vGroupID;
-    var ttl,
-      bor;
+    var ttl = "",
+      bor = "",
+      title = "",
+      description = "";
     if (req.body.ttl)
       ttl = req.body.ttl.toString();
-    if (req.bor)
-      bor = req.bor.toString();
-    var title = req.title.toString();
-    var description = req.body.description.toString();
+    if (req.body.bor)
+      bor = req.body.bor.toString();
+    if (req.body.title)
+      title = req.body.title.toString();
+    if (req.body.description)
+      description = req.body.description.toString();
     var members = [],
       masters = [];
-    for (var i in req.body.members) {
-      members.push(req.body.members[i].name);
+    if (req.body.members) {
+      for (var i in req.body.members) {
+        members.push(req.body.members[i].name);
+      }
     }
-
-    for (var i in req.body.masters) {
-      masters.push(req.body.masters[i].name);
+    if (req.body.masters) {
+      for (var i in req.body.masters) {
+        masters.push(req.body.masters[i].name);
+      }
     }
-    var cmr = await addon.cmdModifyRoom(vGroupID, members, moderators, title, description, ttl, bor);
+    var cmr = await addon.cmdModifyRoom(vGroupID, members, masters, title, description, ttl, bor);
     res.send(cmr);
   });
 
@@ -235,6 +234,54 @@ return new Promise(async (resolve, reject) => {
     else
       res.send(cdr);
   });
+
+  app.get(endpoint + "/Messages", async function(req, res) {
+    var count = 1;
+    var index = 0;
+    if (req.query.count)
+      count = req.query.count;
+    var msgArray = [];
+    for (var i in count) {
+      console.log('count:', count)
+      for (;;) {
+        var message = addon.cmdGetReceivedMessage();
+        if (message === "{ }" || message === "" || !message) {
+          index++;
+          continue;
+        } else {
+          index++;
+          msgArray.push(JSON.parse(message));
+          console.log(message);
+          if (index >= count)
+            break;
+        }
+      }
+    }
+    console.log('msgArray.length:', msgArray.length);
+    res.send(msgArray);
+  });
+
+
+  //Finish later
+  // app.post(endpoint + "/MsgRecvCallback", async function(req, res) {
+  //   var callbackURL = req.query.callbackurl;
+  //   var SetMsgURLCallback = addon.cmdSetMsgURLCallback(callbackURL);
+  //   // var wfs = await fs.writeFileSync("callbackAddress.txt", callbackURL);
+  //   res.send('SUCCESS');
+  // });
+  //
+  // app.get(endpoint + "/MsgRecvCallback", async function(req, res) {
+  //   // var callbackURL = await fs.readFileSync("callbackAddress.txt");
+  //   var response = {
+  //     "callbackurl": callbackURL
+  //   };
+  //   res.send(response);
+  // });
+  //
+  // app.delete(endpoint + "/MsgRecvCallback", async function(req, res) {
+  //   // var callbackURL = await fs.WriteFileSync("callbackAddress.txt", "");
+  //   res.send('SUCCESS');
+  // });
 
 }).catch(error => {
   console.log('Error: ', error);
