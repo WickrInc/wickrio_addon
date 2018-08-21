@@ -49,6 +49,7 @@ cp -a $QTDIR/lib/libQt5WebEngine.* $libdir/
 cp -a $QTDIR/lib/libQt5WebEngineWidgets.* $libdir/
 cp -a $QTDIR/lib/libQt5WebSockets.* $libdir/
 cp -a $QTDIR/lib/libQt5Widgets.* $libdir/
+cp -a $QTDIR/lib/libicu* $libdir/
 
 
 #cp -a $QTDIR/lib/*.so $QTDIR/lib/*.so.* $libdir/
