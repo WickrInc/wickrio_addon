@@ -29,7 +29,7 @@ return new Promise(async (resolve, reject) => {
   var endpoint = "/Apps/" + api_key;
 
   app.post(endpoint + "/Messages", async function(req, res) {
-    console.log('req.body:', req.body);
+    // console.log('req.body:', req.body);
     var ttl = "",
       bor = "";
     if (req.body.ttl)
@@ -54,19 +54,22 @@ return new Promise(async (resolve, reject) => {
         console.log('users:', users);
         console.log('attachment:', attachment);
         console.log('displayName:', displayName);
-        var s1t1a = await addon.cmdSend1to1Attachment(users, attachment, displayName, ttl, bor);
-        if(s1t1a !== "")
+        var s1t1a = addon.cmdSend1to1Attachment(users, attachment, displayName, ttl, bor);
+        if (s1t1a !== "")
           res.send(s1t1a);
-        else{
-          res.send(400 + " "+ s1t1a);
+        else {
+          res.sendStatus(400);
         }
       } else {
         var message = req.body.message;
-        var csm = await addon.cmdSend1to1Message(users, message, ttl, bor);
-        if(csm !== "")
-          res.send("OK 200");
-        else{
-          res.send(400 + " "+ csm);
+        console.log("send1to1Message");
+        console.log(users, message, ttl, bor);
+        var csm = addon.cmdSend1to1Message(users, message, ttl, bor);
+        console.log('csm', csm);
+        if (csm !== "")
+          res.send(csm);
+        else {
+          res.sendStatus(400);
         }
       }
     } else if (req.body.vgroupid) {
@@ -84,18 +87,18 @@ return new Promise(async (resolve, reject) => {
         console.log('attachment:', attachment);
         console.log('displayName:', displayName);
         var csra = await addon.cmdSendRoomAttachment(vGroupID, attachment, displayName, ttl, bor);
-        if(csra === "")
-          res.send("OK 200");
-        else{
-          res.send(400 + " "+ csra);
+        if (csra !== "")
+          res.send(csra);
+        else {
+          res.sendStatus(400);
         }
       } else {
         var message = req.body.message;
         var csrm = await addon.cmdSendRoomMessage(vGroupID, message, ttl, bor);
-        if(csrm === "")
-          res.send("OK 200");
-        else{
-          res.send(400 + " "+ csrm);
+        if (csrm !== "")
+          res.send(csrm);
+        else {
+          res.sendStatus(400);
         }
       }
     }
@@ -104,13 +107,22 @@ return new Promise(async (resolve, reject) => {
 
   app.get(endpoint + "/Statistics", async function(req, res) {
     var statistics = await addon.cmdGetStatistics();
-    res.send(statistics);
+    if (statistics !== "")
+      res.send(statistics);
+    else {
+      res.sendStatus(400);
+    }
   });
 
 
   app.delete(endpoint + "/Statistics", async function(req, res) {
     var statistics = await addon.cmdClearStatistics();
-    res.send("statistics cleared successfully");
+    if (statistics !== "")
+      res.send(statistics);
+    else {
+      res.sendStatus(400);
+    }
+    // res.send("statistics cleared successfully");
   });
 
 
@@ -134,17 +146,30 @@ return new Promise(async (resolve, reject) => {
       masters.push(room.masters[i].name);
     }
     var car = await addon.cmdAddRoom(members, masters, title, description, ttl, bor);
-    console.log(car);
-    res.send(car);
+    if (car !== "")
+      res.send(car);
+    else {
+      res.sendStatus(400);
+    }
   });
 
   app.get(endpoint + "/Rooms/:vGroupID", async function(req, res) {
     var vGroupID = req.params.vGroupID;
-    res.send(await addon.cmdGetRoom(vGroupID));
+    var cgr = await addon.cmdGetRoom(vGroupID);
+    if (cgr !== "")
+      res.send(cgr);
+    else {
+      res.sendStatus(400);
+    }
   });
 
   app.get(endpoint + "/Rooms", async function(req, res) {
-    res.send(await addon.cmdGetRooms());
+    var cgr = await addon.cmdGetRooms();
+    if (cgr !== "")
+      res.send(cgr);
+    else {
+      res.sendStatus(400);
+    }
   });
 
   app.delete(endpoint + "/Rooms/:vGroupID", async function(req, res) {
@@ -152,19 +177,20 @@ return new Promise(async (resolve, reject) => {
     var reason = req.query.reason;
     if (reason === 'leave') {
       var clr = await addon.cmdLeaveRoom(vGroupID);
-      if (clr === "")
-        res.send("Left room successfully");
-      else
+      if (clr !== "")
         res.send(clr);
+      else
+        res.sendStatus(400);
     } else {
       var cdr = await addon.cmdDeleteRoom(vGroupID)
-      if (cdr === "")
-        res.send("Room deleted successfully");
-      else
+      if (cdr !== "")
         res.send(cdr);
+      else
+        res.sendStatus(400);
     }
   });
 
+  //ModifyRoom
   app.post(endpoint + "/Rooms/:vGroupID", async function(req, res) {
     var vGroupID = req.params.vGroupID;
     var ttl = "",
@@ -192,7 +218,11 @@ return new Promise(async (resolve, reject) => {
       }
     }
     var cmr = await addon.cmdModifyRoom(vGroupID, members, masters, title, description, ttl, bor);
-    res.send(cmr);
+    if (cmr !== "")
+      res.send(cmr);
+    else {
+      res.sendStatus(400);
+    }
   });
 
   app.post(endpoint + "/GroupConvo", async function(req, res) {
@@ -210,27 +240,41 @@ return new Promise(async (resolve, reject) => {
     }
     var car = await addon.cmdAddGroupConvo(members, ttl, bor);
     console.log(car);
-    res.send(car);
+    if (car !== "")
+      res.send(car);
+    else {
+      res.sendStatus(400);
+    }
   });
 
   app.get(endpoint + "/GroupConvo", async function(req, res) {
-    res.send(await addon.cmdGetGroupConvos());
+    var cggc = await addon.cmdGetGroupConvos();
+    if (cggc !== "")
+      res.send(cggc);
+    else {
+      res.sendStatus(400);
+    }
   });
 
 
   app.get(endpoint + "/GroupConvo/:vGroupID", async function(req, res) {
     var vGroupID = req.params.vGroupID;
-    res.send(await addon.cmdGetGroupConvo(vGroupID));
+    var cggc = await addon.cmdGetGroupConvo(vGroupID);
+    if (cggc !== "")
+      res.send(cggc);
+    else {
+      res.sendStatus(400);
+    }
   });
 
 
   app.delete(endpoint + "/GroupConvo/:vGroupID", async function(req, res) {
     var vGroupID = req.params.vGroupID;
     var cdgc = await addon.cmdDeleteGroupConvo(vGroupID);
-    if (cdgc === "")
-      res.send("GroupConvo deleted successfully");
-    else
+    if (cdgc !== "")
       res.send(cdr);
+    else
+      res.sendStatus(400);
   });
 
   app.get(endpoint + "/Messages", async function(req, res) {
