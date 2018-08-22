@@ -2,6 +2,6 @@
 echo Setting the branches for wickr-wickrio, sdk, core and integrations
 
 export WICKRWICKRIOBRANCH="paul-5.10.1"
-export WICKRSDKBRANCH="alpha"
-export WICKRCOREBRANCH="alpha"
+export WICKRSDKBRANCH="bot_4.54"
+export WICKRCOREBRANCH="bot_4.54"
 export WICKRINTEGRATIONSBRANCH="alpha"
