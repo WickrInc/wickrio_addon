@@ -626,14 +626,16 @@ WickrBotDatabase::updateProcessState(const QString &process, int process_id, int
 
     // The ProcessState will use local time since this has to operate independent of the server
     QString dateTime = getClientTime();
-    qDebug() << "updateProcessState: Date is " << dateTime;
+    qDebug() << QString("updateProcessState[%1]: Date is %2, state=%3").arg(process).arg(dateTime).arg(state);
 
     QSqlQuery query(m_db);
-    QString queryString = QString("UPDATE process_state SET process_id=%1, state=%2, last_update='%3' WHERE process='%5'")
+    QString queryString = QString("UPDATE process_state SET process_id=%1, state=%2, last_update='%3' WHERE process='%4'")
             .arg(process_id)
             .arg(state)
             .arg(dateTime)
             .arg(process);
+    qDebug() << queryString;
+
     if (!query.exec(queryString)) {
         QSqlError error = query.lastError();
         qDebug() << "updateProcessState: SQL error" << error;

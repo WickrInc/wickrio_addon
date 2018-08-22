@@ -318,6 +318,7 @@ WickrIOActionThread::sendMessageTo1To1(WickrCore::WickrConvo *convo)
         WickrSendContext *context = new WickrSendContext(MsgType_Text,
                                                          convo,
                                                          WickrCore::WickrMessage::createTextMsgBody(m_jsonHandler->getMessage(),convo),
+                                                         QString(), nullptr,
                                                          userList);
 #endif
         connect(context, &WickrSendContext::signalRequestCompleted, this, &WickrIOActionThread::slotMessageDone, Qt::QueuedConnection);
@@ -623,6 +624,7 @@ WickrIOActionThread::sendMessageToConvo(WickrCore::WickrConvo *convo)
         WickrSendContext *context = new WickrSendContext(MsgType_Text,
                                                          convo,
                                                          WickrCore::WickrMessage::createTextMsgBody(m_jsonHandler->getMessage(),convo),
+                                                         QString(), nullptr,
                                                          userList);
         connect(context, &WickrSendContext::signalRequestCompleted, this, &WickrIOActionThread::slotMessageDone, Qt::QueuedConnection);
         WickrCore::WickrRuntime::msgSvcSend(context);

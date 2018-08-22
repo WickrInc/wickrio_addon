@@ -234,7 +234,7 @@ int main(int argc, char *argv[])
     settings->endGroup();
 
     settings->beginGroup(WBSETTINGS_DATABASE_HEADER);
-    settings->setValue(WBSETTINGS_DATABASE_DIRNAME, clientDbPath);
+    settings->setValue(WBSETTINGS_DATABASE_DIRNAME, WBIO_DEFAULT_DBLOCATION);
     settings->endGroup();
 
     settings->beginGroup(WBSETTINGS_LOGGING_HEADER);

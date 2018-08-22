@@ -16,15 +16,13 @@ class WickrBotLogin {
 public:
     QString m_name;
     QString m_pass;
-    QString m_userName;
     QString m_transID;
     int m_failedLogin = 0;
     bool m_creating = false;
 
-    WickrBotLogin(const QString& name, const QString& pass, const QString& userName, const QString& transID) :
+    WickrBotLogin(const QString& name, const QString& pass, const QString& transID) :
         m_name(name),
         m_pass(pass),
-        m_userName(userName),
         m_transID(transID) {}
 };
 
@@ -45,11 +43,11 @@ public:
     /**
      * @brief addLogin
      * Add a user to the list of users used to login with.
-     * @param user The username of the new user
+     * @param user The wickr userid of the new user
      * @param pass The password for the new user
      */
-    void addLogin(const QString& user, const QString& pass, const QString& userName, const QString& transID) {
-        m_logins.append(new WickrBotLogin(user, pass, userName, transID));
+    void addLogin(const QString& user, const QString& pass, const QString& transID) {
+        m_logins.append(new WickrBotLogin(user, pass, transID));
     }
 
 

@@ -364,7 +364,7 @@ void WickrIOEClientMain::slotReceivedMessage(QString type, QString value)
             if (qmapval.size() > 0) {
                 m_password = qmapval.value(WBIO_BOTINFO_PASSWORD);
                 loadBootstrapFile();
-                m_loginHdlr.addLogin(m_user, m_password, m_userName, "");
+                m_loginHdlr.addLogin(m_user, m_password, "");
                 m_loginHdlr.initiateLogin();
             }
         }
@@ -736,7 +736,7 @@ bool WickrIOEClientMain::parseSettings(QSettings *settings)
         m_waitingForPassword = true;
     } else {
         loadBootstrapFile();
-        m_loginHdlr.addLogin(user, password, username, transactionID);
+        m_loginHdlr.addLogin(user, password, transactionID);
         m_waitingForPassword = false;
     }
 

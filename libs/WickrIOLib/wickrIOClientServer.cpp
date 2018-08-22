@@ -467,6 +467,23 @@ bool WickrIOClientServer::startClient(WickrBotClients *client)
 
     // Check that we have the needed information to proceed
     bool needsPassword = WBIOServerCommon::isPasswordRequired(client->binary);
+
+    // If the password is needed then prompt for it
+    if (!needsPassword) {
+        if (client->m_autologin) {
+            // Check if the database password has been created.
+            // If not then will need the client's password to start.
+            QString clientDbDir = QString(WBIO_CLIENT_DBDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
+            QString dbKeyFileName = QString("%1/dkd.wic").arg(clientDbDir);
+            QFile dbKeyFile(dbKeyFileName);
+            if (!dbKeyFile.exists()) {
+                needsPassword = true;
+            }
+        } else {
+            needsPassword = true;
+        }
+    }
+
     if (needsPassword && !m_clientPasswords.contains(processName)) {
         qDebug() << "Leaving startClient: need password for" << client->name;
         return false;
