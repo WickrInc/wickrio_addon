@@ -12,6 +12,7 @@ public:
 
     static const QString DefaultBaseURL;
     static const QString DefaultDirSearchBaseURL;
+    static const QString KeychainAccountKey;
 
 #ifdef WICKR_SPARKLE_ENABLED
     static const QString SparkleAutoUpdateURL;
