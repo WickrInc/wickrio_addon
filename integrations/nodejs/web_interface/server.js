@@ -30,8 +30,6 @@ return new Promise(async (resolve, reject) => {
 
   app.post(endpoint + "/Messages", async function(req, res) {
     console.log('req.body:', req.body);
-    res.send("OK 200");
-    res.end();
     var ttl = "",
       bor = "";
     if (req.body.ttl)
@@ -57,18 +55,18 @@ return new Promise(async (resolve, reject) => {
         console.log('attachment:', attachment);
         console.log('displayName:', displayName);
         var s1t1a = await addon.cmdSend1to1Attachment(users, attachment, displayName, ttl, bor);
-        if(s1t1a === "")
-          res.send("OK 200")
+        if(s1t1a !== "")
+          res.send(s1t1a);
         else{
-          res.send(400 + " "+ s1t1a)
+          res.send(400 + " "+ s1t1a);
         }
       } else {
         var message = req.body.message;
         var csm = await addon.cmdSend1to1Message(users, message, ttl, bor);
-        if(csm === "")
-          res.send("OK 200")
+        if(csm !== "")
+          res.send("OK 200");
         else{
-          res.send(400 + " "+ csm)
+          res.send(400 + " "+ csm);
         }
       }
     } else if (req.body.vgroupid) {
@@ -87,17 +85,17 @@ return new Promise(async (resolve, reject) => {
         console.log('displayName:', displayName);
         var csra = await addon.cmdSendRoomAttachment(vGroupID, attachment, displayName, ttl, bor);
         if(csra === "")
-          res.send("OK 200")
+          res.send("OK 200");
         else{
-          res.send(400 + " "+ csra)
+          res.send(400 + " "+ csra);
         }
       } else {
         var message = req.body.message;
         var csrm = await addon.cmdSendRoomMessage(vGroupID, message, ttl, bor);
         if(csrm === "")
-          res.send("OK 200")
+          res.send("OK 200");
         else{
-          res.send(400 + " "+ csrm)
+          res.send(400 + " "+ csrm);
         }
       }
     }
