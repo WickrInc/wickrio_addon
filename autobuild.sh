@@ -14,7 +14,7 @@
 # build directory is cleared by default on each run.
 
 
-QTVER="5.10"
+QTVER="5.10.1"
 DEVID="Wickr, LLC"
 API_TOKEN="25391301ec2541dfaa1ec0201127e52a"
 
@@ -270,7 +270,7 @@ if test -z "$QTDIR" ; then
     if test -d /usr/local/wickr/Qt-${QTVER} ; then
         QTDIR=`echo /usr/local/wickr/Qt-${QTVER}`
     else
-        QTDIR=`echo ${HOME}/Qt/$QTVER`
+        QTDIR=`echo /usr/local/wickr/Qt/${QTVER}/gcc_64`
     fi
 fi
 PATH="${QTDIR}/bin:$PATH"
