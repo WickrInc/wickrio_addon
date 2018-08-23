@@ -4,14 +4,20 @@ const addon = require('wickrio_addon');
 const fs = require('fs');
 const app = express();
 
-const port = 8090;
-var api_key = process.env.API_KEY;
+var bot_username, bot_port, bot_api_key;
 
 return new Promise(async (resolve, reject) => {
+  var client = await fs.readFileSync('client_bot_info.txt', 'utf-8');
+  client = client.split('\n');
+  console.log('client:',client);
+  bot_username = client[0].substring(client[0].indexOf('=')+1, client[0].length);
+  bot_port = client[1].substring(client[1].indexOf('=')+1, client[1].length);
+  bot_api_key = client[2].substring(client[2].indexOf('=')+1, client[2].length);
+  console.log(bot_username, bot_username.length);
+  console.log(bot_port);
+  console.log(bot_api_key);
   if (process.argv[2] === undefined) {
-    var client = await fs.readFileSync('client_bot_username.txt', 'utf-8');
-    client = client.trim();
-    var response = await addon.clientInit(client);
+    var response = await addon.clientInit(bot_username);
     resolve(response);
   } else {
     var response = await addon.clientInit(process.argv[2]);
@@ -22,11 +28,11 @@ return new Promise(async (resolve, reject) => {
   console.log(result);
   app.use(bodyParser.json());
 
-  app.listen(port, () => {
-    console.log('We are live on ' + port);
+  app.listen(bot_port, () => {
+    console.log('We are live on ' + bot_port);
   });
 
-  var endpoint = "/Apps/" + api_key;
+  var endpoint = "/Apps/" + bot_api_key;
 
   app.post(endpoint + "/Messages", async function(req, res) {
     // console.log('req.body:', req.body);

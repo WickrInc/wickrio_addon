@@ -100,39 +100,40 @@ return new Promise(async (resolve, reject) => {
       } else {
         var parsedData = JSON.parse(message);
         var wickrID = [parsedData.sender];
-        var location = find(wickrID);
+        var vGroupID = [parsedData.vgroupid];
+        var location = find(vGroupID);
         if (location === -1) {
           wickrUsers.push({
-            wickrID: wickrID,
+            vGroupID: vGroupID,
             index: 0
           });
         }
-        var current = getIndex(wickrID);
+        var current = getIndex(vGroupID);
         if (current > 9) {
-          location = find(wickrID);
+          location = find(vGroupID);
           wickrUsers[location].index = 0;
         }
-        current = getIndex(wickrID);
+        current = getIndex(vGroupID);
         if (current <= 9 && current != -1) {
-          addon.cmdSend1to1Message(wickrID, responseMessageList[current], '100', '60');
-          location = find(wickrID);
+          addon.cmdSend1to1Message(vGroupID, responseMessageList[current], '100', '60');
+          location = find(vGroupID);
           wickrUsers[location].index = current + 1;
         }
       }
     }
   }
 
-  function find(wickrID) {
+  function find(vGroupID) {
     for (var i = 0; i < wickrUsers.length; i++) {
-      if (wickrUsers[i].wickrID[0].localeCompare(wickrID[0]) === 0)
+      if (wickrUsers[i].vGroupID[0].localeCompare(vGroupID[0]) === 0)
         return i;
     }
     return -1;
   }
 
-  function getIndex(wickrID) {
+  function getIndex(vGroupID) {
     for (var i = 0; i < wickrUsers.length; i++) {
-      if (wickrUsers[i].wickrID[0] === wickrID[0]) {
+      if (wickrUsers[i].vGroupID[0] === vGroupID[0]) {
         return wickrUsers[i].index;
       }
     }
