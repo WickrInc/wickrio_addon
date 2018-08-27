@@ -634,7 +634,6 @@ WickrBotDatabase::updateProcessState(const QString &process, int process_id, int
             .arg(state)
             .arg(dateTime)
             .arg(process);
-    qDebug() << queryString;
 
     if (!query.exec(queryString)) {
         QSqlError error = query.lastError();

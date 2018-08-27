@@ -498,9 +498,13 @@ bool WickrIOClientServer::startClient(WickrBotClients *client)
 
     command = client->binary;
 
+#if 1
+    arguments.append(QString("-clientname=%1").arg(client->user));
+#else
     arguments.append(QString("-config=%1").arg(configFileName));
     arguments.append(QString("-clientdbdir=%1").arg(clientDbDir));
     arguments.append(QString("-processname=%1").arg(processName));
+#endif
 
     QProcess exec;
 

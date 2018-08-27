@@ -124,6 +124,7 @@ int main(int argc, char *argv[])
     QString clientDbPath("");
     QString wbConfigFile("");
     QString argOutputFile;
+    QString userName;
 
     for( int argidx = 1; argidx < argc; argidx++ ) {
         QString cmd(argv[argidx]);
@@ -152,15 +153,15 @@ int main(int argc, char *argv[])
             operation->processName = cmd.remove("-processname=");
         } else if (cmd.startsWith("-clientname")) {
             operation->wickrID = cmd.remove("-clientname=");
-            QString localName = operation->wickrID;
-            localName.replace("@", "_");
+            userName = operation->wickrID;
+            userName.replace("@", "_");
             wbConfigFile = QString(WBIO_CLIENT_SETTINGS_FORMAT)
                     .arg(WBIO_DEFAULT_DBLOCATION)
-                    .arg(localName);
+                    .arg(userName);
             clientDbPath = QString(WBIO_CLIENT_DBDIR_FORMAT)
                     .arg(WBIO_DEFAULT_DBLOCATION)
-                    .arg(localName);
-            argOutputFile = QString(WBIO_CLIENT_OUTFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(localName);
+                    .arg(userName);
+            argOutputFile = QString(WBIO_CLIENT_OUTFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(userName);
         }
     }
 
@@ -250,6 +251,12 @@ int main(int argc, char *argv[])
         }
     }
 
+    if (userName.isEmpty()) {
+        settings->beginGroup(WBSETTINGS_USER_HEADER);
+        userName = settings->value(WBSETTINGS_USER_USERNAME, "").toString();
+        settings->endGroup();
+    }
+
     WickrDBAdapter::setDBName( WickrDBAdapter::getDBName() + "." + operation->wickrID );
 
     // Product Type: for legacy and testing purposes we will support using client users
@@ -304,6 +311,12 @@ int main(int argc, char *argv[])
     if (operation->attachmentsDir.isEmpty()) {
         settings->beginGroup(WBSETTINGS_ATTACH_HEADER);
         QString dirName = settings->value(WBSETTINGS_ATTACH_DIRNAME, "").toString();
+
+        if (dirName.isEmpty()) {
+            operation->attachmentsDir = QString(WBIO_CLIENT_ATTACHDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client.name);
+
+        }
+
         settings->endGroup();
 
         if (dirName.isEmpty())
@@ -320,10 +333,15 @@ int main(int argc, char *argv[])
     if (operation->log_handler->getLogFile().isEmpty()) {
         settings->beginGroup(WBSETTINGS_LOGGING_HEADER);
         QString fileName = settings->value(WBSETTINGS_LOGGING_FILENAME, "").toString();
-        settings->endGroup();
 
-        if (fileName.isEmpty())
-            fileName = QStandardPaths::writableLocation( QStandardPaths::DataLocation ) + "/wickrio.log";
+        if (fileName.isEmpty()) {
+            fileName = QString(WBIO_CLIENT_LOGFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(userName);
+            settings->setValue(WBSETTINGS_LOGGING_FILENAME, fileName);
+            settings->endGroup();
+            settings->sync();
+        } else {
+            settings->endGroup();
+        }
 
         // Check that can create the log file
         QFileInfo fileInfo(fileName);
@@ -344,10 +362,17 @@ int main(int argc, char *argv[])
     } else {
         settings->beginGroup(WBSETTINGS_LOGGING_HEADER);
         QString curOutputFilename = settings->value(WBSETTINGS_LOGGING_OUTPUT_FILENAME, "").toString();
-        if (! curOutputFilename.isEmpty()) {
-            operation->log_handler->logSetOutput(curOutputFilename);
+
+        if (curOutputFilename.isEmpty()) {
+            curOutputFilename = QString(WBIO_CLIENT_OUTFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(userName);
+            settings->setValue(WBSETTINGS_LOGGING_OUTPUT_FILENAME, curOutputFilename);
+            settings->endGroup();
+            settings->sync();
+        } else {
+            settings->endGroup();
         }
-        settings->endGroup();
+
+        operation->log_handler->logSetOutput(curOutputFilename);
     }
 
     /*
@@ -355,11 +380,7 @@ int main(int argc, char *argv[])
      * clients record for the run of this program.
      */
     if (operation->processName.isEmpty()) {
-        settings->beginGroup(WBSETTINGS_USER_HEADER);
-        QString username = settings->value(WBSETTINGS_USER_USERNAME, "").toString();
-        settings->endGroup();
-
-        if (username.isEmpty()) {
+        if (userName.isEmpty()) {
             qDebug() << "Username field is not set";
             exit(1);
         }
@@ -367,7 +388,7 @@ int main(int argc, char *argv[])
         QFile appname(argv[0]);
         QFileInfo fi(appname);
 
-        operation->processName = QString("%1.%2").arg(fi.fileName() ).arg(username);
+        operation->processName = QString("%1.%2").arg(fi.fileName() ).arg(userName);
     }
 
     /*

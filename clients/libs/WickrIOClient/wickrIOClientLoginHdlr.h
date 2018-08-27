@@ -60,7 +60,7 @@ private:
     int m_curLoginIndex;
     WickrIOClientLoginState m_loginState;
     QList<WickrBotLogin *> m_logins;
-    int m_consecutiveLoginFailures;
+    int m_consecutiveLoginFailures = 0;
     bool m_firstLogin;
     long m_backupVersion;
     int  m_loginVersion;
@@ -70,7 +70,7 @@ private:
     void loginNextUser();
     void refreshDirectory();
 
-    WickrCore::WickrPreRegistrationIface *m_preRegDataIface;
+    WickrCore::WickrPreRegistrationIface *m_preRegDataIface = nullptr;
 
 
     // Provisioning of new users

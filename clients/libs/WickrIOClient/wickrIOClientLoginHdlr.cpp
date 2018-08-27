@@ -12,9 +12,7 @@ WickrIOClientLoginHdlr::WickrIOClientLoginHdlr(OperationData *operation, int log
     m_operation(operation),
     m_curLoginIndex(0),
     m_loginState(LoggedOut),
-    m_consecutiveLoginFailures(0),
     m_backupVersion(-1),
-    m_preRegDataIface(nullptr),
     m_loginVersion(loginVersion)
 {
     m_firstLogin = ! WickrDBAdapter::doesDBExist();
