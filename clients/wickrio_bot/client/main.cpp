@@ -313,16 +313,15 @@ int main(int argc, char *argv[])
         QString dirName = settings->value(WBSETTINGS_ATTACH_DIRNAME, "").toString();
 
         if (dirName.isEmpty()) {
-            operation->attachmentsDir = QString(WBIO_CLIENT_ATTACHDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client.name);
-
+            dirName = QString(WBIO_CLIENT_ATTACHDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(userName);
+            settings->setValue(WBSETTINGS_ATTACH_DIRNAME, dirName);
+            settings->endGroup();
+            settings->sync();
+        } else {
+            settings->endGroup();
         }
 
-        settings->endGroup();
-
-        if (dirName.isEmpty())
-            operation->attachmentsDir = QString("%1/attachments").arg(QStandardPaths::writableLocation( QStandardPaths::DataLocation ));
-        else
-            operation->attachmentsDir = dirName;
+        operation->attachmentsDir = dirName;
     }
     if (!WBIOCommon::makeDirectory(operation->attachmentsDir)) {
         qDebug() << "WickrBot Server cannot make attachments directory:" << operation->attachmentsDir;
