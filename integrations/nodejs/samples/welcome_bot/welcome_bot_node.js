@@ -115,7 +115,7 @@ return new Promise(async (resolve, reject) => {
         }
         current = getIndex(vGroupID);
         if (current <= 9 && current != -1) {
-          addon.cmdSend1to1Message(vGroupID, responseMessageList[current], '100', '60');
+          addon.cmdSendRoomMessage(vGroupID, responseMessageList[current], '100', '60');
           location = find(vGroupID);
           wickrUsers[location].index = current + 1;
         }
