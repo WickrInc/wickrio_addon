@@ -419,6 +419,14 @@ bool WickrIOClientServer::startClient(WickrBotClients *client)
     QString outputFile = QString(WBIO_CLIENT_OUTFILE_FORMAT).arg(m_operation->databaseDir).arg(client->name);
 #endif
 
+    QString outputDirName = QString(WBIO_CLIENT_LOGDIR_FORMAT).arg(m_operation->databaseDir).arg(client->name);
+    QDir    outputDir(outputDirName);
+    if (!outputDir.exists()) {
+        if (!outputDir.mkpath(outputDirName)) {
+            qDebug().noquote() << QString("CONSOLE:Cannot create log directory %1").arg(outputDirName);
+            outputDirName = "";
+        }
+    }
 
     m_operation->log_handler->log("**********************************");
     m_operation->log_handler->log(QString("startClient: command line arguments for %1").arg(client->name));
@@ -527,8 +535,10 @@ bool WickrIOClientServer::startClient(WickrBotClients *client)
     process.setProgram(command);
     process.setArguments(arguments);
 
-    process.setStandardOutputFile(outputFile);
-    process.setStandardErrorFile(outputFile);
+    if (!outputDirName.isEmpty()) {
+        process.setStandardOutputFile(outputFile);
+        process.setStandardErrorFile(outputFile);
+    }
     qint64 pid;
     if (process.startDetached(&pid)) {
 #endif
