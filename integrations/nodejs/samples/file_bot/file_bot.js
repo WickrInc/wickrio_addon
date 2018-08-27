@@ -39,7 +39,7 @@ return new Promise(async (resolve, reject) => {
         if (rMessage.message) {
           var request = rMessage.message;
           var command = '', argument = '';
-          var parsedData = request.match(/(\/[a-zA-Z]+)(@[a-zA-Z]+)?(\s+)?(.*)$/);
+          var parsedData = request.match(/(\/[a-zA-Z]+)(@[a-zA-Z0-9_-]+)?(\s+)?(.*)$/);
           if(parsedData !== null){
             command = parsedData[1];
             if(parsedData[4] !== ''){
