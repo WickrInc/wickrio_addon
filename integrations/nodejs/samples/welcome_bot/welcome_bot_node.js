@@ -99,8 +99,8 @@ return new Promise(async (resolve, reject) => {
         continue;
       } else {
         var parsedData = JSON.parse(message);
-        var wickrID = [parsedData.sender];
-        var vGroupID = [parsedData.vgroupid];
+        // var wickrID = [parsedData.sender];
+        var vGroupID = parsedData.vgroupid;
         var location = find(vGroupID);
         if (location === -1) {
           wickrUsers.push({
@@ -115,7 +115,7 @@ return new Promise(async (resolve, reject) => {
         }
         current = getIndex(vGroupID);
         if (current <= 9 && current != -1) {
-          addon.cmdSendRoomMessage(vGroupID, responseMessageList[current], '100', '60');
+          var csrm = addon.cmdSendRoomMessage(vGroupID, responseMessageList[current], '100', '60');
           location = find(vGroupID);
           wickrUsers[location].index = current + 1;
         }
