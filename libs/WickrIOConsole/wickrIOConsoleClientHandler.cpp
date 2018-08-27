@@ -32,26 +32,22 @@ WickrIOConsoleClientHandler::addClient(WickrIOClientDatabase *ioDB, WickrBotClie
     // Create the configuration file
     QString dbDir(ioDB->m_dbDir);
     QString logname;
+    QString outputName;
     QString configFileName;
     QString clientDbDir;
     QString attachDir;
 
-#ifdef Q_OS_WIN
-    configFileName = QString(WBIO_CLIENT_SETTINGS_FORMAT)
-            .arg(WBIO_ORGANIZATION)
-            .arg(WBIO_GENERAL_TARGET)
-            .arg(newClient->name);
-#else
     configFileName = QString(WBIO_CLIENT_SETTINGS_FORMAT).arg(ioDB->m_dbDir).arg(newClient->name);
-#endif
     clientDbDir = QString(WBIO_CLIENT_DBDIR_FORMAT).arg(ioDB->m_dbDir).arg(newClient->name);
     logname = QString(WBIO_CLIENT_LOGFILE_FORMAT).arg(ioDB->m_dbDir).arg(newClient->name);
+    outputName = QString(WBIO_CLIENT_OUTFILE_FORMAT).arg(ioDB->m_dbDir).arg(newClient->name);
     attachDir = QString(WBIO_CLIENT_ATTACHDIR_FORMAT).arg(ioDB->m_dbDir).arg(newClient->name);
 
     qDebug() << "**********************************";
     qDebug() << "startClient: command line arguments for" << newClient->name;
     qDebug() << "dbDir=" << dbDir;
     qDebug() << "logname=" << logname;
+    qDebug() << "outputname=" << outputName;
     qDebug() << "Config File=" << configFileName;
     qDebug() << "Client DB Dir=" << clientDbDir;
     qDebug() << "Attachments dir=" << attachDir;
@@ -88,7 +84,6 @@ WickrIOConsoleClientHandler::addClient(WickrIOClientDatabase *ioDB, WickrBotClie
 
     settings->beginGroup(WBSETTINGS_USER_HEADER);
     settings->setValue(WBSETTINGS_USER_USER, newClient->user);
-//    settings->setValue(WBSETTINGS_USER_PASSWORD, newClient->password);
     settings->setValue(WBSETTINGS_USER_USERNAME, newClient->name);
     settings->setValue(WBSETTINGS_USER_TRANSACTIONID, newClient->transactionID);
     settings->setValue(WBSETTINGS_USER_AUTOLOGIN, newClient->m_autologin);
@@ -100,6 +95,7 @@ WickrIOConsoleClientHandler::addClient(WickrIOClientDatabase *ioDB, WickrBotClie
 
     settings->beginGroup(WBSETTINGS_LOGGING_HEADER);
     settings->setValue(WBSETTINGS_LOGGING_FILENAME, logname);
+    settings->setValue(WBSETTINGS_LOGGING_OUTPUT_FILENAME, outputName);
     settings->endGroup();
 
     settings->beginGroup(WBSETTINGS_LISTENER_HEADER);

@@ -162,6 +162,13 @@ int main(int argc, char *argv[])
                     .arg(WBIO_DEFAULT_DBLOCATION)
                     .arg(userName);
             argOutputFile = QString(WBIO_CLIENT_OUTFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(userName);
+            QString logDirName = QString(WBIO_CLIENT_LOGDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(userName);
+            QDir    logDir(logDirName);
+            if (!logDir.exists()) {
+                if (!logDir.mkpath(logDirName)) {
+                    qDebug() << "Cannot create log directory:" << logDirName;
+                }
+            }
         }
     }
 

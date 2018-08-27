@@ -457,9 +457,13 @@ bool WickrIOClientServer::startClient(WickrBotClients *client)
     // Add an output file name so that output can be saved
     settings->beginGroup(WBSETTINGS_LOGGING_HEADER);
     QString curOutputFilename = settings->value(WBSETTINGS_LOGGING_OUTPUT_FILENAME, "").toString();
-    if (curOutputFilename.isEmpty())
+    if (curOutputFilename.isEmpty()) {
         settings->setValue(WBSETTINGS_LOGGING_OUTPUT_FILENAME, outputFile);
-    settings->endGroup();
+        settings->endGroup();
+        settings->sync();
+    } else {
+        settings->endGroup();
+    }
 
     // Done with the clients settings
     settings->deleteLater();
