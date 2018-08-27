@@ -33,6 +33,7 @@ return new Promise(async (resolve, reject) => {
         var ttl = "9000";
         rMessage = JSON.parse(rMessage);
         var sender = rMessage.sender;
+        var vGroupID = rMessage.vgroupid;
         var userArr = [];
         userArr.push(sender);
         if (rMessage.message) {
@@ -45,7 +46,7 @@ return new Promise(async (resolve, reject) => {
               argument = parsedData[4];
           }
           }
-          if (command === '/list' || command === '//list') {
+          if (command === '/list') {
             var fileArr = [];
             fileArr.push('List of files in the given directory:');
             var answer;
@@ -53,25 +54,25 @@ return new Promise(async (resolve, reject) => {
               fileArr.push(file.toString());
             });
             fileArr = fileArr.join('\n');
-            var sMessage = addon.cmdSend1to1Message(userArr, fileArr, ttl, bor);
+            var sMessage = addon.cmdSendRoomMessage(vGroupID, fileArr, ttl, bor);
             console.log(sMessage);
-          } else if (command === '/get' || command === '//get') {
+          } else if (command === '/get') {
             var attachment = argument;
             try {
               var as = await fs.accessSync('files/' + attachment, fs.constants.R_OK | fs.constants.W_OK);
             } catch (err) {
               var msg = attachment + ' does not exist!';
               console.error(msg);
-              var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
+              var sMessage = await addon.cmdSendRoomMessage(vGroupID, msg, ttl, bor);
               console.log(sMessage);
               continue;
             }
-            console.log(addon.cmdSend1to1Attachment(userArr, __dirname + '/files/' + attachment, attachment, ttl, bor));
-          } else if (command === '/delete' || command === '//delete') {
+            console.log(addon.cmdSendRoomAttachment(vGroupID, __dirname + '/files/' + attachment, attachment, ttl, bor));
+          } else if (command === '/delete') {
             var attachment = argument;
             if (attachment === '*') {
               var msg = "Sorry, I'm not allowed to delete all the files in the directory.";
-              var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
+              var sMessage = await addon.cmdSendRoomMessage(vGroupID, msg, ttl, bor);
               console.log(sMessage);
               continue;
             }
@@ -80,7 +81,7 @@ return new Promise(async (resolve, reject) => {
             } catch (err) {
               var msg = attachment + ' does not exist!';
               console.error(msg);
-              var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
+              var sMessage = await addon.cmdSendRoomMessage(vGroupID, msg, ttl, bor);
               console.log(sMessage);
               continue;
             }
@@ -89,20 +90,20 @@ return new Promise(async (resolve, reject) => {
             } catch (err) {
               if (err) {
                 throw err;
-                var sMessage = await addon.cmdSend1to1Message(userArr, err, ttl, bor);
+                var sMessage = await addon.cmdSendRoomMessage(vGroupID, err, ttl, bor);
                 console.log(sMessage);
                 continue;
               }
             }
             var msg = "File named: '" + attachment + "' was deleted successfully!";
-            var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
+            var sMessage = await addon.cmdSendRoomMessage(vGroupID, msg, ttl, bor);
             console.log(sMessage);
-          } else if (command === '/help' || command === '//help') {
+          } else if (command === '/help') {
             var help = "/help - List all available commands\n" +
               "/list - Lists all available files\n" +
               "/get FILE_NAME - Retrieve the specified file\n" +
               "/delete FILE_NAME - Deletes the specified file\n";
-            var sMessage = addon.cmdSend1to1Message(userArr, help, ttl, bor);
+            var sMessage = addon.cmdSendRoomMessage(vGroupID, help, ttl, bor);
             console.log(sMessage);
           }
         } else if (rMessage.file && JSON.stringify(rMessage) !== JSON.stringify(prevMessage)) {
@@ -119,7 +120,7 @@ return new Promise(async (resolve, reject) => {
           }
           var cp = await fs.copyFileSync(rMessage.file.localfilename, 'files/' + rMessage.file.filename);
           var msg = "File named: '" + rMessage.file.filename + "' successfully saved to directory!";
-          var sMessage = await addon.cmdSend1to1Message(userArr, msg, ttl, bor);
+          var sMessage = await addon.cmdSendRoomMessage(vGroupID, msg, ttl, bor);
           var prevMessage = rMessage;
           console.log(sMessage);
         } else{
