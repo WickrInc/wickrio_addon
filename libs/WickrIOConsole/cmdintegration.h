@@ -28,6 +28,7 @@ private:
     QList<WBIOBotTypes *>   m_customInts;
 
     bool processCommand(QStringList cmdList, bool &isquit);
+    void processHelp(const QStringList& cmdList);
 
     bool addIntegration(const QString& updateName = "");
     void deleteIntegration(int index);
