@@ -75,7 +75,7 @@ sdk.update:
 	@echo $(HEADER_START)
 	@echo "Update the SDK submodule"
 	@echo "Starting to update wickr-sdk"
-	cd $(WICKR_SDK) && git fetch --all && git checkout $(SDK_BRANCH) && git pull && make && make update
+	cd $(WICKR_SDK) && git fetch --all && git checkout master && git pull origin master && git checkout $(SDK_BRANCH) && git pull origin $(SDK_BRANCH) && make && make update
 	@echo $(HEADER_END)
 
 $(WICKR_INTEGRATIONS)/compress.sh:
