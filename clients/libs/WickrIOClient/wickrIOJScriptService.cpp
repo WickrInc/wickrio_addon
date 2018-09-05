@@ -10,10 +10,6 @@
 
 QString WickrIOJScriptService::jsServiceBaseName = "WickrIOJScriptThread";
 
-#if 0
-using namespace v8;
-#endif
-
 WickrIOJScriptService::WickrIOJScriptService() : WickrIOServiceBase(jsServiceBaseName),
     m_lock(QReadWriteLock::Recursive),
     m_state(WickrServiceState::SERVICE_UNINITIALIZED),
@@ -141,11 +137,6 @@ WickrIOJScriptThread::WickrIOJScriptThread(QThread *thread, WickrIOJScriptServic
     connect(thread, &QThread::finished, this, &QObject::deleteLater);
 
     m_state = JSThreadState::JS_STARTED;
-
-#if 0
-    // initialize the Javascript callback
-    initJScriptCallback();
-#endif
 }
 
 /**
@@ -153,12 +144,6 @@ WickrIOJScriptThread::WickrIOJScriptThread(QThread *thread, WickrIOJScriptServic
  * Destructor
  */
 WickrIOJScriptThread::~WickrIOJScriptThread() {
-#if 0
-    // If the Javascript callback is still setup then stop it
-    if (m_jsCallbackInitialized) {
-        stopJScriptCallback();
-    }
-#endif
     qDebug() << "WICKRIOJAVASCRIPT THREAD: Worker Destroyed.";
 }
 
@@ -350,181 +335,20 @@ WickrIOJScriptThread::processRequest(const QByteArray& request)
     else if (action == "clear_statistics") {
         apiInterface.clearStatistics("", responseString);
     }
-    // ERROR CASE
+    // Asynchronous message and event handling
+    else if (action == "start_async_messages") {
+        apiInterface.startAsyncMessages(responseString);
+    } else if (action == "stop_async_messages") {
+        apiInterface.stopAsyncMessages(responseString);
+    } else if (action == "start_async_events") {
+        apiInterface.startAsyncEvents(responseString);
+    } else if (action == "stop_async_events") {
+        apiInterface.stopAsyncEvents(responseString);
+    }
     else {
         responseString = QString("action '%1' unknown!").arg(action);
     }
 
     return responseString;
 }
-
-
-/**********************************************************************************************
- * API FUNCTIONS
- **********************************************************************************************/
-
-#if 0
-void jsSendMessage(const FunctionCallbackInfo<Value>& args) {
-    OperationData* operation = WickrIOClientRuntime::operationData();
-    if (!operation) {
-        return;
-    }
-    WickrIOAPIInterface apiInterface(operation);
-
-    Isolate * isolate = args.GetIsolate();
-
-    v8::String::Utf8Value s(args[0]);
-
-    std::string str(*s, s.length());
-
-    QByteArray jsonString = QByteArray::fromStdString(str);
-    QString responseString;
-
-    bool success = apiInterface.sendMessage(jsonString, responseString);
-    std::string response = responseString.toStdString().c_str();
-
-    Local<String> retval = String::NewFromUtf8(isolate, responseString.toStdString().c_str());
-    args.GetReturnValue().Set(retval);
-}
-#endif
-
-/**********************************************************************************************
- * JAVASCRIPT FUNCTIONS
- **********************************************************************************************/
-
-#if 0
-bool
-WickrIOJScriptThread::initJScriptCallback()
-{
-    // If the Javascript service is already initialized then return
-    if (m_jsCallbackInitialized) {
-        return true;
-    }
-    m_jsCallbackInitialized = true;
-
-    QString appFilePath = QCoreApplication::applicationFilePath();
-
-    // Initialize V8.
-    if (!V8::InitializeICUDefaultLocation(appFilePath.toStdString().c_str())) {
-        qDebug() << "InitializeICUDefaultLocation failed!";
-        m_jsCallbackInitialized = false;
-    } else {
-        V8::InitializeExternalStartupData(appFilePath.toStdString().c_str());
-        m_platform = platform::CreateDefaultPlatform();
-        V8::InitializePlatform(m_platform);
-        V8::Initialize();
-
-        // Create a new Isolate and make it the current one.
-        Isolate::CreateParams create_params;
-        create_params.array_buffer_allocator =
-                ArrayBuffer::Allocator::NewDefaultAllocator();
-        m_isolate = Isolate::New(create_params);
-        if (!m_isolate) {
-            m_jsCallbackInitialized = false;
-        } else {
-            Isolate::Scope isolate_scope(m_isolate);
-
-            // Create a stack-allocated handle scope.
-            HandleScope handle_scope(m_isolate);
-
-            // Create a new context.
-            Local<Context> context = Context::New(m_isolate);
-
-            m_persistent_context.Reset(m_isolate, context);
-            v8::Context::Scope context_scope(context);
-
-
-//            // Enter the context for compiling and running the hello world script.
-//            Context::Scope context_scope(m_context);
-
-
-        }
-    }
-
-    return m_jsCallbackInitialized;
-}
-
-bool
-WickrIOJScriptThread::stopJScriptCallback()
-{
-    // if the Javascript service is NOT initialized then just return
-    if (!m_jsCallbackInitialized) {
-        return true;
-    }
-
-    m_jsCallbackInitialized = false;
-
-    // Displse the isolate and tear down V8
-    m_isolate->Dispose();
-
-    // dispose of v8
-    V8::Dispose();
-    V8::ShutdownPlatform();
-    delete m_platform;
-
-    return true;
-}
-
-bool
-WickrIOJScriptThread::jScriptSendMessage()
-{
-    if (!m_jsCallbackInitialized) {
-        if (!initJScriptCallback()) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-bool
-WickrIOJScriptThread::jScriptStartScript()
-{
-    if (!m_jsCallbackInitialized) {
-        if (!initJScriptCallback()) {
-            return false;
-        }
-    }
-
-    v8::Locker isolateLocker(m_isolate);
-    v8::Isolate::Scope isolate_scope(m_isolate);
-    v8::HandleScope handle_scope(m_isolate);
-
-    v8::Local<v8::Context> context= v8::Local<v8::Context>::New(m_isolate, m_persistent_context);
-//    v8::Local<v8::Script> script = v8::Local<v8::Script>::New(m_isolate, compiledScript);
-
-    v8::Context::Scope context_scope(context);
-
-    // Code to call the Javascript function f1
-
-    Handle<Object> global = context->Global();
-    global->Set(String::NewFromUtf8(m_isolate, "sendMessage"), FunctionTemplate::New(m_isolate, jsSendMessage)->GetFunction());
-
-    // Create a string containing the JavaScript source code.
-    Local<String> source;
-    QString fileString;
-
-    QFile listFile("/home/pcushman/Development/wickr-wickrio/libs/third_party/sendMessage_1.js");
-    if (listFile.open(QIODevice::ReadOnly)) {
-        QTextStream in(&listFile);
-        while (!in.atEnd()) {
-            QString line = in.readLine();
-            fileString.append(line);
-        }
-        listFile.close();
-    } else {
-
-    }
-
-    source = String::NewFromUtf8(m_isolate, fileString.toStdString().c_str(), NewStringType::kNormal).ToLocalChecked();
-
-    // Compile the source code.
-    Local<Script> script = Script::Compile(context, source).ToLocalChecked();
-
-    // Run the script to get the result.
-    Local<Value> defResult = { v8::String::NewFromUtf8(m_isolate, "") };
-    Local<Value> result = script->Run(context).FromMaybe(defResult);
-
-}
-#endif
 

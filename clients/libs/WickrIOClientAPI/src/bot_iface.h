@@ -97,6 +97,11 @@ public:
                                            const string& ttl="",
                                            const string& bor="");
 
+    BotIfaceStatus cmdStringStartAsyncRecvMessages(string& command, void (*callback)(string));
+    BotIfaceStatus cmdStringStopAsyncRecvMessages(string& command);
+    BotIfaceStatus cmdStringStartAsyncRecvEvents(string& command, void (*callback)(string));
+    BotIfaceStatus cmdStringStopAsyncRecvEvents(string& command);
+
 private:
 #ifdef ZEROMQ_TEST_H
     MesgQueueIface  *m_iface = NULL;
@@ -106,6 +111,10 @@ private:
 
     string          m_clientName;           // Name of the client interfacing with
     string          m_lastError = "";       // Last error string
+
+    // These are the callback functions that will be called when a message/event is received
+    void            (*m_asyncMsgCallback)(string) = NULL;
+    void            (*m_asyncEventCallback)(string) = NULL;
 
     // Generic function to set the fields associated with an add/modify room command
     BotIfaceStatus setRoomFields(string& command,

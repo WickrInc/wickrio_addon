@@ -31,8 +31,15 @@ public:
     bool getStatistics(const QString& apiKey, QString& responseString);
     bool clearStatistics(const QString& apiKey, QString& responseString);
 
+    bool startAsyncMessages(QString& responseString);
+    bool stopAsyncMessages(QString& responseString);
+    bool startAsyncEvents(QString& responseString);
+    bool stopAsyncEvents(QString& responseString);
+
 private:
     OperationData *m_operation;
+    bool    m_processAsyncMessages = false;
+    bool    m_processAsyncEvents = false;
 
     bool deleteConvo(bool isSecureConvo, const QString& vgroupID);
     QJsonObject getRoomInfo(WickrCore::WickrConvo *convo);
