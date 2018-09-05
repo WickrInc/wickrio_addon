@@ -22,7 +22,6 @@ WickrIOProcessCommand::WickrIOProcessCommand(OperationData *pOperation) :
 void
 WickrIOProcessCommand::processStarted()
 {
-#if 1
     CmdOperation    cmdOperation(m_operation);
     CmdClient       cmdClient(&cmdOperation);
     QStringList     options;
@@ -35,13 +34,6 @@ WickrIOProcessCommand::processStarted()
     cmdClient.runCommands(options, "ports");
     cmdClient.runCommands(options, "list");
     cmdClient.runCommands(options);
-#else
-    CmdMain cmdmain(m_operation);
-
-    // Print out a list of the clients
-    cmdmain.runCommands("client -basic,list");
-    cmdmain.runCommands();
-#endif
 
     emit signalQuit();
 }

@@ -12,9 +12,7 @@ WickrIOClientLoginHdlr::WickrIOClientLoginHdlr(OperationData *operation, int log
     m_operation(operation),
     m_curLoginIndex(0),
     m_loginState(LoggedOut),
-    m_consecutiveLoginFailures(0),
     m_backupVersion(-1),
-    m_preRegDataIface(nullptr),
     m_loginVersion(loginVersion)
 {
     m_firstLogin = ! WickrDBAdapter::doesDBExist();
@@ -134,17 +132,11 @@ void WickrIOClientLoginHdlr::initiateLogin()
         m_loginState = InProcess;
         QString userid = m_logins.at(m_curLoginIndex)->m_name;
         QString password = m_logins.at(m_curLoginIndex)->m_pass;
-        QString userName = m_logins.at(m_curLoginIndex)->m_userName;
         QString transactionID = m_logins.at(m_curLoginIndex)->m_transID;
         bool creatingUser = m_logins.at(m_curLoginIndex)->m_creating;
 
         if (m_operation->m_botDB->isOpen()) {
-            EnvironmentMgr *env = WickrCore::WickrRuntime::getEnvironmentMgr();
-            if (env->emailAsUserIdMode()) {
-                m_operation->m_client = m_operation->m_botDB->getClientUsingUserName(userid);
-            } else {
-                m_operation->m_client = m_operation->m_botDB->getClientUsingName(userName);
-            }
+            m_operation->m_client = m_operation->m_botDB->getClientUsingUserName(userid);
         }
 
         WickrDBAdapter::setDBNameForUser( userid );

@@ -85,6 +85,118 @@ CmdClient::getVersionString(unsigned versionNum, QString& versionString)
     }
 }
 
+void
+CmdClient::processHelp(const QStringList& cmdList)
+{
+    if (cmdList.length() > 0) {
+        for (QString cmd : cmdList) {
+            if (cmd == "add") {
+                qDebug().nospace() << "CONSOLE:Add command usage: add\n"
+                        << "  The add command is used to add a WickrIO bot client. You will be required to\n"
+                        << "  enter specific information depending on the type of bot you are creating. The\n"
+                        << "  minimum is the bots name and password. NOTE: password values are not shown or\n"
+                        << "  saved on disk! You will be prompted for an option to use automatic logon for\n"
+                        << "  the WickrIO bot client. This will require an initial password entry, but no\n"
+                        << "  password will have to be entered after that. \n"
+                        << "  For WickrIO bot clients that are associated with an integration you will have\n"
+                        << "  to enter the name of the integration (custom or pre-packaged). You may also\n"
+                        << "  have to enter other information related to that integration.\n";
+            } else if (cmd == "back" && !m_root) {
+                qDebug().nospace() << "CONSOLE:Back command usage: back\n"
+                        << "  The back command will take you to the previous level of commands.\n";
+            } else if (cmd == "delete") {
+                qDebug().nospace() << "CONSOLE:Delete command usage: delete <client number>\n"
+                        << "  The delete command is used to delete an existing client. The <client number>\n"
+                        << "  is the number shown on the 'list' command associated with the WickrIO bot\n"
+                        << "  client that you want to delete. The client's information will be removed\n"
+                        << "  from all associated databases. You will be prompted to continue if the\n"
+                        << "  associated database record identifies it as running. In that case make sure\n"
+                        << "  the process for that bot is actually NOT running (i.e. ps -aef | grep <name\n"
+                        << "  of bot>). You should NOT delete a running WickrIO bot client. Please contact\n"
+                        << "  Wickr support if you have problems with stopping a running bot. You will also\n"
+                        << "  be prompted to delete all the files and directories associated with the bot\n"
+                        << "  to be deleted. It is advised to do so, and is the default response.\n";
+            } else if (cmd == "help") {
+                qDebug().nospace() << "CONSOLE:Help command usage: help [command ...]\n"
+                        << "  Use the help command to display the list of commands you can use at this\n"
+                        << "  command level. You can also supply a list of one or more commands on the same\n"
+                        << "  line as the help command which the help command will display detailed\n"
+                        << "  information for.\n";
+            } else if (cmd == "integration") {
+                qDebug().nospace() << "CONSOLE:Integration command usage: integration\n"
+                        << "  The integration command is used to create, configure and maintain the\n"
+                        << "  integrations that can be associated with the WickrIO bots clients. When\n"
+                        << "  you submit the integration command you will enter the integrations level.\n"
+                        << "  You can get details of the integration commands at that level.\n";
+            } else if (cmd == "list") {
+                qDebug().nospace() << "CONSOLE:List command usage: list\n"
+                        << "  The list command will display the list of WickrIO bot clients that are\n"
+                        << "  currently configured. The output from the list command will show the name of\n"
+                        << "  the bot and then information associated with the bot, like the run state of\n"
+                        << "  the bot, the name of an integration that is associated with the bot, if\n"
+                        << "  that integration needs to be updated.\n";
+            } else if (cmd == "modify") {
+                qDebug().nospace() << "CONSOLE:Modify command usage: modify <client number>\n"
+                        << "  The modify command is used to make changes to an existing WickrIO bot client.\n"
+                        << "  The <client number> is the number shown on the 'list' command associated with\n"
+                        << "  the WickrIO bot client that you want to modify. This command should only be\n"
+                        << "  performed on a WickrIO bot that is not running. When you run this command you\n"
+                        << "  will be prompted to enter the same fields that you did while creating the\n"
+                        << "  WickrIO bot, except for the name.\n";
+            } else if (cmd == "pause") {
+                qDebug().nospace() << "CONSOLE:Pause command usage: pause <client number> [-force]\n"
+                        << "  The pause command is used to stop (pause) a WickrIO bot client. The <client\n"
+                        << "  number> is the number shown on the 'list' command associated with the WickrIO\n"
+                        << "  bot client that you want to pause. The WickrIO bot client should be in the\n"
+                        << "  running state to perform this command. Run the 'list' command after this to\n"
+                        << "  see the state of the WickrIO bot client to change to the paused state.\n"
+                        << "  NOTE: If the WickrIO bot client is showing an invalid running state and you\n"
+                        << "  can confirm it is (by doing a ps -aef <client name>) then you can use the\n"
+                        << "  -force option to force the WickrIO bot client into the paused state.\n";
+            } else if (cmd == "quit") {
+                qDebug().nospace() << "CONSOLE:Quit command usage: quit\n"
+                        << "  The quit command is used to exit this program.\n"
+                        << "  WARNING: leaving this program will also put all of the WickrrIO bot clients\n"
+                        << "  into the paused state.\n";
+            } else if (cmd == "start") {
+                qDebug().nospace() << "CONSOLE:Start command usage: start <client number> [-force]\n"
+                        << "  The start command is used to start a specific WickrIO bot client. The <client\n"
+                        << "  number> is the number shown on the 'list' command associated with the WickrIO\n"
+                        << "  bot client that you want to start.\n"
+                        << "  NOTE: If the WickrIO bot client is showing an invalid running state and you\n"
+                        << "  can confirm it is (by doing a ps -aef <client name>) then you can use the\n"
+                        << "  -force option to force the WickrIO bot client into the started state.\n";
+            } else if (cmd == "upgrade") {
+                qDebug().nospace() << "CONSOLE:Upgrade command usage: upgrade <client number>\n"
+                        << "  The upgrade command is used to upgrade the integration software associated\n"
+                        << "  with an existing WickrIO bot client. The <client numer> is the number shown\n"
+                        << "  on the 'list' command associated with the WickrIO bot client that you want to\n"
+                        << "  upgrade the integration software for. If there are version numbers associated\n"
+                        << "  with the integration software and the interation software has a new version\n"
+                        << "  there will be an indication next to the WickrIO bot client saying it needs to\n"
+                        << "  be upgraded. You can always performe an upgrade even if the upgarde is not\n"
+                        << "  indicated.\n";
+
+            } else {
+                qDebug() << "CONSOLE:" << cmd << "is not a known command!";
+            }
+        }
+    } else {
+        qDebug() << "CONSOLE:Commands:";
+        qDebug() << "CONSOLE:  add         - adds a new client";
+        if (!m_root) qDebug() << "CONSOLE:  back        - leave the clients setup";
+        qDebug() << "CONSOLE:  delete <#>  - deletes client with the specific index";
+        qDebug() << "CONSOLE:  help or ?   - shows supported commands";
+        qDebug() << "CONSOLE:  integration - bot integrations menu";
+        qDebug() << "CONSOLE:  list        - shows a list of clients";
+        qDebug() << "CONSOLE:  modify <#>  - modifies a client with the specified index";
+        qDebug() << "CONSOLE:  pause <#>   - pauses the client with the specified index";
+        qDebug() << "CONSOLE:  start <#>   - starts the client with the specified index";
+        qDebug() << "CONSOLE:  upgrade <#> - upgrade integration software for client";
+        qDebug() << "CONSOLE:  quit        - leaves this program";
+    }
+}
+
 bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
 {
     bool retVal = true;
@@ -93,6 +205,16 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
 
     QString cmd = cmdList.at(0).toLower();
     int clientIndex;
+
+    if (cmd == "?" || cmd == "help") {
+        QStringList args;
+        if (cmdList.size() > 1) {
+            args = cmdList;
+            args.removeAt(0);
+        }
+        processHelp(args);
+        return true;
+    }
 
     // Convert the second argument to an integer, for the client index commands
     if (cmdList.size() > 1) {
@@ -113,20 +235,7 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
         clientIndex = -1;
     }
 
-    if (cmd == "?" || cmd == "help") {
-        qDebug() << "CONSOLE:Commands:";
-        qDebug() << "CONSOLE:  add         - adds a new client";
-        if (!m_root) qDebug() << "CONSOLE:  back        - leave the clients setup";
-        qDebug() << "CONSOLE:  delete <#>  - deletes client with the specific index";
-        qDebug() << "CONSOLE:  help or ?   - shows supported commands";
-        qDebug() << "CONSOLE:  integration - bot integrations menu";
-        qDebug() << "CONSOLE:  list        - shows a list of clients";
-        qDebug() << "CONSOLE:  modify <#>  - modifies a client with the specified index";
-        qDebug() << "CONSOLE:  pause <#>   - pauses the client with the specified index";
-        qDebug() << "CONSOLE:  start <#>   - starts the client with the specified index";
-        qDebug() << "CONSOLE:  upgrade <#> - upgrade integration software for client";
-        qDebug() << "CONSOLE:  quit        - leaves this program";
-    } else if (cmd == "add") {
+    if (cmd == "add") {
         addClient();
     } else if (cmd == "back" && !m_root) {
         retVal = false;
@@ -220,6 +329,8 @@ bool CmdClient::runCommands(const QStringList& options, QString commands)
     bool isQuit;
 
     if (commands.isEmpty()) {
+        //TODO: if there are no clients then print out something, if this is the first time through as well
+
         while (true) {
             QString prompt;
             if (m_root) {
@@ -486,7 +597,7 @@ bool CmdClient::getClientValues(WickrBotClients *client)
 
         m_exec = new QProcess();
 
-        connect(m_exec, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(slotCmdFinished));
+        connect(m_exec, SIGNAL(finished(int)), this, SLOT(slotCmdFinished));
 //        connect(m_exec, SIGNAL(finished(int, QProcess::readyReadStandardOutput)), this, SLOT(slotCmdOutputRx));
 
         //Tests that process starts and closes alright
@@ -1009,74 +1120,65 @@ CmdClient::runBotScript(const QString& destPath, const QString& configure, Wickr
         return false;
     }
 
-#if 1
     QString bytes;
     while (readLineFromProcess(runScript, bytes)) {
-#else
-    while(runScript->waitForReadyRead(-1)) {
-        while(runScript->canReadLine()) {
-            QString bytes = QString(runScript->readLine());
-#endif
-            if (!bytes.isEmpty()) {
-                QStringList inputList = bytes.split(":");
+        if (!bytes.isEmpty()) {
+            QStringList inputList = bytes.split(":");
 
-                if (inputList.size() > 1 && inputList[0].toLower() == "prompt") {
-                    bool promptForValue = false;
-                    if (bytes.contains("WICKRIO_AUTH_TOKEN")) {
-                        QString authValue;
+            if (inputList.size() > 1 && inputList[0].toLower() == "prompt") {
+                bool promptForValue = false;
+                if (bytes.contains("WICKRIO_AUTH_TOKEN")) {
+                    QString authValue;
 #if 0 // Ignoring authentication for now
-                        // Get the basic authentication value (user:pw), should use token though
-                        if (!getAuthValue(client, true, authValue)) {
-                            runScript->close();
-                            return false;
-                        }
+                    // Get the basic authentication value (user:pw), should use token though
+                    if (!getAuthValue(client, true, authValue)) {
+                        runScript->close();
+                        return false;
+                    }
 #else
-                        authValue = "admin:admin";
+                    authValue = "admin:admin";
 #endif
 
-                        authValue.append("\n");
-                        runScript->write(authValue.toLatin1());
-                    } else if (bytes.contains("WICKRIO_SERVER")) {
-                        QString server = QString("%1://%2:%3/Apps/%5\n")
-                                .arg(client->isHttps ? "https" : "http")
-                                .arg(client->iface)
-                                .arg(client->port)
-                                .arg(client->apiKey);
-                        runScript->write(server.toLatin1());
-                    } else if (bytes.contains("HUBOT_NAME")) {
-                        QString botName = QString("%1_hubot\n").arg(client->name);
-                        runScript->write(botName.toLatin1());
-                    } else if (bytes.contains("HUBOT_URL_ENDPOINT")) {
-                        cbackEndPoint = QString("/Apps/%1").arg(client->port);
-                        QString endpoint = QString("%1\n").arg(cbackEndPoint);
-                        runScript->write(endpoint.toLatin1());
-                    } else if (bytes.contains("HUBOT_URL_PORT")) {
-                        QString cbackPortPrompt = QString("Enter the port the %1 integration will listen on").arg(client->botType);
-                        cbackPort = getNewValue(cbackPort, cbackPortPrompt);
-                        QString outString = QString("%1\n").arg(cbackPort);
-                        runScript->write(outString.toLatin1());
-                    } else {
-                        promptForValue = true;
-                    }
-
-                    // If there was no known token asked for then prompt to the user
-                    if (promptForValue) {
-                        QString prompt = bytes.right(bytes.length()-7).remove(QRegExp("[\\n\\t\\r]"));     // size of string - sizeof "PROMPT:"
-                        QString curVal;
-                        prompt = prompt.remove(QRegExp("[\\n\\t\\r]"));
-//                        prompt = QString("Enter value for %1").arg(prompt.toLower());
-                        QString input = getNewValue(curVal, prompt);
-                        input.append("\n");
-                        runScript->write(input.toLatin1());
-                    }
+                    authValue.append("\n");
+                    runScript->write(authValue.toLatin1());
+                } else if (bytes.contains("WICKRIO_SERVER")) {
+                    QString server = QString("%1://%2:%3/Apps/%5\n")
+                            .arg(client->isHttps ? "https" : "http")
+                            .arg(client->iface)
+                            .arg(client->port)
+                            .arg(client->apiKey);
+                    runScript->write(server.toLatin1());
+                } else if (bytes.contains("HUBOT_NAME")) {
+                    QString botName = QString("%1_hubot\n").arg(client->name);
+                    runScript->write(botName.toLatin1());
+                } else if (bytes.contains("HUBOT_URL_ENDPOINT")) {
+                    cbackEndPoint = QString("/Apps/%1").arg(client->port);
+                    QString endpoint = QString("%1\n").arg(cbackEndPoint);
+                    runScript->write(endpoint.toLatin1());
+                } else if (bytes.contains("HUBOT_URL_PORT")) {
+                    QString cbackPortPrompt = QString("Enter the port the %1 integration will listen on").arg(client->botType);
+                    cbackPort = getNewValue(cbackPort, cbackPortPrompt);
+                    QString outString = QString("%1\n").arg(cbackPort);
+                    runScript->write(outString.toLatin1());
                 } else {
-                    bytes = bytes.remove(QRegExp("[\\n\\t\\r]"));
-                    qDebug().noquote().nospace() << "CONSOLE:" << bytes;
+                    promptForValue = true;
                 }
+
+                // If there was no known token asked for then prompt to the user
+                if (promptForValue) {
+                    QString prompt = bytes.right(bytes.length()-7).remove(QRegExp("[\\n\\t\\r]"));     // size of string - sizeof "PROMPT:"
+                    QString curVal;
+                    prompt = prompt.remove(QRegExp("[\\n\\t\\r]"));
+//                        prompt = QString("Enter value for %1").arg(prompt.toLower());
+                    QString input = getNewValue(curVal, prompt);
+                    input.append("\n");
+                    runScript->write(input.toLatin1());
+                }
+            } else {
+                bytes = bytes.remove(QRegExp("[\\n\\t\\r]"));
+                qDebug().noquote().nospace() << "CONSOLE:" << bytes;
             }
-#if 0
         }
-#endif
     }
 
     // If the callback valuee are set then create the callback url for this client
@@ -1086,7 +1188,7 @@ CmdClient::runBotScript(const QString& destPath, const QString& configure, Wickr
     return true;
 }
 
-void CmdClient::slotCmdFinished(int, QProcess::ExitStatus)
+void CmdClient::slotCmdFinished(int)
 {
     qDebug() << "process completed";
     m_exec->deleteLater();
@@ -1220,7 +1322,31 @@ void CmdClient::deleteClient(int clientIndex)
                 qDebug() << "CONSOLE:There was a problem deleting the client's process record!";
             }
 
-            // TODO: Need to cleanup the clients directory and registry (for windows)
+            // Need to cleanup the clients directory and registry (for windows)
+            bool deleteFiles=false;
+            while (true) {
+                qDebug() << "CONSOLE:The files and directories associated with this client should be deleted!";
+                QString response = getNewValue("y", "Do you want to remove the associated files for this client? (y or n)");
+                if (response.toLower() == "n" || response.toLower() == "no") {
+                    break;
+                }
+                if (response.toLower() == "y" || response.toLower() == "yes") {
+                    deleteFiles = true;
+                    break;
+                }
+            }
+            if (deleteFiles) {
+                QString clientDbDirName = QString(WBIO_CLIENT_WORKINGDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
+                QDir clientDbDir(clientDbDirName);
+                if (clientDbDir.exists()) {
+                    qDebug() << "CONSOLE:Removing client directory and files!";
+                    if (!clientDbDir.removeRecursively()) {
+                        qDebug() << "CONSOLE:Failed to remove the client directory and files!";
+                    } else {
+                        qDebug() << "CONSOLE:Successfully removed the client's directories and files!";
+                    }
+                }
+            }
 
             // Update the list of clients
             m_clients = m_operation->m_ioDB->getClients();

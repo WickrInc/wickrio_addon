@@ -6,7 +6,7 @@ set -e
 current=`dirname $0`
 cd $current
 
-QTVER="5_9"
+QTVER="5_10"
 
 buildtype=$1
 hubotswdir="$2"

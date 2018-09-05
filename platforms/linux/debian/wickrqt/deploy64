@@ -8,9 +8,10 @@ cd $current
 current=$PWD
 
 target=wickr-qt
-baseversion=5.9
-version=5.9.4
-QTDIR=/usr/local/wickr/Qt-5.9
+baseversion=5.10
+version=5.10.1
+QTSRCDIR=/usr/local/wickr/Qt/5.10.1/gcc_64
+QTDSTDIR=/usr/local/wickr/Qt-5.10
 
 output_dir="$1"
 if test -z "$output_dir" ; then
@@ -19,9 +20,9 @@ if test -z "$output_dir" ; then
 prefix=~/tmp/${target}_${version}-deb
 debian=~/tmp/${target}_${version}-deb/DEBIAN
 
-libdir=${prefix}${QTDIR}/lib
-plugins=${prefix}${QTDIR}/plugins
-#qmldir=${prefix}${QTDIR}/qml
+libdir=${prefix}${QTDSTDIR}/lib
+plugins=${prefix}${QTDSTDIR}/plugins
+#qmldir=${prefix}${QTDSTDIR}/qml
 
 echo $libdir
 
@@ -35,25 +36,24 @@ sed -e "s/PACKAGE/${target}-${baseversion}/; s/VERSION/$version/" <./${target}.c
 
 
 #
-# cp -a $QTDIR/lib/*.so $QTDIR/lib/*.so.* $libdir/
+# cp -a $QTSRCDIR/lib/*.so $QTSRCDIR/lib/*.so.* $libdir/
 
-cp -a $QTDIR/lib/libQt5Core.* $libdir/
-cp -a $QTDIR/lib/libQt5DBus.* $libdir/
-cp -a $QTDIR/lib/libQt5Gui.* $libdir/
-cp -a $QTDIR/lib/libQt5NetworkAuth.* $libdir/
-cp -a $QTDIR/lib/libQt5Network.* $libdir/
-cp -a $QTDIR/lib/libQt5Sql.* $libdir/
-cp -a $QTDIR/lib/libQt5WebChannel.* $libdir/
-cp -a $QTDIR/lib/libQt5WebEngineCore.* $libdir/
-cp -a $QTDIR/lib/libQt5WebEngine.* $libdir/
-cp -a $QTDIR/lib/libQt5WebEngineWidgets.* $libdir/
-cp -a $QTDIR/lib/libQt5WebSockets.* $libdir/
-cp -a $QTDIR/lib/libQt5Widgets.* $libdir/
+cp -a $QTSRCDIR/lib/libQt5Core.* $libdir/
+cp -a $QTSRCDIR/lib/libQt5DBus.* $libdir/
+cp -a $QTSRCDIR/lib/libQt5Gui.* $libdir/
+cp -a $QTSRCDIR/lib/libQt5NetworkAuth.* $libdir/
+cp -a $QTSRCDIR/lib/libQt5Network.* $libdir/
+cp -a $QTSRCDIR/lib/libQt5Sql.* $libdir/
+cp -a $QTSRCDIR/lib/libQt5WebChannel.* $libdir/
+cp -a $QTSRCDIR/lib/libQt5WebEngineCore.* $libdir/
+cp -a $QTSRCDIR/lib/libQt5WebEngine.* $libdir/
+cp -a $QTSRCDIR/lib/libQt5WebEngineWidgets.* $libdir/
+cp -a $QTSRCDIR/lib/libQt5WebSockets.* $libdir/
+cp -a $QTSRCDIR/lib/libQt5Widgets.* $libdir/
+cp -a $QTSRCDIR/lib/libicu* $libdir/
 
-
-#cp -a $QTDIR/lib/*.so $QTDIR/lib/*.so.* $libdir/
-cp -a $QTDIR/plugins/* $plugins/
-#cp -a $QTDIR/qml/* $qmldir
+cp -a $QTSRCDIR/plugins/* $plugins/
+#cp -a $QTSRCDIR/qml/* $qmldir
 
 cd $prefix
 find . -type f ! -regex '.*?debian-binary.*' ! -regex '.*?DEBIAN.*' -printf '%P ' | xargs md5sum > DEBIAN/md5sums

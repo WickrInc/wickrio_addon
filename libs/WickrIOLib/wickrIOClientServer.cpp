@@ -419,6 +419,14 @@ bool WickrIOClientServer::startClient(WickrBotClients *client)
     QString outputFile = QString(WBIO_CLIENT_OUTFILE_FORMAT).arg(m_operation->databaseDir).arg(client->name);
 #endif
 
+    QString outputDirName = QString(WBIO_CLIENT_LOGDIR_FORMAT).arg(m_operation->databaseDir).arg(client->name);
+    QDir    outputDir(outputDirName);
+    if (!outputDir.exists()) {
+        if (!outputDir.mkpath(outputDirName)) {
+            qDebug().noquote() << QString("CONSOLE:Cannot create log directory %1").arg(outputDirName);
+            outputDirName = "";
+        }
+    }
 
     m_operation->log_handler->log("**********************************");
     m_operation->log_handler->log(QString("startClient: command line arguments for %1").arg(client->name));
@@ -457,9 +465,13 @@ bool WickrIOClientServer::startClient(WickrBotClients *client)
     // Add an output file name so that output can be saved
     settings->beginGroup(WBSETTINGS_LOGGING_HEADER);
     QString curOutputFilename = settings->value(WBSETTINGS_LOGGING_OUTPUT_FILENAME, "").toString();
-    if (curOutputFilename.isEmpty())
+    if (curOutputFilename.isEmpty()) {
         settings->setValue(WBSETTINGS_LOGGING_OUTPUT_FILENAME, outputFile);
-    settings->endGroup();
+        settings->endGroup();
+        settings->sync();
+    } else {
+        settings->endGroup();
+    }
 
     // Done with the clients settings
     settings->deleteLater();
@@ -467,6 +479,23 @@ bool WickrIOClientServer::startClient(WickrBotClients *client)
 
     // Check that we have the needed information to proceed
     bool needsPassword = WBIOServerCommon::isPasswordRequired(client->binary);
+
+    // If the password is needed then prompt for it
+    if (!needsPassword) {
+        if (client->m_autologin) {
+            // Check if the database password has been created.
+            // If not then will need the client's password to start.
+            QString clientDbDir = QString(WBIO_CLIENT_DBDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
+            QString dbKeyFileName = QString("%1/dkd.wic").arg(clientDbDir);
+            QFile dbKeyFile(dbKeyFileName);
+            if (!dbKeyFile.exists()) {
+                needsPassword = true;
+            }
+        } else {
+            needsPassword = true;
+        }
+    }
+
     if (needsPassword && !m_clientPasswords.contains(processName)) {
         qDebug() << "Leaving startClient: need password for" << client->name;
         return false;
@@ -481,9 +510,13 @@ bool WickrIOClientServer::startClient(WickrBotClients *client)
 
     command = client->binary;
 
+#if 1
+    arguments.append(QString("-clientname=%1").arg(client->user));
+#else
     arguments.append(QString("-config=%1").arg(configFileName));
     arguments.append(QString("-clientdbdir=%1").arg(clientDbDir));
     arguments.append(QString("-processname=%1").arg(processName));
+#endif
 
     QProcess exec;
 
@@ -493,10 +526,23 @@ bool WickrIOClientServer::startClient(WickrBotClients *client)
         qDebug() << "error enum val = " << error;
     });
 
-    exec.setStandardOutputFile(outputFile, QIODevice::Append);
-    exec.setStandardErrorFile(outputFile, QIODevice::Append);
-    exec.setProcessChannelMode(QProcess::MergedChannels);
+
+
+#ifdef QT5.9.4
     if (exec.startDetached(command, arguments, workingDir)) {
+#else
+    QProcess process;
+    process.setProgram(command);
+    process.setArguments(arguments);
+
+    if (!outputDirName.isEmpty()) {
+        process.setStandardOutputFile(outputFile);
+        process.setStandardErrorFile(outputFile);
+    }
+    qint64 pid;
+    if (process.startDetached(&pid)) {
+#endif
+
         m_operation->log_handler->log(QString("Started client for %1").arg(client->name));
 
         // For clients that require a password, send it over
@@ -562,10 +608,26 @@ bool WickrIOClientServer::startClient(WickrBotClients *client)
             QStringList arguments;
             arguments.append(client->user);
 
+#ifdef QT5.9.4
             if (!QProcess::startDetached(startFullPath, arguments, destPath)) {
                 qDebug() << QString("Failed to run %1").arg(startFullPath);
             } else {
             }
+#else
+            QProcess process;
+            process.setProgram(startFullPath);
+            process.setArguments(arguments);
+
+            process.setWorkingDirectory(destPath);
+            QString outputfile = QString(WBIO_INTEGRATION_OUTFILE_FORMAT)
+                    .arg(WBIO_DEFAULT_DBLOCATION)
+                    .arg(client->name);
+
+            process.setStandardOutputFile(outputfile);
+            process.setStandardErrorFile(outputfile);
+            qint64 pid;
+            process.startDetached(&pid);
+#endif
 
             m_operation->log_handler->log("Done starting!");
             m_operation->log_handler->log("**********************************");
@@ -685,28 +747,29 @@ bool WickrIOClientServer::startParser(QString processName, QString appName)
         return false;
     }
 
-
-    QProcess exec;
     QStringList arguments;
     arguments.append(QString("-appName=%1").arg(processName));
-    connect(&exec, &QProcess::errorOccurred, [=](QProcess::ProcessError error)
-    {
-        qDebug() << "Error enum value = " << error;
-    });
-    exec.setStandardOutputFile(outputFile, QIODevice::Append);
-    exec.setStandardErrorFile(outputFile, QIODevice::Append);
-    exec.setProcessChannelMode(QProcess::MergedChannels);
-    if (exec.startDetached(appName, arguments)) {
+
+#ifdef QT5.9.4
+    if (QProcess::startDetached(appName, arguments)) {
         m_operation->log_handler->log(QString("Started parser %1").arg(processName));
         return true;
     }
     else {
-           m_operation->log_handler->log(QString("Could NOT start client for %1").arg(processName));
-   #ifdef DEBUG_TRACE
-           qDebug() << "Leaving startParser: could not start!";
-   #endif
-           return false;
-       }
+        m_operation->log_handler->log(QString("Could NOT start client for %1").arg(processName));
+        return false;
+    }
+#else
+    QProcess process;
+    process.setProgram(appName);
+    process.setArguments(arguments);
+
+    process.setStandardOutputFile(outputFile);
+    process.setStandardErrorFile(outputFile);
+    qint64 pid;
+    process.startDetached(&pid);
+#endif
+
 }
 
 /**

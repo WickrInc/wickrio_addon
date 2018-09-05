@@ -17,6 +17,110 @@ CmdIntegration::CmdIntegration(CmdOperation *operation) :
 {
 }
 
+void
+CmdIntegration::processHelp(const QStringList& cmdList)
+{
+    if (cmdList.length() > 0) {
+        for (QString cmd : cmdList) {
+            if (cmd == "add") {
+                qDebug().nospace() << "CONSOLE:Add command usage: add\n"
+                        << "  The add command is used to add a custom WickrIO bot integration. Before you\n"
+                        << "  start to add a custom integration you should read the detailed documentation\n"
+                        << "  which identifies all of the requirements. Before you add a custom WickrIO bot\n"
+                        << "  integration you will need the following:\n\n"
+                        << "  1. A name for the integration. The name should use characters, number, and\n"
+                        << "     underscores.\n"
+                        << "  2. Optionally a version number, which is made up of three numbers separated\n"
+                        << "     by '.' character\n"
+                        << "  3. A software.tar.gz file that contains the custom integration software. The\n"
+                        << "     following executable scripts should also be contained in this file:\n"
+                        << "     - install.sh   : run when installing the custom integration for a WickrIO\n"
+                        << "                      bot client.\n"
+                        << "     - configure.sh : run after the installation, to configure the custom\n"
+                        << "                      integration. The WickrIO console program will parse the\n"
+                        << "                      output from the configure.sh script so the user can be\n"
+                        << "                      prompted to enter configuration values. Any time the\n"
+                        << "                      configure.sh requires input from the user, the output\n"
+                        << "                      from the configure.sh script should be started with the\n"
+                        << "                      \"prompt:\" string. The user will be prompted to enter a\n"
+                        << "                      value and that value will be sent to the configure.sh\n"
+                        << "                      input stream. All other lines, without the \"prompt:\\n"
+                        << "                      string will be displayed to the user.\n"
+                        << "     - upgrade.sh   : run when the upgrade command is performed on the WickrIO\n"
+                        << "                      bot client. This is necessary to save and restore\n"
+                        << "                      information that was created during the running and/or\n"
+                        << "                      configuration of the custom integration.\n"
+                        << "     - start.sh     : run when the WickrIO bot client is started. Normally the\n"
+                        << "                      custom integration will connect to the WickrIO bot client.\n"
+                        << "     - stop.sh      : run when the WickrIO bot client is being stopped.\n\n"
+                        << "  The install.sh, start.sh and stop.sh files are required. The configure.sh\n"
+                        << "  and upgrade.sh files are optional, but are needed if you are setting values\n"
+                        << "  needed to run the custom integration.\n";
+            } else if (cmd == "back") {
+                qDebug().nospace() << "CONSOLE:Back command usage: back\n"
+                        << "  The back command will take you to the previous level of commands.\n";
+            } else if (cmd == "delete") {
+                qDebug().nospace() << "CONSOLE:Delete command usage: delete <integration number>\n"
+                        << "  The delete command is used to delete an existing custom integration. The\n"
+                        << "  <integration number> is the number shown on the 'list' command associated with\n"
+                        << "  the WickrIO bot custom integration that you want to delete. The information\n"
+                        << "  associated with the integration will be removed from the system.\n"
+                        << "  NOTE: Any WickrIO bot clients that are using the deleted integration will not\n"
+                        << "  be modified. You will have to go to each of those clients and perform a modify\n"
+                        << "  command.\n";
+            } else if (cmd == "help") {
+                qDebug().nospace() << "CONSOLE:Help command usage: help [command ...]\n"
+                        << "  Use the help command to display the list of commands you can use at this\n"
+                        << "  command level. You can also supply a list of one or more commands on the same\n"
+                        << "  line as the help command which the help command will display detailed\n"
+                        << "  information for.\n";
+            } else if (cmd == "list") {
+                qDebug().nospace() << "CONSOLE:List command usage: list\n"
+                        << "  The list command will display the list of WickrIO bot integrations that are\n"
+                        << "  currently configured. The output will contain the list of integrations that\n"
+                        << "  are supplied with the WickrIO software, and a list of the custom WickrIO bot\n"
+                        << "  integrations. The following is a sample of what the output will look like:\n\n"
+                        << "    List of included integrations:\n"
+                        << "      compliance_bot\n"
+                        << "      hubot, version=1.3.5\n"
+                        << "      file_bot\n"
+                        << "      welcome_bot\n"
+                        << "    Current list of custom integrations:\n"
+                        << "      [0] test_bot, version=3.4.5\n"
+                        << "      [1] ncc_bot\n\n"
+                        << "  The list of custom integrations has a number which you will need to use when\n"
+                        << "  you perform any integration commands that affect a custom integration.\n";
+            } else if (cmd == "quit") {
+                qDebug().nospace() << "CONSOLE:Quit command usage: quit\n"
+                        << "  The quit command is used to exit this program.\n"
+                        << "  WARNING: leaving this program will also put all of the WickrrIO bot clients\n"
+                        << "  into the paused state.\n";
+            } else if (cmd == "update") {
+                qDebug().nospace() << "CONSOLE:Update command usage: update <integration number>\n"
+                        << "  The update command is used to update the software associated with a specific\n"
+                        << "  WickrIO bot integration. The <integration numer> is the number shown on the\n"
+                        << "  'list' command associated with the WickrIO bot integration that you want to\n"
+                        << "  update. You will be prompted to enter the directory location of the\n"
+                        << "  integration software file (software.tar.gz). The path you enter is the\n"
+                        << "  directory that contains the file, it does not include the \"software.tar.gz\"\n"
+                        << "  string. Optionally, you can also enter a version number to associate with this\n"
+                        << "  new version.\n";
+            } else {
+                qDebug() << "CONSOLE:" << cmd << "is not a known command!";
+            }
+        }
+    } else {
+        qDebug() << "CONSOLE:Commands:";
+        qDebug() << "CONSOLE:  add         - create a new integration";
+        qDebug() << "CONSOLE:  back        - go back to the previous command level";
+        qDebug() << "CONSOLE:  delete <#>  - deletes integration with the specific index";
+        qDebug() << "CONSOLE:  help or ?   - shows supported commands";
+        qDebug() << "CONSOLE:  list        - shows a list of integrations";
+        qDebug() << "CONSOLE:  update <#>  - modifies a integration with the specified index";
+        qDebug() << "CONSOLE:  quit        - leaves this program";
+    }
+}
+
 bool CmdIntegration::processCommand(QStringList cmdList, bool &isquit)
 {
     bool retVal = true;
@@ -25,6 +129,16 @@ bool CmdIntegration::processCommand(QStringList cmdList, bool &isquit)
 
     QString cmd = cmdList.at(0).toLower();
     int index;
+
+    if (cmd == "?" || cmd == "help") {
+        QStringList args;
+        if (cmdList.size() > 1) {
+            args = cmdList;
+            args.removeAt(0);
+        }
+        processHelp(args);
+        return true;
+    }
 
     // Convert the second argument to an integer, for the client index commands
     if (cmdList.size() > 1) {
@@ -45,16 +159,7 @@ bool CmdIntegration::processCommand(QStringList cmdList, bool &isquit)
         index = -1;
     }
 
-    if (cmd == "?" || cmd == "help") {
-        qDebug() << "CONSOLE:Commands:";
-        qDebug() << "CONSOLE:  add         - create a new integration";
-        qDebug() << "CONSOLE:  back        - leave the clients setup";
-        qDebug() << "CONSOLE:  delete <#>  - deletes client with the specific index";
-        qDebug() << "CONSOLE:  help or ?   - shows supported commands";
-        qDebug() << "CONSOLE:  list        - shows a list of clients";
-        qDebug() << "CONSOLE:  update <#>  - modifies a client with the specified index";
-        qDebug() << "CONSOLE:  quit        - leaves this program";
-    } else if (cmd == "add") {
+    if (cmd == "add") {
         retVal = addIntegration();
     } else if (cmd == "back") {
         retVal = false;

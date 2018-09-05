@@ -32,8 +32,10 @@
 #define WBIO_CLIENT_SETTINGS_FORMAT     "%1/clients/%2/WickrIOClient.%2.ini"
 #endif
 #define WBIO_CLIENT_DBDIR_FORMAT        "%1/clients/%2/client"
+#define WBIO_CLIENT_LOGDIR_FORMAT       "%1/clients/%2/logs"
 #define WBIO_CLIENT_LOGFILE_FORMAT      "%1/clients/%2/logs/WickrIO%2.log"
 #define WBIO_CLIENT_OUTFILE_FORMAT      "%1/clients/%2/logs/WickrIO%2.output"
+#define WBIO_INTEGRATION_OUTFILE_FORMAT "%1/clients/%2/logs/WickrIO_integration_%2.output"
 #define WBIO_CLIENT_WORKINGDIR_FORMAT   "%1/clients/%2"
 #define WBIO_CLIENT_ATTACHDIR_FORMAT    "%1/clients/%2/attachments"
 

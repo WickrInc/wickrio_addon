@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
     }
 
     if (clientDbPath.isEmpty()) {
-        clientDbPath = QString("%1/clients/%2/client").arg(WBIO_DEFAULT_DBLOCATION).arg(client.name);
+        clientDbPath = QString(WBIO_CLIENT_DBDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client.name);
 
         QDir clientDb(clientDbPath);
         if (!clientDb.exists()) {
@@ -167,6 +167,10 @@ int main(int argc, char *argv[])
             dir.mkpath(clientDbPath);
         }
     }
+
+    // Set the path where the Device ID will be set
+    WickrUtil::botDeviceDir = clientDbPath;
+
     if (wbConfigFile.isEmpty()) {
         wbConfigFile = QString(WBIO_CLIENT_SETTINGS_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client.name);
     }
@@ -229,12 +233,11 @@ int main(int argc, char *argv[])
 
     settings->beginGroup(WBSETTINGS_USER_HEADER);
     settings->setValue(WBSETTINGS_USER_USER, client.user);
-//    settings->setValue(WBSETTINGS_USER_PASSWORD, client.password);      //TODO: THIS NEEDS TO BE REMOVED
     settings->setValue(WBSETTINGS_USER_USERNAME, client.name);
     settings->endGroup();
 
     settings->beginGroup(WBSETTINGS_DATABASE_HEADER);
-    settings->setValue(WBSETTINGS_DATABASE_DIRNAME, clientDbPath);
+    settings->setValue(WBSETTINGS_DATABASE_DIRNAME, WBIO_DEFAULT_DBLOCATION);
     settings->endGroup();
 
     settings->beginGroup(WBSETTINGS_LOGGING_HEADER);

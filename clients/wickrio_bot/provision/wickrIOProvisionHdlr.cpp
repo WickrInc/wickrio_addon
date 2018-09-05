@@ -146,10 +146,10 @@ void WickrIOProvisionHdlr::onPremBegin(const QString username, const QString pas
     internalBegin(OnPremMode, QString(), QString(), username.trimmed(), password.trimmed(), regToken.trimmed());
 }
 
-void WickrIOProvisionHdlr::cloudBegin(const QString &email, const QString password, const QString &inviteCode)
+void WickrIOProvisionHdlr::cloudBegin(const QString &username, const QString password, const QString &inviteCode)
 {
-    if (!email.isEmpty()) {
-        internalBegin(CloudMode, email.trimmed(), inviteCode.trimmed(), QString(), password.trimmed(), QString());
+    if (!username.isEmpty()) {
+        internalBegin(CloudMode, QString(), inviteCode.trimmed(), username.trimmed(), password.trimmed(), QString());
     }
 }
 
@@ -174,12 +174,12 @@ bool WickrIOProvisionHdlr::provisionBotUser(Mode mode)
         map.insert(WickrProvisionUserContext::USER_USERNAME, m_username);
         map.insert(WickrProvisionUserContext::USER_REGTOKEN, m_regToken);
     } else {
-        if (m_email.isEmpty()) {
+        if (m_username.isEmpty()) {
             return false;
         }
         map.insert(WickrProvisionUserContext::USER_STEP, 1);
         map.insert(WickrProvisionUserContext::USER_PRODUCT, wickrProductGetProductType());
-        map.insert(WickrProvisionUserContext::USER_EMAIL, m_email);
+        map.insert(WickrProvisionUserContext::USER_USERNAME, m_username);
         if (!m_invitecode.isEmpty())
             map.insert(WickrProvisionUserContext::USER_ICODE, m_invitecode);
     }
@@ -444,7 +444,7 @@ void WickrIOProvisionHdlr::registerWithPassword(const QString &newPassword)
             emit signalRegisterOnPrem(m_username, m_password, newPassword, !m_userExists ? m_passwordSalt : QString(), m_transID, !m_userExists, m_userExists);
         } else if (m_mode == CloudMode || m_mode == ForgotPasswordMode) {
             m_currentStep = Step::loggingIn;
-            emit signalRegisterEnterprise(m_email, newPassword, m_passwordSalt, m_transID, true, false, (m_mode == ForgotPasswordMode));  // Begins a process that eventually calls WickrIOProvisionHdlr::loginComplete()
+            emit signalRegisterEnterprise(m_username, newPassword, m_passwordSalt, m_transID, true, false, (m_mode == ForgotPasswordMode));  // Begins a process that eventually calls WickrIOProvisionHdlr::loginComplete()
         }
     }
 }
