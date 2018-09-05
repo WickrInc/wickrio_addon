@@ -1,9 +1,12 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
+#include <thread>
 #include "bot_iface.h"
 
 using namespace std;
+
+BotIface *pBotIface;
 
 bool getInput(const string& prompt, string& result, bool allowemptystring=false)
 {
@@ -52,19 +55,18 @@ bool getList(const string& prompt, vector <string>& result, bool allowemptylist=
     return true;
 }
 
-int main (int argc, char** argv) {
-    if (argc != 2) {
-        std::cout << "usage: " << argv[0] << " <client name>\n";
-        return 1;
-    }
+void asyncMessage(string message)
+{
+    std::cout << "Got message\n";
+}
 
-    BotIface botIface(argv[1]);
-    if (botIface.init() != BotIface::SUCCESS) {
-        std::cout << "Could not initialize Bot Interface!";
-        std::cout << botIface.getLastErrorString();
-        return 1;
-    }
+void asyncEvent(string event)
+{
+    std::cout << "Got event\n";
+}
 
+void mainThread()
+{
     bool done = false;
     while (!done) {
         string input;
@@ -94,6 +96,11 @@ int main (int argc, char** argv) {
                       << "    get_message\n"
                       << "    send_message\n"
                       << "    send_file\n"
+                      << "\nAsync messages:\n"
+                      << "    start_async_messages\n"
+                      << "    stop_async_messages\n"
+                      << "    start_async_events\n"
+                      << "    stop_async_events\n"
                       << "\nMisc. commands:\n"
                       << "    quit\n"
                       << "    help\n";
@@ -103,9 +110,9 @@ int main (int argc, char** argv) {
         string command;
 
         if (input == "clear_statistics") {
-            botIface.cmdStringClearStatistics(command);
+            pBotIface->cmdStringClearStatistics(command);
         } else if (input == "get_statistics") {
-            botIface.cmdStringGetStatistics(command);
+            pBotIface->cmdStringGetStatistics(command);
         } else if (input == "add_room") {
             vector <string> members;
             vector <string> moderators;
@@ -124,7 +131,7 @@ int main (int argc, char** argv) {
                 continue;
             }
 
-            if (botIface.cmdStringAddRoom(command, members, moderators, title, description, ttl, bor) != BotIface::SUCCESS) {
+            if (pBotIface->cmdStringAddRoom(command, members, moderators, title, description, ttl, bor) != BotIface::SUCCESS) {
                 std::cout << "Failed to create Add Room command!";
                 continue;
             }
@@ -148,7 +155,7 @@ int main (int argc, char** argv) {
                 continue;
             }
 
-            if (botIface.cmdStringModifyRoom(command, vGroupID, members, moderators, title, description, ttl, bor) != BotIface::SUCCESS) {
+            if (pBotIface->cmdStringModifyRoom(command, vGroupID, members, moderators, title, description, ttl, bor) != BotIface::SUCCESS) {
                 std::cout << "Failed to create Modify Room command!";
                 continue;
             }
@@ -158,19 +165,19 @@ int main (int argc, char** argv) {
                 done = true;
                 continue;
             }
-            if (botIface.cmdStringGetRoom(command, vGroupID) != BotIface::SUCCESS) {
+            if (pBotIface->cmdStringGetRoom(command, vGroupID) != BotIface::SUCCESS) {
                 std::cout << "Failed to create Get Room command!";
                 continue;
             }
         } else if (input == "get_rooms") {
-                botIface.cmdStringGetRooms(command);
+                pBotIface->cmdStringGetRooms(command);
         } else if (input == "delete_room") {
             string vGroupID;
             if (!getInput("Enter VGroupID: ", vGroupID)) {
                 done = true;
                 continue;
             }
-            if (botIface.cmdStringDeleteRoom(command, vGroupID) != BotIface::SUCCESS) {
+            if (pBotIface->cmdStringDeleteRoom(command, vGroupID) != BotIface::SUCCESS) {
                 std::cout << "Failed to create Delete Room command!";
                 continue;
             }
@@ -180,7 +187,7 @@ int main (int argc, char** argv) {
                 done = true;
                 continue;
             }
-            if (botIface.cmdStringLeaveRoom(command, vGroupID) != BotIface::SUCCESS) {
+            if (pBotIface->cmdStringLeaveRoom(command, vGroupID) != BotIface::SUCCESS) {
                 std::cout << "Failed to create Leave Room command!";
                 continue;
             }
@@ -196,7 +203,7 @@ int main (int argc, char** argv) {
                 continue;
             }
 
-            if (botIface.cmdStringAddGroupConvo(command, members, ttl, bor) != BotIface::SUCCESS) {
+            if (pBotIface->cmdStringAddGroupConvo(command, members, ttl, bor) != BotIface::SUCCESS) {
                 std::cout << "Failed to create Add Group Conversation command!";
                 continue;
             }
@@ -206,24 +213,24 @@ int main (int argc, char** argv) {
                 done = true;
                 continue;
             }
-            if (botIface.cmdStringGetGroupConvo(command, vGroupID) != BotIface::SUCCESS) {
+            if (pBotIface->cmdStringGetGroupConvo(command, vGroupID) != BotIface::SUCCESS) {
                 std::cout << "Failed to create Get Group Conversaion command!";
                 continue;
             }
         } else if (input == "get_groupconvos") {
-                botIface.cmdStringGetGroupConvos(command);
+                pBotIface->cmdStringGetGroupConvos(command);
         } else if (input == "delete_groupconvo") {
             string vGroupID;
             if (!getInput("Enter VGroupID: ", vGroupID)) {
                 done = true;
                 continue;
             }
-            if (botIface.cmdStringDeleteGroupConvo(command, vGroupID) != BotIface::SUCCESS) {
+            if (pBotIface->cmdStringDeleteGroupConvo(command, vGroupID) != BotIface::SUCCESS) {
                 std::cout << "Failed to create Delete Group Conversaion command!";
                 continue;
             }
         } else if (input == "get_message") {
-                botIface.cmdStringGetReceivedMessage(command);
+                pBotIface->cmdStringGetReceivedMessage(command);
         } else if (input == "send_message") {
             string vGroupID;
             vector <string> users;
@@ -259,7 +266,7 @@ int main (int argc, char** argv) {
                 continue;
             }
 
-            if (botIface.cmdStringSendMessage(command, vGroupID, users, message, ttl, bor) != BotIface::SUCCESS) {
+            if (pBotIface->cmdStringSendMessage(command, vGroupID, users, message, ttl, bor) != BotIface::SUCCESS) {
                 std::cout << "Failed to create Send Message command!";
                 continue;
             }
@@ -316,18 +323,26 @@ int main (int argc, char** argv) {
                 }
             }
 
-            if (botIface.cmdStringSendAttachment(command, vGroupID, users, filename, displayname, ttl, bor) != BotIface::SUCCESS) {
+            if (pBotIface->cmdStringSendAttachment(command, vGroupID, users, filename, displayname, ttl, bor) != BotIface::SUCCESS) {
                 std::cout << "Failed to create Send Message command!";
                 continue;
             }
+        } else if (input == "start_async_messages") {
+            pBotIface->cmdStringStartAsyncRecvMessages(command, asyncMessage);
+        } else if (input == "stop_async_messages") {
+            pBotIface->cmdStringStopAsyncRecvMessages(command);
+        } else if (input == "start_async_events") {
+            pBotIface->cmdStringStartAsyncRecvEvents(command, asyncEvent);
+        } else if (input == "stop_async_events") {
+            pBotIface->cmdStringStopAsyncRecvEvents(command);
         } else {
             std::cout << "Unknown command: " << input << "\n";
             continue;
         }
 
         string response;
-        if (botIface.send(command, response) != BotIface::SUCCESS) {
-            std::cout << "Send failed: " << botIface.getLastErrorString();
+        if (pBotIface->send(command, response) != BotIface::SUCCESS) {
+            std::cout << "Send failed: " << pBotIface->getLastErrorString();
             continue;
         } else {
             if (response.length() > 0) {
@@ -335,5 +350,26 @@ int main (int argc, char** argv) {
             }
         }
     }
+}
+
+int main (int argc, char** argv) {
+    if (argc != 2) {
+        std::cout << "usage: " << argv[0] << " <client name>\n";
+        return 1;
+    }
+
+    BotIface botIface(argv[1]);
+    if (botIface.init() != BotIface::SUCCESS) {
+        std::cout << "Could not initialize Bot Interface!";
+        std::cout << botIface.getLastErrorString();
+        return 1;
+    }
+
+    pBotIface = &botIface;
+
+    thread mnThread(mainThread);
+
+    mnThread.join();
+
     return 0;
 }
