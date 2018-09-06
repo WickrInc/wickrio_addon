@@ -72,6 +72,7 @@ case "$btype" in
         install_ext="Beta"
         svc_build_ext="debug"
         svc_install_ext="Debug"
+        MAKE_DEFINES="WICKR_BETA"
         ;;
     alpha)
         qtype="CONFIG+=debug CONFIG+=wickr_compliance_bot CONFIG+=use_wickr_npl"
@@ -81,6 +82,7 @@ case "$btype" in
         install_ext="Alpha"
         svc_build_ext="debug"
         svc_install_ext="Debug"
+        MAKE_DEFINES="WICKR_ALPHA"
         ;;
     release)
         qtype="CONFIG+=wickr_compliance_bot CONFIG+=use_wickr_npl"
@@ -90,6 +92,7 @@ case "$btype" in
         install_ext=""
         svc_build_ext=""
         svc_install_ext=""
+        MAKE_DEFINES="WICKR_PRODUCTION"
         ;;
 esac
 
@@ -309,7 +312,7 @@ rm -rf "$build"/*
 set -e
 make
 make update
-make $bldtype
+make $bldtype WICKR_DEFINES=$MAKE_DEFINES
 make $bldtype.install
 (cd $build ; qmake ../wickr-wickrio.pro $qmake $qtype)
 (cd $build ; $BUILD_CMD)

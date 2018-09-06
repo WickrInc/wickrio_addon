@@ -79,9 +79,13 @@ MesgQueueIface::rxThread()
 bool
 MesgQueueIface::init()
 {
+#ifdef WICKR_PRODUCTION
+    m_requestQName = "ipc:///opt/WickrIO/clients/" + m_clientName + "/tmp/0";
+    m_asyncQName = "ipc:///opt/WickrIO/clients/" + m_clientName + "/tmp/2";
+#else
     m_requestQName = "ipc:///opt/WickrIODebug/clients/" + m_clientName + "/tmp/0";
     m_asyncQName = "ipc:///opt/WickrIODebug/clients/" + m_clientName + "/tmp/2";
-//    m_requestQName = "tcp://localhost:4005";
+#endif
 
     //  Prepare our context and socket
     m_zctx = zmq_ctx_new();

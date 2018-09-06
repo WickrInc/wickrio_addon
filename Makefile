@@ -139,7 +139,7 @@ win32.clean:
 linux:
 	cd $(LIBS_LIBZMQ) && mkdir -p build && cd build && cmake .. && make -j4
 	cd $(LIBS_CPPZMQ) && mkdir -p build && cd build && cmake .. && make -j4
-	cd $(CLIENTAPI_LIB) && mkdir -p build && cd build && cmake .. && make
+	cd $(CLIENTAPI_LIB) && mkdir -p build && cd build && cmake .. $(WICKR_DEFINES) && make
 	cd $(CLIENTAPI_CPPTEST) && mkdir -p build && cd build && cmake .. && make
 	cd $(NODEJS_ADDON) && npm install nan --save && cmake-js
 	cd $(WICKR_SDK) && make linux
@@ -147,7 +147,7 @@ linux:
 linux.release:
 	cd $(LIBS_LIBZMQ) && mkdir -p build && cd build && cmake .. && make -j4
 	cd $(LIBS_CPPZMQ) && mkdir -p build && cd build && cmake .. && make -j4
-	cd $(CLIENTAPI_LIB) && mkdir -p build && cd build && cmake .. && make
+	cd $(CLIENTAPI_LIB) && mkdir -p build && cd build && cmake .. $(WICKR_DEFINES) && make
 	cd $(CLIENTAPI_CPPTEST) && mkdir -p build && cd build && cmake .. && make
 	cd $(NODEJS_ADDON) && npm install nan --save && cmake-js
 	cd $(WICKR_SDK) && make linux.release

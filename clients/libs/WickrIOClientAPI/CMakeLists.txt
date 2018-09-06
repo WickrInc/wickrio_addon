@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 2.8)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "-fpic")
 
+if (WICKR_PRODUCTION)
+    add_definitions(-DWICKR_PRODUCTION)
+endif()
+
 # Name of the project
 project (WickrIOClientAPI)
 
@@ -54,3 +58,4 @@ add_custom_command(OUTPUT lib${PROJECT_NAME}.a
 
 add_custom_target(${PROJECT_NAME} ALL DEPENDS lib${PROJECT_NAME}.a)
 
+message(STATUS "CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}")
