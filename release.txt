@@ -1,4 +1,7 @@
-Release Notes from v4.26-release to v4.54.6-2:
+Release Notes from v4.26-release to v4.54.7-2:
+  * Added code to support the async messaging. If the async messaging is on,…
+  * Initial part of async messaging and events. [ci skip[
+  * Moving the bot to build using Qt 5.10.1
   * Fix bot mentioning regex
   * Change to parsing vGroupID as a string
   * Change welcome bot to use cmdSendRoomMessage instead of cmdSend1to1Message
