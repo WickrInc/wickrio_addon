@@ -36,6 +36,9 @@ public:
     bool startAsyncEvents(QString& responseString);
     bool stopAsyncEvents(QString& responseString);
 
+    bool processAsyncMessages() { return m_processAsyncMessages; }
+    bool processAsyncEvents() { return m_processAsyncEvents; }
+
 private:
     OperationData *m_operation;
     bool    m_processAsyncMessages = false;

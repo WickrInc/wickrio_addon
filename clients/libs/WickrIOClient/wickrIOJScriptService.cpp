@@ -55,6 +55,16 @@ void WickrIOJScriptService::startThreads()
     connect(this, &WickrIOJScriptService::signalStartScript,
             m_cbThread, &WickrIOJScriptThread::slotStartScript, Qt::QueuedConnection);
 
+    connect(m_cbThread, &WickrIOJScriptThread::signalAsyncMessagesState, this, &WickrIOJScriptService::signalAsyncMessagesState);
+    connect(m_cbThread, &WickrIOJScriptThread::signalAsyncMessageSent, this, &WickrIOJScriptService::signalAsyncMessageSent);
+    connect(m_cbThread, &WickrIOJScriptThread::signalAsyncEventsState, this, &WickrIOJScriptService::signalAsyncEventsState);
+    connect(m_cbThread, &WickrIOJScriptThread::signalAsyncEventSent, this, &WickrIOJScriptService::signalAsyncEventSent);
+
+    connect(this, &WickrIOJScriptService::signalSendAsyncMessage,
+            m_cbThread, &WickrIOJScriptThread::slotSendAsyncMessage, Qt::QueuedConnection);
+    connect(this, &WickrIOJScriptService::signalSendAsyncEvent,
+            m_cbThread, &WickrIOJScriptThread::slotSendAsyncEvent, Qt::QueuedConnection);
+
     // Perform startup here, creating and configuring ressources.
     m_thread.start();
 }
@@ -94,6 +104,26 @@ void WickrIOJScriptService::startScript()
 bool WickrIOJScriptService::isHealthy()
 {
     return true;
+}
+
+bool WickrIOJScriptService::asyncMessagesState()
+{
+    return (m_cbThread ? m_cbThread->asyncMessagesState() : false);
+}
+
+bool WickrIOJScriptService::sendAsyncMessage(const QString& msg)
+{
+    emit signalSendAsyncMessage(msg);
+}
+
+bool WickrIOJScriptService::asyncEventsState()
+{
+    return (m_cbThread ? m_cbThread->asyncEventsState() : false);
+}
+
+bool WickrIOJScriptService::sendAsyncEvent(const QString& event)
+{
+    emit signalSendAsyncEvent(event);
 }
 
 
@@ -171,14 +201,21 @@ WickrIOJScriptThread::slotStartScript()
     m_state = JSThreadState::JS_PROCESSING;
 
     m_zctx = nzmqt::createDefaultContext();
+
     m_zsocket = m_zctx->createSocket(nzmqt::ZMQSocket::TYP_REP, this);
     m_zsocket->setObjectName("Replier.Socket.socket(REP)");
     connect(m_zsocket, &nzmqt::ZMQSocket::messageReceived,
             this, &WickrIOJScriptThread::slotMessageReceived, Qt::QueuedConnection);
 
+    m_async_zsocket = m_zctx->createSocket(nzmqt::ZMQSocket::TYP_REQ, this);
+    m_async_zsocket->setObjectName("Requester.Socket.socket(REQ)");
+    connect(m_async_zsocket, &nzmqt::ZMQSocket::messageReceived,
+            this, &WickrIOJScriptThread::slotAsyncResponseReceived, Qt::QueuedConnection);
+
     m_zctx->start();
 
     OperationData* operation = WickrIOClientRuntime::operationData();
+
     QString queueDirName = QString(WBIO_CLIENT_SOCKETDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(operation->m_client->name);
     QDir    queueDir(queueDirName);
     if (!queueDir.exists()) {
@@ -186,24 +223,83 @@ WickrIOJScriptThread::slotStartScript()
             qDebug() << "Cannot create message queue directory!";
         }
     }
-    QString queueName = QString(WBIO_CLIENT_RXSOCKET_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(operation->m_client->name);
-    m_zsocket->bindTo(queueName);
 
-    // Set the permission of the queue file so that normal user programs can access
-    QString queueFileName = QString(WBIO_CLIENT_SOCKETFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(operation->m_client->name);
-    QFile zmqFile(queueFileName);
-    if(!zmqFile.setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner |
-                               QFile::ReadUser | QFile::WriteUser | QFile::ExeUser  |
-                               QFile::ReadGroup | QFile::WriteGroup | QFile::ExeGroup |
-                               QFile::ReadOther | QFile::WriteOther | QFile::ExeOther)) {
-        qDebug("Something wrong setting permissions of the queue file!");
+    // Create the socket file for the addon receive queue
+    {
+        QString queueName = QString(WBIO_CLIENT_RXSOCKET_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(operation->m_client->name);
+        m_zsocket->bindTo(queueName);
+
+        // Set the permission of the queue file so that normal user programs can access
+        QString queueFileName = QString(WBIO_CLIENT_SOCKETFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(operation->m_client->name);
+        QFile zmqFile(queueFileName);
+        if(!zmqFile.setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner |
+                                   QFile::ReadUser | QFile::WriteUser | QFile::ExeUser  |
+                                   QFile::ReadGroup | QFile::WriteGroup | QFile::ExeGroup |
+                                   QFile::ReadOther | QFile::WriteOther | QFile::ExeOther)) {
+            qDebug("Something wrong setting permissions of the queue file!");
+        }
+    }
+
+    // Create the socket file for the addon async messaging queue
+    {
+        QString queueName = QString(WBIO_ASYNC_TXSOCKET_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(operation->m_client->name);
+        m_async_zsocket->bindTo(queueName);
+
+        // Set the permission of the queue file so that normal user programs can access
+        QString queueFileName = QString(WBIO_ASYNC_SOCKETFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(operation->m_client->name);
+        QFile zmqFile(queueFileName);
+        if(!zmqFile.setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner |
+                                   QFile::ReadUser | QFile::WriteUser | QFile::ExeUser  |
+                                   QFile::ReadGroup | QFile::WriteGroup | QFile::ExeGroup |
+                                   QFile::ReadOther | QFile::WriteOther | QFile::ExeOther)) {
+            qDebug("Something wrong setting permissions of the async messaging queue file!");
+        }
     }
 
     m_state = JSThreadState::JS_STARTED;
 }
 
 /**********************************************************************************************
- * QUEUING FUNCTIONS
+ * ASYNC MESSAGE HANDLING FUNCTIONS
+ **********************************************************************************************/
+
+void
+WickrIOJScriptThread::slotSendAsyncMessage(QString msg)
+{
+    QList<QByteArray> request;
+    request += msg.toLocal8Bit();
+    if (msg.length() > 0)
+        qDebug() << "Sending async message:" << msg;
+    if (!m_async_zsocket->sendMessage(request)) {
+        qDebug() << "Failed to send async message!";
+        emit signalAsyncMessageSent(false);
+    } else {
+        m_asyncMesgSent = true;
+    }
+}
+
+void
+WickrIOJScriptThread::slotSendAsyncEvent(QString event)
+{
+    //TODO: Add actual code to send the message to the node.js addon
+    emit signalAsyncEventSent(true);
+}
+
+void
+WickrIOJScriptThread::slotAsyncResponseReceived(const QList<QByteArray>& messages)
+{
+    for (QByteArray mesg : messages) {
+        if (m_asyncMesgSent) {
+            qDebug() << "Got async message response:" << QString(mesg);
+            emit signalAsyncMessageSent(true);
+            m_asyncMesgSent = false;
+        }
+    }
+}
+
+
+/**********************************************************************************************
+ * INCOMING MESSAGE HANDLING FUNCTIONS
  **********************************************************************************************/
 
 void
@@ -220,7 +316,6 @@ WickrIOJScriptThread::slotMessageReceived(const QList<QByteArray>& messages)
         m_zsocket->sendMessage(reply);
     }
 }
-
 
 QString
 WickrIOJScriptThread::processRequest(const QByteArray& request)
@@ -337,13 +432,33 @@ WickrIOJScriptThread::processRequest(const QByteArray& request)
     }
     // Asynchronous message and event handling
     else if (action == "start_async_messages") {
-        apiInterface.startAsyncMessages(responseString);
+        if (apiInterface.startAsyncMessages(responseString)) {
+            if (apiInterface.processAsyncMessages() != m_processAsyncMessages) {
+                m_processAsyncMessages = apiInterface.processAsyncMessages();
+                emit signalAsyncMessagesState(m_processAsyncMessages);
+            }
+        }
     } else if (action == "stop_async_messages") {
-        apiInterface.stopAsyncMessages(responseString);
+        if (apiInterface.stopAsyncMessages(responseString)) {
+            if (apiInterface.processAsyncMessages() != m_processAsyncMessages) {
+                m_processAsyncMessages = apiInterface.processAsyncMessages();
+                emit signalAsyncMessagesState(m_processAsyncMessages);
+            }
+        }
     } else if (action == "start_async_events") {
-        apiInterface.startAsyncEvents(responseString);
+        if (apiInterface.startAsyncEvents(responseString)) {
+            if (apiInterface.processAsyncEvents() != m_processAsyncEvents) {
+                m_processAsyncEvents = apiInterface.processAsyncEvents();
+                emit signalAsyncEventsState(m_processAsyncEvents);
+            }
+        }
     } else if (action == "stop_async_events") {
-        apiInterface.stopAsyncEvents(responseString);
+        if (apiInterface.stopAsyncEvents(responseString)) {
+            if (apiInterface.processAsyncEvents() != m_processAsyncEvents) {
+                m_processAsyncEvents = apiInterface.processAsyncEvents();
+                emit signalAsyncEventsState(m_processAsyncEvents);
+            }
+        }
     }
     else {
         responseString = QString("action '%1' unknown!").arg(action);

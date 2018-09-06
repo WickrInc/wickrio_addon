@@ -2,6 +2,7 @@
 #include "wickriodatabase.h"
 #include "common/wickrHttpRequest.h"
 #include "wickrIOClientRuntime.h"
+#include "wickrIOJScriptService.h"
 
 WickrIOCallbackService::WickrIOCallbackService()
     : m_lock(QReadWriteLock::Recursive)
@@ -133,6 +134,78 @@ WickrIOCallbackThread::slotSetSaveAttachments(bool saveAttachments)
     m_saveAttachments = saveAttachments;
 }
 
+bool
+WickrIOCallbackThread::isAsyncMessageSet()
+{
+    /*
+     * Start the Integration software if there is any configured
+     */
+    WickrIOJScriptService *jsSvc = (WickrIOJScriptService*)WickrIOClientRuntime::findService(WickrIOJScriptService::jsServiceBaseName);
+    if (!jsSvc)
+        return false;
+
+    return jsSvc->asyncMessagesState();
+}
+
+bool
+WickrIOCallbackThread::sendAsyncMessage()
+{
+    /*
+     * Start the Integration software if there is any configured
+     */
+    WickrIOJScriptService *jsSvc = (WickrIOJScriptService*)WickrIOClientRuntime::findService(WickrIOJScriptService::jsServiceBaseName);
+    if (!jsSvc)
+        return false;
+
+    if (!m_asyncMessageSignalSet) {
+        connect(jsSvc, &WickrIOJScriptService::signalAsyncMessageSent,
+                this, &WickrIOCallbackThread::slotAsyncMessageSent, Qt::QueuedConnection);
+        m_asyncMessageSignalSet = true;
+    }
+
+    WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
+    if (db == nullptr) {
+        m_operation->log_handler->log("Failed to cast database!");
+        return false;
+    }
+
+    QList<int> msgIDs = db->getMessageIDs(m_operation->m_client->id);
+
+    // Make sure the start is less than the number of IDs retrieved
+    if (msgIDs.size() == 0) {
+        return false;
+    } else {
+        WickrIOMessage rxMsg;
+        if (db->getMessage(msgIDs.at(0), &rxMsg)) {
+            m_postedMsgID = rxMsg.id;
+            if (jsSvc->sendAsyncMessage(rxMsg.json)) {
+                return true;
+            }
+        }
+     }
+     return false;
+
+}
+
+void
+WickrIOCallbackThread::slotAsyncMessageSent(bool result)
+{
+    //TODO: Need to have a timeout just in case this signal never comes
+    if (m_postedMsgID > 0) {
+        WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
+        if (db != nullptr) {
+            db->deleteMessage(m_postedMsgID, m_saveAttachments);
+            m_postedMsgID = 0;
+        }
+    }
+
+    // If there are no more messages to send then we are done
+    if (! sendAsyncMessage()) {
+        m_state = CBThreadState::CB_STARTED;
+    }
+
+}
+
 void
 WickrIOCallbackThread::slotProcessMessages()
 {
@@ -153,7 +226,11 @@ WickrIOCallbackThread::slotProcessMessages()
     } else {
         WickrIOAppSettings appSetting;
 
-        if (db->getAppSetting(m_operation->m_client->id, DB_APPSETTINGS_TYPE_MSGRECVCALLBACK, &appSetting)) {
+        if (isAsyncMessageSet()) {
+            if (!sendAsyncMessage()) {
+                m_state = CBThreadState::CB_STARTED;
+            }
+        } else if (db->getAppSetting(m_operation->m_client->id, DB_APPSETTINGS_TYPE_MSGRECVCALLBACK, &appSetting)) {
             QString url = appSetting.value;
             if (! url.isEmpty()) {
                 startUrlCallback(url);

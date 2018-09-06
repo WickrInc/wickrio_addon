@@ -80,7 +80,7 @@ bool
 MesgQueueIface::init()
 {
     m_requestQName = "ipc:///opt/WickrIODebug/clients/" + m_clientName + "/tmp/0";
-    m_asyncQName = "ipc:///opt/WickrIODebug/clients/" + m_clientName + "/tmp/events";
+    m_asyncQName = "ipc:///opt/WickrIODebug/clients/" + m_clientName + "/tmp/2";
 //    m_requestQName = "tcp://localhost:4005";
 
     //  Prepare our context and socket

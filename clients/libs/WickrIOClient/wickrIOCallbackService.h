@@ -98,6 +98,8 @@ private:
     QString                 m_url;
     bool                    m_saveAttachments = false;
 
+    bool                    m_asyncMessageSignalSet = false;    // Set after connect is done
+
     void startEmailCallback(WickrIOEmailSettings *email);
     bool sendMessages(WickrIOEmailSettings *email);
     MimeFile *getAttachmentFile(const QString &filename);
@@ -105,10 +107,16 @@ private:
     void startUrlCallback(QString url);
     bool sendMessage();
 
+    bool isAsyncMessageSet();
+    bool sendAsyncMessage();
+
 private slots:
     void msgSendCallbackResponse(QNetworkReply *thereply, QByteArray);
     void msgSendCallbackError(QNetworkReply *thereply, QByteArray bytes);
     void gotReply(QNetworkReply *thereply);
+
+    // Async message handling
+    void slotAsyncMessageSent(bool result);
 
 signals:
     void sendReply(QNetworkReply *reply, QByteArray replyBytes);
