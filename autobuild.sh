@@ -72,7 +72,7 @@ case "$btype" in
         install_ext="Beta"
         svc_build_ext="debug"
         svc_install_ext="Debug"
-        MAKE_DEFINES="-DWICKR_BETA"
+        MAKE_DEFINES="-DWICKR_BETA=WICKR_BETA"
         ;;
     alpha)
         qtype="CONFIG+=debug CONFIG+=wickr_compliance_bot CONFIG+=use_wickr_npl"
@@ -82,7 +82,7 @@ case "$btype" in
         install_ext="Alpha"
         svc_build_ext="debug"
         svc_install_ext="Debug"
-        MAKE_DEFINES="-DWICKR_ALPHA"
+        MAKE_DEFINES="-DWICKR_ALPHA=WICKR_ALPHA"
         ;;
     release)
         qtype="CONFIG+=wickr_compliance_bot CONFIG+=use_wickr_npl"
@@ -92,7 +92,7 @@ case "$btype" in
         install_ext=""
         svc_build_ext=""
         svc_install_ext=""
-        MAKE_DEFINES="-DWICKR_PRODUCTION"
+        MAKE_DEFINES="-DWICKR_PRODUCTION=WICKR_PRODUCTION"
         ;;
 esac
 
