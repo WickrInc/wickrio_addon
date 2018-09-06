@@ -45,10 +45,16 @@
 #define WBIO_CLIENT_BOTDIR_FORMAT       "%1/clients/%2/integration/%3"
 #define WBIO_CLIENT_BOTDIR_TMP_FORMAT   "%1/clients/%2/integration/%3.new"
 
-// ZeroMQ definitions for the node.js interface
-#define WBIO_CLIENT_RXSOCKET_FORMAT     "ipc://%1/clients/%2/tmp/0"
+// ZeroMQ definitions for the node.js
 #define WBIO_CLIENT_SOCKETDIR_FORMAT    "%1/clients/%2/tmp"
+
+// ZeroMQ definitions for the node.js Receive interface
+#define WBIO_CLIENT_RXSOCKET_FORMAT     "ipc://%1/clients/%2/tmp/0"
 #define WBIO_CLIENT_SOCKETFILE_FORMAT   "%1/clients/%2/tmp/0"
+
+// ZeroMQ definitions for the node.js Async Transmit interface
+#define WBIO_ASYNC_TXSOCKET_FORMAT      "ipc://%1/clients/%2/tmp/2"
+#define WBIO_ASYNC_SOCKETFILE_FORMAT    "%1/clients/%2/tmp/2"
 
 // ZeroMZ definitions for the WickrIO IPC
 #define WBIO_IPCCLIENT_RXSOCKET_FORMAT     "ipc://%1/clients/%2/tmp/1"
