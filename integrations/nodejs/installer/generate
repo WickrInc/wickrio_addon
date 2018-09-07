@@ -123,9 +123,9 @@ if test -f "$welcome_bot_sample/generate.sh" ; then
     cd $pwd
 fi
 
-nodejs_dir=$pwd/../samples
+nodejs_dir=$pwd/..
 
-web_interface=$nodejs_dir/welcome_bot
+web_interface=$nodejs_dir/web_interface
 if test -f "$web_interface/generate.sh" ; then
     echo "generating software.tar.gz for web_interface"
     mkdir -p  $dst_sample_dir/imports/web_interface
