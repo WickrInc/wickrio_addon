@@ -160,6 +160,9 @@ WickrIOFileDownloadThread::slotSendFileStatusChange(const QString& uuid, const Q
             dload->m_msg->release();
 
             delete dload;
+
+            // Alert the callback service that a message is pending
+            WickrIOClientRuntime::cbSvcMessagesPending();
         }
     }
 }
