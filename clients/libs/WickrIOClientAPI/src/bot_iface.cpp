@@ -438,7 +438,7 @@ BotIface::cmdStringSendAttachment(string& command,
 BotIface::BotIfaceStatus
 BotIface::cmdStringStartAsyncRecvMessages(string& command, void (*callback)(string))
 {
-    m_asyncMsgCallback = callback;
+    m_iface->setMsgCallback(callback);
     command = "{ \"action\" : \"start_async_messages\" }";
     return SUCCESS;
 }
@@ -446,6 +446,7 @@ BotIface::cmdStringStartAsyncRecvMessages(string& command, void (*callback)(stri
 BotIface::BotIfaceStatus
 BotIface::cmdStringStopAsyncRecvMessages(string& command)
 {
+    m_iface->setMsgCallback(NULL);
     command = "{ \"action\" : \"stop_async_messages\" }";
     return SUCCESS;
 }
@@ -453,7 +454,7 @@ BotIface::cmdStringStopAsyncRecvMessages(string& command)
 BotIface::BotIfaceStatus
 BotIface::cmdStringStartAsyncRecvEvents(string& command, void (*callback)(string))
 {
-    m_asyncEventCallback = callback;
+    m_iface->setEventCallback(callback);
     command = "{ \"action\" : \"start_async_events\" }";
     return SUCCESS;
 }
@@ -461,6 +462,7 @@ BotIface::cmdStringStartAsyncRecvEvents(string& command, void (*callback)(string
 BotIface::BotIfaceStatus
 BotIface::cmdStringStopAsyncRecvEvents(string& command)
 {
+    m_iface->setEventCallback(NULL);
     command = "{ \"action\" : \"stop_async_events\" }";
     return SUCCESS;
 }

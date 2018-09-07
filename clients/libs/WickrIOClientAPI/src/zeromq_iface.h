@@ -19,6 +19,9 @@ public:
     bool init();
     string sendMessage(string message);
 
+    void setMsgCallback(void (*callback)(string)) { m_asyncMsgCallback = callback ; }
+    void setEventCallback(void (*callback)(string)) { m_asyncEventCallback = callback ; }
+
 private:
     string      m_clientName;
 
@@ -35,6 +38,10 @@ private:
     bool    m_rxThreadDone;     // helps during shutdown
 
     void    *m_rxThread = NULL;
+
+    // These are the callback functions that will be called when a message/event is received
+    void    (*m_asyncMsgCallback)(string) = NULL;
+    void    (*m_asyncEventCallback)(string) = NULL;
 
     void rxThread();
 };

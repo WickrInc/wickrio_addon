@@ -112,10 +112,6 @@ private:
     string          m_clientName;           // Name of the client interfacing with
     string          m_lastError = "";       // Last error string
 
-    // These are the callback functions that will be called when a message/event is received
-    void            (*m_asyncMsgCallback)(string) = NULL;
-    void            (*m_asyncEventCallback)(string) = NULL;
-
     // Generic function to set the fields associated with an add/modify room command
     BotIfaceStatus setRoomFields(string& command,
                                  const vector <string>& members,

@@ -57,12 +57,12 @@ bool getList(const string& prompt, vector <string>& result, bool allowemptylist=
 
 void asyncMessage(string message)
 {
-    std::cout << "Got message\n";
+    std::cout << "\nGot message:" << message << "\n";
 }
 
 void asyncEvent(string event)
 {
-    std::cout << "Got event\n";
+    std::cout << "\nGot event:" << event << "\n";
 }
 
 void mainThread()

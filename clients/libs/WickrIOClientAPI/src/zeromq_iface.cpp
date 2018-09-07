@@ -26,15 +26,15 @@ MesgQueueIface::rxThread()
 {
     while (m_doReceive) {
         /* Create an empty ØMQ message */
-        zmq_msg_t reply;
-        int rc = zmq_msg_init (&reply);
+        zmq_msg_t asyncMsgEvt;
+        int rc = zmq_msg_init (&asyncMsgEvt);
         if (rc != 0) {
             const char *errstring = zmq_strerror(zmq_errno());
             std::cout << "Error initializing message: " << errstring << "\n";
             return;
         }
 
-        rc = zmq_recvmsg(m_zRxSocket, &reply, ZMQ_DONTWAIT);
+        rc = zmq_recvmsg(m_zRxSocket, &asyncMsgEvt, ZMQ_DONTWAIT);
         if (rc == -1) {
             // No messages on the queue
             if (zmq_errno() == EAGAIN) {
@@ -45,16 +45,26 @@ MesgQueueIface::rxThread()
             return;
         }
 
-        string tmp((char *)zmq_msg_data(&reply), zmq_msg_size(&reply));
+        string tmp((char *)zmq_msg_data(&asyncMsgEvt), zmq_msg_size(&asyncMsgEvt));
         m_responseString = tmp;
 
-        std::cout << "Got Message:" << MesgQueueIface::m_responseString;
+        bool success;
+        string message;
+
+        if (m_asyncMsgCallback != NULL) {
+            m_asyncMsgCallback(m_responseString);
+            success = true;
+            // WARNING: Do not change this value, it is expected
+            message = "success";
+        } else {
+            success = false;
+            message = "no callback!";
+        }
 
 
 
         /* Create a new message, allocating 6 bytes for message content */
         zmq_msg_t msg;
-        string message="message received";
         rc = zmq_msg_init_size (&msg, message.length());
         if (rc != 0) {
             const char *errstring = zmq_strerror(rc);
