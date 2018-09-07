@@ -1,6 +1,9 @@
 #include <iostream>
 #include <nan.h>
 #include <v8.h>
+#include <node.h>
+#include <uv.h>
+#include <thread>
 #include "bot_iface.h"
 
 using namespace v8;
@@ -35,6 +38,77 @@ void closeClient(const v8::FunctionCallbackInfo<v8::Value> & args){
   args.GetReturnValue().Set(error);
   return;
 }
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////ASYNC MESSAGE CALLBACK HANDLING///////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+
+
+v8::Handle<v8::Value> *v8Args; //Global variable which stores the name of the callback function passed from Javascript
+
+
+// This function gets passed to cmdStringStartAsyncRecvMessages in bot_iface.cpp as a regular C++ function
+void callback(string msg){
+  v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
+  global->Set(v8::String::New("callback"), v8::FunctionTemplate::New(callback,v8::External::Wrap(this))); //not too sure about this line 
+  v8::Handle<v8::Value> value = global->Get(v8::String::New(v8Args[0]));
+  v8::Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
+  v8::Handle<v8::Value> fnResult;
+  fnResult = func->Call(global, 1, msg);
+  // uv_run(uv_default_loop(),UV_RUN_DEFAULT);
+}
+
+
+// Addon function which gets called from Javascript and gets passed a callback
+void cmdStartAsyncRecvMessages(const v8::FunctionCallbackInfo<v8::Value> & args){
+  Isolate* isolate = args.GetIsolate();
+  // HandleScope scope(isolate);
+  if (botIface == nullptr) {
+          string message = "Bot Interface has not been initialized!";
+          auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+          args.GetReturnValue().Set(error);
+          return;
+  }
+  v8Args = new v8::Handle<v8::Value>[1];
+  v8Args[0] = v8::String::New(args[0].c_str());
+
+    // Local<Function> cb = Local<Function>::Cast(args[0]);
+  const unsigned argc = 1;
+  string command, response;
+  botIface->cmdStringStartAsyncRecvMessages(command, callback); //callback needs to be a C++ function and not a V8 function
+
+  if (botIface->send(command, response) != BotIface::SUCCESS) {
+          response = botIface->getLastErrorString();
+          string message = "Send failed: " + response;
+          auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+          args.GetReturnValue().Set(error);
+          return;
+  }
+  else {
+          if (response.length() > 0) {
+                  auto message = v8::String::NewFromUtf8(isolate, response.c_str());
+                  args.GetReturnValue().Set(message);
+          }
+          return;
+  }
+  Local<Value> argv[argc] = { v8::String::NewFromUtf8(isolate, "OK") };
+  // cb->Call(Null(isolate), argc, argv);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+
 
 void cmdGetStatistics(const v8::FunctionCallbackInfo<v8::Value> & args){
         Isolate* isolate = args.GetIsolate();
@@ -997,6 +1071,7 @@ void init(Handle <Object> exports, Handle<Object> module) {
         //3rd param: the name of the actual function
         NODE_SET_METHOD(exports, "clientInit", clientInit);
         NODE_SET_METHOD(exports, "closeClient", closeClient);
+        NODE_SET_METHOD(module, "exports", cmdStartAsyncRecvMessages);
         NODE_SET_METHOD(exports, "cmdGetStatistics", cmdGetStatistics);
         NODE_SET_METHOD(exports, "cmdClearStatistics", cmdClearStatistics);
         NODE_SET_METHOD(exports, "cmdGetRooms", cmdGetRooms);
