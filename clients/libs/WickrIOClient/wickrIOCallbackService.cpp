@@ -192,10 +192,18 @@ WickrIOCallbackThread::slotAsyncMessageSent(bool result)
 {
     //TODO: Need to have a timeout just in case this signal never comes
     if (m_postedMsgID > 0) {
-        WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
-        if (db != nullptr) {
-            db->deleteMessage(m_postedMsgID, m_saveAttachments);
+        // If the messages was successfully sent the delete it
+        if (result) {
+            WickrIOClientDatabase *db = static_cast<WickrIOClientDatabase *>(m_operation->m_botDB);
+            if (db != nullptr) {
+                db->deleteMessage(m_postedMsgID, m_saveAttachments);
+                m_postedMsgID = 0;
+            }
+        }
+        // Else do not delete it, will try to resend when another message comes in
+        else {
             m_postedMsgID = 0;
+            return;
         }
     }
 

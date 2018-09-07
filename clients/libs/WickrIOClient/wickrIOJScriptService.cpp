@@ -166,6 +166,10 @@ WickrIOJScriptThread::WickrIOJScriptThread(QThread *thread, WickrIOJScriptServic
     // Signal to cleanup worker
     connect(thread, &QThread::finished, this, &QObject::deleteLater);
 
+    // Start the timer
+    connect(&m_timer, SIGNAL(timeout()), this, SLOT(slotTimerExpire()));
+    m_timer.start(1000);
+
     m_state = JSThreadState::JS_STARTED;
 }
 
@@ -174,7 +178,28 @@ WickrIOJScriptThread::WickrIOJScriptThread(QThread *thread, WickrIOJScriptServic
  * Destructor
  */
 WickrIOJScriptThread::~WickrIOJScriptThread() {
+    // Stop the timer
+    disconnect(&m_timer, SIGNAL(timeout()), this, SLOT(slotTimerExpire()));
+
     qDebug() << "WICKRIOJAVASCRIPT THREAD: Worker Destroyed.";
+}
+
+void
+WickrIOJScriptThread::slotTimerExpire()
+{
+    // If we are processing check if we are waiting for a response
+    if (m_state == JSThreadState::JS_PROCESSING) {
+        if (m_asyncMesgSent) {
+            time_t now;
+            time(&now);
+            // If have not received a response in over 5 seconds then fail the message
+            if (now > (m_sentMessageTime + 5)) {
+                m_asyncMesgSent = false;
+                qDebug() << "Timed out waiting for async message response!";
+                emit signalAsyncMessageSent(false);
+            }
+        }
+    }
 }
 
 void
@@ -274,6 +299,7 @@ WickrIOJScriptThread::slotSendAsyncMessage(QString msg)
         qDebug() << "Failed to send async message!";
         emit signalAsyncMessageSent(false);
     } else {
+        time(&m_sentMessageTime);   // Set the time that message is sent for timeout
         m_asyncMesgSent = true;
     }
 }
@@ -290,9 +316,9 @@ WickrIOJScriptThread::slotAsyncResponseReceived(const QList<QByteArray>& message
 {
     for (QByteArray mesg : messages) {
         if (m_asyncMesgSent) {
-            qDebug() << "Got async message response:" << QString(mesg);
-            emit signalAsyncMessageSent(true);
             m_asyncMesgSent = false;
+            qDebug() << "Got async message response:" << QString(mesg);
+            emit signalAsyncMessageSent(QString(mesg) == "success");
         }
     }
 }

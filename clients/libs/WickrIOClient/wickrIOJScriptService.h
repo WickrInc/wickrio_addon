@@ -110,6 +110,8 @@ private:
     JSThreadState           m_state;
 
     bool                    m_jsCallbackInitialized = false;
+    QTimer                  m_timer;
+    time_t                  m_sentMessageTime;
 
     // ZeroMQ definitions
     nzmqt::ZMQContext   *m_zctx = nullptr;
@@ -136,6 +138,8 @@ signals:
     void signalAsyncEventSent(bool result);
 
 public slots:
+    void slotTimerExpire();
+
     void slotMessageReceived(const QList<QByteArray>&);
     void slotAsyncResponseReceived(const QList<QByteArray>&);
 
