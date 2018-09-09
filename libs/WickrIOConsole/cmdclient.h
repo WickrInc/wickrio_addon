@@ -54,7 +54,7 @@ private:
     bool getAuthValue(WickrBotClients *client, bool basic, QString& authValue);
 
     unsigned getVersionNumber(QFile *versionFile);
-    void getVersionString(unsigned versionNum, QString& versionString);
+    void getIntegrationVersionString(unsigned versionNum, QString& versionString);
     void integrationUpdateVersionFile(const QString& path, const QString& version);
 
     // Integration bot commands

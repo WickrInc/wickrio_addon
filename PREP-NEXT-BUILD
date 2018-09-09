@@ -31,8 +31,8 @@ shortVersion="${majorVersion}.${minorVersion}.${patchVersion}"
 echo $currentRelease >BUILD_NUMBER
 
 # Update the version numbers built into the clients and applications
-rm -f clients/libs/WickrIOClient/wickrBuildNumbers.h
-echo "#define BUILD_NUMBER" `cat BUILD_NUMBER` >>clients/libs/WickrIOClient/wickrBuildNumbers.h
+rm -f shared/common/wickrBuildNumbers.h
+echo "#define BUILD_NUMBER" `cat BUILD_NUMBER` >>shared/common/wickrBuildNumbers.h
 
 #
 # Generate release notes

@@ -92,7 +92,7 @@ DEPENDPATH += $$PWD
 HEADERS += \
     clientconfigurationinfo.h \
     clientversioninfo.h \
-    wickrBuildNumbers.h \
+    $$DEPTH/shared/common/wickrBuildNumbers.h \
     wickrIOActionService.h \
     wickrIOCallbackService.h \
     wickrIOClientLoginHdlr.h \
