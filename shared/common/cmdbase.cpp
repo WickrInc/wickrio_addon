@@ -251,5 +251,6 @@ QString CmdBase::getVersionString()
     nicever += "." + QString::number(bvnum/10000);
     bvnum %= 10000;
     nicever += "." + QString::number(bvnum/100);
+    nicever += "." + QString::number(bvnum % 100);
     return (QString("v") + nicever);
 }
