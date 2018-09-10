@@ -29,7 +29,7 @@ private:
     bool processCommand(QStringList cmdList, bool &isquit);
     void processHelp(const QStringList& cmdList);
 
-    bool getClientValues(WickrBotClients *client, bool fromConfig=false);
+    bool getClientValues(WickrBotClients *client, const QMap<QString,QString>& keyValuePairs, bool fromConfig=false);
     void addClient();
     void deleteClient(int clientIndex);
     void listClients();
@@ -48,7 +48,7 @@ private:
     void closeClientIPC(const QString& dest);
 
     bool readLineFromProcess(QProcess *process, QString& line);
-    bool runBotScript(const QString& destPath, const QString& configure, WickrBotClients *client, const QStringList& args);
+    bool runBotScript(const QString& destPath, const QString& configure, WickrBotClients *client, const QStringList& args, const QMap<QString,QString>& keyValuePairs);
 
     bool getAuthValue(WickrBotClients *client, bool basic, QString& authValue);
 
@@ -59,7 +59,7 @@ private:
     // Integration bot commands
     bool integrationCopySW(WickrBotClients *client, const QString& swPath, const QString& destPath);
     bool integrationInstall(WickrBotClients *client, const QString& destPath);
-    bool integrationConfigure(WickrBotClients *client, const QString& destPath);
+    bool integrationConfigure(WickrBotClients *client, const QString& destPath, const QMap<QString,QString>& keyValuePairs);
     bool integrationUpgrade(WickrBotClients *client, const QString& curSWPath, const QString& newSWPath);
 
     bool configClients();

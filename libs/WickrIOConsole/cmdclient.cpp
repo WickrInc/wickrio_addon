@@ -537,7 +537,7 @@ bool CmdClient::chkClientsInterfaceExists(const QString& iface, int port)
     return false;
 }
 
-bool CmdClient::getClientValues(WickrBotClients *client, bool fromConfig)
+bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QString>& keyValuePairs, bool fromConfig)
 {
     bool quit = false;
     QString temp;
@@ -961,7 +961,7 @@ bool CmdClient::getClientValues(WickrBotClients *client, bool fromConfig)
             }
 
             // Third peform the configure if one does exist
-            if (! integrationConfigure(client, destPath)) {
+            if (! integrationConfigure(client, destPath, keyValuePairs)) {
                 return false;
             }
 
@@ -1110,7 +1110,7 @@ CmdClient::readLineFromProcess(QProcess *process, QString& line)
  * @return
  */
 bool
-CmdClient::runBotScript(const QString& destPath, const QString& configure, WickrBotClients *client, const QStringList& args)
+CmdClient::runBotScript(const QString& destPath, const QString& configure, WickrBotClients *client, const QStringList& args, const QMap<QString,QString>& keyValuePairs)
 {
     // Values associated with the CallbackURL
     QString cbackEndPoint;
@@ -1177,7 +1177,18 @@ CmdClient::runBotScript(const QString& destPath, const QString& configure, Wickr
                     QString outString = QString("%1\n").arg(cbackPort);
                     runScript->write(outString.toLatin1());
                 } else {
-                    promptForValue = true;
+                    bool foundKey=false;
+                    // Check if any of the input keys from the key value pairs match
+                    QStringList keys = keyValuePairs.keys();
+                    for (QString key : keys) {
+                        if (bytes.contains(key)) {
+                            foundKey = true;
+                            QString valueOutput = QString("%1\n").arg(keyValuePairs.value(key));
+                            runScript->write(valueOutput.toLatin1());
+                        }
+                    }
+                    if (!foundKey)
+                        promptForValue = true;
                 }
 
                 // If there was no known token asked for then prompt to the user
@@ -1185,8 +1196,8 @@ CmdClient::runBotScript(const QString& destPath, const QString& configure, Wickr
                     QString prompt = bytes.right(bytes.length()-7).remove(QRegExp("[\\n\\t\\r]"));     // size of string - sizeof "PROMPT:"
                     QString curVal;
                     prompt = prompt.remove(QRegExp("[\\n\\t\\r]"));
-//                        prompt = QString("Enter value for %1").arg(prompt.toLower());
                     QString input = getNewValue(curVal, prompt);
+
                     input.append("\n");
                     runScript->write(input.toLatin1());
                 }
@@ -1232,9 +1243,10 @@ void CmdClient::slotCmdOutputRx()
 void CmdClient::addClient()
 {
     WickrBotClients *client = new WickrBotClients();
+    QMap<QString,QString> clientValues;
 
     while (true) {
-        if (!getClientValues(client)) {
+        if (!getClientValues(client, clientValues)) {
             break;
         }
 
@@ -1388,7 +1400,8 @@ void CmdClient::modifyClient(int clientIndex)
                 qDebug() << "CONSOLE:Cannot modify a running client!";
             } else {
                 while (true) {
-                    if (!getClientValues(client)) {
+                    QMap<QString,QString> clientValues;
+                    if (!getClientValues(client, clientValues)) {
                         break;
                     }
 
@@ -1759,7 +1772,8 @@ void CmdClient::upgradeClient(int clientIndex)
         }
 
         // Lastly, peform the configure if one does exist
-        if (! integrationConfigure(client, destPath)) {
+        QMap<QString,QString> clientValues;
+        if (! integrationConfigure(client, destPath, clientValues)) {
             return;
         }
     }
@@ -1867,7 +1881,7 @@ CmdClient::integrationInstall(WickrBotClients *client, const QString& destPath)
 }
 
 bool
-CmdClient::integrationConfigure(WickrBotClients *client, const QString& destPath)
+CmdClient::integrationConfigure(WickrBotClients *client, const QString& destPath, const QMap<QString,QString>& keyValuePairs)
 {
     qDebug().noquote().nospace() << "CONSOLE:Begin configuration of " << client->botType << " software for " << client->user;
     QString configure = WBIOServerCommon::getBotConfigure(client->botType);
@@ -1875,7 +1889,7 @@ CmdClient::integrationConfigure(WickrBotClients *client, const QString& destPath
         QString configureFullpath = QString("%1/%2").arg(destPath).arg(configure);
         QStringList args;
         args.append(client->user);
-        if (!runBotScript(destPath, configureFullpath, client, args)) {
+        if (!runBotScript(destPath, configureFullpath, client, args, keyValuePairs)) {
             qDebug().noquote().nospace() << "CONSOLE:Failed to configure " << client->botType;
             return false;
         }
@@ -2103,7 +2117,7 @@ CmdClient::configClients()
             }
         }
 
-        if (!getClientValues(&client, true)) {
+        if (!getClientValues(&client, configValues, true)) {
             qDebug() << "CONSOLE:Failed to get client values and configure for" << clientName;
         } else {
             // Check that the record has already been added (likely during provisioning)
