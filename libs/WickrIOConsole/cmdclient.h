@@ -29,7 +29,7 @@ private:
     bool processCommand(QStringList cmdList, bool &isquit);
     void processHelp(const QStringList& cmdList);
 
-    bool getClientValues(WickrBotClients *client);
+    bool getClientValues(WickrBotClients *client, bool fromConfig=false);
     void addClient();
     void deleteClient(int clientIndex);
     void listClients();
