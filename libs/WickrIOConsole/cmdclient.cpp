@@ -104,6 +104,17 @@ CmdClient::processHelp(const QStringList& cmdList)
             } else if (cmd == "back" && !m_root) {
                 qDebug().nospace() << "CONSOLE:Back command usage: back\n"
                         << "  The back command will take you to the previous level of commands.\n";
+            } else if (cmd == "config") {
+                qDebug().nospace() << "CONSOLE:Config command usage: config\n"
+                        << "  The config command is used to read in a conf file that contains details of\n"
+                        << "  clients that will be added to this WickrIO system. The format of the config\n"
+                        << "  file is based on an ini file format. The main key in the file is the\n"
+                        << "  \"clients\" key. This key contains a list of client names which are used t\n"
+                        << "  identify WickrIO bot clients to be added to the system. Each of these client\n"
+                        << "  names are used as keys that identify the specific bot information that is\n"
+                        << "  used to create the bot client. Any WickrIO bot client that associates with\n"
+                        << "  integration software may have more values that need to be specified in the\n"
+                        << "  config file. Details of these values can be found in the sample config file.\n";
             } else if (cmd == "delete") {
                 qDebug().nospace() << "CONSOLE:Delete command usage: delete <client number>\n"
                         << "  The delete command is used to delete an existing client. The <client number>\n"
@@ -176,7 +187,9 @@ CmdClient::processHelp(const QStringList& cmdList)
                         << "  there will be an indication next to the WickrIO bot client saying it needs to\n"
                         << "  be upgraded. You can always performe an upgrade even if the upgarde is not\n"
                         << "  indicated.\n";
-
+            } else if (m_root && cmd == "version") {
+                qDebug().nospace() << "CONSOLE:Version command usage: versin\n"
+                        << "  This command will display the version number of this software.\n";
             } else {
                 qDebug() << "CONSOLE:" << cmd << "is not a known command!";
             }
@@ -185,6 +198,7 @@ CmdClient::processHelp(const QStringList& cmdList)
         qDebug() << "CONSOLE:Commands:";
         qDebug() << "CONSOLE:  add         - adds a new client";
         if (!m_root) qDebug() << "CONSOLE:  back        - leave the clients setup";
+        qDebug() << "CONSOLE:  config      - process a configuration file";
         qDebug() << "CONSOLE:  delete <#>  - deletes client with the specific index";
         qDebug() << "CONSOLE:  help or ?   - shows supported commands";
         qDebug() << "CONSOLE:  integration - bot integrations menu";
@@ -194,6 +208,7 @@ CmdClient::processHelp(const QStringList& cmdList)
         qDebug() << "CONSOLE:  quit        - leaves this program";
         qDebug() << "CONSOLE:  start <#>   - starts the client with the specified index";
         qDebug() << "CONSOLE:  upgrade <#> - upgrade integration software for client";
+        if (m_root) qDebug() << "CONSOLE:  version     - display the version number of this software";
         if (m_root)
             qDebug() << "CONSOLE:  version     - display the version number";
     }
@@ -241,6 +256,8 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
         addClient();
     } else if (cmd == "back" && !m_root) {
         retVal = false;
+    } else if (cmd == "config") {
+        configClients();
     } else if (cmd == "delete") {
         if (clientIndex == -1) {
             qDebug() << "CONSOLE:Usage: delete <index>";
@@ -467,23 +484,6 @@ void CmdClient::listClients()
         }
         qDebug() << qPrintable(data);
     }
-}
-
-/**
- * @brief CmdClient::chkClientsNameExists
- * Check if the input name is already used by one of the client records
- * @param name
- * @return
- */
-bool CmdClient::chkClientsNameExists(const QString& name)
-{
-    for (WickrBotClients *client : m_clients) {
-        if (client->name == name) {
-            qDebug() << "CONSOLE:The input name is NOT unique!";
-            return true;
-        }
-    }
-    return false;
 }
 
 /**
@@ -1930,3 +1930,131 @@ CmdClient::integrationUpgrade(WickrBotClients *client, const QString& curSWPath,
 }
 
 
+bool
+CmdClient::configClients()
+{
+    bool    quit = false;
+    QString temp;
+    QString configFileName;
+
+    // Get the name of the config file
+    do {
+        temp = getNewValue(configFileName, tr("Enter the config file name"));
+
+        // Check if the user wants to quit the action
+        if (handleQuit(temp, &quit) && quit) {
+            return false;
+        }
+        // Check if the file exists
+        QFile swFile(temp);
+        if (swFile.exists()) {
+            configFileName = temp;
+            break;
+        }
+
+        qDebug() << "CONSOLE:Cannot find that file:" << temp;;
+    } while (true);
+
+    qDebug() << "CONSOLE:Processing" << configFileName;
+
+    // Parse out the input ini file
+    QSettings settings(configFileName, QSettings::IniFormat);
+    settings.beginGroup(WIOCONFIG_CLIENTS_KEY);
+    QStringList clients_keys = settings.allKeys();
+    settings.endGroup();
+
+    //TODO: check that the bot type is "wickrio_bot"
+    QList<WBIOBotTypes *>integrations = WBIOServerCommon::getBotsSupported("wickrio_bot", false);
+
+
+    QMap<QString,QMap<QString,QString>> clientsMap;
+    bool errorsExist = false;
+
+    for (QString clientName : clients_keys) {
+        QMap<QString,QString> clientValues;
+        bool skipClient=false;
+
+        // Check if this client exists already
+        for (WickrBotClients *client : m_clients) {
+            if (clientName == client->user) {
+                qDebug() << "CONSOLE:Username" << clientName << "already exists!\nCannot update a client from config file!";
+                while (true) {
+                    QString temp = getNewValue("no", tr("Do you want to skip this client?"), CHECK_BOOL);
+                    if (temp.toLower() == "yes" || temp.toLower() == "y") {
+                        qDebug() << "CONSOLE:Skipping client" << clientName;
+                        break;
+                    }
+                    if (temp.toLower() == "no" || temp.toLower() == "n" || temp.isEmpty()) {
+                        qDebug() << "CONSOLE:Will not continue processing config file!";
+                        return true;
+                    }
+
+                    // Check if the user wants to quit the action
+                    if (handleQuit(temp, &quit) && quit) {
+                        return false;
+                    }
+                }
+
+                skipClient = true;
+                break;
+            }
+        }
+        // If the client exists and the user wants to skip then go to the next client
+        if (skipClient)
+            continue;
+
+        settings.beginGroup(clientName);
+        QStringList client_keys = settings.allKeys();
+        for (QString key : client_keys) {
+            QString value;
+
+            // Check that the integration exists
+            if (key == WIOCONFIG_INTEGRATION_KEY) {
+                value = settings.value(key, "").toString();
+                if (value.isEmpty()) {
+                    continue;
+                }
+
+                bool foundIntegration=false;
+                for (WBIOBotTypes *integration : integrations) {
+                    if (integration->name() == value) {
+                        foundIntegration = true;
+                        break;
+                    }
+                }
+                if (!foundIntegration) {
+                    errorsExist = true;
+                    qDebug().nospace() << "CONSOLE:For client " << clientName << " integration " << value << " does not exist!";
+                }
+            }
+            // auto login will default to true, if it exists
+            else if (key == WIOCONFIG_AUTO_LOGIN_KEY) {
+                value = settings.value(key, "true").toString();
+                if (value != "true" && value != "false") {
+                    errorsExist = true;
+                    qDebug().nospace() << "CONSOLE:For client " << clientName << " auto_login is " << value << " should be true or false!";
+                }
+            } else {
+                value = settings.value(key, "").toString();
+            }
+            clientValues.insert(key, value);
+        }
+        settings.endGroup();
+
+        // Default the autologin to true
+        if (!clientValues.contains(WIOCONFIG_AUTO_LOGIN_KEY)) {
+            clientValues.insert(WIOCONFIG_AUTO_LOGIN_KEY, "true");
+        }
+
+        clientsMap.insert(clientName, clientValues);
+    }
+
+    if (errorsExist) {
+        qDebug() << "CONSOLE:Errors exist! Fix the errors and retry.";
+        return true;
+    }
+
+    qDebug() << "CONSOLE:Begin adding clients!";
+
+
+}

@@ -39,7 +39,6 @@ private:
     void startClient(int clientIndex, bool force);
     void upgradeClient(int clientIndex);
 
-    bool chkClientsNameExists(const QString& name);
     bool chkClientsUserExists(const QString& name);
     bool chkClientsInterfaceExists(const QString& iface, int port);
 
@@ -62,6 +61,8 @@ private:
     bool integrationInstall(WickrBotClients *client, const QString& destPath);
     bool integrationConfigure(WickrBotClients *client, const QString& destPath);
     bool integrationUpgrade(WickrBotClients *client, const QString& curSWPath, const QString& newSWPath);
+
+    bool configClients();
 
 private:
     CmdOperation        *m_operation;
