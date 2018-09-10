@@ -240,3 +240,17 @@ QString CmdBase::getNewValue(const QString& oldValue, const QString& prompt, Che
     }
     return newValue;
 }
+
+#include "wickrBuildNumbers.h"
+
+QString CmdBase::getVersionString()
+{
+    int bvnum = BUILD_NUMBER;
+    QString nicever = QString::number(bvnum/1000000);
+    bvnum %= 1000000;
+    nicever += "." + QString::number(bvnum/10000);
+    bvnum %= 10000;
+    nicever += "." + QString::number(bvnum/100);
+    nicever += "." + QString::number(bvnum % 100);
+    return (QString("v") + nicever);
+}

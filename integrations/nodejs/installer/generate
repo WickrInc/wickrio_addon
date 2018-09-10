@@ -123,6 +123,22 @@ if test -f "$welcome_bot_sample/generate.sh" ; then
     cd $pwd
 fi
 
+nodejs_dir=$pwd/..
+
+web_interface=$nodejs_dir/web_interface
+if test -f "$web_interface/generate.sh" ; then
+    echo "generating software.tar.gz for web_interface"
+    mkdir -p  $dst_sample_dir/imports/web_interface
+    cd $web_interface
+    ./generate.sh $dst_sample_dir/imports/web_interface
+
+    # generate into the integrations output directory
+    mkdir -p $integrations_output_dir/web_interface
+    ./generate.sh $integrations_output_dir/web_interface
+
+    cd $pwd
+fi
+
 
 #
 # Create the actual package

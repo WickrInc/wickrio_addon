@@ -69,7 +69,7 @@ CmdClient::getVersionNumber(QFile *versionFile)
 }
 
 void
-CmdClient::getVersionString(unsigned versionNum, QString& versionString)
+CmdClient::getIntegrationVersionString(unsigned versionNum, QString& versionString)
 {
     if (versionNum > 1000000) {
         versionString = QString("%1.%2.%3").arg(QString::number(versionNum / 1000000))
@@ -191,9 +191,11 @@ CmdClient::processHelp(const QStringList& cmdList)
         qDebug() << "CONSOLE:  list        - shows a list of clients";
         qDebug() << "CONSOLE:  modify <#>  - modifies a client with the specified index";
         qDebug() << "CONSOLE:  pause <#>   - pauses the client with the specified index";
+        qDebug() << "CONSOLE:  quit        - leaves this program";
         qDebug() << "CONSOLE:  start <#>   - starts the client with the specified index";
         qDebug() << "CONSOLE:  upgrade <#> - upgrade integration software for client";
-        qDebug() << "CONSOLE:  quit        - leaves this program";
+        if (m_root)
+            qDebug() << "CONSOLE:  version     - display the version number";
     }
 }
 
@@ -279,6 +281,8 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
         } else {
             upgradeClient(clientIndex);
         }
+    } else if (cmd == "version" && m_root) {
+        qDebug().nospace().noquote() << "CONSOLE:version: " << getVersionString();
     } else {
         qDebug() << "CONSOLE:" << cmd << "is not a known command!";
     }
@@ -1665,7 +1669,7 @@ void CmdClient::upgradeClient(int clientIndex)
 
         unsigned newBotVer = m_integrationVersions.value(client->botType, 0);
         QString  newBotVerString;
-        getVersionString(newBotVer, newBotVerString);
+        getIntegrationVersionString(newBotVer, newBotVerString);
 
         unsigned curBotVer = 0;
         QString  curBotVerString;
@@ -1679,7 +1683,7 @@ void CmdClient::upgradeClient(int clientIndex)
         if (curHubotVersionFile.exists()) {
             curBotVer = getVersionNumber(&curHubotVersionFile);
         }
-        getVersionString(curBotVer, curBotVerString);
+        getIntegrationVersionString(curBotVer, curBotVerString);
 
         qDebug().noquote().nospace() << "CONSOLE:Upgrading from version " << curBotVerString << " to version " << newBotVerString;
         while (true) {
@@ -1790,7 +1794,7 @@ CmdClient::integrationUpdateVersionFile(const QString& path, const QString& vers
         QString  curBotVerString;
 
         unsigned curBotVer = getVersionNumber(&versFile);
-        getVersionString(curBotVer, curBotVerString);
+        getIntegrationVersionString(curBotVer, curBotVerString);
 
         if (curBotVerString != version) {
             qDebug().noquote().nospace() << "CONSOLE:Warning: VERSION contains different value: " << curBotVerString << " expected " << version;

@@ -26,6 +26,8 @@ protected:
 
     QString getPassword(const QString& prompt);
 
+    QString getVersionString();
+
 };
 
 #endif // CMDBASE_H
