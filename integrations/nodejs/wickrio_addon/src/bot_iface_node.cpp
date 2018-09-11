@@ -1,6 +1,10 @@
 #include <iostream>
 #include <nan.h>
 #include <v8.h>
+#include <node.h>
+#include <uv.h>
+#include <thread>
+#include <node_api.h>
 #include "bot_iface.h"
 
 using namespace v8;
@@ -8,6 +12,7 @@ using namespace std;
 using namespace Nan;
 
 BotIface *botIface = nullptr;
+string jsCallback;
 
 void clientInit(const v8::FunctionCallbackInfo<v8::Value> & args) {
         Isolate* isolate = args.GetIsolate();
@@ -35,6 +40,89 @@ void closeClient(const v8::FunctionCallbackInfo<v8::Value> & args){
   args.GetReturnValue().Set(error);
   return;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////ASYNC MESSAGE CALLBACK HANDLING///////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+// std::function<void()> cbfunc;
+//
+//
+// This function gets passed to cmdStringStartAsyncRecvMessages in bot_iface.cpp as a regular C++ function
+void callback(string msg){
+  // Get the js callback function on the global object
+napi_value global, js_func, arg;
+napi_env env;
+napi_status status = napi_get_global(env, &global);
+if (status != napi_ok) return;
+
+status = napi_get_named_property(env, global, jsCallback.c_str(), &js_func);
+if (status != napi_ok) return;
+
+// const arg = msg
+status = napi_create_string_utf8(env, msg.c_str(), NAPI_AUTO_LENGTH, &arg);
+if (status != napi_ok) return;
+
+napi_value* argv = &arg;
+size_t argc = 1;
+
+// jsCallback(arg);
+napi_value return_val;
+status = napi_call_function(env, global, js_func, argc, argv, &return_val);
+if (status != napi_ok) return;
+
+// Convert the result back to a native type
+// int32_t result;
+// status = napi_get_value_int32(env, return_val, &result);
+// if (status != napi_ok) return;
+}
+
+// Addon function which gets called from Javascript and gets passed a callback
+void cmdStartAsyncRecvMessages(const v8::FunctionCallbackInfo<v8::Value> & args){
+  Isolate* isolate = args.GetIsolate();
+  v8::String::Utf8Value param1(args[0]->ToString());
+  jsCallback = std::string(*param1);
+
+string command, response;
+botIface->cmdStringStartAsyncRecvMessages(command, callback); //callback needs to be a C++ function and not a V8 function
+
+
+
+  if (botIface == nullptr) {
+          string message = "Bot Interface has not been initialized!";
+          auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+          args.GetReturnValue().Set(error);
+          return;
+  }
+
+  if (botIface->send(command, response) != BotIface::SUCCESS) {
+          response = botIface->getLastErrorString();
+          string message = "Send failed: " + response;
+          auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+          args.GetReturnValue().Set(error);
+          return;
+  }
+  else {
+          if (response.length() > 0) {
+                  auto message = v8::String::NewFromUtf8(isolate, response.c_str());
+                  args.GetReturnValue().Set(message);
+          }
+          return;
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+
 
 void cmdGetStatistics(const v8::FunctionCallbackInfo<v8::Value> & args){
         Isolate* isolate = args.GetIsolate();
@@ -991,12 +1079,15 @@ void cmdSendRoomAttachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
         }
 }
 
-
+// void sendBackToJs(const v8::FunctionCallbackInfo<v8::Value> & args);
 void init(Handle <Object> exports, Handle<Object> module) {
         //2nd param: what we call from Javascript
         //3rd param: the name of the actual function
         NODE_SET_METHOD(exports, "clientInit", clientInit);
         NODE_SET_METHOD(exports, "closeClient", closeClient);
+        // NODE_SET_METHOD(module, "exports", callback);
+        // NODE_SET_METHOD(module, "sendBackToJs", sendBackToJs);
+        NODE_SET_METHOD(exports, "cmdStartAsyncRecvMessages", cmdStartAsyncRecvMessages);
         NODE_SET_METHOD(exports, "cmdGetStatistics", cmdGetStatistics);
         NODE_SET_METHOD(exports, "cmdClearStatistics", cmdClearStatistics);
         NODE_SET_METHOD(exports, "cmdGetRooms", cmdGetRooms);
