@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QEventLoop>
 #include <QTimer>
+#include <QTemporaryFile>
 
 #include "cmdclient.h"
 #include "cmdserver.h"
@@ -1110,11 +1111,29 @@ CmdClient::readLineFromProcess(QProcess *process, QString& line)
  * @return
  */
 bool
-CmdClient::runBotScript(const QString& destPath, const QString& configure, WickrBotClients *client, const QStringList& args, const QMap<QString,QString>& keyValuePairs)
+CmdClient::runBotScript(const QString& destPath, const QString& configure, WickrBotClients *client, const QMap<QString,QString>& keyValuePairs)
 {
     // Values associated with the CallbackURL
     QString cbackEndPoint;
     QString cbackPort;
+
+    // Create a file that will contain the keyValuePairs and the client user name
+    // The file will be deleted when this function exits
+    QTemporaryFile file;
+    if (!file.open()) {
+        qDebug() << "CONSOLE:Could not create temporary file for starting bot script!";
+        return false;
+    }
+    QStringList args;
+    args.append(file.fileName());
+
+    // Write the client name and the keyValuePairs
+    QTextStream outputStream(&file);
+    outputStream << QString("%1=%2\n").arg(BOTINT_CLIENT_NAME).arg(client->user);
+    for (QString key : keyValuePairs.keys()) {
+        outputStream << QString("%1=\"%2\"\n").arg(key).arg(keyValuePairs.value(key,""));
+    }
+    file.close();
 
     // Create a process to run the configure
     QProcess *runScript = new QProcess(this);
@@ -1124,11 +1143,8 @@ CmdClient::runBotScript(const QString& destPath, const QString& configure, Wickr
     });
     runScript->setProcessChannelMode(QProcess::MergedChannels);
     runScript->setWorkingDirectory(destPath);
-    if (args.length() > 0) {
-        runScript->start(configure, args, QIODevice::ReadWrite);
-    } else {
-        runScript->start(configure, QIODevice::ReadWrite);
-    }
+
+    runScript->start(configure, args, QIODevice::ReadWrite);
 
     // Wait for it to start
     if(!runScript->waitForStarted()) {
@@ -1887,9 +1903,7 @@ CmdClient::integrationConfigure(WickrBotClients *client, const QString& destPath
     QString configure = WBIOServerCommon::getBotConfigure(client->botType);
     if (!configure.isEmpty()){
         QString configureFullpath = QString("%1/%2").arg(destPath).arg(configure);
-        QStringList args;
-        args.append(client->user);
-        if (!runBotScript(destPath, configureFullpath, client, args, keyValuePairs)) {
+        if (!runBotScript(destPath, configureFullpath, client, keyValuePairs)) {
             qDebug().noquote().nospace() << "CONSOLE:Failed to configure " << client->botType;
             return false;
         }

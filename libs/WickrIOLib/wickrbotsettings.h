@@ -82,4 +82,7 @@
 #define WIOCONFIG_AUTO_LOGIN_KEY        "auto_login"
 #define WIOCONFIG_INTEGRATION_KEY       "integration"
 
+// Key values that will be written to bot integration files
+#define BOTINT_CLIENT_NAME              "CLIENT_NAME"
+
 #endif // WICKRBOTSETTINGS
