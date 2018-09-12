@@ -125,11 +125,20 @@ void messages_callback(uv_async_t *async_data)
 {
   cout << "In messages_callback\n";
 
+  Nan::HandleScope handle_scope;
+
   void* data = async_data->data;
+cout << "1\n";
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+cout << "2\n";
   v8::Local<String> value = v8::String::NewFromUtf8(isolate, "result");
+cout << "3\n";
   v8::Local<Value> argv[] { value };
+cout << "4\n";
   Local<Function> func = js_callback.Get(isolate);
+cout << "5\n";
   func->Call(isolate->GetCurrentContext()->Global(), 1, argv);
+cout << "6\n";
 }
 
 // Addon function which gets called from Javascript and gets passed a callback
