@@ -18,7 +18,7 @@ return new Promise( (resolve, reject) => {
   console.log(result);
 
 // addon(printer);
-console.log("cmdStartAsyncRecvMessages: ",addon.cmdStartAsyncRecvMessages('printer'));
+console.log("cmdStartAsyncRecvMessages: ",addon.cmdStartAsyncRecvMessages(printer));
 
 setTimeout(function()
 { console.log("Processing");

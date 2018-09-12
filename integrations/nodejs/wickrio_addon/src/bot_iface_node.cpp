@@ -11,11 +11,8 @@ using namespace v8;
 using namespace std;
 using namespace Nan;
 
-typedef struct napi_env__ *napi_env;
-// static Nan::CopyablePersistentTraits<v8::Function>::CopyablePersistent _cb;
 
 BotIface *botIface = nullptr;
-Isolate* isolate = nullptr;
 
 v8::Persistent<Function> js_callback;
 
@@ -64,98 +61,37 @@ void closeClient(const v8::FunctionCallbackInfo<v8::Value> & args){
  */
 void callback(string msg)
 {
-  cout << "callback()\n";
-  v8::HandleScope handle_scope(isolate);
-  cout << "After handle scope\n";
+  g_async_data.data = (void *)strdup(msg.c_str());
 
-//#if 1
-  g_async_data.data = (void *)"THIS IS TEST DATA";
-  cout << "Pre uv_async_send\n";
   int retCode = uv_async_send(&g_async_data);
   if (retCode == 0) {
     cout << "Call to uv_async_send is success!\n";
   } else {
     cout << "Call to uv_async_send returns:" << retCode << endl;
   }
-//else
-  // cout <<"callback isolate:" <<isolate << endl;
-  v8::Locker locker(isolate);
-
-  const int argc = 1;
-  v8::Handle<v8::Value> argv[argc] = {  v8::String::NewFromUtf8(isolate, msg.c_str()) };
-  cout << "1\n";
-
-
-  Local<Context> lclCtx = isolate->GetCurrentContext();
-  cout << "2\n";
-
-  Local<Object> globals = lclCtx->Global();
-  cout << "3\n";
-
-  Local<String> stringval = v8::String::NewFromUtf8(isolate, "printer");
-  cout << "4\n";
-
-  if (!*stringval) {
-    cout << "printer stringval:UNDEFINED!!!!\n";
-  }
-
-  cout << "5\n";
-  String::Utf8Value utf8val(stringval);
-  cout << "6\n";
-  if (*utf8val) {
-  cout << "7\n";
-    std::string stringval4c = std::string(*utf8val);
-  cout << "8\n";
-    cout << "printer string:" << stringval4c << endl;
-  } else {
-    cout << "printer utf8val:UNDEFINED!!!!\n";
-  }
-  cout << "9\n";
-
-  v8::Handle<v8::Value> value = isolate->GetCurrentContext()->Global()->Get(v8::String::NewFromUtf8(isolate,"printer"));
-  cout << "10\n";
-  v8::Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
-  cout << "11\n";
-
-  func->Call(isolate->GetCurrentContext(),value, argc, argv);
-  cout << "12\n";
-
-//#endif
-
 }
 
 void messages_callback(uv_async_t *async_data)
 {
-  cout << "In messages_callback\n";
-
   Nan::HandleScope handle_scope;
 
-  void* data = async_data->data;
-cout << "1\n";
+  char* message = (char *)(async_data->data);
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
-cout << "2\n";
-  v8::Local<String> value = v8::String::NewFromUtf8(isolate, "result");
-cout << "3\n";
+  v8::Local<String> value = v8::String::NewFromUtf8(isolate, message);
+  free(message);
   v8::Local<Value> argv[] { value };
-cout << "4\n";
   Local<Function> func = js_callback.Get(isolate);
-cout << "5\n";
   func->Call(isolate->GetCurrentContext()->Global(), 1, argv);
-cout << "6\n";
 }
 
 // Addon function which gets called from Javascript and gets passed a callback
-//
-// See if you can save const v8::FunctionCallbackInfo<v8::Value> & args as a global variable and use it later in callback()
-
 /*
  *
  */
 void cmdStartAsyncRecvMessages(const v8::FunctionCallbackInfo<v8::Value> & args)
 {
   string command, response;
-
-
+  Isolate* isolate = args.GetIsolate();
 
   if (botIface == nullptr) {
           string message = "Bot Interface has not been initialized!";
@@ -163,10 +99,6 @@ void cmdStartAsyncRecvMessages(const v8::FunctionCallbackInfo<v8::Value> & args)
           args.GetReturnValue().Set(error);
           return;
   }
-
-  isolate = args.GetIsolate();
-  // cout <<"cmd isolate:" <<isolate << endl;
-
   js_callback.Reset(isolate, Local<Function>::Cast(args[0]));
 
   uv_async_init(uv_default_loop(), &g_async_data, messages_callback);
@@ -179,14 +111,12 @@ void cmdStartAsyncRecvMessages(const v8::FunctionCallbackInfo<v8::Value> & args)
           string message = "Send failed: " + response;
           auto error = v8::String::NewFromUtf8(isolate, message.c_str());
           args.GetReturnValue().Set(error);
-          return;
   }
   else {
           if (response.length() > 0) {
                   auto message = v8::String::NewFromUtf8(isolate, response.c_str());
                   args.GetReturnValue().Set(message);
           }
-          return;
   }
 }
 
