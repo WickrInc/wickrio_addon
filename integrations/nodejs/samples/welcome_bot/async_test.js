@@ -20,10 +20,7 @@ return new Promise( (resolve, reject) => {
 // addon(printer);
 console.log(addon.cmdStartAsyncRecvMessages('printer'));
 
-for(;;){
-
-
-}
+setTimeout(function(){ console.log("Processing"); }, 5000);
 
 }).catch(error => {
   console.log('Error: ', error);
