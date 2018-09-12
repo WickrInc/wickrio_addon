@@ -11,8 +11,18 @@ using namespace v8;
 using namespace std;
 using namespace Nan;
 
+typedef struct napi_env__ *napi_env;
+// static Nan::CopyablePersistentTraits<v8::Function>::CopyablePersistent _cb;
+
 BotIface *botIface = nullptr;
+Isolate* isolate = nullptr;
+// v8::Persistent<Object> persist;
+
+ // v8::ReturnValue<v8::Value> returnValue = v8::ReturnValue<v8::Value>();
+// const v8::FunctionCallbackInfo<v8::Value> globalArgs;
 string jsCallback;
+v8::Local<v8::Value> globalArgs;
+
 
 void clientInit(const v8::FunctionCallbackInfo<v8::Value> & args) {
         Isolate* isolate = args.GetIsolate();
@@ -54,39 +64,99 @@ void closeClient(const v8::FunctionCallbackInfo<v8::Value> & args){
 //
 // This function gets passed to cmdStringStartAsyncRecvMessages in bot_iface.cpp as a regular C++ function
 void callback(string msg){
+  cout << "callback()\n";
   // Get the js callback function on the global object
-napi_value global, js_func, arg;
-napi_env env;
-napi_status status = napi_get_global(env, &global);
-if (status != napi_ok) return;
+  // v8::String::Utf8Value param1(globalArgs->ToString());
+  // std::string args = std::string(*param1);
+  cout <<"callback isolate:" <<isolate << endl;
 
-status = napi_get_named_property(env, global, jsCallback.c_str(), &js_func);
-if (status != napi_ok) return;
+  // cout << "globalArgs:" << args;
+  //
+  // v8::Locker locker(isolate);
+  //   isolate->Enter();
+  //   v8::HandleScope handleScope(isolate);
+    // Local<Value> key = String::NewFromUtf8(isolate, msg.c_str());
+    // Local<Function> target = Local<Function>::New(isolate, persist);
+    // target->Set(key);
+  const int argc = 1;
+  v8::Handle<v8::Value> argv[argc] = {  v8::String::NewFromUtf8(isolate, msg.c_str()) };
+  cout << "1\n";
+  cout << isolate->GetCurrentContext();
+  v8::Handle<v8::Value> value = isolate->GetCurrentContext()->Global()->Get(v8::String::NewFromUtf8(isolate,"printer"));
+  cout << "2\n";
+  v8::Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
+  cout << "3\n";
 
-// const arg = msg
-status = napi_create_string_utf8(env, msg.c_str(), NAPI_AUTO_LENGTH, &arg);
-if (status != napi_ok) return;
+  // Local<Function> callback = Local<Function>::Cast(globalArgs);
+  func->Call(isolate->GetCurrentContext(),value, argc, argv);
+  cout << "4\n";
+  // auto message = v8::String::NewFromUtf8(isolate, msg.c_str());
+  // globalArgs.GetReturnValue().Set(message);
 
-napi_value* argv = &arg;
-size_t argc = 1;
-
-// jsCallback(arg);
-napi_value return_val;
-status = napi_call_function(env, global, js_func, argc, argv, &return_val);
-if (status != napi_ok) return;
-
-// Convert the result back to a native type
-// int32_t result;
-// status = napi_get_value_int32(env, return_val, &result);
+    // Create a new context.
+//     v8::Local<v8::Context> context = v8::Context::New(isolate);
+//
+// napi_value global, js_func, arg;
+// napi_env env = new napi_env(isolate);
+//  // env = GetEnv(context);
+// napi_status status = napi_get_global(env, &global);
+// cout << endl <<"env:" << env << endl;
+// const napi_extended_error_info* result1;
+// status = napi_get_last_error_info(env, &result1);
+//
+// cout << "result1:" << result1 << endl;
+// cout << "status1:" << status << endl;
+// // if (status != napi_ok) return;
+// cout << "jsCallback:" << jsCallback.c_str() << endl;
+// status = napi_get_named_property(env, global, jsCallback.c_str(), &js_func);
+// cout << "global:" << global << endl;
+// cout << "&js_func:" << &js_func << endl;
+// // cout << "status:" << status << endl;
+// // if (status != napi_ok) return;
+//
+// // const arg = msg
+// status = napi_create_string_utf8(env, msg.c_str(), NAPI_AUTO_LENGTH, &arg);
+// cout << "NAPI_AUTO_LENGTH:" << NAPI_AUTO_LENGTH << endl;
+// cout << "msg:" << msg << endl;
+// cout << "arg:" << arg << endl;
+// // if (status != napi_ok) return;
+//
+// napi_value* argv = &arg;
+// size_t argc = 1;
+//
+// // jsCallback(arg);
+// napi_value return_val;
+// status = napi_call_function(env, global, js_func, argc, argv, &return_val);
+// cout << "status after call:" << status << endl;
+// cout << "return_val:" << return_val << endl;
+// // if (status != napi_ok) return;
+//
+// // Convert the result back to a native type
+// size_t result;
+// char str[1024];
+// status = napi_get_value_string_utf8(env, return_val, (char *) &str, 1024, &result);
+// cout << "status2:" << status << endl;
+// cout << result << endl;
 // if (status != napi_ok) return;
 }
-
 // Addon function which gets called from Javascript and gets passed a callback
+//
+// See if you can save const v8::FunctionCallbackInfo<v8::Value> & args as a global variable and use it later in callback()
+
+//
 void cmdStartAsyncRecvMessages(const v8::FunctionCallbackInfo<v8::Value> & args){
-  Isolate* isolate = args.GetIsolate();
+  // _cb = Nan::Persistent<v8::Function>(args[0].As<v8::Function>());
+
+  isolate = args.GetIsolate();
+  cout <<"cmd isolate:" <<isolate << endl;
+  // persist.Reset(isolate, args[0]->ToObject());
+
+  // globalArgs = args[0];
+  globalArgs = args[0];
+  // globalArgs = args;
   v8::String::Utf8Value param1(args[0]->ToString());
   jsCallback = std::string(*param1);
-
+  // cout << jsCallback << endl;
 string command, response;
 botIface->cmdStringStartAsyncRecvMessages(command, callback); //callback needs to be a C++ function and not a V8 function
 
