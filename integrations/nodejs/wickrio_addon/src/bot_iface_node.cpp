@@ -65,23 +65,26 @@ void closeClient(const v8::FunctionCallbackInfo<v8::Value> & args){
 void callback(string msg)
 {
   cout << "callback()\n";
+  v8::HandleScope handle_scope(isolate);
+  cout << "After handle scope\n";
 
-#if 1
+//#if 1
   g_async_data.data = (void *)"THIS IS TEST DATA";
+  cout << "Pre uv_async_send\n";
   int retCode = uv_async_send(&g_async_data);
   if (retCode == 0) {
     cout << "Call to uv_async_send is success!\n";
   } else {
     cout << "Call to uv_async_send returns:" << retCode << endl;
   }
-#else 
-  cout <<"callback isolate:" <<isolate << endl;
+//else
+  // cout <<"callback isolate:" <<isolate << endl;
   v8::Locker locker(isolate);
 
   const int argc = 1;
   v8::Handle<v8::Value> argv[argc] = {  v8::String::NewFromUtf8(isolate, msg.c_str()) };
   cout << "1\n";
- 
+
 
   Local<Context> lclCtx = isolate->GetCurrentContext();
   cout << "2\n";
@@ -117,7 +120,7 @@ void callback(string msg)
   func->Call(isolate->GetCurrentContext(),value, argc, argv);
   cout << "12\n";
 
-#endif
+//#endif
 
 }
 
@@ -153,7 +156,7 @@ void cmdStartAsyncRecvMessages(const v8::FunctionCallbackInfo<v8::Value> & args)
   }
 
   isolate = args.GetIsolate();
-  cout <<"cmd isolate:" <<isolate << endl;
+  // cout <<"cmd isolate:" <<isolate << endl;
 
   js_callback.Reset(isolate, Local<Function>::Cast(args[0]));
 
