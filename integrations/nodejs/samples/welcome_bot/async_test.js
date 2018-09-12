@@ -18,11 +18,15 @@ return new Promise( (resolve, reject) => {
   console.log(result);
 
 // addon(printer);
+console.log("cmdStartAsyncRecvMessages: ",addon.cmdStartAsyncRecvMessages(printer));
 
-console.log(addon.cmdStartAsyncRecvMessages('printer'));
-function printer(message){
-  console.log('message:', message);
-}
+setTimeout(function()
+{ console.log("Processing");
+}, 5000);
+
 }).catch(error => {
   console.log('Error: ', error);
 });
+function printer(message){
+  console.log('message:', message);
+}

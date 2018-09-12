@@ -11,8 +11,13 @@ using namespace v8;
 using namespace std;
 using namespace Nan;
 
+
 BotIface *botIface = nullptr;
-string jsCallback;
+
+v8::Persistent<Function> js_callback;
+
+uv_async_t g_async_data;
+
 
 void clientInit(const v8::FunctionCallbackInfo<v8::Value> & args) {
         Isolate* isolate = args.GetIsolate();
@@ -49,48 +54,44 @@ void closeClient(const v8::FunctionCallbackInfo<v8::Value> & args){
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
-// std::function<void()> cbfunc;
-//
-//
-// This function gets passed to cmdStringStartAsyncRecvMessages in bot_iface.cpp as a regular C++ function
-void callback(string msg){
-  // Get the js callback function on the global object
-napi_value global, js_func, arg;
-napi_env env;
-napi_status status = napi_get_global(env, &global);
-if (status != napi_ok) return;
 
-status = napi_get_named_property(env, global, jsCallback.c_str(), &js_func);
-if (status != napi_ok) return;
+/*
+ * This function gets passed to cmdStringStartAsyncRecvMessages in bot_iface.cpp as a
+ * regular C++ function
+ */
+void callback(string msg)
+{
+  g_async_data.data = (void *)strdup(msg.c_str());
 
-// const arg = msg
-status = napi_create_string_utf8(env, msg.c_str(), NAPI_AUTO_LENGTH, &arg);
-if (status != napi_ok) return;
+  int retCode = uv_async_send(&g_async_data);
+  if (retCode == 0) {
+    cout << "Call to uv_async_send is success!\n";
+  } else {
+    cout << "Call to uv_async_send returns:" << retCode << endl;
+  }
+}
 
-napi_value* argv = &arg;
-size_t argc = 1;
+void messages_callback(uv_async_t *async_data)
+{
+  Nan::HandleScope handle_scope;
 
-// jsCallback(arg);
-napi_value return_val;
-status = napi_call_function(env, global, js_func, argc, argv, &return_val);
-if (status != napi_ok) return;
-
-// Convert the result back to a native type
-// int32_t result;
-// status = napi_get_value_int32(env, return_val, &result);
-// if (status != napi_ok) return;
+  char* message = (char *)(async_data->data);
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::Local<String> value = v8::String::NewFromUtf8(isolate, message);
+  free(message);
+  v8::Local<Value> argv[] { value };
+  Local<Function> func = js_callback.Get(isolate);
+  func->Call(isolate->GetCurrentContext()->Global(), 1, argv);
 }
 
 // Addon function which gets called from Javascript and gets passed a callback
-void cmdStartAsyncRecvMessages(const v8::FunctionCallbackInfo<v8::Value> & args){
+/*
+ *
+ */
+void cmdStartAsyncRecvMessages(const v8::FunctionCallbackInfo<v8::Value> & args)
+{
+  string command, response;
   Isolate* isolate = args.GetIsolate();
-  v8::String::Utf8Value param1(args[0]->ToString());
-  jsCallback = std::string(*param1);
-
-string command, response;
-botIface->cmdStringStartAsyncRecvMessages(command, callback); //callback needs to be a C++ function and not a V8 function
-
-
 
   if (botIface == nullptr) {
           string message = "Bot Interface has not been initialized!";
@@ -98,20 +99,24 @@ botIface->cmdStringStartAsyncRecvMessages(command, callback); //callback needs t
           args.GetReturnValue().Set(error);
           return;
   }
+  js_callback.Reset(isolate, Local<Function>::Cast(args[0]));
+
+  uv_async_init(uv_default_loop(), &g_async_data, messages_callback);
+
+  //callback needs to be a C++ function and not a V8 function
+  botIface->cmdStringStartAsyncRecvMessages(command, callback);
 
   if (botIface->send(command, response) != BotIface::SUCCESS) {
           response = botIface->getLastErrorString();
           string message = "Send failed: " + response;
           auto error = v8::String::NewFromUtf8(isolate, message.c_str());
           args.GetReturnValue().Set(error);
-          return;
   }
   else {
           if (response.length() > 0) {
                   auto message = v8::String::NewFromUtf8(isolate, response.c_str());
                   args.GetReturnValue().Set(message);
           }
-          return;
   }
 }
 
