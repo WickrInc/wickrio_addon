@@ -1084,6 +1084,90 @@ void cmdSendRoomAttachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
         }
 }
 
+void cmdEncryptString(const v8::FunctionCallbackInfo<v8::Value> & args)
+{
+        Isolate* isolate = args.GetIsolate();
+        if (botIface == nullptr) {
+                string message = "Bot Interface has not been initialized!";
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        if (args.Length() < 1) {
+                string message = "EncryptString: requires 1 string argument!";
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        if (!args[0]->IsString()) {
+                string message = "EncryptString: argument must be a string!";
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        string command, response;
+        v8::String::Utf8Value param1(args[0]->ToString());
+        std::string string2encrypt = std::string(*param1);
+
+        botIface->cmdStringEncryptString(command, string2encrypt);
+        if (botIface->send(command, response) != BotIface::SUCCESS) {
+                response = botIface->getLastErrorString();
+                string message = "Failed to create Encrypt String command! " + response;
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        else {
+                if (response.length() > 0) {
+                        auto message = v8::String::NewFromUtf8(isolate, response.c_str());
+                        args.GetReturnValue().Set(message);
+                }
+                return;
+        }
+}
+
+void cmdDecryptString(const v8::FunctionCallbackInfo<v8::Value> & args)
+{
+        Isolate* isolate = args.GetIsolate();
+        if (botIface == nullptr) {
+                string message = "Bot Interface has not been initialized!";
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        if (args.Length() < 1) {
+                string message = "DecryptString: requires 1 string argument!";
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        if (!args[0]->IsString()) {
+                string message = "DecryptString: argument must be a string!";
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        string command, response;
+        v8::String::Utf8Value param1(args[0]->ToString());
+        std::string string2decrypt = std::string(*param1);
+
+        botIface->cmdStringDecryptString(command, string2decrypt);
+        if (botIface->send(command, response) != BotIface::SUCCESS) {
+                response = botIface->getLastErrorString();
+                string message = "Failed to create Decrypt String command! " + response;
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        else {
+                if (response.length() > 0) {
+                        auto message = v8::String::NewFromUtf8(isolate, response.c_str());
+                        args.GetReturnValue().Set(message);
+                }
+                return;
+        }
+}
+
 // void sendBackToJs(const v8::FunctionCallbackInfo<v8::Value> & args);
 void init(Handle <Object> exports, Handle<Object> module) {
         //2nd param: what we call from Javascript
@@ -1110,6 +1194,8 @@ void init(Handle <Object> exports, Handle<Object> module) {
         NODE_SET_METHOD(exports, "cmdSend1to1Attachment", cmdSend1to1Attachment);
         NODE_SET_METHOD(exports, "cmdSendRoomMessage", cmdSendRoomMessage);
         NODE_SET_METHOD(exports, "cmdSendRoomAttachment", cmdSendRoomAttachment);
+        NODE_SET_METHOD(exports, "cmdEncryptString", cmdEncryptString);
+        NODE_SET_METHOD(exports, "cmdDecryptString", cmdDecryptString);
 }
 
 // associates the module name with initialization logic

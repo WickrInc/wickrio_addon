@@ -102,6 +102,9 @@ public:
     BotIfaceStatus cmdStringStartAsyncRecvEvents(string& command, void (*callback)(string));
     BotIfaceStatus cmdStringStopAsyncRecvEvents(string& command);
 
+    BotIface::BotIfaceStatus cmdStringEncryptString(string& command, const string& string2encrypt);
+    BotIface::BotIfaceStatus cmdStringDecryptString(string& command, const string& string2decrypt);
+
 private:
 #ifdef ZEROMQ_TEST_H
     MesgQueueIface  *m_iface = NULL;
