@@ -2,7 +2,8 @@
 # split out due to the need for access to some WickrBase library functions
 #
 HEADERS += \
-    $${PWD}/wickrbotactiondatabase.h
+    $${PWD}/wickrbotactiondatabase.h \
+    $$PWD/wickrIOReturnCodes.h
 
 SOURCES += \
     $${PWD}/wickrbotactiondatabase.cpp

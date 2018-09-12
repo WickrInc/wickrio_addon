@@ -74,7 +74,7 @@ private:
 
 signals:
     void signalExit();
-    void signalLoginFailed();
+    void signalLoginFailed(int returnCode);
     void signalLoginSuccess();
     void signalOnlineFlag(bool);
 

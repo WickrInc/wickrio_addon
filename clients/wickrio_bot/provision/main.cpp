@@ -1,5 +1,6 @@
 #include "wickrIOCommon.h"
 #include "wickrbotsettings.h"
+#include "wickrIOReturnCodes.h"
 
 #include <QDebug>
 #include <QPlainTextEdit>
@@ -301,11 +302,11 @@ int main(int argc, char *argv[])
     QObject::connect(WICKRBOT, &WickrIOEClientMain::signalLoginSuccess, [=]() {
         qDebug() << "CONSOLE:Successfully logged in as new user!";
         qDebug() << "CONSOLE:Our work is done here, logging off!";
-        app->quit();
+        app->exit(WIOPROVISION_SUCCESS);
     });
-    QObject::connect(WICKRBOT, &WickrIOEClientMain::signalLoginFailure, [=]() {
+    QObject::connect(WICKRBOT, &WickrIOEClientMain::signalLoginFailure, [=](int returnCode) {
         qDebug() << "CONSOLE:Failed to create or login new user!";
-        app->quit();
+        app->exit(returnCode);
     });
     WICKRBOT->start();
 

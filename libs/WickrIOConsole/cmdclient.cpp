@@ -14,6 +14,7 @@
 #include "consoleserver.h"
 #include "wickrIOConsoleClientHandler.h"
 #include "wickrIOIPCRuntime.h"
+#include "wickrIOReturnCodes.h"
 
 CmdClient::CmdClient(CmdOperation *operation) :
     m_operation(operation),
@@ -601,36 +602,81 @@ bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QStr
 
     if (provisionApp != "") {
         QStringList arguments;
+        bool    botNotCreated = true;
+        int     returnCode;
 
-        arguments.append(client->user);
-        arguments.append(client->password);
+        while (botNotCreated) {
+            arguments.append(client->user);
+            arguments.append(client->password);
 
-        m_exec = new QProcess();
+            m_exec = new QProcess();
 
-        connect(m_exec, SIGNAL(finished(int)), this, SLOT(slotCmdFinished));
-//        connect(m_exec, SIGNAL(finished(int, QProcess::readyReadStandardOutput)), this, SLOT(slotCmdOutputRx));
+            connect(m_exec, SIGNAL(finished(int)), this, SLOT(slotCmdFinished));
+    //        connect(m_exec, SIGNAL(finished(int, QProcess::readyReadStandardOutput)), this, SLOT(slotCmdOutputRx));
 
-        //Tests that process starts and closes alright
-        m_exec->start(provisionApp, arguments);
+            //Tests that process starts and closes alright
+            m_exec->start(provisionApp, arguments);
 
-        if (m_exec->waitForStarted(-1)) {
-            // Continue reading the data until EOF reached
-            while(m_exec->waitForReadyRead()) {
-                QByteArray data;
-                data = m_exec->readAll();
+            if (m_exec->waitForStarted(-1)) {
+                // Continue reading the data until EOF reached
+                while(m_exec->waitForReadyRead()) {
+                    QByteArray data;
+                    data = m_exec->readAll();
 
-                // Output the data
-                qDebug().noquote().nospace() << "CONSOLE:" << data;
+                    // Output the data
+                    qDebug().noquote().nospace() << "CONSOLE:" << data;
+                }
+                m_exec->waitForFinished(-1);
+
+                returnCode = m_exec->exitCode();
+                qDebug() << "CONSOLE:Return code from provision is:" << returnCode;
+            } else {
+                QByteArray errorout = m_exec->readAllStandardError();
+                if (!errorout.isEmpty()) {
+                    qDebug() << "ERRORS" << errorout;
+                }
+                qDebug() << "Exit code=" << m_exec->exitCode();
+                returnCode = WIOPROVISION_FAILED;
             }
-            m_exec->waitForFinished(-1);
-        } else {
-            QByteArray errorout = m_exec->readAllStandardError();
-            if (!errorout.isEmpty()) {
-                qDebug() << "ERRORS" << errorout;
+            m_exec->close();
+            m_exec->deleteLater();
+            m_exec = nullptr;
+
+            // Process the return code
+            if (returnCode == WIOPROVISION_BAD_CREDENTIALS) {
+                qDebug() << QString("CONSOLE:User exists already, password entered seems to be invalid!");
+                while (true) {
+                    QString temp = getNewValue("yes", tr("Do you want to try a new password?"), CHECK_BOOL);
+                    if (temp.toLower() == "yes" || temp.toLower() == "y") {
+                        break;
+                    }
+                    if (temp.toLower() == "no" || temp.toLower() == "n" || temp.isEmpty()) {
+                        return false;
+                    }
+
+                    // Check if the user wants to quit the action
+                    if (handleQuit(temp, &quit) && quit) {
+                        return false;
+                    }
+                }
+                while (true) {
+                    client->password = getPassword(tr("Enter the password:"));
+                    if (client->password.isEmpty() || client->password.length() < 4) {
+                        qDebug() << "CONSOLE:Password should be at least 4 characters long!";
+                    } else {
+                        break;
+                    }
+                }
+            } else if (returnCode == WIOPROVISION_FAILED) {
+                qDebug().noquote() << QString("CONSOLE:Failed to provision or login bot client %1!").arg(client->user);
+                return false;
+            } else if (returnCode == WIOPROVISION_USER_NOT_FOUND) {
+                qDebug().noquote() << QString("CONSOLE:%1 does not seem to exist. Please verify in the Admin Console.!").arg(client->user);
+                return false;
+            } else {
+                break;
             }
-            qDebug() << "Exit code=" << m_exec->exitCode();
         }
-        m_exec->close();
 
     } else {
     }
