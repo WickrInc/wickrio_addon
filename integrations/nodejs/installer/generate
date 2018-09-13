@@ -76,6 +76,11 @@ cp ../../../clients/libs/WickrIOClientAPI/build/libWickrIOClientAPI.a ${dst_samp
 cp ../../../clients/libs/WickrIOClientAPI/src/bot_iface.h ${dst_sample_dir}/exports/include
 
 #
+# copy the sample config file
+#
+cp $pwd/../docs/sample_config.ini ${dst_sample_dir}
+
+#
 # Create the importable software images for each of the samples. These can be used in
 # the WickrIO system, and used as examples of how to import custom integrations.
 #
