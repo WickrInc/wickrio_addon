@@ -1,4 +1,6 @@
+#include <regex>
 #include <iostream>
+#include <sstream>
 #include <nan.h>
 #include <v8.h>
 #include <node.h>
@@ -64,9 +66,7 @@ void callback(string msg)
   g_async_data.data = (void *)strdup(msg.c_str());
 
   int retCode = uv_async_send(&g_async_data);
-  if (retCode == 0) {
-    cout << "Call to uv_async_send is success!\n";
-  } else {
+  if (!retCode == 0)  {
     cout << "Call to uv_async_send returns:" << retCode << endl;
   }
 }
@@ -767,6 +767,17 @@ void cmdGetReceivedMessage(const v8::FunctionCallbackInfo<v8::Value> & args){
         }
 }
 
+std::string escapeString(const std::string& input) {
+    std::ostringstream ss;
+    for (auto iter = input.cbegin(); iter != input.cend(); iter++) {
+        switch (*iter) {
+            case '\'': ss << "\\\'"; break;
+            case '"': ss << "\\\""; break;
+            default: ss << *iter; break;
+        }
+    }
+    return ss.str();
+}
 
 void cmdSend1to1Message(const v8::FunctionCallbackInfo<v8::Value> & args) {
         Isolate* isolate = args.GetIsolate();
@@ -823,6 +834,7 @@ void cmdSend1to1Message(const v8::FunctionCallbackInfo<v8::Value> & args) {
         }
         v8::String::Utf8Value param2(args[1]->ToString());
         std::string message = std::string(*param2);
+        message = escapeString(message);
         v8::String::Utf8Value param3(args[2]->ToString());
         std::string ttl = std::string(*param3);
         v8::String::Utf8Value param4(args[3]->ToString());
@@ -908,6 +920,7 @@ void cmdSend1to1Attachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
         std::string attachment = std::string(*param2);
         v8::String::Utf8Value param3(args[2]->ToString());
         std::string displayname = std::string(*param3);
+        displayname = escapeString(displayname);
         v8::String::Utf8Value param4(args[3]->ToString());
         std::string ttl = std::string(*param4);
         v8::String::Utf8Value param5(args[4]->ToString());
@@ -933,7 +946,6 @@ void cmdSend1to1Attachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
                 return;
         }
 }
-
 
 void cmdSendRoomMessage(const v8::FunctionCallbackInfo<v8::Value> & args) {
         Isolate* isolate = args.GetIsolate();
@@ -984,6 +996,7 @@ void cmdSendRoomMessage(const v8::FunctionCallbackInfo<v8::Value> & args) {
         vector <string> placeHolder;
         v8::String::Utf8Value param2(args[1]->ToString());
         std::string message = std::string(*param2);
+        message = escapeString(message);
         v8::String::Utf8Value param3(args[2]->ToString());
         std::string ttl = std::string(*param3);
         v8::String::Utf8Value param4(args[3]->ToString());
@@ -1058,6 +1071,7 @@ void cmdSendRoomAttachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
         std::string attachment = std::string(*param2);
         v8::String::Utf8Value param3(args[2]->ToString());
         std::string displayname = std::string(*param3);
+        displayname = escapeString(displayname);
         v8::String::Utf8Value param4(args[3]->ToString());
         std::string ttl = std::string(*param4);
         v8::String::Utf8Value param5(args[4]->ToString());
@@ -1174,8 +1188,6 @@ void init(Handle <Object> exports, Handle<Object> module) {
         //3rd param: the name of the actual function
         NODE_SET_METHOD(exports, "clientInit", clientInit);
         NODE_SET_METHOD(exports, "closeClient", closeClient);
-        // NODE_SET_METHOD(module, "exports", callback);
-        // NODE_SET_METHOD(module, "sendBackToJs", sendBackToJs);
         NODE_SET_METHOD(exports, "cmdStartAsyncRecvMessages", cmdStartAsyncRecvMessages);
         NODE_SET_METHOD(exports, "cmdGetStatistics", cmdGetStatistics);
         NODE_SET_METHOD(exports, "cmdClearStatistics", cmdClearStatistics);
