@@ -26,10 +26,6 @@ WickrBotMain::~WickrBotMain()
 bool WickrBotMain::startTheClient(){
     qDebug() << "Entering startTheClient with parser";
 
-    // Open the database if needed
-    if (m_operation->m_botDB == nullptr) {
-        m_operation->m_botDB = new WickrIOClientDatabase(m_operation->databaseDir);
-    }
     emit signalStarted();
     return true;
 }
@@ -47,16 +43,9 @@ void WickrBotMain::doTimerWork()
     m_seccount++;
 
     if (--m_logcountdown <= 0) {
-        m_operation->log_handler->log("Keep alive message");
-        m_operation->updateProcessState(PROCSTATE_RUNNING);
+        qDebug() << "Keep alive message";
+        //m_operation->updateProcessState(PROCSTATE_RUNNING);
         m_logcountdown = LOG_COUNTDOWN;
-    }
-
-    // If we have reached the limit of how long to run then log and exit
-    if (m_operation->duration && m_seccount > m_operation->duration) {
-        m_operation->log_handler->log("Duration time has been reached, exiting!");
-        m_operation->updateProcessState(PROCSTATE_DOWN);
-        QCoreApplication::exit(1);
     }
 
     if (m_qamqp == nullptr) {
@@ -66,7 +55,7 @@ void WickrBotMain::doTimerWork()
         // It will be recreated on the next iteration.
 
         if (! m_qamqp->timerCall()) {
-            m_operation->log_handler->log("Message queue handler failed.  Deleting handler.");
+            qDebug() << "Message queue handler failed.  Deleting handler.";
             delete  m_qamqp;
             m_qamqp = nullptr;
 
@@ -80,8 +69,8 @@ void WickrBotMain::doTimerWork()
         // If more than 5 Qfailures have occured then exit.
         // Hopefully a restart will fix the problem
         if (m_qfailures > 5) {
-            m_operation->log_handler->log("More than 5 successive queue failures, exiting!");
-            m_operation->updateProcessState(PROCSTATE_DOWN);
+            qDebug() << "More than 5 successive queue failures, exiting!";
+            //m_operation->updateProcessState(PROCSTATE_DOWN);
             QCoreApplication::exit(1);
         }
     }
@@ -127,7 +116,7 @@ void WickrBotMain::pauseAndExitSlot()
  */
 void WickrBotMain::stopAndExit(int procState)
 {
-    m_operation->updateProcessState(procState, false);
+    //m_operation->updateProcessState(procState, false);
     QCoreApplication::quit();
 }
 
@@ -168,15 +157,6 @@ void WickrBotParserIPC::shutdown() {
     WickrBotParserIPC::get().ipcSvc()->shutdown();
 }
 
-/**
- * @brief WickrBotParserIPC::startIPC
- * Calls startIPC for the IPCService. This emits SignalStartIPC which is connected with slotStartIPC
- * which starts the IPC Thread
- */
-void WickrBotParserIPC::startIPC() {
-    qDebug() << "Setting the IPC for parser";
-    ipcSvc()->startIPC(operationData());
-}
 /**
  * @brief WickrBotParserIPC::ipcSvc
  * Returns pointed to the IPCService of the ParserIPC object
