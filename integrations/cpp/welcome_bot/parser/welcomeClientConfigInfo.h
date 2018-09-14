@@ -21,4 +21,6 @@
 "No WICKR_TARGET defined!!!"
 #endif
 
+#define WBIO_WELCOME_INI            "welcome_config.ini"
+
 #endif // WELCOMECLIENTCONFIGINFO_H

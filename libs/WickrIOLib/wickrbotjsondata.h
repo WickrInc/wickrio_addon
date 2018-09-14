@@ -27,6 +27,7 @@ public:
     void setClientType(const QString &clientType);
 
     QStringList getUserNames() { return m_userNames; }
+    QStringList getUserIDs() { return m_userIDs; }
     QString getVGroupID() { return m_vgroupid; }
 
     void clearLastError() { m_lastError.clear(); }

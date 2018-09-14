@@ -365,6 +365,42 @@ BotIface::cmdStringSendMessage(string& command,
 }
 
 BotIface::BotIfaceStatus
+BotIface::cmdStringSendMessageToUname(string& command,
+                     const string& uname,
+                     const string& message,
+                     const string& ttl,
+                     const string& bor)
+{
+    string optionalFields = "";
+
+    if (uname.size() == 0) {
+        m_lastError = "SendMessage: Must enter a uname value!";
+        return MISSING_INPUT_FIELD;
+    }
+    if (ttl.size() > 0) {
+        if (!is_digits(ttl)) {
+            m_lastError = "SendMessage: TTL must be a number";
+            return INVALID_FIELD_VALUE;
+        }
+        optionalFields += " \"ttl\" : " + ttl + ", ";
+    }
+    if (bor.size() > 0) {
+        if (!is_digits(bor)) {
+            m_lastError = "SendMessage: BOR must be a number";
+            return INVALID_FIELD_VALUE;
+        }
+        optionalFields += " \"bor\" : " + bor + ", ";
+    }
+
+    command = "{ \"action\" : \"send_message_uname\", \"uname\" : \"" + uname + "\" , " \
+            + optionalFields
+            + "\"message\" : \"" + message \
+            + "\" }";
+    return SUCCESS;
+}
+
+
+BotIface::BotIfaceStatus
 BotIface::cmdStringSendAttachment(string& command,
                                   const string& vGroupID,
                                   const vector <string>& users,

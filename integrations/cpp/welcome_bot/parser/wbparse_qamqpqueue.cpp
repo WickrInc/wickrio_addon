@@ -9,6 +9,7 @@
 
 #include "welcomeClientConfigInfo.h"
 #include "wickrioapi.h"
+#include "bot_iface.h"
 
 WBParse_QAMQPQueue::WBParse_QAMQPQueue(ParserOperationData *operation)
 {
@@ -117,74 +118,84 @@ void WBParse_QAMQPQueue::queueDeclared()
     connect(m_queue, SIGNAL(messageReceived()), this, SLOT(messageReceived()));
 }
 
-int WBParse_QAMQPQueue::processSendMessage() {
-    int messageCount = 0;
-
-    if (m_userIDs.size() == 0 && m_userNames.size() == 0 && m_vgroupid.isEmpty())
-        return 0;
-
-    for (int i=0; i<m_userIDs.size(); i++) {
-        QString user = m_userIDs.at(i);
-        if (m_message.size() > 0) {
-
-            // Send the message!
-            messageCount++;
-        } else {
-
-        }
-    }
-
-    for (int i=0; i<m_userNames.size(); i++) {
-        QString user = m_userNames.at(i);
-        if (m_message.size() > 0) {
-
-            // TODO: FOr now create list of users, size of one
-            QStringList users;
-            users.append(user);
-
-            // Send the message
-            messageCount++;
-        } else {
-
-        }
-    }
-
-    if (! m_vgroupid.isEmpty()) {
-        if (m_message.size() > 0) {
-            // Send the message
-
-            // put the command into the database
-            messageCount++;
-        }
-    }
-
-    return messageCount;
-}
-
-bool WBParse_QAMQPQueue::processSendMessageJsonDocV3(const QJsonObject &operationObject)
+bool WBParse_QAMQPQueue::parseMessage(QByteArray& message)
 {
-    QJsonValue value;
+    QJsonParseError jsonError;
+    QJsonDocument jsonResponse = QJsonDocument().fromJson(message, &jsonError);
 
-    // Parse the contacts
-    if (operationObject.contains("uname")) {
-        value = operationObject["uname"];
-        m_userIDs.clear();
-        QString uname=value.toString();
-        m_userIDs.append(uname);
+    if (jsonError.error != jsonError.NoError) {
+        qDebug() << "Error with JSON document" << jsonError.errorString();
+        return false;
+    }
+
+    QJsonObject jsonObject = jsonResponse.object();
+
+    // Start the operation
+    if (!jsonObject.contains(PARSERJSON_COMMAND)) {
+        qDebug() << "Request does not contain Command!";
+        return false;
+    }
+
+    QJsonValue value = jsonObject[PARSERJSON_COMMAND];
+    QString operation = value.toString("");
+    if (operation == PARSERJSON_CMD_PUSH_MESSAGE) {
+        m_action = ParserIOActions::ParserAction_SendMessage;
+    } else if (operation == PARSERJSON_CMD_WELCOME_MESSAGE) {
+        m_action = ParserIOActions::ParserAction_SendWelcomeMessage;
+    } else if (operation == PARSERJSON_CMD_NEW_DEVICE) {
+        m_action = ParserIOActions::ParserAction_NewDevice;
+    } else if (operation == PARSERJSON_CMD_FORGOT_PASSWORD) {
+        m_action = ParserIOActions::ParserAction_ForgotPassword;
+    } else {
+        qDebug().noquote() << QString("Request contains invalid %1 value (%2)").arg(PARSERJSON_COMMAND).arg(operation);
+        return false;
+    }
+
+    // Get the Uname of the Wickr client to send to
+    if (jsonObject.contains(PARSERJSON_UNAME)) {
+        value = jsonObject[PARSERJSON_UNAME];
+        m_uname=value.toString();
         if (m_operation->debug)
-            qDebug() << "Uname:" << uname;
+            qDebug() << "Uname:" << m_uname;
+    }
+
+    // Get the type of client it is for, if it is set
+    if (jsonObject.contains(PARSERJSON_CLIENTTYPE)) {
+        value = jsonObject[PARSERJSON_CLIENTTYPE];
+        m_isAdmin = (value.toString("") == "admin");
+    } else {
+        m_isAdmin = false;
     }
 
     // Parse out any message
-    if (operationObject.contains("message")) {
-        value = operationObject["message"];
+    if (jsonObject.contains(PARSERJSON_MESSAGE)) {
+        value = jsonObject[PARSERJSON_MESSAGE];
         m_message = value.toString();
         if (m_operation->debug)
             qDebug() << "Message:" << m_message;
+    } else {
+        if (m_action == ParserIOActions::ParserAction_SendMessage) {
+            qDebug() << "Send message command with no message to send!";
+            return false;
+        }
+        if (m_action == ParserIOActions::ParserAction_SendWelcomeMessage) {
+            if (m_isAdmin)
+                m_message = m_operation->m_welcomeAdminMessage;
+            else
+                m_message = m_operation->m_welcomeUserMessage;
+        } else if (m_action == ParserIOActions::ParserAction_NewDevice) {
+            m_message = m_operation->m_newDeviceMessage;
+        } else if (m_action == ParserIOActions::ParserAction_ForgotPassword) {
+            m_message = m_operation->m_forgotPwMessage;
+        }
+    }
+    if (m_message.isEmpty()) {
+        qDebug() << "No message available to send!";
+        return false;
     }
 
-    if (operationObject.contains("runtime")) {
-        value = operationObject["runtime"];
+    if (jsonObject.contains(PARSERJSON_RUNTIME)) {
+        value = jsonObject[PARSERJSON_RUNTIME];
 
         // Use the current date and time if the one is invalid
         m_runTime = value.toVariant().toDateTime();
@@ -192,99 +203,22 @@ bool WBParse_QAMQPQueue::processSendMessageJsonDocV3(const QJsonObject &operatio
         QDateTime dt = QDateTime::currentDateTime();
         dt = dt.addSecs(20);
 
-        qDebug() << "New Message with time=" << dt.toString(DB_DATETIME_FORMAT);
-        m_runTime = dt;
-    }
-
-    // Parse out any attachments that may be part of this message
-    return true;
-}
-
-bool WBParse_QAMQPQueue::processSendMessageJsonDoc(const QJsonObject &operationObject)
-{
-    QJsonArray entryArray;
-    QJsonValue value;
-
-    // Parse the contacts
-    if (operationObject.contains(APIJSON_MSGUSERS)) {
-        m_vgroupid = QString("");
-        value = operationObject[APIJSON_MSGUSERS];
-        entryArray = value.toArray();
-        for (int i=0; i< entryArray.size(); i++) {
-            QJsonValue arrayValue;
-
-            arrayValue = entryArray[i];
-
-            if (arrayValue.isObject()) {
-                // Get the title for this contact entry
-                QJsonObject arrayObject = arrayValue.toObject();
-
-                if (arrayObject.contains(APIJSON_MSGID)) {
-                    QJsonValue idobj = arrayObject[APIJSON_MSGID];
-                    QString id = idobj.toString();
-                    m_userIDs.append(id);
-                    if (m_operation->debug)
-                        qDebug() << "User" << i+1 << id;
-                } else if (arrayObject.contains(APIJSON_NAME)) {
-                    QJsonValue nameobj = arrayObject[APIJSON_NAME];
-                    QString name = nameobj.toString();
-                    if (name.length() == 0) {
-                        qDebug() << "Received 0 length user!";
-                        return false;
-                    }
-                    m_userNames.append(name);
-                    if (m_operation->debug)
-                        qDebug() << "User" << i+1 << name;
-                }
-            }
-        }
-    } else if (operationObject.contains(APIJSON_VGROUPID)) {
-        value = operationObject[APIJSON_VGROUPID];
-        m_vgroupid = value.toString();
-        if (m_vgroupid.length() == 0) {
-            qDebug() << "Received 0 length VGroupID!";
-            return false;
-        }
-        m_userNames.clear();
-        m_userIDs.clear();
-    } else {
-        qDebug() << "Does not contain users or vgroupid!";
-        return false;
-    }
-
-    if (operationObject.contains(APIJSON_STATUS_RUNTIME)) {
-        value = operationObject[APIJSON_STATUS_RUNTIME];
-
-        // Use the current date and time if the one is invalid
-        m_runTime = value.toVariant().toDateTime();
-    } else {
-        QDateTime dt = QDateTime::currentDateTime();
-        m_runTime = dt;
-    }
-
-    // Parse out any message
-    if (operationObject.contains(APIJSON_MESSAGE)) {
-        value = operationObject[APIJSON_MESSAGE];
-        m_message = value.toString();
-        if (m_message.length() == 0) {
-            qDebug() << "Received 0 length message!";
-            return false;
-        }
         if (m_operation->debug)
-            qDebug() << "Message:" << m_message;
+            qDebug() << "New Message with time=" << dt.toString(DB_DATETIME_FORMAT);
+        m_runTime = dt;
     }
 
     // Parse out any TTL
-    if (operationObject.contains("ttl")) {
-        value = operationObject["ttl"];
+    if (jsonObject.contains(PARSERJSON_TTL)) {
+        value = jsonObject[PARSERJSON_TTL];
         m_ttl = value.toInt(0);
         if (m_operation->debug)
             qDebug() << "TTL:" << m_ttl;
     }
 
     // Parse out any BOR
-    if (operationObject.contains("bor")) {
-        value = operationObject["bor"];
+    if (jsonObject.contains(PARSERJSON_BOR)) {
+        value = jsonObject[PARSERJSON_BOR];
         m_bor = value.toInt(0);
         m_has_bor = true;
         if (m_operation->debug)
@@ -296,71 +230,31 @@ bool WBParse_QAMQPQueue::processSendMessageJsonDoc(const QJsonObject &operationO
     return true;
 }
 
-
-bool WBParse_QAMQPQueue::parseMessage(QByteArray& message)
-{
-    QString m_action;
-    QJsonParseError jsonError;
-    QJsonDocument jsonResponse = QJsonDocument().fromJson(message, &jsonError);
-
-    if (jsonError.error != jsonError.NoError) {
-        qDebug() << "Error with JSON document" << jsonError.errorString();
-        return false;
-    }
-
-    QJsonObject jsonObject = jsonResponse.object();
-    QJsonValue value;
-
-    QJsonObject operationObject;
-
-    // Start the operation
-    if (jsonObject.contains("operation")) {
-        value = jsonObject["operation"];
-        operationObject = value.toObject();
-    } else if (jsonObject.contains("command")) {
-        value = jsonObject["command"];
-        QString operation = value.toString("invalid");
-        if (operation == "push_bot_message") {
-            m_action = "sendmessage";
-            return processSendMessageJsonDocV3(jsonObject);
-        }
-        return false;
-    } else {
-        qDebug() << "processContactReply: does not contain operation!";
-        return false;
-    }
-
-    // Get the Action
-    if (operationObject.contains("action")) {
-        value = operationObject["action"];
-        m_action = value.toString("invalid");
-        if (m_action == "invalid") {
-            qDebug() << QString("action is invalid, value is %1").arg(m_action);
-            return false;
-        }
-    }
-    // Assume it is a send message
-    else {
-        m_action = "sendmessage";
-
-    }
-
-    if (m_action == "sendmessage") {
-        return processSendMessageJsonDoc(operationObject);
-    }
-    return false;
-
-}
-
 void WBParse_QAMQPQueue::messageReceived()
 {
     m_currentMessage = m_queue->dequeue();
-    QByteArray message = m_currentMessage.payload();
+    QByteArray queueMessage = m_currentMessage.payload();
 
-    qDebug() << " [x] Received " << message;
+    qDebug() << " [x] Received " << queueMessage;
 
-    parseMessage(message);
+    if (parseMessage(queueMessage)) {
+        // Send the message via the API
+        std::string command;
+        std::string ttl="", bor="";
 
+        if (m_operation->m_botIface->cmdStringSendMessageToUname(command, m_uname.toStdString(), m_message.toStdString(), ttl, bor) != BotIface::SUCCESS) {
+            qDebug() << "Failed to create Send Message command!";
+            //TODO: what to do if failed to send message!  Is there a NACK?
+        } else {
+            string response;
+            if (m_operation->m_botIface->send(command, response) != BotIface::SUCCESS) {
+    //            qDebug() << "Send failed: " << m_operation->m_botIface->getLastErrorString().;
+                qDebug() << "Message send failed!";
+            } else {
+                qDebug() << "Message sent successfully";
+            }
+        }
+    }
     m_ackMessages.append(m_currentMessage);
 }
 

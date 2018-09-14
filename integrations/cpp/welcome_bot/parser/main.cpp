@@ -20,6 +20,8 @@
 #include "wbparse_qamqpqueue.h"
 #include "wickrbotmain.h"
 #include "wickrbotsettings.h"
+#include "bot_iface.h"
+#include "welcomeClientConfigInfo.h"
 
 WickrBotMain        *m_wbmain;
 
@@ -50,22 +52,8 @@ usage()
 /** Search the configuration file */
 QString
 searchConfigFile() {
-#ifdef Q_OS_WIN
-    return QString(WBIO_SERVER_SETTINGS_FORMAT)
-            .arg(QCoreApplication::organizationName())
-            .arg(QCoreApplication::applicationName());
-#else
-    // Setup the list of locations to search for the ini file
-    QString filesdir = QStandardPaths::writableLocation( QStandardPaths::DataLocation );
-#ifdef WICKR_PRODUCTION
-    QString optdir = "/opt/WickrIO";
-#else
-    QString optdir = "/opt/WickrIODebug";
-#endif
-
     QStringList searchList;
-    searchList.append(filesdir);
-    searchList.append(optdir);
+    searchList.append(QDir::currentPath());
 
     // Look for the ini file with the application name
     QString appName=QCoreApplication::applicationName();
@@ -74,10 +62,12 @@ searchConfigFile() {
     QString retFile = WickrBotUtils::fileInList(fileName, searchList);
 
     if (retFile.isEmpty()) {
-        qFatal("Cannot find config file %s",qPrintable(fileName));
+        retFile = WickrBotUtils::fileInList(WBIO_WELCOME_INI, searchList);
+        if (retFile.isEmpty()) {
+            qFatal("Cannot find config file %s",qPrintable(fileName));
+        }
     }
     return retFile;
-#endif
 }
 
 
@@ -111,6 +101,19 @@ bool parseConfigFile(QString qConfigFile, ParserOperationData *operation)
         return false;
     }
 
+    /*
+     * Parse the general settings: client name, and messages
+     */
+    settings.beginGroup(WBSETTINGS_GEN_HEADER);
+    operation->m_botName = settings.value(WBSETTINGS_GEN_CLIENT, "").toString();
+    operation->m_welcomeUserMessage = settings.value(WBSETTINGS_GEN_WELCOMEUSER_MSG, "").toString();
+    operation->m_welcomeAdminMessage = settings.value(WBSETTINGS_GEN_WELCOMEADMIN_MSG, "").toString();
+    operation->m_newDeviceMessage = settings.value(WBSETTINGS_GEN_NEWDEVICE_MSG, "").toString();
+    operation->m_forgotPwMessage = settings.value(WBSETTINGS_GEN_FORGOTPW_MSG, "").toString();
+    settings.endGroup();
+
+    if (operation->m_botName.isEmpty())
+        return false;
     return true;
 }
 
@@ -148,7 +151,7 @@ int main(int argc, char *argv[])
 //    operation->downloadImage(imageUrl);
 
     // Setup the default values, which can be overwritten
-#if 0
+#if 1
     operation->queueHost = "127.0.0.1";
     operation->queuePort = 5672;
     operation->queueUsername = "guest";
@@ -156,6 +159,7 @@ int main(int argc, char *argv[])
     operation->queueExchange = "bot-messages";
     operation->queueName = "bot-messages";
     operation->queueVirtualHost = "stats";
+    operation->m_botName = "";
 #elif defined(WICKR_BETA) || defined(WICKR_PRODUCTION)
     operation->queueHost = "172.30.40.46";
     operation->queuePort = 5672;
@@ -164,6 +168,7 @@ int main(int argc, char *argv[])
     operation->queueExchange = "bot-messages";
     operation->queueName = "bot-messages";
     operation->queueVirtualHost = "stats";
+    operation->m_botName = "";
 #elif defined(WICKR_ALPHA)
     operation->queueHost = "54.89.82.66";
     operation->queuePort = 5672;
@@ -172,6 +177,7 @@ int main(int argc, char *argv[])
     operation->queueExchange = "bot-messages";
     operation->queueName = "bot-messages";
     operation->queueVirtualHost = "stats";
+    operation->m_botName = "";
 #endif
 
     QString wbConfigFile("");
@@ -219,20 +225,28 @@ int main(int argc, char *argv[])
     }
 
     // Parse the configuration file contents
-    parseConfigFile(wbConfigFile, operation);
+    if (!parseConfigFile(wbConfigFile, operation)) {
+        qDebug() << "Failed to configure properly!";
+        exit(1);
+    }
+
+    // Setup the bot interface
+    operation->m_botIface = new BotIface(operation->m_botName.toStdString());
+    if (operation->m_botIface->init() != BotIface::SUCCESS) {
+        qDebug() << "Could not initialize the Bot interface!";
+        exit(1);
+    }
 
     WICKRBOT = new WickrBotMain(operation);
-    WickrBotParserIPC::init(operation);
 
     QObject::connect(WICKRBOT, &WickrBotMain::signalStarted, [=]() {
-        WICKRBOT->setIPC(WickrBotParserIPC::ipcSvc());
+        qDebug() << "Main process starting!";
     });
 
     WICKRBOT->start();
     int retval = a.exec();
 
     //clean up resources
-    WickrBotParserIPC::shutdown();
     WICKRBOT->deleteLater();
 
     return retval;

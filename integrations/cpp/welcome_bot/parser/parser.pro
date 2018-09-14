@@ -140,3 +140,4 @@ INCLUDEPATH +=$${DEPTH}/wickr-sdk/export
 INCLUDEPATH +=$${DEPTH}/wickr-sdk/wickr-core-c/include
 INCLUDEPATH +=$${DEPTH}/wickr-sdk/libs/qbson
 INCLUDEPATH +=$${DEPTH}/wickr-sdk/libs/libbson
+INCLUDEPATH +=$${DEPTH}/clients/libs/WickrIOClientAPI/src

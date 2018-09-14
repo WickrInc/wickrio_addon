@@ -379,6 +379,11 @@ WickrIOJScriptThread::processRequest(const QByteArray& request)
             responseString = "Sending message";
         }
     }
+    else if (action == "send_message_uname") {
+        if (apiInterface.sendMessage(request, responseString)) {
+            responseString = "Sending message";
+        }
+    }
     else if (action == "get_received_messages") {
         apiInterface.getReceivedMessages(responseString);
     }

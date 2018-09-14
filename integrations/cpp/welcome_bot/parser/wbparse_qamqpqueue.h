@@ -26,6 +26,13 @@ public:
     bool isRunning() { return m_queueState == QSTATE_RUNNING; }
 
 private:
+    typedef enum {
+        ParserAction_SendMessage,
+        ParserAction_SendWelcomeMessage,
+        ParserAction_NewDevice,
+        ParserAction_ForgotPassword
+    } ParserIOActions;
+
     QAmqpClient m_client;
     QAmqpQueue *m_queue;
     QAmqpExchange *m_exchange;
@@ -37,15 +44,18 @@ private:
     QString m_queueExchangeName;
     QString m_queueName;
 
-    QString m_action;
-    QStringList m_userIDs;
-    QStringList m_userNames;
-    QString m_vgroupid;
-    QString m_message;
-    QDateTime m_runTime;
+    ParserIOActions m_action;
+
+    QString     m_uname;
+    bool        m_isAdmin;
+    QString     m_message;
+    QDateTime   m_runTime;
+
     int m_ttl;
     int m_bor;
     bool m_has_bor;
+
+    bool parseMessage(QByteArray& message);
 
 private slots:
     void connected();
@@ -57,11 +67,19 @@ private slots:
     void error(QAMQP::Error error);
     void socketError(QAbstractSocket::SocketError error);
 
-    bool parseMessage(QByteArray& message);
-    bool processSendMessageJsonDocV3(const QJsonObject &operationObject);
-    bool processSendMessageJsonDoc(const QJsonObject &operationObject);
-    int     processSendMessage();
-
 };
+
+#define PARSERJSON_COMMAND              "command"
+#define PARSERJSON_UNAME                "uname"
+#define PARSERJSON_MESSAGE              "message"
+#define PARSERJSON_CLIENTTYPE           "clientType"
+#define PARSERJSON_RUNTIME              "runtime"
+#define PARSERJSON_TTL                  "ttl"
+#define PARSERJSON_BOR                  "bor"
+
+#define PARSERJSON_CMD_PUSH_MESSAGE     "push_bot_message"      // Legacy
+#define PARSERJSON_CMD_WELCOME_MESSAGE  "sendWelcomeMessage"
+#define PARSERJSON_CMD_NEW_DEVICE       "newDevice"
+#define PARSERJSON_CMD_FORGOT_PASSWORD  "forgotPassword"
 
 #endif // WBPARSE_QAMQPQUEUE_H

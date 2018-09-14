@@ -50,6 +50,7 @@ private:
 
     QStringList getJsonArrayValue(QJsonObject jsonObject, QString jsonName, QString jsonArray);
     bool updateAndValidateMembers(QString& responseString, const QStringList& memberslist, QStringList *memberHashes=nullptr);
+    bool updateAndUserIDs(QString& responseString, const QStringList& userIDs);
 
     int numMessages();
 

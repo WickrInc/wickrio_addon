@@ -7,9 +7,7 @@ WickrBotMain *WickrBotMain::theBot;
 
 WickrBotMain::WickrBotMain(ParserOperationData *operation) :
     m_operation(operation),
-    m_logcountdown(LOG_COUNTDOWN),
-    m_seccount(0),
-    m_qfailures(0)
+    m_logcountdown(LOG_COUNTDOWN)
 {
     this->connect(this, &WickrBotMain::started, this, &WickrBotMain::processStarted);
     connect(&timer, SIGNAL(timeout()), this, SLOT(doTimerWork()));
@@ -77,19 +75,6 @@ void WickrBotMain::doTimerWork()
 }
 
 /**
- * @brief setIPC
- * Save the IPC object.  Make a connection to receive the stop and pause signals for
- * when the applicaiton is to be closed.
- * @param ipc
- */
-void WickrBotMain::setIPC(WickrIOIPCService *ipc)
-{
-    m_rxIPC = ipc;
-    connect(ipc, &WickrIOIPCService::signalGotStopRequest, this, &WickrBotMain::stopAndExitSlot);
-    connect(ipc, &WickrIOIPCService::signalGotPauseRequest, this, &WickrBotMain::pauseAndExitSlot);
-}
-
-/**
  * @brief WickrBotMain::pauseAndExitSlot
  * Call this slot to put the state of the parser in the database to the DOWN state,
  * and exit the parser application.
@@ -116,72 +101,6 @@ void WickrBotMain::pauseAndExitSlot()
  */
 void WickrBotMain::stopAndExit(int procState)
 {
-    //m_operation->updateProcessState(procState, false);
     QCoreApplication::quit();
 }
 
-
-// WickrBotParserIPC handles the a IPC for the parser WickrBot using WickrIOIPCService
-
-WickrBotParserIPC::WickrBotParserIPC()
-{
-    m_IPC = new WickrIOIPCService(WBIO_PARSER_TARGET, false);
-}
-
-WickrBotParserIPC::~WickrBotParserIPC()
-{
-    qDebug() << "IPC handler deletion";
-    if(m_IPC != nullptr){
-        delete m_IPC;
-        m_IPC = nullptr;
-    }
-}
-
-/**
- * @brief WickrBotParserIPC::init
- * Will initialize runtime singleton via get()
- * @param operation
- */
-void WickrBotParserIPC::init(ParserOperationData* operation) {
-    WickrBotParserIPC& me = WickrBotParserIPC::get();
-    me.m_operation = operation;
-}
-
-/**
- * @brief WickrBotParserIPC::shutdown
- * Call IPCService shutdown which emits signalShutdown which is connected with slotShutdown
- * to stop the IPC Thread
- */
-void WickrBotParserIPC::shutdown() {
-    qDebug() << "Shutting down IPC handler";
-    WickrBotParserIPC::get().ipcSvc()->shutdown();
-}
-
-/**
- * @brief WickrBotParserIPC::ipcSvc
- * Returns pointed to the IPCService of the ParserIPC object
- * @return
- */
-WickrIOIPCService*
-WickrBotParserIPC::ipcSvc() {
-    return WickrBotParserIPC::get().m_IPC;
-}
-
-/**
- * @brief WickrBotParserIPC::get (PRIVATE STATIC)
- * Returns reference to singleton instance
- * @return WickrBotParserIPC&
- */
-WickrBotParserIPC& WickrBotParserIPC::get() {
-    static WickrBotParserIPC instance;
-    return instance;
-}
-
-/**
- * @brief WickrBotParserIPC::operationData
- * getter for OperationDate of the ParserIPC
- * @return ParserOperationData*
- */
-ParserOperationData *WickrBotParserIPC::operationData() {
-    return WickrBotParserIPC::get().m_operation;
-}
