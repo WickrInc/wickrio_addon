@@ -77,6 +77,12 @@
 #define WBSETTINGS_PARSER_NAME          "name"
 #define WBSETTINGS_PARSER_DURATION      "duration"
 
+// Configuration information for client(s) config file(s)
+#define WIOCONFIG_CLIENTS_KEY           "clients"
+#define WIOCONFIG_AUTO_LOGIN_KEY        "auto_login"
+#define WIOCONFIG_INTEGRATION_KEY       "integration"
 
+// Key values that will be written to bot integration files
+#define BOTINT_CLIENT_NAME              "CLIENT_NAME"
 
 #endif // WICKRBOTSETTINGS

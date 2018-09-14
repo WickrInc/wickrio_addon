@@ -7,6 +7,7 @@
 #include "wickrIOClientRuntime.h"
 #include "wickrIOAPIInterface.h"
 #include "wickrIOCommon.h"
+#include "common/wickrUtil.h"
 
 QString WickrIOJScriptService::jsServiceBaseName = "WickrIOJScriptThread";
 
@@ -485,6 +486,33 @@ WickrIOJScriptThread::processRequest(const QByteArray& request)
                 emit signalAsyncEventsState(m_processAsyncEvents);
             }
         }
+    } else if (action == "encrypt_string") {
+        if (!object.contains("string")) {
+            return "Malformed request: no string!";
+        }
+        value = object["string"];
+        QString string2encrypt = value.toString();
+
+        WickrStatus status(0);
+        QByteArray encryptedBytes = encryptUserDataString(string2encrypt, status);
+        if (status.isError()) {
+            return "Error encrypting string!";
+        }
+        QString encryptedString = encryptedBytes.toHex();
+        return encryptedString;
+    } else if (action == "decrypt_string") {
+        if (!object.contains("string")) {
+            return "Malformed request: no string!";
+        }
+        value = object["string"];
+        QString string2encrypt = value.toString();
+        QByteArray hexBytes = QByteArray::fromHex(string2encrypt.toLatin1());
+        WickrStatus status(0);
+        QString decryptedString = decryptUserDataString(hexBytes, status);
+        if (status.isError()) {
+            return "Error decrypting string!";
+        }
+        return decryptedString;
     }
     else {
         responseString = QString("action '%1' unknown!").arg(action);
