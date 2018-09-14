@@ -2045,8 +2045,18 @@ CmdClient::configClients()
 
     // Parse out the input ini file
     QSettings settings(configFileName, QSettings::IniFormat);
+    QStringList clients_keys;
     settings.beginGroup(WIOCONFIG_CLIENTS_KEY);
-    QStringList clients_keys = settings.allKeys();
+    {
+        // Only work on those that have a "true" value
+        QStringList clients = settings.allKeys();
+        for (QString clientKey : clients) {
+            QString value = settings.value(clientKey, "false").toString();
+            if (value == "true") {
+                clients_keys.append(clientKey);
+            }
+        }
+    }
     settings.endGroup();
 
     //TODO: check that the bot type is "wickrio_bot"
