@@ -63,14 +63,6 @@ void WickrBotMain::doTimerWork()
         } else {
             m_qfailures = 0;
         }
-
-        // If more than 5 Qfailures have occured then exit.
-        // Hopefully a restart will fix the problem
-        if (m_qfailures > 5) {
-            qDebug() << "More than 5 successive queue failures, exiting!";
-            //m_operation->updateProcessState(PROCSTATE_DOWN);
-            QCoreApplication::exit(1);
-        }
     }
 }
 
