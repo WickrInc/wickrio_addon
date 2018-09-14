@@ -1,4 +1,7 @@
-Release Notes from v4.26-release to v4.54.9-2:
+Release Notes from v4.26-release to v4.54.10-2:
+  * Initial code to process a config file.  Asks user for config file, processes the…
+  * Add quotation(single/double) stripping
+  * Async message handler - first working version
   * Add async callback function for cmdStartAsyncRecvMessages
   * Added code to support the async messaging. If the async messaging is on,…
   * Initial part of async messaging and events. [ci skip[
