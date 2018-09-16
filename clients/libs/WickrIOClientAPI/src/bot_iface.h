@@ -89,6 +89,11 @@ public:
                                         const string& message,
                                         const string& ttl="",
                                         const string& bor="");
+    BotIfaceStatus cmdStringSendMessageToUname(string& command,
+                                        const string& uname,
+                                        const string& message,
+                                        const string& ttl="",
+                                        const string& bor="");
     BotIfaceStatus cmdStringSendAttachment(string& command,
                                            const string& vGroupID,
                                            const vector <string>& users,

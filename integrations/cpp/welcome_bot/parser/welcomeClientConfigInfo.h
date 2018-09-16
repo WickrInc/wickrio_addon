@@ -17,17 +17,10 @@
 #elif defined(WICKR_PRODUCTION)
 #define WBIO_CLIENT_TARGET          "welcome_bot"
 
-#elif defined(WICKR_QA)
-#define WBIO_CLIENT_TARGET          "welcome_botQA"
-
 #else
 "No WICKR_TARGET defined!!!"
 #endif
 
-#ifdef WICKR_MESSENGER
-#define BOT_PRODUCT_TYPE    PRODUCT_TYPE_MESSENGER
-#else
-#define BOT_PRODUCT_TYPE    PRODUCT_TYPE_PRO
-#endif
+#define WBIO_WELCOME_INI            "welcome_config.ini"
 
 #endif // WELCOMECLIENTCONFIGINFO_H

@@ -4,6 +4,7 @@ SUBDIRS += \
     libs \
     services \
     clients \
+    integrations \
     testing
 
 CONFIG += ordered
