@@ -13,6 +13,7 @@
 #include "wickrIOIPCService.h"
 #include "wickrIOCommon.h"
 #include "welcomeRxProcessing.h"
+#include "welcomeIpcService.h"
 
 #define WICKRBOT WickrBotMain::theBot
 
@@ -58,6 +59,9 @@ private slots:
     void stopAndExitSlot();
     void processStarted();
 
+public slots:
+    void slotStateChange(bool shutdown);
+
 signals:
     void finished();
     void signalStarted();
@@ -72,6 +76,8 @@ private:
     long    m_seccount=0;                       // Number of seconds since starting
     int     m_qfailures=0;                      // Queue failures
     int     m_rxfailures=0;                     // Receive failures
+
+    WelcomeIpcService *m_ipcService = nullptr;
 };
 
 

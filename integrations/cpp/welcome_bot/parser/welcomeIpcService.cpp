@@ -54,6 +54,11 @@ void WelcomeIpcService::stopThreads()
     qDebug("WELCOMEIPC SERVICE: Shutdown Thread (%p)", &m_thread);
 }
 
+void WelcomeIpcService::startListening()
+{
+    emit signalStartIpcListening();
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -67,6 +72,13 @@ WelcomeIpcThread::WelcomeIpcThread(QThread *thread, WelcomeIpcService *ipcSvc, Q
       m_parent(ipcSvc)
     , m_state(JSThreadState::JS_UNINITIALIZED)
 {
+    thread->setObjectName("WelcomeIpcThread");
+    this->moveToThread(thread);
+
+    // Signal to cleanup worker
+    connect(thread, &QThread::finished, this, &QObject::deleteLater);
+
+    m_state = JSThreadState::JS_STARTED;
 }
 
 WelcomeIpcThread::~WelcomeIpcThread() {

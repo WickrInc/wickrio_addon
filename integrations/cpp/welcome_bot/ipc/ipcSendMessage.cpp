@@ -14,7 +14,6 @@ IpcSendMessage::IpcSendMessage(QObject *parent) : QObject(parent)
 
     m_zctx->start();
 
-
     QString queueDirName = QString("%1/tmp").arg(QDir::currentPath());
     QDir    queueDir(queueDirName);
     if (!queueDir.exists()) {
@@ -26,7 +25,7 @@ IpcSendMessage::IpcSendMessage(QObject *parent) : QObject(parent)
     // Create the socket file for the addon receive queue
     {
         QString queueName = QString("ipc://%1/tmp/0").arg(QDir::currentPath());
-        m_zsocket->bindTo(queueName);
+        m_zsocket->connectTo(queueName);
 
         // Set the permission of the queue file so that normal user programs can access
         QString queueFileName = QString("%1/tmp/0").arg(QDir::currentPath());
@@ -39,7 +38,7 @@ IpcSendMessage::IpcSendMessage(QObject *parent) : QObject(parent)
         }
     }
 }
-;
+
 void
 IpcSendMessage::sendMessage(QString msg)
 {
@@ -47,8 +46,8 @@ IpcSendMessage::sendMessage(QString msg)
     request += msg.toLocal8Bit();
     if (msg.length() > 0)
         qDebug() << "Sending async message:" << msg;
-    if (!m_zsocket->sendMessage(request)) {
-        qDebug() << "Failed to send async message!";
+    if (!m_zsocket->sendMessage(request, 0)) {
+        qDebug() << "Failed to send message!";
         exit(1);
     } else {
         time(&m_sentMessageTime);   // Set the time that message is sent for timeout

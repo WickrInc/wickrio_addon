@@ -12,10 +12,21 @@ WickrBotMain::WickrBotMain(ParserOperationData *operation) :
     this->connect(this, &WickrBotMain::started, this, &WickrBotMain::processStarted);
     connect(&timer, SIGNAL(timeout()), this, SLOT(doTimerWork()));
     timer.start(1000);
+
+    m_ipcService = new WelcomeIpcService();
+
+    connect(m_ipcService, &WelcomeIpcService::signalStateChange,
+            this, &WickrBotMain::slotStateChange, Qt::QueuedConnection);
+
+    m_ipcService->startListening();
 }
 
 WickrBotMain::~WickrBotMain()
 {
+    m_ipcService->stopThreads();
+    m_ipcService->deleteLater();
+    m_ipcService = nullptr;
+
     qDebug() << "Parser deletion";
     timer.stop();
     timer.deleteLater();
@@ -34,6 +45,11 @@ void WickrBotMain::processStarted()
 
     if (! startTheClient())
         stopAndExit(PROCSTATE_DOWN);
+}
+
+void WickrBotMain::slotStateChange(bool shutdown)
+{
+    stopAndExit(PROCSTATE_DOWN);
 }
 
 void WickrBotMain::doTimerWork()

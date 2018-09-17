@@ -9,6 +9,7 @@ binary_path=$1
 dest_path=$2
 bldtype=$3
 binary_name=$1/welcome_parser${bldtype}
+ipc_name=$1/../ipc/welcome_ipc
 
 echo "Generating welcome_parser${bldtype} integration package"
 echo "binary_path=${binary_path}"
@@ -18,6 +19,7 @@ echo "binary_name=${binary_name}"
 
 mkdir -p temp
 cp ${binary_name} temp
+cp ${ipc_name} temp
 cp install.sh start.sh stop.sh configure.sh upgrade.sh VERSION temp
 
 sed -e "s/EXTENSION/${bldtype}/g" <start.sh >temp/start.sh

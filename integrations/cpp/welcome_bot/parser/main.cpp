@@ -22,7 +22,6 @@
 #include "wickrbotsettings.h"
 #include "bot_iface.h"
 #include "welcomeClientConfigInfo.h"
-#include "welcomeIpcService.h"
 
 WickrBotMain        *m_wbmain;
 ParserOperationData *operation = nullptr;
@@ -264,14 +263,8 @@ int main(int argc, char *argv[])
         qDebug() << "Main process starting!";
     });
 
-    WelcomeIpcService *ipcService = new WelcomeIpcService();
-    ipcService->startThreads();
-
     WICKRBOT->start();
     int retval = a.exec();
-
-    ipcService->stopThreads();
-    ipcService->deleteLater();
 
     //clean up resources
     WICKRBOT->deleteLater();

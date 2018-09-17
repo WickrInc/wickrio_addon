@@ -50,6 +50,7 @@ public:
 
     void startThreads();
     void stopThreads();
+    void startListening();
 
     static QString jsServiceBaseName;
 
