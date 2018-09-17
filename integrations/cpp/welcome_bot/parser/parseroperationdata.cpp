@@ -2,4 +2,5 @@
 
 ParserOperationData::ParserOperationData()
 {
+    log_handler = new LogHandler();
 }
