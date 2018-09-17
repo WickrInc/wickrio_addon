@@ -15,6 +15,7 @@
 # $5 = release build flag (true for release)
 # $6 = integrations software directory
 # $7 = Output directory
+# $8 = integration type (i.e. wickrio, welcome)
 
 set -e
 current=`dirname $0`
@@ -27,6 +28,7 @@ install_extension=$4
 release_flag=$5
 integrations_sw_dir=$6
 output_dir=$7
+integration_type=$8
 
 if test -z "$release_flag" ; then
 	release_flag="false"; fi
@@ -51,6 +53,7 @@ echo build_extension=$build_extension
 echo install_extension=$install_extension
 echo release_flag=$release_flag
 echo integrations_sw_dir=$integrations_sw_dir
+echo integration_type=$integration_type
 
 #
 # Setup the version number(s)
@@ -202,14 +205,14 @@ chmod 644 $optdir/WickrIOSvr$srcBldType.ini
 #
 # Create the actual package
 #
-rm -f wio_docker${bldtype}_*.deb
+rm -f wio_${integration_type}_docker${bldtype}_*.deb
 fakeroot chown -R root:root $prefix
 
-fakeroot dpkg -b wio_docker${bldtype}-deb/ wio_docker${bldtype}_${version}_amd64.deb
-sha256sum wio_docker${bldtype}_${version}_amd64.deb >wio_docker${bldtype}_${version}_amd64.sha256
+fakeroot dpkg -b wio_${integration_type}_docker${bldtype}-deb/ wio_${integration_type}_docker${bldtype}_${version}_amd64.deb
+sha256sum wio_${integration_type}_docker${bldtype}_${version}_amd64.deb >wio_${integration_type}_docker${bldtype}_${version}_amd64.sha256
 
 if test -d "$output_dir" ; then
-    echo "copying wio_docker${bldtype}_${version}_amd64.* to $output_dir/"
-    cp wio_docker${bldtype}_${version}_amd64.* "$output_dir/" 
+    echo "copying wio_${integration_type}_docker${bldtype}_${version}_amd64.* to $output_dir/"
+    cp wio_${integration_type}_docker${bldtype}_${version}_amd64.* "$output_dir/" 
 fi
 
