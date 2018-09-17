@@ -1,6 +1,7 @@
 TEMPLATE = subdirs
 SUBDIRS += \
-    parser
+    parser \
+    ipc
 
 CONFIG += ordered
 

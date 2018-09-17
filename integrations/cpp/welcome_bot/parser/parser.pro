@@ -126,7 +126,8 @@ SOURCES += \
     wbparse_qamqpqueue.cpp \
     wickrbotmain.cpp \
     parseroperationdata.cpp \
-    welcomeRxProcessing.cpp
+    welcomeRxProcessing.cpp \
+    welcomeIpcService.cpp
 
 HEADERS += \
     welcomeClientConfigInfo.h \
@@ -134,7 +135,8 @@ HEADERS += \
     wbparse_qamqpqueue.h \
     wickrbotmain.h \
     parseroperationdata.h \
-    welcomeRxProcessing.h
+    welcomeRxProcessing.h \
+    welcomeIpcService.h
 
 INCLUDEPATH +=$${DEPTH}/wickr-sdk/src
 INCLUDEPATH +=$${DEPTH}/wickr-sdk
