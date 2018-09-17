@@ -84,8 +84,8 @@ echo bldtype=$bldtype
 echo BldType=$BldType
 echo version=$version
 
-prefix=~/tmp/wio_docker${bldtype}-deb
-debian=~/tmp/wio_docker${bldtype}-deb/DEBIAN
+prefix=~/tmp/wio_${integration_type}_docker${bldtype}-deb
+debian=~/tmp/wio_${integration_type}_docker${bldtype}-deb/DEBIAN
 bindir=$prefix/usr/bin
 libdir=$prefix/usr/lib/wio_docker${bldtype}
 docdir=$prefix/usr/share/doc/wio_docker${bldtype}
