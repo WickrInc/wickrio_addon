@@ -15,8 +15,8 @@ services:
     wickrio-bot-cloud-welcome-beta:
       image: wickr/bot-cloud-welcome-beta
       build: .
-    wickrio-bot-welcome-cloud:
-      image: wickr/bot-welcome-cloud
+    wickrio-bot-cloud-welcome:
+      image: wickr/bot-cloud-welcome
       build: .
     wickrio-bot-enterprise-alpha:
       image: wickr/bot-enterprise-alpha

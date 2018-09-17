@@ -64,6 +64,17 @@ void WickrBotMain::doTimerWork()
             m_qfailures = 0;
         }
     }
+
+    if (m_rxProcess == nullptr) {
+        m_rxProcess = new WelcomeRxProcessing(m_operation);
+    } else {
+        if (! m_rxProcess->timerCall()) {
+            qDebug() << "Receive message handler failed.";
+            m_qfailures++;
+        } else {
+            m_qfailures = 0;
+        }
+    }
 }
 
 /**
