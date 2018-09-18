@@ -704,6 +704,7 @@ bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QStr
         }
     }
 
+#if 0 // Not supporting http/https in the core anymore
     // If not from mconfig file, get the interface information
     if (!fromConfig) {
         if (!m_basicConfig) {
@@ -898,6 +899,7 @@ bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QStr
             }
         }
     }
+#endif
 
     // If not from a config file, determine if the user wants a integration and which one
     if (!fromConfig) {
