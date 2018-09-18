@@ -10,7 +10,7 @@ if [ -n "$1" ]; then
   fi
 fi
 
-while [ -z "$clientname" ]
+while [ -z "$CLIENT_NAME" ]
 do
   echo "prompt: Please enter your client bot's username:"
   read clientname
