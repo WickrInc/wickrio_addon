@@ -73,6 +73,7 @@ case "$btype" in
         svc_build_ext="debug"
         svc_install_ext="Debug"
         MAKE_DEFINES="-DWICKR_BETA=WICKR_BETA"
+        wb_rpath_binary="wio_docker-beta"
         ;;
     alpha)
         qtype="CONFIG+=debug CONFIG+=wickr_compliance_bot CONFIG+=use_wickr_npl"
@@ -83,6 +84,7 @@ case "$btype" in
         svc_build_ext="debug"
         svc_install_ext="Debug"
         MAKE_DEFINES="-DWICKR_ALPHA=WICKR_ALPHA"
+        wb_rpath_binary="wio_docker-alpha"
         ;;
     release)
         qtype="CONFIG+=wickr_compliance_bot CONFIG+=use_wickr_npl"
@@ -93,6 +95,7 @@ case "$btype" in
         svc_build_ext=""
         svc_install_ext=""
         MAKE_DEFINES="-DWICKR_PRODUCTION=WICKR_PRODUCTION"
+        wb_rpath_binary="wio_docker"
         ;;
 esac
 
@@ -397,7 +400,7 @@ fi
 echo "Getting the Welcome Parser integration software from the welcome-integrations submodule"
 mkdir -p $welcome_integrations_output/welcome_parser
 welcome_parser_binary_dir="$abs/$build/integrations/cpp/welcome_bot/parser"
-(cd $abs/integrations/cpp/welcome_bot/parser && ./generate.sh "$welcome_parser_binary_dir" "$welcome_integrations_output/welcome_parser" "$install_ext")
+(cd $abs/integrations/cpp/welcome_bot/parser && ./generate.sh "$welcome_parser_binary_dir" "$welcome_integrations_output/welcome_parser" "$install_ext" "$wb_rpath_binary")
 
 #====================================================================================================================================
 # Create the Docker container image for the Welcome Bot docker images
