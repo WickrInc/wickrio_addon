@@ -778,8 +778,9 @@ bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QStr
     // if not from config file, see if the user wants to use auto login capability
     if (!fromConfig) {
         // See if the user wants to use the autologin capability
-        qDebug() << "CONSOLE:The autologin capability allows you to start a bot without having to enter the password,\nafter the initial login.";
-        qDebug() << "CONSOLE:Warning: The bot client's password is NOT saved to disk, but it is less secure.";
+        qDebug().noquote().nospace() << "CONSOLE:\nThe autologin capability allows you to start a bot without having to enter the\n"
+                                     << "password, after the initial login.\n"
+                                     << "NOTE: The bot client's password is NOT saved to disk.\n";
         while (true) {
             QString temp = getNewValue("yes", tr("Do you want to use autologin?"), CHECK_BOOL);
             if (temp.toLower() == "yes" || temp.toLower() == "y") {
@@ -1004,50 +1005,38 @@ bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QStr
         QString rmBotType;
 
         // Check if the integrations directory exists
-        QList<WBIOBotTypes *>botTypes = WBIOServerCommon::getBotsSupported(client->binary, false);
-        if (botTypes.length() > 0) {
-            QList<WBIOBotTypes *>supportedIntegrations;
+        QList<WBIOBotTypes *>supportedIntegrations = WBIOServerCommon::getBotsSupported(client->binary, false);
+        if (supportedIntegrations.length() > 0) {
             QStringList possibleBotTypes;
 
-            for (WBIOBotTypes *botType : botTypes) {
-                /* If this bot is installed and it doesn't need HTTP API,
-                 * or needs HTTP API and HTTP iface is configured
-                 */
-                if ((getInterfaceInfo && botType->useHttpApi()) || !botType->useHttpApi()) {
-                    supportedIntegrations.append(botType);
-                    possibleBotTypes.append(botType->m_name);
-                }
+            QString hasIntBot = client->botType.isEmpty() ? "no" : "yes";
+
+            qDebug().noquote().nospace() << "CONSOLE:\nSelect the type of bot integration to use:";
+            for (int i=0; i<supportedIntegrations.size(); i++) {
+                possibleBotTypes.append(supportedIntegrations.at(i)->m_name);
+                qDebug().noquote().nospace() << "CONSOLE:  - " << supportedIntegrations.at(i)->m_name;
             }
+            qDebug().noquote().nospace() << "CONSOLE:";
 
-            if (supportedIntegrations.length() > 0) {
-                QString hasIntBot;
-                hasIntBot = client->botType.isEmpty() ? "no" : "yes";
+            temp = QString();
+            possibleBotTypes.append("quit");
 
-                qDebug().noquote().nospace() << "CONSOLE:The following bot types are available: " << possibleBotTypes.join(',');
-
-                // If the user wants to connect the client to an integration bot
-                temp = getNewValue(hasIntBot, tr("Do you want to connect to a integration bot?"), CHECK_BOOL);
-                if (temp == "yes") {
-
-                    temp = getNewValue(client->botType, tr("Enter the bot type"), CHECK_LIST, possibleBotTypes);
-                    // Check if the user wants to quit the action
-                    if (handleQuit(temp, &quit) && quit) {
+            while (temp.isEmpty()) {
+                temp = getNewValue(client->botType, tr("Enter the bot integration"), CHECK_LIST, possibleBotTypes);
+                // Check if the user wants to quit the action
+                if (handleQuit(temp, &quit)) {
+                    if (quit)
                         return false;
+                    else {
+                        temp = QString();
+                        continue;
                     }
-                    if (temp != "none") {
-                        // if the bottype has changed then remove the old software
-                        if (client->botType != temp)
-                            rmBotType = client->botType;
-
-                        client->botType = temp;
-                    } else {
-                        rmBotType = client->botType;
-                        client->botType = QString();
-                    }
-                } else {
-                    rmBotType = client->botType;
-                    client->botType = QString();
                 }
+
+                // if the bottype has changed then remove the old software
+                if (client->botType != temp)
+                    rmBotType = client->botType;
+                client->botType = temp;
             }
         }
 
@@ -1512,7 +1501,7 @@ void CmdClient::deleteClient(int clientIndex)
             bool deleteFiles=false;
             while (true) {
                 qDebug() << "CONSOLE:The files and directories associated with this client should be deleted!";
-                QString response = getNewValue("y", "Do you want to remove the associated files for this client? (y or n)");
+                QString response = getNewValue("y", "Do you want to remove the files for this bot client? (y or n)");
                 if (response.toLower() == "n" || response.toLower() == "no") {
                     break;
                 }
