@@ -3,6 +3,7 @@
 
 #include <QString>
 #include "bot_iface.h"
+#include "loghandler.h"
 
 // Here are the RabbitMQ settings
 #define WBSETTINGS_RBTQ_HEADER          "rabbitqueue"
@@ -54,6 +55,9 @@ public:
     QString m_welcomeAdminMessage;
     QString m_newDeviceMessage;
     QString m_forgotPwMessage;
+
+    // Log handling
+    LogHandler *log_handler = nullptr;
 };
 
 #endif // PARSEROPERATIONDATA_H

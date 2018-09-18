@@ -294,6 +294,7 @@ WickrIOJScriptThread::slotSendAsyncMessage(QString msg)
 {
     QList<QByteArray> request;
     request += msg.toLocal8Bit();
+
     if (msg.length() > 0)
         qDebug() << "Sending async message:" << msg;
     if (!m_async_zsocket->sendMessage(request)) {

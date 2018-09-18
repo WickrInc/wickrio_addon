@@ -9,11 +9,26 @@ services:
     wickrio-bot-cloud:
       image: wickr/bot-cloud
       build: .
+    wickrio-bot-cloud-welcome-alpha:
+      image: wickr/bot-cloud-welcome-alpha
+      build: .
+    wickrio-bot-cloud-welcome-beta:
+      image: wickr/bot-cloud-welcome-beta
+      build: .
+    wickrio-bot-cloud-welcome:
+      image: wickr/bot-cloud-welcome
+      build: .
     wickrio-bot-enterprise-alpha:
       image: wickr/bot-enterprise-alpha
       build: .
     wickrio-bot-enterprise:
       image: wickr/bot-enterprise
+      build: .
+    wickrio-bot-enterprise-welcome-alpha:
+      image: wickr/bot-enterprise-welcome-alpha
+      build: .
+    wickrio-bot-enterprise-welcome:
+      image: wickr/bot-enterprise-welcome
       build: .
     wickrio-bot-enterprise-compliance-alpha:
       image: wickr/bot-enterprise-compliance-alpha
@@ -21,8 +36,20 @@ services:
     wickrio-bot-enterprise-compliance:
       image: wickr/bot-enterprise-compliance
       build: .
+    wickrio-bot-messenger-alpha:
+      image: wickr/bot-messenger-alpha
+      build: .
+    wickrio-bot-messenger-beta:
+      image: wickr/bot-messenger-beta
+      build: .
+    wickrio-bot-messenger:
+      image: wickr/bot-messenger
+      build: .
     wickrio-bot-messenger-welcome-alpha:
       image: wickr/bot-messenger-welcome-alpha
+      build: .
+    wickrio-bot-messenger-welcome-beta:
+      image: wickr/bot-messenger-welcome-beta
       build: .
     wickrio-bot-messenger-welcome:
       image: wickr/bot-messenger-welcome

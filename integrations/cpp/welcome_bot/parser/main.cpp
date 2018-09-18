@@ -24,6 +24,7 @@
 #include "welcomeClientConfigInfo.h"
 
 WickrBotMain        *m_wbmain;
+ParserOperationData *operation = nullptr;
 
 bool makeDirectory(QString dirname)
 {
@@ -69,7 +70,6 @@ searchConfigFile() {
     }
     return retFile;
 }
-
 
 /**
  * @brief parseConfigFile
@@ -117,6 +117,23 @@ bool parseConfigFile(QString qConfigFile, ParserOperationData *operation)
     return true;
 }
 
+void redirectedOutput(QtMsgType type, const QMessageLogContext &, const QString & str)
+{
+    //in this function, you can write the message to any stream!
+    switch (type) {
+    case QtDebugMsg:
+    case QtWarningMsg:
+    case QtCriticalMsg:
+        if (operation != nullptr && operation->log_handler != nullptr)
+            operation->log_handler->output(str);
+        break;
+    case QtFatalMsg:
+        if (operation != nullptr && operation->log_handler != nullptr)
+            operation->log_handler->output(str);
+//        abort();
+    }
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -135,9 +152,12 @@ int main(int argc, char *argv[])
 
 
     QCoreApplication a(argc, argv);
-    ParserOperationData *operation;
     QString appName;
     operation = new ParserOperationData();
+    operation->log_handler->setupLog(QString("%1/welcome_parser.log").arg(QDir::currentPath()));
+    operation->log_handler->logSetOutput(QString("%1/welcome_parser.output").arg(QDir::currentPath()));
+
+    qInstallMessageHandler(redirectedOutput);
 
     //old default name of the parser
     //operation->processName = WELCOMEBOT_PARSER_PROCESS;

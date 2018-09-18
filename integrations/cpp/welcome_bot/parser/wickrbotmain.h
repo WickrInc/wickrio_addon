@@ -12,6 +12,8 @@
 #include "wickrbotdatabase.h"
 #include "wickrIOIPCService.h"
 #include "wickrIOCommon.h"
+#include "welcomeRxProcessing.h"
+#include "welcomeIpcService.h"
 
 #define WICKRBOT WickrBotMain::theBot
 
@@ -57,18 +59,25 @@ private slots:
     void stopAndExitSlot();
     void processStarted();
 
+public slots:
+    void slotStateChange(bool shutdown);
+
 signals:
     void finished();
     void signalStarted();
 
 private:
-    QTimer timer;                           // One second timer to initiate work
-    ParserOperationData *m_operation;       // Operational information for the application
-    WBParse_QAMQPQueue *m_qamqp = nullptr;  // Mesasge Parser object
+    QTimer timer;                               // One second timer to initiate work
+    ParserOperationData *m_operation;           // Operational information for the application
+    WBParse_QAMQPQueue  *m_qamqp = nullptr;     // Mesasge Parser object
+    WelcomeRxProcessing *m_rxProcess = nullptr; // Process any incoming messages
 
-    int     m_logcountdown;                 // Count down timer to send alive message to log
-    long    m_seccount=0;                   // Number of seconds since starting
-    int     m_qfailures=0;                  // Queue failures, used to determine if should exit
+    int     m_logcountdown;                     // Count down timer to send alive message to log
+    long    m_seccount=0;                       // Number of seconds since starting
+    int     m_qfailures=0;                      // Queue failures
+    int     m_rxfailures=0;                     // Receive failures
+
+    WelcomeIpcService *m_ipcService = nullptr;
 };
 
 
