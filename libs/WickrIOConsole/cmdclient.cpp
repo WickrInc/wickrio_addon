@@ -102,21 +102,29 @@ CmdClient::processHelp(const QStringList& cmdList)
                         << "  password will have to be entered after that. \n"
                         << "  For WickrIO bot clients that are associated with an integration you will have\n"
                         << "  to enter the name of the integration (custom or pre-packaged). You may also\n"
-                        << "  have to enter other information related to that integration.\n";
+                        << "  have to enter other information related to that integration. Custom\n"
+                        << "  integrations can be created via the integration command.\n";
             } else if (cmd == "back" && !m_root) {
                 qDebug().nospace() << "CONSOLE:Back command usage: back\n"
                         << "  The back command will take you to the previous level of commands.\n";
             } else if (cmd == "config") {
                 qDebug().nospace() << "CONSOLE:Config command usage: config\n"
                         << "  The config command is used to read in a conf file that contains details of\n"
-                        << "  clients that will be added to this WickrIO system. The format of the config\n"
-                        << "  file is based on an ini file format. The main key in the file is the\n"
-                        << "  \"clients\" key. This key contains a list of client names which are used t\n"
-                        << "  identify WickrIO bot clients to be added to the system. Each of these client\n"
-                        << "  names are used as keys that identify the specific bot information that is\n"
-                        << "  used to create the bot client. Any WickrIO bot client that associates with\n"
-                        << "  integration software may have more values that need to be specified in the\n"
-                        << "  config file. Details of these values can be found in the sample config file.\n";
+                        << "  clients that will be added to this WickrIO system. This command can only be\n"
+                        << "  used to create new WickrIO bots.\n"
+                        << "  The format of the config file uses the ini file format, for example:\n\n"
+                        << "    [clients]\n"
+                        << "    my_new_bot=true\n\n"
+                        << "    [my_new_bot]\n"
+                        << "    auto_login=\"true\"\n\n"
+                        << "  As shown above, the main group in the config file is identified by the\n"
+                        << "  \"clients\" key. This group contains the list of client names which are used\n"
+                        << "  to identify WickrIO bot clients to be added to the system. Each of these\n"
+                        << "  client names are used as keys, to a group, that identify the specific bot\n"
+                        << "  information that is used to create the bot client. Any WickrIO bot client\n"
+                        << "  that associates with integration software may have more values that need to\n"
+                        << "  be specified in the config file. Details of these values can be found in the\n"
+                        << "  sample config file.\n";
             } else if (cmd == "delete") {
                 qDebug().nospace() << "CONSOLE:Delete command usage: delete <client number>\n"
                         << "  The delete command is used to delete an existing client. The <client number>\n"
@@ -190,8 +198,14 @@ CmdClient::processHelp(const QStringList& cmdList)
                         << "  be upgraded. You can always performe an upgrade even if the upgarde is not\n"
                         << "  indicated.\n";
             } else if (m_root && cmd == "version") {
-                qDebug().nospace() << "CONSOLE:Version command usage: versin\n"
+                qDebug().nospace() << "CONSOLE:Version command usage: version\n"
                         << "  This command will display the version number of this software.\n";
+            } else if (m_root && cmd == "welcome") {
+                qDebug().nospace() << "CONSOLE:Welcome command usage: welcome [on|off]\n"
+                        << "  The welcome command with out arguments will display the welcome message. If\n"
+                        << "  the \"on\" argument is entered, then the welcome command will be displayed every\n"
+                        << "  time the WickrIO console is started. If the \"off\" argument is entered then the\n"
+                        << "  welcome message will not be shown when the WickrIO console is started.\n";
             } else {
                 qDebug() << "CONSOLE:" << cmd << "is not a known command!";
             }
@@ -211,8 +225,7 @@ CmdClient::processHelp(const QStringList& cmdList)
         qDebug() << "CONSOLE:  start <#>   - starts the client with the specified index";
         qDebug() << "CONSOLE:  upgrade <#> - upgrade integration software for client";
         if (m_root) qDebug() << "CONSOLE:  version     - display the version number of this software";
-        if (m_root)
-            qDebug() << "CONSOLE:  version     - display the version number";
+        if (m_root) qDebug() << "CONSOLE:  welcome     - display the welcome message";
     }
 }
 
@@ -233,6 +246,25 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
         }
         processHelp(args);
         return true;
+    }
+
+    if (m_root && cmd == "welcome") {
+        if (cmdList.size() > 1) {
+            QString option = cmdList.at(1);
+            if (option == "on") {
+                m_showWelcomeMsg = true;
+            } else if(option == "off") {
+                m_showWelcomeMsg = false;
+            } else {
+                qDebug() <<"CONSOLE:Invalid option for the welcome command. Should be 'on' or 'off'";
+            }
+
+            m_operation->m_settings->beginGroup(WBSETTINGS_HELP_HEADER);
+            m_operation->m_settings->setValue(WBSETTINGS_HELP_SHOW_WELCOME, m_showWelcomeMsg);
+            m_operation->m_settings->endGroup();
+            m_operation->m_settings->sync();
+            return true;
+        }
     }
 
     // Convert the second argument to an integer, for the client index commands
@@ -302,10 +334,58 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
         }
     } else if (cmd == "version" && m_root) {
         qDebug().nospace().noquote() << "CONSOLE:version: " << getVersionString();
+    } else if (m_root && cmd == "welcome") {
+        welcomeMessage();
     } else {
         qDebug() << "CONSOLE:" << cmd << "is not a known command!";
     }
     return retVal;
+}
+
+void CmdClient::welcomeMessage()
+{
+
+    qDebug().nospace() << "CONSOLE:Welcome to the WickrIO Console program.\n"
+                       << "This console is used to maintain the WickrIO bot clients. The commands of this\n"
+                       << "program support adding, modifying, deleting, starting and stopping the WickrIO\n"
+                       << "bot clients. You can also import integrations that you want to associate with\n"
+                       << "any of the bot clients you create. Before you add a WickrIO bot client to this\n"
+                       << "system you will have to use the Wickr Admin Console to create the client. Once\n"
+                       << "you have done that you can use the 'add' command to add it to this system. You\n"
+                       << "can use one of the included integrations (hubot, web_interface, file_bot, etc)\n"
+                       << "or create your own. Details on how to create a bot integration are documented.\n"
+                       << "There are several commands that will help you along the way, the 'help' command\n"
+                       << "can be used to get details on each of the commands. The basic steps to create a\n"
+                       << "bot client are the following:\n\n"
+                       << "  1. Run the Wickr Admin Console.\n"
+                       << "  2. Select 'Users' tab in the Network you want to add the bot client\n"
+                       << "  3. Go to the Active Bots section\n"
+                       << "  4. Add the appropriate values for your new bot, and select 'Create':\n"
+                       << "     - bot display name: displayed on the Wickr clients\n"
+                       << "     - bot username: need this to add the bot into WickrIO console\n"
+                       << "     - password: the password of the bot client\n"
+                       << "  5. Enter the 'add' command in this console.\n"
+                       << "  6. When prompted enter the bot username, and password. NOTE: the password is\n"
+                       << "     not saved to disk.\n"
+                       << "  7. Select if you want to use auto login capability. NOTE: you will be\n"
+                       << "     prompted the first time you start the bot client. The password will be\n"
+                       << "     used to generate a key, but will not be saved. If you do not use auto\n"
+                       << "     login then each time the bot client is started you will have to enter\n"
+                       << "     the password.\n"
+                       << "  8. A list of bot integrations will be shown. Bot integrations are software\n"
+                       << "     modules that connect to the bot client and provide specific features\n"
+                       << "     using the Wickr messaging capaibilities. If you wish to use one of the\n"
+                       << "     supported bot integrations then enter 'yes'\n"
+                       << "  9. If you selected yes to the bot integrations, enter the bot integration\n"
+                       << "     you wish to use. You will be prompted for any values that are needed to\n"
+                       << "     configure that bot integration. The bot integration software will be\n"
+                       << "     installed for your new bot.\n"
+                       << " 10. The bot will be installed and configured. If you enter the 'list' command\n"
+                       << "     it should be at the bottom of the list. Use the 'start' command to start\n"
+                       << "     your bot.\n\n"
+                       << "Another option is to use the 'config' command to import a ini file that contains\n"
+                       << "a list of bot clients and their associated configuration values. See the help\n"
+                       << "for the 'config' command for more details.\n";
 }
 
 /**
@@ -347,9 +427,24 @@ bool CmdClient::runCommands(const QStringList& options, QString commands)
         m_sslSettings.sslCertFile = "";
     }
 
+    // See if the welcome message should be shown or not
+    if (m_operation->m_settings->childGroups().contains(WBSETTINGS_HELP_HEADER)) {
+        m_operation->m_settings->beginGroup(WBSETTINGS_HELP_HEADER);
+        m_showWelcomeMsg = m_operation->m_settings->value(WBSETTINGS_HELP_SHOW_WELCOME, true).toBool();
+        m_operation->m_settings->endGroup();
+    } else {
+        m_showWelcomeMsg = true;
+    }
+
     // Get the data from the database
     m_clients = m_operation->m_ioDB->getClients();
     bool isQuit;
+
+    // show the welcome message if it should be and hasn't been shown
+    if (m_showWelcomeMsg && !m_welcomeMsgShown) {
+        m_welcomeMsgShown = true;
+        welcomeMessage();
+    }
 
     if (commands.isEmpty()) {
         //TODO: if there are no clients then print out something, if this is the first time through as well
@@ -368,7 +463,6 @@ bool CmdClient::runCommands(const QStringList& options, QString commands)
                 if (!processCommand(args, isQuit)) {
                     break;
                 }
-
             }
         }
     } else {

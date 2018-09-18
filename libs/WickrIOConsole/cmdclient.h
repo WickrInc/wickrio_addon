@@ -75,6 +75,8 @@ private:
 
     bool    m_basicConfig = false;
     bool    m_root = false;
+    bool    m_showWelcomeMsg = true;        // Set to true if the welcome message should be shown (from settings)
+    bool    m_welcomeMsgShown = false;      // Set to true when the welcome message has been shown
 
     QList<WickrBotClients *> m_clients;
     QMap<QString, unsigned>  m_integrationVersions;
@@ -85,6 +87,7 @@ private:
     QString                 m_clientState;
 
     void updateIntegrationVersion();
+    void welcomeMessage();
 
 private slots:
     void slotCmdFinished(int);

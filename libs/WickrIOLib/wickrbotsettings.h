@@ -7,6 +7,9 @@
 #define WBSETTINGS_ATTACH_HEADER        "attachments"
 #define WBSETTINGS_ATTACH_DIRNAME       "dirName"
 
+#define WBSETTINGS_HELP_HEADER          "help"
+#define WBSETTINGS_HELP_SHOW_WELCOME    "welcome"
+
 #define WBSETTINGS_LISTENER_HEADER      "listener"
 #define WBSETTINGS_LISTENER_PORT        "port"
 #define WBSETTINGS_LISTENER_IF          "host"
