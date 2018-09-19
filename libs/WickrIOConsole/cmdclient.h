@@ -87,7 +87,7 @@ private:
     QString                 m_clientState;
 
     void updateIntegrationVersion();
-    void welcomeMessage();
+    void welcomeMessage(bool fullWelcome);
 
 private slots:
     void slotCmdFinished(int);

@@ -10,6 +10,18 @@ if [ -n "$1" ]; then
   fi
 fi
 
+#
+# if the ini file already exists, then values are being modified
+# read in the values from the ini file
+#
+if [ -f welcome_config.ini ]; then
+  . ./welcome_config.ini 2>/dev/null
+#  sed "s/;/#/g" welcome_config.ini | source /dev/stdin # 2>/dev/null
+fi
+
+#
+# Get the client name if not configured
+#
 while [ -z "$CLIENT_NAME" ]
 do
   echo "prompt:Please enter your client bot's username"
@@ -23,37 +35,73 @@ echo "Configuration of message text:"
 
 while [ -z "$welcomeusermessage" ]
 do
+  if [ -n "$welcomeUserMessage" ]; then
+    echo "Current Welcome User Message:\n$welcomeUserMessage\n"
+    echo "Hit enter to use existing value"
+  fi
+
   echo "prompt:Please enter Welcome User Message"
   read welcomeusermessage
   if [ -z "$welcomeusermessage" ]; then
-    echo "Cannot leave Welcome User Message empty!"
+    if [ -n "$welcomeUserMessage" ]; then
+      welcomeusermessage=$welcomeUserMessage
+    else
+      echo "Cannot leave Welcome User Message empty!"
+    fi
   fi
 done
 
 while [ -z "$welcomeadminmessage" ]
 do
+  if [ -n "$welcomeAdminMessage" ]; then
+    echo "Current Welcome Admin Message:\n$welcomeAdminMessage\n"
+    echo "Hit enter to use existing value"
+  fi
+
   echo "prompt:Please enter Welcome Admin Message"
   read welcomeadminmessage
   if [ -z "$welcomeadminmessage" ]; then
-    echo "Cannot leave Welcome Admin Message empty!"
+    if [ -n "$welcomeAdminMessage" ]; then
+      welcomeadminmessage=$welcomeAdminMessage
+    else
+      echo "Cannot leave Welcome Admin Message empty!"
+    fi
   fi
 done
 
 while [ -z "$newdevicemessage" ]
 do
+  if [ -n "$newDeviceMessage" ]; then
+    echo "Current New Device Message:\n$newDeviceMessage\n"
+    echo "Hit enter to use existing value"
+  fi
+
   echo "prompt:Please enter New Device Message"
   read newdevicemessage
   if [ -z "$newdevicemessage" ]; then
-    echo "Cannot leave New Device Message empty!"
+    if [ -n "$newDeviceMessage" ]; then
+      newdevicemessage=$newDeviceMessage
+    else
+      echo "Cannot leave New Device Message empty!"
+    fi
   fi
 done
 
 while [ -z "$forgotpasswordmessage" ]
 do
+  if [ -n "$forgotPasswordMessage" ]; then
+    echo "Current Forgot Password Message:\n$forgotPasswordMessage\n"
+    echo "Hit enter to use existing value"
+  fi
+
   echo "prompt:Please enter Forgot Password Message"
   read forgotpasswordmessage
   if [ -z "$forgotpasswordmessage" ]; then
-    echo "Cannot leave Forgot Password Message empty!"
+    if [ -n "$forgotPasswordMessage" ]; then
+      forgotpasswordmessage=$forgotPasswordMessage
+    else
+      echo "Cannot leave Forgot Password Message empty!"
+    fi
   fi
 done
 
@@ -61,64 +109,127 @@ echo "Configuration of RabbitMQ settings:"
 
 while [ -z "$rabbithost" ]
 do
+  if [ -n "$host" ]; then
+    echo "Current Rabbit Host: $host\n"
+    echo "Hit enter to use existing value"
+  fi
+
   echo "prompt:Please enter host"
   read rabbithost
   if [ -z "$rabbithost" ]; then
-    echo "Cannot leave rabbit host value empty!"
+    if [ -n "$host" ]; then
+      rabbithost=$host
+    else
+      echo "Cannot leave Rabbit Host value empty!"
+    fi
   fi
 done
 
 while [ -z "$rabbitport" ]
 do
+  if [ -n "$port" ]; then
+    echo "Current Rabbit Port: $port\n"
+    echo "Hit enter to use existing value"
+  fi
+
   echo "prompt:Please enter port"
   read rabbitport
   if [ -z "$rabbitport" ]; then
-    echo "Cannot leave rabbit port value empty!"
+    if [ -n "$port" ]; then
+      rabbitport=$port
+    else
+      echo "Cannot leave Rabbit Port value empty!"
+    fi
   fi
 done
 
 while [ -z "$rabbituser" ]
 do
+  if [ -n "$user" ]; then
+    echo "Current Rabbit User: $user\n"
+    echo "Hit enter to use existing value"
+  fi
+
   echo "prompt:Please enter user"
   read rabbituser
   if [ -z "$rabbituser" ]; then
-    echo "Cannot leave rabbit user value empty!"
+    if [ -n "$user" ]; then
+      rabbituser=$user
+    else
+      echo "Cannot leave Rabbit User value empty!"
+    fi
   fi
 done
 
 while [ -z "$rabbitpassword" ]
 do
+  if [ -n "$password" ]; then
+    echo "Current Rabbit Password: $password\n"
+    echo "Hit enter to use existing value"
+  fi
+
   echo "prompt:Please enter password"
   read rabbitpassword
   if [ -z "$rabbitpassword" ]; then
-    echo "Cannot leave rabbit password value empty!"
+    if [ -n "$password" ]; then
+      rabbitpassword=$password
+    else
+      echo "Cannot leave Rabbit Password value empty!"
+    fi
   fi
 done
 
 while [ -z "$rabbitexchange" ]
 do
-  echo "prompt:Please enter exchange"
+  if [ -n "$exchangename" ]; then
+    echo "Current Rabbit Exchange: $exchangename\n"
+    echo "Hit enter to use existing value"
+  fi
+
+  echo "prompt:Please enter the Rabbit Exchange"
   read rabbitexchange
   if [ -z "$rabbitexchange" ]; then
-    echo "Cannot leave rabbit exchange value empty!"
+    if [ -n "$exchangename" ]; then
+      rabbitexchange=$exchangename
+    else
+      echo "Cannot leave Rabbit Exchange value empty!"
+    fi
   fi
 done
 
 while [ -z "$rabbitqueue" ]
 do
-  echo "prompt:Please enter queue"
+  if [ -n "$queuename" ]; then
+    echo "Current Rabbit Queue: $queuename\n"
+    echo "Hit enter to use existing value"
+  fi
+
+  echo "prompt:Please enter the Rabbit Queue"
   read rabbitqueue
   if [ -z "$rabbitqueue" ]; then
-    echo "Cannot leave rabbit queue value empty!"
+    if [ -n "$queuename" ]; then
+      rabbitqueue=$queuename
+    else
+      echo "Cannot leave Rabbit Queue value empty!"
+    fi
   fi
 done
 
 while [ -z "$rabbitvirtualhost" ]
 do
-  echo "prompt:Please enter virtual host"
+  if [ -n "$virtualhost" ]; then
+    echo "Current Rabbit Virtual Host: $virtualhost\n"
+    echo "Hit enter to use existing value"
+  fi
+
+  echo "prompt:Please enter the Rabbit Virtual Host"
   read rabbitvirtualhost
   if [ -z "$rabbitvirtualhost" ]; then
-    echo "Cannot leave rabbit virtual host value empty!"
+    if [ -n "$virtualhost" ]; then
+      rabbitvirtualhost=$virtualhost
+    else
+      echo "Cannot leave Rabbit Virtual Host value empty!"
+    fi
   fi
 done
 
