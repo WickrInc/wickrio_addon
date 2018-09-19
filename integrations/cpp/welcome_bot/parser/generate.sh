@@ -27,8 +27,8 @@ cp install.sh start.sh stop.sh configure.sh upgrade.sh VERSION temp
 #
 # Need to change the rpath so that it works on the docker installation
 #
-chrpath -r "/usr/local/wickr/Qt-5.10/lib:/usr/lib/${usrLibRpath}" temp/${binary_name}
-chrpath -r "/usr/local/wickr/Qt-5.10/lib:/usr/lib/${usrLibRpath}" temp/${ipc_name}
+chrpath -r "/usr/local/wickr/Qt-5.10/lib:/usr/lib/${usrLibRpath}" temp/welcome_parser${bldtype}
+chrpath -r "/usr/local/wickr/Qt-5.10/lib:/usr/lib/${usrLibRpath}" temp/welcome_ipc
 
 sed -e "s/EXTENSION/${bldtype}/g" <start.sh >temp/start.sh
 
