@@ -368,7 +368,7 @@ fi
 #
 echo "Getting the Hubot integration software from the wickr-integrations submodule"
 mkdir -p $output/hubot
-(cd $abs/wickr-integrations; ./compress.sh $output/hubot $version)
+(cd $abs/wickr-integrations; ./compress.sh $output/hubot $version $abs/integrations/nodejs/wickrio_addon)
 hubotswdir=$output/hubot
 hubotsoftware=$output/hubot/hubot_$version.tar.gz
 hubotversion=$output/hubot/VERSION
