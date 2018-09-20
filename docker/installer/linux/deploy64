@@ -101,9 +101,9 @@ sdkplatform=$current/../../../wickr-sdk/platforms/linux/generic-64
 libzmqlibs=$current/../../../libs/third_party/libzmq/build/lib
 
 # Client definitions
-menus=$prefix/usr/share/applications
+#menus=$prefix/usr/share/applications
 pixmaps=$prefix/usr/share/pixmaps
-messages=$prefix/usr/share/indicators/messages/applications
+#messages=$prefix/usr/share/indicators/messages/applications
 appdata=$prefix/usr/share/appdata
 
 # Cleanup the target location (i.e. remove the target directory)
@@ -121,7 +121,7 @@ mkdir -p $dstintegrationsdir
 
 # Client directories
 mkdir -p $pixmaps
-mkdir -p $menus
+#mkdir -p $menus
 mkdir -p $appdata
 
 #
@@ -131,7 +131,9 @@ cp -a ${build_dir}/services/consolecmd/WickrIOConsoleCmd$srcBldType $bindir
 cp -a ${build_dir}/services/clientserver_process/WickrIOSvr$srcBldType $bindir
 cp -a ${build_dir}/clients/wickrio_bot/client/wickrio_bot$BldType $bindir
 cp -a ${build_dir}/clients/wickrio_bot/provision/provision$BldType $bindir/wickrio_prov$BldType
-#cp -a ${build_dir}/clients/core_bot/client/core_bot$BldType $bindir
+if [ "$integration_type" = "welcome" ]; then
+  cp -a ${build_dir}/clients/core_bot/client/core_bot$BldType $bindir
+fi
 
 if [ "$release_flag" = "true" ]; then
   cp -a ${build_dir}/libs/QtWebApp/libQtWebApp.* $libdir
@@ -163,7 +165,9 @@ chrpath -r "/usr/local/wickr/Qt-5.10/lib:/usr/lib/wio_docker${bldtype}" $bindir/
 chrpath -r "/usr/local/wickr/Qt-5.10/lib:/usr/lib/wio_docker${bldtype}" $bindir/WickrIOSvr$srcBldType
 chrpath -r "/usr/local/wickr/Qt-5.10/lib:/usr/lib/wio_docker${bldtype}" $bindir/wickrio_bot$BldType
 chrpath -r "/usr/local/wickr/Qt-5.10/lib:/usr/lib/wio_docker${bldtype}" $bindir/wickrio_prov$BldType
-#chrpath -r "/usr/local/wickr/Qt-5.10/lib:/usr/lib/wio_docker${bldtype}" $bindir/core_bot$BldType
+if [ "$integration_type" = "welcome" ]; then
+  chrpath -r "/usr/local/wickr/Qt-5.10/lib:/usr/lib/wio_docker${bldtype}" $bindir/core_bot$BldType
+fi
 
 #
 # Change the contents appropriately for Beta version Release versions
@@ -184,8 +188,8 @@ else
 fi
 cp -a $libzmqlibs/*.so $libzmqlibs/*.so.* $libdir/
 rm -f $plugins/sqldrivers/*
-mkdir -p $messages
-echo "/usr/share/applications/wio_wickrio_bot${bldtype}.client" >$messages/wio_docker${bldtype}
+#mkdir -p $messages
+#echo "/usr/share/applications/wio_wickrio_bot${bldtype}.client" >$messages/wio_docker${bldtype}
 
 #
 # Generate the MD5 SUM value
