@@ -381,7 +381,7 @@ cp $hubotsoftware $wickrio_integrations_output/hubot/software.tar.gz
 cp $hubotversion $wickrio_integrations_output/hubot
 
 echo "going to create the Samples package"
-(cd $abs/integrations/nodejs/installer; ./generate $build_number "$wickrio_integrations_output" "$deploy")
+(cd $abs/integrations/nodejs/installer; ./generate $build_number "$wickrio_integrations_output" "$deploy" "wickrio")
 
 
 #====================================================================================================================================
@@ -401,6 +401,9 @@ echo "Getting the Welcome Parser integration software from the welcome-integrati
 mkdir -p $welcome_integrations_output/welcome_parser
 welcome_parser_binary_dir="$abs/$build/integrations/cpp/welcome_bot/parser"
 (cd $abs/integrations/cpp/welcome_bot/parser && ./generate.sh "$welcome_parser_binary_dir" "$welcome_integrations_output/welcome_parser" "$install_ext" "$wb_rpath_binary")
+
+echo "going to create the Samples package"
+(cd $abs/integrations/nodejs/installer; ./generate $build_number "$welcome_integrations_output" "$deploy" "welcome")
 
 #====================================================================================================================================
 # Create the Docker container image for the Welcome Bot docker images

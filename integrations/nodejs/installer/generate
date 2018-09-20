@@ -4,7 +4,9 @@
 #
 # Arguments to this script:
 # $1 = build number
-# $2 = Output directory
+# $2 = integrations output directory
+# $3 = Output directory
+# $4 = Image type "wickrio" or "welcome"
 
 set -e
 current=`dirname $0`
@@ -14,6 +16,7 @@ pwd=`pwd`
 build_number=$1
 integrations_output_dir="$2"
 output_dir="$3"
+image_type="$4"
 
 #
 # Make sure the version number is the correct length
@@ -29,6 +32,7 @@ fi
 echo build_number=$build_number
 echo integrations_output_dir=$integrations_output_dir
 echo output_dir=$output_dir
+echo image_type=$image_type
 
 #
 # Setup the version number(s)
@@ -78,7 +82,9 @@ cp ../../../clients/libs/WickrIOClientAPI/src/bot_iface.h ${dst_sample_dir}/expo
 #
 # copy the sample config file
 #
-cp $pwd/../docs/sample_config.ini ${dst_sample_dir}
+if [ "$image_type" = "wickrio" ]; then
+  cp $pwd/../docs/sample_config.ini ${dst_sample_dir}
+fi
 
 #
 # Create the importable software images for each of the samples. These can be used in
@@ -100,50 +106,67 @@ samples_dir=$pwd/../samples
 #    cd $pwd
 #fi
 
-file_bot_sample=$samples_dir/file_bot
-if test -f "$file_bot_sample/generate.sh" ; then
-    echo "generating software.tar.gz for file_bot sample"
-    mkdir -p $dst_sample_dir/imports/file_bot
-    cd $file_bot_sample
-    ./generate.sh $dst_sample_dir/imports/file_bot
+if [ "$image_type" = "wickrio" ]; then
+  file_bot_sample=$samples_dir/file_bot
+  if test -f "$file_bot_sample/generate.sh" ; then
+      echo "generating software.tar.gz for file_bot sample"
+      mkdir -p $dst_sample_dir/imports/file_bot
+      cd $file_bot_sample
+      ./generate.sh $dst_sample_dir/imports/file_bot
 
-    # generate into the integrations output directory
-    mkdir -p $integrations_output_dir/file_bot
-    ./generate.sh $integrations_output_dir/file_bot
+      # generate into the integrations output directory
+      mkdir -p $integrations_output_dir/file_bot
+      ./generate.sh $integrations_output_dir/file_bot
 
-    cd $pwd
+      cd $pwd
+  fi
+
+  hello_world_bot_sample=$samples_dir/hello_world_bot
+  if test -f "$hello_world_bot_sample/generate.sh" ; then
+      echo "generating software.tar.gz for hello_world_bot sample"
+      mkdir -p  $dst_sample_dir/imports/hello_world_bot
+      cd $hello_world_bot_sample
+      ./generate.sh $dst_sample_dir/imports/hello_world_bot
+
+      # generate into the integrations output directory
+      mkdir -p $integrations_output_dir/hello_world_bot
+      ./generate.sh $integrations_output_dir/hello_world_bot
+
+      cd $pwd
+  fi
+
+  nodejs_dir=$pwd/..
+
+  web_interface=$nodejs_dir/web_interface
+  if test -f "$web_interface/generate.sh" ; then
+      echo "generating software.tar.gz for web_interface"
+      mkdir -p  $dst_sample_dir/imports/web_interface
+      cd $web_interface
+      ./generate.sh $dst_sample_dir/imports/web_interface
+
+      # generate into the integrations output directory
+      mkdir -p $integrations_output_dir/web_interface
+      ./generate.sh $integrations_output_dir/web_interface
+
+      cd $pwd
+  fi
 fi
 
-hello_world_bot_sample=$samples_dir/hello_world_bot
-if test -f "$hello_world_bot_sample/generate.sh" ; then
-    echo "generating software.tar.gz for hello_world_bot sample"
-    mkdir -p  $dst_sample_dir/imports/hello_world_bot
-    cd $hello_world_bot_sample
-    ./generate.sh $dst_sample_dir/imports/hello_world_bot
+if [ "$image_type" = "wickrio" ]; then
+  welcome_bot_sample=$samples_dir/welcome_bot
+  if test -f "$welcome_bot_sample/generate.sh" ; then
+      echo "generating software.tar.gz for welcome_bot sample"
+      mkdir -p  $dst_sample_dir/imports/welcome_bot
+      cd $welcome_bot_sample
+      ./generate.sh $dst_sample_dir/imports/welcome_bot
 
-    # generate into the integrations output directory
-    mkdir -p $integrations_output_dir/hello_world_bot
-    ./generate.sh $integrations_output_dir/hello_world_bot
+      # generate into the integrations output directory
+      mkdir -p $integrations_output_dir/welcome_bot
+      ./generate.sh $integrations_output_dir/welcome_bot
 
-    cd $pwd
+      cd $pwd
+  fi
 fi
-
-nodejs_dir=$pwd/..
-
-web_interface=$nodejs_dir/web_interface
-if test -f "$web_interface/generate.sh" ; then
-    echo "generating software.tar.gz for web_interface"
-    mkdir -p  $dst_sample_dir/imports/web_interface
-    cd $web_interface
-    ./generate.sh $dst_sample_dir/imports/web_interface
-
-    # generate into the integrations output directory
-    mkdir -p $integrations_output_dir/web_interface
-    ./generate.sh $integrations_output_dir/web_interface
-
-    cd $pwd
-fi
-
 
 #
 # Create the actual package
