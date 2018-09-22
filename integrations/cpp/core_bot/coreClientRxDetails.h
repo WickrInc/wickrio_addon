@@ -5,23 +5,21 @@
 #include <QThread>
 #include <QTimer>
 
-#include "operationdata.h"
+#include "coreOperationData.h"
 #include "wickriodatabase.h"
 #include "wickrIOCmdState.h"
 
-#include "messaging/wickrMessage.h"
-
-class CoreClientRxDetails
+class CoreClientRxDetails : public QObject
 {
     Q_OBJECT
 public:
-    CoreClientRxDetails(OperationData *operation);
+    CoreClientRxDetails(CoreOperationData *operation);
     ~CoreClientRxDetails();
 
     bool processMessage(const QString& txt);
 
 private:
-    OperationData       *m_operation;
+    CoreOperationData   *m_operation;
 
     bool                m_receiving;
     bool                m_processing;
@@ -36,20 +34,11 @@ private:
     QString getClientList();
     QString getClients();
     QString getClientFile(const QString& clientName, CoreClientFileType type);
-    QString pauseClient(const QString& clientName);
-    QString startClient(const QString& clientName);
     QString getStats(const QString& clientName);
-    QString addClient(const QString& txt, WickrIOCmdState *cmdState);
-
-    QString getIntegrationsList();
-
 
     WickrIOCmdState *getCmdState(const QString& userid);
     bool addCmdState(const QString& userid, WickrIOCmdState *state);
     bool deleteCmdState(const QString& userid);
-
-signals:
-    void signalMemberSearchDone();
 };
 
 #endif // CORECLIENTRXDETAILS_H

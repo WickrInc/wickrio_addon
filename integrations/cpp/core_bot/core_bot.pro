@@ -122,10 +122,12 @@ LIBS += -lzmq
 SOURCES += \
     main.cpp \
     wickrbotmain.cpp \
+    coreClientRxDetails.cpp \
     coreRxProcessing.cpp \
     coreIpcService.cpp
 
 HEADERS += \
+    coreClientRxDetails.h \
     coreClientConfigInfo.h \
     WickrBotContext.h \
     wickrbotmain.h \

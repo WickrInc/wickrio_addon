@@ -4,6 +4,7 @@
 #include <QString>
 #include "bot_iface.h"
 #include "loghandler.h"
+#include "wickriodatabase.h"
 
 // Here are the General settings
 #define WBSETTINGS_GEN_HEADER           "basicsettings"
@@ -31,6 +32,8 @@ public:
 
     // Log handling
     LogHandler *log_handler = nullptr;
+
+    WickrIOClientDatabase *m_botDB = nullptr;
 };
 
 #endif // COREOPERATIONDATA_H
