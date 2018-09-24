@@ -51,8 +51,6 @@ void WickrIOJScriptService::startThreads()
     m_cbThread = new WickrIOJScriptThread(&m_thread,this);
 
     // Connect internal threads signals and slots
-    connect(this, &WickrIOJScriptService::signalMessagesPending,
-            m_cbThread, &WickrIOJScriptThread::slotProcessMessages, Qt::QueuedConnection);
     connect(this, &WickrIOJScriptService::signalStartScript,
             m_cbThread, &WickrIOJScriptThread::slotStartScript, Qt::QueuedConnection);
 
@@ -86,18 +84,13 @@ void WickrIOJScriptService::stopThreads()
     qDebug("JSCRIPT THREAD: Shutdown Thread (%p)", &m_thread);
 }
 
-void WickrIOJScriptService::messagesPending()
-{
-    emit signalMessagesPending();
-}
-
 void WickrIOJScriptService::startScript()
 {
     emit signalStartScript();
 }
 
 /**
- * @brief WickrIOEventService::isHealthy
+ * @brief WickrIOJScriptService::isHealthy
  * This function will return false if the health of this services is in a bad state. For the
  * Event Handler this is typically related to a stuck event.
  * @return
@@ -201,21 +194,6 @@ WickrIOJScriptThread::slotTimerExpire()
             }
         }
     }
-}
-
-void
-WickrIOJScriptThread::slotProcessMessages()
-{
-    // Don't want to start multiple processing to be initiated
-    if (m_state == JSThreadState::JS_PROCESSING)
-        return;
-
-    m_state = JSThreadState::JS_PROCESSING;
-
-#if 0
-    jScriptSendMessage();
-#endif
-    m_state = JSThreadState::JS_STARTED;
 }
 
 void
