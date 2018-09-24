@@ -17,6 +17,7 @@ return new Promise(async (resolve, reject) => {
 
 }).then(result => {
 console.log(result);
+addon.cmdStartAsyncRecvMessages(listen);
 var members = ['wickraaron@wickrautomation.com'];
 var message = "Testing time!"
 var bor = "60"; //optional
@@ -25,14 +26,8 @@ var ttl = "100"; //optional
 var sMessage = addon.cmdSend1to1Message(members, message, ttl , bor);
 console.log(sMessage);
 
-//Infinite loop waiting for incoming messgaes into the bot
-for(;;){
-var rMessage = addon.cmdGetReceivedMessage();
-if(rMessage === "{ }" || rMessage === "" || !rMessage){
-  continue;
-}
-else
-  console.log(rMessage);
+function listen(message){
+  console.log(message);
 }
 }).catch(error => {
       console.log('Error: ', error);

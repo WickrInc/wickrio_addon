@@ -22,14 +22,7 @@ return new Promise(async (resolve, reject) => {
 
 }).then(async result => {
   console.log(result);
-  //Infinite loop waiting for incoming messgaes into the bot
-  // for (;;) {
-    // await sleep(1000);
-      // var rMessage = addon.cmdGetReceivedMessage();
-      // if (rMessage === "{ }" || rMessage === "" || !rMessage) {
-      //   continue;
-      // } else {
-      console.log("cmdStartAsyncRecvMessages: ",addon.cmdStartAsyncRecvMessages(listen));
+  addon.cmdStartAsyncRecvMessages(listen);
 
       async function listen(rMessage){
         var bor = "9000";

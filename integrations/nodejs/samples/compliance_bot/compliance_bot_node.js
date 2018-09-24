@@ -17,12 +17,9 @@ return new Promise(async (resolve, reject) => {
 
 }).then(result => {
   console.log(result);
+  addon.cmdStartAsyncRecvMessages(listen);
 
-  for (;;) {
-    var message = addon.cmdGetReceivedMessage();
-    if (message === "{ }" || message === "" || !message) {
-      continue;
-    } else {
+function listen(message){
       console.log(message);
       try {
         fs.appendFileSync('receivedMessages.log', message + '\n', 'utf8');
