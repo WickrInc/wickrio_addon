@@ -19,13 +19,12 @@ return new Promise(async (resolve, reject) => {
   console.log(result);
   addon.cmdStartAsyncRecvMessages(listen);
 
-function listen(message){
-      console.log(message);
-      try {
-        fs.appendFileSync('receivedMessages.log', message + '\n', 'utf8');
-      } catch (err) {
-        return console.log(err);
-      }
+  function listen(message) {
+    console.log(message);
+    try {
+      fs.appendFileSync('receivedMessages.log', message + '\n', 'utf8');
+    } catch (err) {
+      return console.log(err);
     }
   }
 }).catch(error => {
