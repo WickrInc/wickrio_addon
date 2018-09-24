@@ -115,7 +115,7 @@ return new Promise(async (resolve, reject) => {
         }
 
     }
-  }
+  
 
   function find(vGroupID) {
     for (var i = 0; i < wickrUsers.length; i++) {
