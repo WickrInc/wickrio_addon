@@ -23,12 +23,15 @@ return new Promise(async (resolve, reject) => {
 }).then(async result => {
   console.log(result);
   //Infinite loop waiting for incoming messgaes into the bot
-  for (;;) {
-    await sleep(1000);
-      var rMessage = addon.cmdGetReceivedMessage();
-      if (rMessage === "{ }" || rMessage === "" || !rMessage) {
-        continue;
-      } else {
+  // for (;;) {
+    // await sleep(1000);
+      // var rMessage = addon.cmdGetReceivedMessage();
+      // if (rMessage === "{ }" || rMessage === "" || !rMessage) {
+      //   continue;
+      // } else {
+      console.log("cmdStartAsyncRecvMessages: ",addon.cmdStartAsyncRecvMessages(listen));
+
+      async function listen(rMessage){
         var bor = "9000";
         var ttl = "9000";
         rMessage = JSON.parse(rMessage);
@@ -65,7 +68,6 @@ return new Promise(async (resolve, reject) => {
               console.error(msg);
               var sMessage = await addon.cmdSendRoomMessage(vGroupID, msg, ttl, bor);
               console.log(sMessage);
-              continue;
             }
             console.log(addon.cmdSendRoomAttachment(vGroupID, __dirname + '/files/' + attachment, attachment, ttl, bor));
           } else if (command === '/delete') {
@@ -74,7 +76,6 @@ return new Promise(async (resolve, reject) => {
               var msg = "Sorry, I'm not allowed to delete all the files in the directory.";
               var sMessage = await addon.cmdSendRoomMessage(vGroupID, msg, ttl, bor);
               console.log(sMessage);
-              continue;
             }
             try {
               var os = await fs.statSync('files/' + attachment);
@@ -83,7 +84,6 @@ return new Promise(async (resolve, reject) => {
               console.error(msg);
               var sMessage = await addon.cmdSendRoomMessage(vGroupID, msg, ttl, bor);
               console.log(sMessage);
-              continue;
             }
             try {
               var rm = await fs.unlinkSync('files/' + attachment);
@@ -92,7 +92,6 @@ return new Promise(async (resolve, reject) => {
                 throw err;
                 var sMessage = await addon.cmdSendRoomMessage(vGroupID, err, ttl, bor);
                 console.log(sMessage);
-                continue;
               }
             }
             var msg = "File named: '" + attachment + "' was deleted successfully!";
@@ -125,10 +124,10 @@ return new Promise(async (resolve, reject) => {
           console.log(sMessage);
         } else{
           console.log(rMessage);
-          continue;
         }
       }
-  }
+      // }
+  // }
 }).catch(error => {
   console.log('Error: ', error);
 });
