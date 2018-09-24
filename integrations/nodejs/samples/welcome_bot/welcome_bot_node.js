@@ -35,6 +35,7 @@ return new Promise(async (resolve, reject) => {
 
 }).then(result => {
   console.log(result);
+  addon.cmdStartAsyncRecvMessages(listen);
 
   var responseMessageList = [
     "Hey there! Thanks for messaging me! I have a few helpful but random tips I can share in response to your messages, " +
@@ -90,16 +91,9 @@ return new Promise(async (resolve, reject) => {
   ];
 
   var wickrUsers = [];
-  welcomeBot();
 
-  function welcomeBot() {
-    for (;;) {
-      var message = addon.cmdGetReceivedMessage();
-      if (message === "{ }" || message === "" || !message) {
-        continue;
-      } else {
+  function listen(message) {
         var parsedData = JSON.parse(message);
-        // var wickrID = [parsedData.sender];
         var vGroupID = parsedData.vgroupid;
         var location = find(vGroupID);
         if (location === -1) {
@@ -119,9 +113,9 @@ return new Promise(async (resolve, reject) => {
           location = find(vGroupID);
           wickrUsers[location].index = current + 1;
         }
-      }
+
     }
-  }
+  
 
   function find(vGroupID) {
     for (var i = 0; i < wickrUsers.length; i++) {
