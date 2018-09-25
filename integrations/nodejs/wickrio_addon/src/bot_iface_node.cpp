@@ -85,9 +85,6 @@ void messages_callback(uv_async_t *async_data)
 }
 
 // Addon function which gets called from Javascript and gets passed a callback
-/*
- *
- */
 void cmdStartAsyncRecvMessages(const v8::FunctionCallbackInfo<v8::Value> & args)
 {
   string command, response;
