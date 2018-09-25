@@ -13,6 +13,8 @@
 
 WBParse_QAMQPQueue::WBParse_QAMQPQueue(ParserOperationData *operation)
 {
+    qRegisterMetaType<QAmqpMessage>("QAmqpMessages");
+
     m_operation = operation;
     m_queueState = QSTATE_IDLE;
 

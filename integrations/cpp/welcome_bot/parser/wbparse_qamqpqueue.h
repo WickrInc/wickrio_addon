@@ -10,6 +10,8 @@
 #include "qamqpexchange.h"
 #include "parseroperationdata.h"
 
+Q_DECLARE_METATYPE(QAmqpMessage)
+
 typedef enum { QSTATE_IDLE=0, QSTATE_CONNECTING, QSTATE_FAILED_CONNECT, QSTATE_RUNNING, } QueueState;
 
 class WBParse_QAMQPQueue : public QObject
