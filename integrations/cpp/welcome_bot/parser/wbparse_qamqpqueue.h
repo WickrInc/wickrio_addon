@@ -36,7 +36,6 @@ private:
     QAmqpClient m_client;
     QAmqpQueue *m_queue;
     QAmqpExchange *m_exchange;
-    QList<QAmqpMessage> m_ackMessages;
     QAmqpMessage m_currentMessage;
     ParserOperationData *m_operation;
     QueueState m_queueState;
@@ -57,13 +56,16 @@ private:
 
     bool parseMessage(QByteArray& message);
 
+signals:
+    void signalAckMessage(QAmqpMessage ackMsg);
+
 private slots:
     void connected();
     void disconnected();
     void exchangeDeclared();
     void queueDeclared();
     void messageReceived();
-    void ackMessage();
+    void slotAckMessage(QAmqpMessage ackMsg);
     void error(QAMQP::Error error);
     void socketError(QAbstractSocket::SocketError error);
 
