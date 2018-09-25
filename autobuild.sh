@@ -13,7 +13,7 @@
 # The build is created in ../autobuild-release or ../autobuild-beta.  The
 # build directory is cleared by default on each run.
 
-echo "********************************************************************************"
+echo "\n********************************************************************************"
 echo "Starting: `date`"
 
 QTVER="5.10.1"
@@ -312,7 +312,7 @@ echo "building $type"
 mkdir -p $build
 rm -rf "$build"/*
 
-echo "********************************************************************************"
+echo "\n********************************************************************************"
 echo "Begin make: `date`"
 
 set -e
@@ -323,7 +323,7 @@ make $bldtype.install
 (cd $build ; qmake ../wickr-wickrio.pro $qmake $qtype)
 (cd $build ; $BUILD_CMD)
 
-echo "********************************************************************************"
+echo "\n********************************************************************************"
 echo "Begin Node.js Addon: `date`"
 
 #
@@ -344,8 +344,8 @@ echo "Deploy directory: $deploy"
 #====================================================================================
 # Create the Compliance Bot installer
 #
-echo "********************************************************************************"
-echo "Begin Compliance Bot: `date`"
+echo "\n********************************************************************************"
+echo "Begin Compliance Bot Installer: `date`"
 
 if test ! -z "$doComplianceBot" ; then
     echo "Create compliance_bot for $product $btype"
@@ -357,8 +357,8 @@ fi
 #====================================================================================
 # Create the WickrIO Bot installer
 #
-echo "********************************************************************************"
-echo "Begin WickrIO Bot: `date`"
+echo "\n********************************************************************************"
+echo "Begin WickrIO Bot Installer: `date`"
 
 if test ! -z "$doWickrIOBot" ; then
     echo "Create wickrio_bot for $product $btype"
@@ -370,8 +370,8 @@ fi
 #====================================================================================
 # Create the Core Bot installer
 #
-echo "********************************************************************************"
-echo "Begin Core Bot: `date`"
+echo "\n********************************************************************************"
+echo "Begin Core Bot Installer: `date`"
 
 if test ! -z "$doCoreBot" ; then
     echo "Create core_bot for $product $btype"
@@ -383,7 +383,7 @@ fi
 #====================================================================================
 # Create the hubot integration software
 #
-echo "********************************************************************************"
+echo "\n********************************************************************************"
 echo "Begin Hubot Integration: `date`"
 
 echo "Getting the Hubot integration software from the wickr-integrations submodule"
@@ -407,7 +407,7 @@ echo "going to create the Samples package"
 #====================================================================================
 # Create the Docker container image for the WickrIO Bot docker images
 #
-echo "********************************************************************************"
+echo "\n********************************************************************************"
 echo "Begin WickrIO Docker Container: `date`"
 
 if test ! -z "$wickrIODockerDeb" ; then
@@ -420,7 +420,7 @@ fi
 #====================================================================================
 # Create the welcome bot integrations
 #
-echo "********************************************************************************"
+echo "\n********************************************************************************"
 echo "Begin Welcome Bot Integrations: `date`"
 
 echo "Getting the Welcome Parser integration software from the welcome-integrations submodule"
@@ -434,7 +434,7 @@ echo "going to create the Samples package"
 #====================================================================================
 # Create the Docker container image for the Welcome Bot docker images
 #
-echo "********************************************************************************"
+echo "\n********************************************************************************"
 echo "Begin WelcomeBot Docker Container: `date`"
 
 if test ! -z "$welcomeDockerDeb" ; then
@@ -447,7 +447,7 @@ fi
 #====================================================================================
 # Create the Integrations Software Package
 #
-echo "********************************************************************************"
+echo "\n********************************************************************************"
 echo "Begin Integrations Software Package: `date`"
 
 echo "going to create the integration software package"
@@ -457,7 +457,7 @@ $abs/integrations/installer/linux/scripts/deploy64 $build_number "$svc_build_ext
 #====================================================================================
 # Create the Services Software Package
 #
-echo "********************************************************************************"
+echo "\n********************************************************************************"
 echo "Begin Services Software Package: `date`"
 
 echo "going to create $btype for services"
@@ -467,7 +467,7 @@ $abs/services/installer/linux/scripts/deploy64 $binary_dir $build_number "$svc_b
 #====================================================================================
 # Create the Console Software Package
 #
-echo "********************************************************************************"
+echo "\n********************************************************************************"
 echo "Begin Console Software Package: `date`"
 
 echo "going to create $btype for console command package (for Docker)"
@@ -477,7 +477,7 @@ $abs/services/installer/linux/scripts/consoleCmd_deploy64 $binary_dir $build_num
 #====================================================================================
 # Create the Wickr 64 Software Package
 #
-echo "********************************************************************************"
+echo "\n********************************************************************************"
 echo "Begin Wickr Qt Software Package: `date`"
 
 echo "going to create Qt library package"
@@ -486,7 +486,7 @@ $abs/platforms/linux/debian/wickrqt/deploy64 "$deploy"
 #====================================================================================
 # Create the package for deployment
 #
-echo "********************************************************************************"
+echo "\n********************************************************************************"
 echo "Begin Package for Deployment: `date`"
 
 (cd $deploy ; zip -r "$output/bots-${version}.zip" *.deb *.sha256 *.tar.gz)
@@ -567,16 +567,16 @@ fi
 
 
 if test ! -z "$complianceDeb" ; then
-    echo "********************************************************************************"
-    echo "Begin ComplianceBot Docker Package: `date`"
+    echo "\n********************************************************************************"
+    echo "Begin ComplianceBot Docker Container: `date`"
 
     cp ${deploy}/${complianceDeb} docker/packages
     (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${complianceDeb}" "${complianceExe}" "${complianceImage}" "${versionForDocker}" "${integrationDeb}")
 fi
 
 if test ! -z "$wickrIODockerDeb" ; then
-    echo "********************************************************************************"
-    echo "Begin WickrIOBot Docker Package: `date`"
+    echo "\n********************************************************************************"
+    echo "Begin WickrIOBot Docker Container: `date`"
 
     if test ! -z "$wickrIOBotImage" ; then
         (cd docker; ./dockerSetup "${wickrQTDeb}" "${wickrIODockerDeb}" "${wickrIOExe}" "${wickrIOBotImage}" "${versionForDocker}")
@@ -584,8 +584,8 @@ if test ! -z "$wickrIODockerDeb" ; then
 fi
 
 if test ! -z "$welcomeDockerDeb" ; then
-    echo "********************************************************************************"
-    echo "Begin WelcomeBot Docker Package: `date`"
+    echo "\n********************************************************************************"
+    echo "Begin WelcomeBot Docker Container: `date`"
 
     if test ! -z "$welcomeBotImage" ; then
         (cd docker; ./dockerSetup "${wickrQTDeb}" "${welcomeDockerDeb}" "${wickrIOExe}" "${welcomeBotImage}" "${versionForDocker}")
@@ -594,5 +594,5 @@ fi
 
 rm -rf docker/packages
 
-echo "********************************************************************************"
+echo "\n********************************************************************************"
 echo "Fished: `date`"
