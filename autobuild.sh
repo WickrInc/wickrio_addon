@@ -593,3 +593,6 @@ if test ! -z "$welcomeDockerDeb" ; then
 fi
 
 rm -rf docker/packages
+
+echo "********************************************************************************"
+echo "Fished: `date`"
