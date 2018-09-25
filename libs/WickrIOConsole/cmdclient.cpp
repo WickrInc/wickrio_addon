@@ -1347,7 +1347,7 @@ CmdClient::runBotScript(const QString& destPath, const QString& configure, Wickr
                     runScript->write(endpoint.toLatin1());
                 } else if (bytes.contains("HUBOT_URL_PORT")) {
                     QString cbackPortPrompt = QString("Enter the port the %1 integration will listen on").arg(client->botType);
-                    cbackPort = getNewValue(cbackPort, cbackPortPrompt);
+                    cbackPort = getNewValue(cbackPort, cbackPortPrompt, CHECK_EMPTY_OK);
                     QString outString = QString("%1\n").arg(cbackPort);
                     runScript->write(outString.toLatin1());
                 } else {
