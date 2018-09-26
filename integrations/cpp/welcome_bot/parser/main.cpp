@@ -1,4 +1,3 @@
-#include <QCoreApplication>
 #include <QDebug>
 #include <QJsonDocument>
 #include <QJsonValue>
@@ -14,6 +13,8 @@
 #include <QDir>
 #include <QProcess>
 #include <QtPlugin>
+
+#include "qtSingleApplication.h"
 
 #include "wickrbotutils.h"
 #include "parseroperationdata.h"
@@ -151,54 +152,11 @@ int main(int argc, char *argv[])
 #endif
 
 
-    QCoreApplication a(argc, argv);
-    QString appName;
     operation = new ParserOperationData();
     operation->log_handler->setupLog(QString("%1/welcome_parser.log").arg(QDir::currentPath()));
     operation->log_handler->logSetOutput(QString("%1/welcome_parser.output").arg(QDir::currentPath()));
 
     qInstallMessageHandler(redirectedOutput);
-
-    //old default name of the parser
-    //operation->processName = WELCOMEBOT_PARSER_PROCESS;
-    //a.setApplicationName(WELCOMEBOT_PARSER_PROCESS);
-
-    a.setOrganizationName("Wickr, LLC");
-
-//    QUrl imageUrl("http://upload.wikimedia.org/wikipedia/commons/3/3d/LARGE_elevation.jpg");
-//    QUrl imageUrl("http://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Fronalpstock_big.jpg/800px-Fronalpstock_big.jpg");
-//    QUrl imageUrl("http://bad.jpg");
-//    operation->downloadImage(imageUrl);
-
-    // Setup the default values, which can be overwritten
-#if 1
-    operation->queueHost = "127.0.0.1";
-    operation->queuePort = 5672;
-    operation->queueUsername = "guest";
-    operation->queuePassword = "guest";
-    operation->queueExchange = "bot-messages";
-    operation->queueName = "bot-messages";
-    operation->queueVirtualHost = "stats";
-    operation->m_botName = "";
-#elif defined(WICKR_BETA) || defined(WICKR_PRODUCTION)
-    operation->queueHost = "172.30.40.46";
-    operation->queuePort = 5672;
-    operation->queueUsername = "admin";
-    operation->queuePassword = "gvGsnNx2myYn";
-    operation->queueExchange = "bot-messages";
-    operation->queueName = "bot-messages";
-    operation->queueVirtualHost = "stats";
-    operation->m_botName = "";
-#elif defined(WICKR_ALPHA)
-    operation->queueHost = "54.89.82.66";
-    operation->queuePort = 5672;
-    operation->queueUsername = "admin";
-    operation->queuePassword = "gvGsnNx2myYn";
-    operation->queueExchange = "bot-messages";
-    operation->queueName = "bot-messages";
-    operation->queueVirtualHost = "stats";
-    operation->m_botName = "";
-#endif
 
     QString wbConfigFile("");
 
@@ -230,11 +188,8 @@ int main(int argc, char *argv[])
         } else if (cmd.startsWith("-config=")) {
             wbConfigFile = cmd.remove("-config=");
         }
-        else if(cmd.startsWith("-appName")){
-            appName = cmd.remove("-appName=");
-        }
     }
-    a.setApplicationName(appName);
+
     // If the config file was not specified on command line then try to find it
     if (wbConfigFile.isEmpty()) {
         wbConfigFile = searchConfigFile();
@@ -249,6 +204,23 @@ int main(int argc, char *argv[])
         qDebug() << "Failed to configure properly!";
         exit(1);
     }
+
+    QString appName;
+
+#if 0
+    QCoreApplication a(argc, argv);
+#else
+    appName = QString("%1_%2").arg(WELCOMEBOT_PARSER_PROCESS).arg(operation->m_botName);
+    QtSingleApplication a(appName, argc, argv);
+#endif
+    if (!a.isPrimaryInstance()) {
+        qDebug() << "PRIMARY APPLICATION INSTANCE ALREADY RUNNING!";
+        a.sendMessage(QStringLiteral("Starting..."));
+        exit(1);
+    }
+
+    a.setOrganizationName("Wickr, LLC");
+    a.setApplicationName(appName);
 
     // Setup the bot interface
     operation->m_botIface = new BotIface(operation->m_botName.toStdString());
