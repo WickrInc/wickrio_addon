@@ -1,4 +1,6 @@
-Release Notes from v4.26-release to v4.54.17-6:
+Release Notes from v4.26-release to v4.54.18-2:
+  * Make Web Node.js API use basic auth
+  * Fix merge conflict
   * Switch node.js samples to use async messaging callback
   * add the welcome parser
   * Added scripts for the welcome_bot parser integration [ci skip]
