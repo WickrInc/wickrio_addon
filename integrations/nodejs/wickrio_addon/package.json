@@ -1,6 +1,7 @@
 {
   "name": "wickrio_addon",
   "version": "1.0.0",
+  "private": true,
   "description": "Wickr's C++ Addon for a Node.js interface",
   "main": "./build/Release/wickrio_addon",
   "license": "MIT",
@@ -13,7 +14,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/WickrInc/wickrio_addon",
-    "private": true
+    "url": "https://github.com/WickrInc/wickrio_addon"
   }
 }
