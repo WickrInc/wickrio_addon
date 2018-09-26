@@ -93,6 +93,7 @@
 #define APIJSON_GROUPCONVO      "groupconvo"
 #define APIJSON_GROUPCONVOS     "groupconvos"
 #define APIJSON_VGROUPID        "vgroupid"
+#define APIJSON_UNAME           "uname"
 #define APIJSON_MAXCLIENTS      "maxclients"
 #define APIJSON_USERTYPE        "usertype"
 #define APIJSON_CANEDIT         "can_edit"

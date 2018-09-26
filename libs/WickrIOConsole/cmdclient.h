@@ -29,7 +29,7 @@ private:
     bool processCommand(QStringList cmdList, bool &isquit);
     void processHelp(const QStringList& cmdList);
 
-    bool getClientValues(WickrBotClients *client);
+    bool getClientValues(WickrBotClients *client, const QMap<QString,QString>& keyValuePairs, bool fromConfig=false);
     void addClient();
     void deleteClient(int clientIndex);
     void listClients();
@@ -39,7 +39,6 @@ private:
     void startClient(int clientIndex, bool force);
     void upgradeClient(int clientIndex);
 
-    bool chkClientsNameExists(const QString& name);
     bool chkClientsUserExists(const QString& name);
     bool chkClientsInterfaceExists(const QString& iface, int port);
 
@@ -49,7 +48,7 @@ private:
     void closeClientIPC(const QString& dest);
 
     bool readLineFromProcess(QProcess *process, QString& line);
-    bool runBotScript(const QString& destPath, const QString& configure, WickrBotClients *client, const QStringList& args);
+    bool runBotScript(const QString& destPath, const QString& configure, WickrBotClients *client, const QMap<QString,QString>& keyValuePairs);
 
     bool getAuthValue(WickrBotClients *client, bool basic, QString& authValue);
 
@@ -60,8 +59,10 @@ private:
     // Integration bot commands
     bool integrationCopySW(WickrBotClients *client, const QString& swPath, const QString& destPath);
     bool integrationInstall(WickrBotClients *client, const QString& destPath);
-    bool integrationConfigure(WickrBotClients *client, const QString& destPath);
+    bool integrationConfigure(WickrBotClients *client, const QString& destPath, const QMap<QString,QString>& keyValuePairs);
     bool integrationUpgrade(WickrBotClients *client, const QString& curSWPath, const QString& newSWPath);
+
+    bool configClients();
 
 private:
     CmdOperation        *m_operation;
@@ -74,6 +75,8 @@ private:
 
     bool    m_basicConfig = false;
     bool    m_root = false;
+    bool    m_showWelcomeMsg = true;        // Set to true if the welcome message should be shown (from settings)
+    bool    m_welcomeMsgShown = false;      // Set to true when the welcome message has been shown
 
     QList<WickrBotClients *> m_clients;
     QMap<QString, unsigned>  m_integrationVersions;
@@ -84,6 +87,7 @@ private:
     QString                 m_clientState;
 
     void updateIntegrationVersion();
+    void welcomeMessage(bool fullWelcome);
 
 private slots:
     void slotCmdFinished(int);

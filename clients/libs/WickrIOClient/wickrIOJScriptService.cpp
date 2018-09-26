@@ -7,6 +7,7 @@
 #include "wickrIOClientRuntime.h"
 #include "wickrIOAPIInterface.h"
 #include "wickrIOCommon.h"
+#include "common/wickrUtil.h"
 
 QString WickrIOJScriptService::jsServiceBaseName = "WickrIOJScriptThread";
 
@@ -50,8 +51,6 @@ void WickrIOJScriptService::startThreads()
     m_cbThread = new WickrIOJScriptThread(&m_thread,this);
 
     // Connect internal threads signals and slots
-    connect(this, &WickrIOJScriptService::signalMessagesPending,
-            m_cbThread, &WickrIOJScriptThread::slotProcessMessages, Qt::QueuedConnection);
     connect(this, &WickrIOJScriptService::signalStartScript,
             m_cbThread, &WickrIOJScriptThread::slotStartScript, Qt::QueuedConnection);
 
@@ -85,18 +84,13 @@ void WickrIOJScriptService::stopThreads()
     qDebug("JSCRIPT THREAD: Shutdown Thread (%p)", &m_thread);
 }
 
-void WickrIOJScriptService::messagesPending()
-{
-    emit signalMessagesPending();
-}
-
 void WickrIOJScriptService::startScript()
 {
     emit signalStartScript();
 }
 
 /**
- * @brief WickrIOEventService::isHealthy
+ * @brief WickrIOJScriptService::isHealthy
  * This function will return false if the health of this services is in a bad state. For the
  * Event Handler this is typically related to a stuck event.
  * @return
@@ -203,21 +197,6 @@ WickrIOJScriptThread::slotTimerExpire()
 }
 
 void
-WickrIOJScriptThread::slotProcessMessages()
-{
-    // Don't want to start multiple processing to be initiated
-    if (m_state == JSThreadState::JS_PROCESSING)
-        return;
-
-    m_state = JSThreadState::JS_PROCESSING;
-
-#if 0
-    jScriptSendMessage();
-#endif
-    m_state = JSThreadState::JS_STARTED;
-}
-
-void
 WickrIOJScriptThread::slotStartScript()
 {
     // Don't want to start multiple processing to be initiated
@@ -293,6 +272,7 @@ WickrIOJScriptThread::slotSendAsyncMessage(QString msg)
 {
     QList<QByteArray> request;
     request += msg.toLocal8Bit();
+
     if (msg.length() > 0)
         qDebug() << "Sending async message:" << msg;
     if (!m_async_zsocket->sendMessage(request)) {
@@ -374,6 +354,11 @@ WickrIOJScriptThread::processRequest(const QByteArray& request)
 
     // MESSAGE ACTIONS
     if (action == "send_message") {
+        if (apiInterface.sendMessage(request, responseString)) {
+            responseString = "Sending message";
+        }
+    }
+    else if (action == "send_message_uname") {
         if (apiInterface.sendMessage(request, responseString)) {
             responseString = "Sending message";
         }
@@ -485,6 +470,33 @@ WickrIOJScriptThread::processRequest(const QByteArray& request)
                 emit signalAsyncEventsState(m_processAsyncEvents);
             }
         }
+    } else if (action == "encrypt_string") {
+        if (!object.contains("string")) {
+            return "Malformed request: no string!";
+        }
+        value = object["string"];
+        QString string2encrypt = value.toString();
+
+        WickrStatus status(0);
+        QByteArray encryptedBytes = encryptUserDataString(string2encrypt, status);
+        if (status.isError()) {
+            return "Error encrypting string!";
+        }
+        QString encryptedString = encryptedBytes.toHex();
+        return encryptedString;
+    } else if (action == "decrypt_string") {
+        if (!object.contains("string")) {
+            return "Malformed request: no string!";
+        }
+        value = object["string"];
+        QString string2encrypt = value.toString();
+        QByteArray hexBytes = QByteArray::fromHex(string2encrypt.toLatin1());
+        WickrStatus status(0);
+        QString decryptedString = decryptUserDataString(hexBytes, status);
+        if (status.isError()) {
+            return "Error decrypting string!";
+        }
+        return decryptedString;
     }
     else {
         responseString = QString("action '%1' unknown!").arg(action);

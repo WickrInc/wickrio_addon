@@ -77,7 +77,7 @@ private slots:
 
     void slotInitiateLogin();
     void slotLoginSuccess();
-    void slotLoginFailure();
+    void slotLoginFailure(int returnCode);
 
     void processStarted();
     void stopAndExitSlot();
@@ -102,7 +102,7 @@ signals:
     void signalStarted();
     void signalExit();
     void signalLoginSuccess();
-    void signalLoginFailure();
+    void signalLoginFailure(int returnCode);
 
     void signalMessageCheck(WickrApplicationState appContext);
 };

@@ -89,6 +89,11 @@ public:
                                         const string& message,
                                         const string& ttl="",
                                         const string& bor="");
+    BotIfaceStatus cmdStringSendMessageToUname(string& command,
+                                        const string& uname,
+                                        const string& message,
+                                        const string& ttl="",
+                                        const string& bor="");
     BotIfaceStatus cmdStringSendAttachment(string& command,
                                            const string& vGroupID,
                                            const vector <string>& users,
@@ -101,6 +106,9 @@ public:
     BotIfaceStatus cmdStringStopAsyncRecvMessages(string& command);
     BotIfaceStatus cmdStringStartAsyncRecvEvents(string& command, void (*callback)(string));
     BotIfaceStatus cmdStringStopAsyncRecvEvents(string& command);
+
+    BotIface::BotIfaceStatus cmdStringEncryptString(string& command, const string& string2encrypt);
+    BotIface::BotIfaceStatus cmdStringDecryptString(string& command, const string& string2decrypt);
 
 private:
 #ifdef ZEROMQ_TEST_H

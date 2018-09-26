@@ -168,7 +168,7 @@ QString CmdBase::getNewValue(const QString& oldValue, const QString& prompt, Che
         }
         newValue = lineInput.trimmed();
 
-        if (newValue.isEmpty()) {
+        if (check != CHECK_EMPTY_OK && newValue.isEmpty()) {
             qDebug() << "CONSOLE:Please enter a value!";
             continue;
         }

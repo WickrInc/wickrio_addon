@@ -179,11 +179,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-//    QUrl imageUrl("http://upload.wikimedia.org/wikipedia/commons/3/3d/LARGE_elevation.jpg");
-//    QUrl imageUrl("http://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Fronalpstock_big.jpg/800px-Fronalpstock_big.jpg");
-//    QUrl imageUrl("http://bad.jpg");
-//    operation->downloadImage(imageUrl);
-
     // Setup the default values, which can be overwritten
 #if 0
     operation->queueHost = "127.0.0.1";

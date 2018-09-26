@@ -99,7 +99,7 @@ void WickrIOLoginHdlr::slotRegisterOnPrem(const QString &username, const QString
  */
 void WickrIOLoginHdlr::slotRegisterUser(const QString &wickrid, const QString &password, const QString &salt, const QString &transactionid, bool newUser, bool sync, bool isRekey)
 {
-    qDebug().noquote().nospace() << "CONSOLE:Begin register user context.";
+    qDebug().noquote().nospace() << QString("CONSOLE:Begin register %1 user context.").arg(newUser ? "new" : "existing");
 
     QString hash = !salt.isEmpty() ? cryptoGetHash(password, salt) : QString();
 

@@ -44,7 +44,6 @@ public:
     explicit WickrIOJScriptService();
     virtual ~WickrIOJScriptService();
 
-    void messagesPending();
     void startScript();
 
     bool isHealthy();
@@ -69,7 +68,6 @@ private:
     void stopThreads();
 
 signals:
-    void signalMessagesPending();
     void signalStartScript();
 
     void signalAsyncMessagesState(bool state);
@@ -143,7 +141,6 @@ public slots:
     void slotMessageReceived(const QList<QByteArray>&);
     void slotAsyncResponseReceived(const QList<QByteArray>&);
 
-    void slotProcessMessages();
     void slotStartScript();
 
     void slotSendAsyncMessage(QString msg);

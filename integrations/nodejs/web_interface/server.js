@@ -475,7 +475,7 @@ return new Promise(async (resolve, reject) => {
     }
   });
 
-  //Finish later
+  //Finish later: These calls have to be added to the C++ client API first
   //
   // app.get(endpoint + "/MsgRecvCallback", async function(req, res) {
   //   // var callbackURL = await fs.readFileSync("callbackAddress.txt");
