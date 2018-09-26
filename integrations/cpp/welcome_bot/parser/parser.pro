@@ -121,6 +121,8 @@ LIBS += -lqsqlcipher_wickr
 LIBS += -lsqlite3
 LIBS += -lzmq
 
+PRE_TARGETDEPS += $$PWD/$$DEPTH/clients/libs/WickrIOClientAPI/build/libWickrIOClientAPI.a
+
 SOURCES += \
     main.cpp \
     wbparse_qamqpqueue.cpp \

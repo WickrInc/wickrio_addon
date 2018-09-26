@@ -148,6 +148,21 @@ MesgQueueIface::sendMessage(string message)
     }
 
 
+    // Poll to see/wait for a reponse
+    zmq_pollitem_t  items[1];
+    items[0].socket = m_zTxSocket;
+    items[0].events = ZMQ_POLLIN;
+    rc = zmq_poll(items, 1, 5000);
+    if (rc == -1) {
+        const char *errstring = zmq_strerror(zmq_errno());
+        std::cout << "Error polling for reponse: " << errstring << "\n";
+        return NULL;
+    }
+    if (rc == 0) {
+        std::cout << "No reponse received in 5 seconds!\n";
+        return NULL;
+    }
+
     /* Create an empty ØMQ message */
     zmq_msg_t reply;
     rc = zmq_msg_init (&reply);
