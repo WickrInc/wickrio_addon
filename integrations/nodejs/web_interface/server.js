@@ -1,10 +1,45 @@
 const express = require('express');
+const https = require('https');
 const bodyParser = require('body-parser');
 const addon = require('wickrio_addon');
 const fs = require('fs');
 const app = express();
+process.stdin.resume(); //so the program will not close instantly
 
-var bot_username, bot_port, bot_api_key;
+function exitHandler(options, err) {
+  if (err) {
+    console.log('Error:',err.stack);
+    console.log(addon.closeClient());
+    return process.exit();
+  }
+  if (options.exit) {
+    console.log(addon.closeClient());
+    return process.exit();
+  } else if (options.pid) {
+    console.log(addon.closeClient());
+    return process.kill(process.pid);
+  }
+}
+
+//catches ctrl+c and stop.sh events
+process.on('SIGINT', exitHandler.bind(null, {
+  exit: true
+}));
+
+// catches "kill pid" (for example: nodemon restart)
+process.on('SIGUSR1', exitHandler.bind(null, {
+  pid: true
+}));
+process.on('SIGUSR2', exitHandler.bind(null, {
+  pid: true
+}));
+
+//catches uncaught exceptions
+process.on('uncaughtException', exitHandler.bind(null, {
+  exit: true
+}));
+
+var bot_username, bot_port, bot_api_key, bot_api_auth_token;
 
 return new Promise(async (resolve, reject) => {
   var client = await fs.readFileSync('client_bot_info.txt', 'utf-8');
@@ -16,7 +51,7 @@ return new Promise(async (resolve, reject) => {
   // console.log(bot_username, bot_username.length);
   // console.log(bot_port);
   // console.log(bot_api_key);
-  console.log(bot_api_auth_token);
+  // console.log(bot_api_auth_token);
   if (process.argv[2] === undefined) {
     var response = await addon.clientInit(bot_username);
     resolve(response);
@@ -28,17 +63,32 @@ return new Promise(async (resolve, reject) => {
   console.log(result);
   app.use(bodyParser.json());
 
-  app.listen(bot_port, () => {
-    console.log('We are live on ' + bot_port);
-  });
+  const key = fs.readFileSync('encryption/private.key', 'utf8');
+  const cert = fs.readFileSync( 'encryption/primary.crt', 'utf8');
+  const ca = fs.readFileSync( 'encryption/intermediate.crt', 'utf8');
+
+  const credentials = {
+    key: key,
+    cert: cert,
+    ca: ca
+  };
+
+  https.createServer(credentials, app).listen(bot_port, () => {
+	console.log('HTTPS Server running on port',bot_port);
+});
+
+  // app.listen(bot_port, () => {
+  //   console.log('We are live on ' + bot_port);
+  // });
+
 
   //Basic function to validate credentials for example
   function checkCreds(authToken) {
-    var valid = true
+    var valid = true;
     //implement authToken verification in here
     if (authToken !== bot_api_auth_token)
       valid = false;
-    return valid
+    return valid;
   }
 
   var endpoint = "/Apps/" + bot_api_key;
@@ -418,7 +468,7 @@ return new Promise(async (resolve, reject) => {
   });
 
 
-//MAYBE: Switch to use Async callback
+  //MAYBE: Switch to use Async callback OR NOT since we can't send callback functions over an http request
   app.get(endpoint + "/Messages", async function(req, res) {
     var authHeader = req.get('Authorization');
     authHeader = authHeader.split(' ');
@@ -455,28 +505,29 @@ return new Promise(async (resolve, reject) => {
   });
 
 
-  app.post(endpoint + "/MsgRecvCallbackFunction", async function(req, res) {
-    var authHeader = req.get('Authorization');
-    authHeader = authHeader.split(' ');
-    var authToken = authHeader[1];
-    if (!authHeader || !checkCreds(authToken)) {
-      res.statusCode = 401;
-      return res.end('Access denied: invalid basic-auth token.');
-    } else {
-      var callbackFunction = req.query.callback;
-      var setMsgURLCallback = addon.cmdStartAsyncRecvMessages(callbackFunction);
-      if (setMsgURLCallback === undefined)
-        res.send('SUCCESS');
-      else{
-        res.statusCode = 400;
-        res.send(setMsgURLCallback);
-      }
-      res.end();
-    }
-  });
-
   //Finish later: These calls have to be added to the C++ client API first
-  //
+
+  // app.post(endpoint + "/MsgRecvCallbackFunction", async function(req, res) {
+  //   var authHeader = req.get('Authorization');
+  //   authHeader = authHeader.split(' ');
+  //   var authToken = authHeader[1];
+  //   if (!authHeader || !checkCreds(authToken)) {
+  //     res.statusCode = 401;
+  //     return res.end('Access denied: invalid basic-auth token.');
+  //   } else {
+  //     var callbackFunction = req.query.callback;
+  //     var setMsgURLCallback = addon.cmdStartAsyncRecvMessages(callbackFunction);
+  //     if (setMsgURLCallback === undefined)
+  //       res.send('SUCCESS');
+  //     else {
+  //       res.statusCode = 400;
+  //       res.send(setMsgURLCallback);
+  //     }
+  //     res.end();
+  //   }
+  // });
+
+
   // app.get(endpoint + "/MsgRecvCallback", async function(req, res) {
   //   // var callbackURL = await fs.readFileSync("callbackAddress.txt");
   //   var response = {
