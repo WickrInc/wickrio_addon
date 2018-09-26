@@ -3,11 +3,7 @@
 #include <QIODevice>
 
 #include "wickrioprocesscommand.h"
-#if 1
 #include "cmdclient.h"
-#else
-#include "cmdmain.h"
-#endif
 
 WickrIOProcessCommand *WickrIOProcessCommand::theProcessCommand;
 
