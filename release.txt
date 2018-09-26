@@ -1,4 +1,4 @@
-Release Notes from v4.26-release to v4.54.17-5:
+Release Notes from v4.26-release to v4.54.17-6:
   * Switch node.js samples to use async messaging callback
   * add the welcome parser
   * Added scripts for the welcome_bot parser integration [ci skip]
