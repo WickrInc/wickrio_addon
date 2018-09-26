@@ -55,6 +55,14 @@ if [ -z "$API_KEY" ]; then
       echo "Cannot leave client bot's API-Key empty! Please enter a value:"
     fi
   done
-else
-  echo 'BOT_API_KEY='${API_KEY} >>client_bot_info.txt
-fi
+ echo "prompt: Please create an Web API Basic Authorization Token(we recommend an alphanumeric string with at least 24 characters):"
+  while [ -z "$input4" ]
+   do
+    read  input4
+    if [ ! -z "$input4" ]
+     then
+      echo 'BOT_API_AUTH_TOKEN='${input4} >>client_bot_info.txt
+     else
+       echo "Cannot leave Basic Authorization Token empty! Please enter a value:"
+     fi
+   done
