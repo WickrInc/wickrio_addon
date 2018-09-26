@@ -3,6 +3,40 @@ var fs = require('fs');
 
 process.title = "complianceBot";
 module.exports = addon;
+process.stdin.resume(); //so the program will not close instantly
+
+function exitHandler(options, err) {
+  if (err) {
+    console.log(err.stack);
+    console.log(addon.closeClient());
+    return process.exit();
+  }
+  if (options.exit) {
+    console.log(addon.closeClient());
+    return process.exit();
+  } else if (options.pid) {
+    console.log(addon.closeClient());
+    return process.kill(process.pid);
+  }
+}
+
+//catches ctrl+c and stop.sh events
+process.on('SIGINT', exitHandler.bind(null, {
+  exit: true
+}));
+
+// catches "kill pid" (for example: nodemon restart)
+process.on('SIGUSR1', exitHandler.bind(null, {
+  pid: true
+}));
+process.on('SIGUSR2', exitHandler.bind(null, {
+  pid: true
+}));
+
+//catches uncaught exceptions
+process.on('uncaughtException', exitHandler.bind(null, {
+  exit: true
+}));
 
 return new Promise(async (resolve, reject) => {
   if (process.argv[2] === undefined) {
