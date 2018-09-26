@@ -1370,7 +1370,7 @@ CmdClient::runBotScript(const QString& destPath, const QString& configure, Wickr
                     QString prompt = bytes.right(bytes.length()-7).remove(QRegExp("[\\n\\t\\r]"));     // size of string - sizeof "PROMPT:"
                     QString curVal;
                     prompt = prompt.remove(QRegExp("[\\n\\t\\r]"));
-                    QString input = getNewValue(curVal, prompt);
+                    QString input = getNewValue(curVal, prompt, CHECK_EMPTY_OK);
 
                     input.append("\n");
                     runScript->write(input.toLatin1());
