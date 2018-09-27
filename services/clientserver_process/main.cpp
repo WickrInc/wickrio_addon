@@ -186,6 +186,7 @@ int main(int argc, char *argv[])
     QString dirname = QString("/opt/%1/logs").arg(WBIO_GENERAL_TARGET);
     QString filename = QString("%1/%2.output").arg(dirname).arg(WBIO_CLIENTSERVER_TARGET);
     QString logname =  QString("%1/%2.log").arg(dirname).arg(WBIO_CLIENTSERVER_TARGET);
+    WBIOCommon::makeDirectory(dirname);
 
     QSettings *settings = WBIOServerCommon::getSettings();
     settings->beginGroup(WBSETTINGS_LICENSE_HEADER);
@@ -212,7 +213,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    WBIOCommon::makeDirectory(dirname);
     logs.setupLog(logname);
     logs.logSetOutput(filename);
 
