@@ -8,7 +8,7 @@ process.stdin.resume(); //so the program will not close instantly
 
 function exitHandler(options, err) {
   if (err) {
-    console.log(err.stack);
+    console.log('Error:',err.stack);
     console.log(addon.closeClient());
     process.exit();
   }
