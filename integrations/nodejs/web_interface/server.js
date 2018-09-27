@@ -63,23 +63,23 @@ return new Promise(async (resolve, reject) => {
   console.log(result);
   app.use(bodyParser.json());
 
-  const key = fs.readFileSync('encryption/private.key', 'utf8');
-  const cert = fs.readFileSync( 'encryption/primary.crt', 'utf8');
-  const ca = fs.readFileSync( 'encryption/intermediate.crt', 'utf8');
+//   const key = fs.readFileSync('encryption/private.key', 'utf8');
+//   const cert = fs.readFileSync( 'encryption/primary.crt', 'utf8');
+//   const ca = fs.readFileSync( 'encryption/intermediate.crt', 'utf8');
+//
+//   const credentials = {
+//     key: key,
+//     cert: cert,
+//     ca: ca
+//   };
+//
+//   https.createServer(credentials, app).listen(bot_port, () => {
+// 	console.log('HTTPS Server running on port',bot_port);
+// });
 
-  const credentials = {
-    key: key,
-    cert: cert,
-    ca: ca
-  };
-
-  https.createServer(credentials, app).listen(bot_port, () => {
-	console.log('HTTPS Server running on port',bot_port);
-});
-
-  // app.listen(bot_port, () => {
-  //   console.log('We are live on ' + bot_port);
-  // });
+  app.listen(bot_port, () => {
+    console.log('We are live on ' + bot_port);
+  });
 
 
   //Basic function to validate credentials for example
