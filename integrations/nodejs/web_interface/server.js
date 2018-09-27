@@ -8,7 +8,7 @@ process.stdin.resume(); //so the program will not close instantly
 
 function exitHandler(options, err) {
   if (err) {
-    console.log('Error:',err.stack);
+    console.log('Error:', err.stack);
     console.log(addon.closeClient());
     return process.exit();
   }
@@ -63,19 +63,19 @@ return new Promise(async (resolve, reject) => {
   console.log(result);
   app.use(bodyParser.json());
 
-//   const key = fs.readFileSync('encryption/private.key', 'utf8');
-//   const cert = fs.readFileSync( 'encryption/primary.crt', 'utf8');
-//   const ca = fs.readFileSync( 'encryption/intermediate.crt', 'utf8');
-//
-//   const credentials = {
-//     key: key,
-//     cert: cert,
-//     ca: ca
-//   };
-//
-//   https.createServer(credentials, app).listen(bot_port, () => {
-// 	console.log('HTTPS Server running on port',bot_port);
-// });
+  //   const key = fs.readFileSync('encryption/private.key', 'utf8');
+  //   const cert = fs.readFileSync( 'encryption/primary.crt', 'utf8');
+  //   const ca = fs.readFileSync( 'encryption/intermediate.crt', 'utf8');
+  //
+  //   const credentials = {
+  //     key: key,
+  //     cert: cert,
+  //     ca: ca
+  //   };
+  //
+  //   https.createServer(credentials, app).listen(bot_port, () => {
+  // 	console.log('HTTPS Server running on port',bot_port);
+  // });
 
   app.listen(bot_port, () => {
     console.log('We are live on ' + bot_port);
@@ -94,15 +94,18 @@ return new Promise(async (resolve, reject) => {
   var endpoint = "/Apps/" + bot_api_key;
 
   app.post(endpoint + "/Messages", async function(req, res) {
-    // console.log('req.body:', req.body);
-    // console.log('req.headers:',req.headers)
+    console.log('req.body:', req.body);
+    console.log('req.headers:', req.headers);
     var authHeader = req.get('Authorization');
-    authHeader = authHeader.split(' ');
-    var authToken = authHeader[1];
+    var authToken;
+    if (authHeader) {
+      authHeader = authHeader.split(' ');
+      authToken = authHeader[1];
+    }
     // Check credentials
     if (!authHeader || !checkCreds(authToken)) {
       res.statusCode = 401;
-      res.setHeader('WWW-Authenticate', 'Basic realm="example"')
+      // res.setHeader('WWW-Authenticate', 'Basic realm="example"')
       return res.end('Access denied: invalid basic-auth token.');
     } else {
       var ttl = "",
@@ -131,8 +134,10 @@ return new Promise(async (resolve, reject) => {
           console.log('attachment:', attachment);
           console.log('displayName:', displayName);
           var s1t1a = addon.cmdSend1to1Attachment(users, attachment, displayName, ttl, bor);
-          if (s1t1a !== "")
+          console.log(s1t1a);
+          if (s1t1a !== ""){
             res.send(s1t1a);
+          }
           else {
             res.sendStatus(400);
           }
@@ -141,8 +146,10 @@ return new Promise(async (resolve, reject) => {
           console.log("send1to1Message");
           console.log(users, message, ttl, bor);
           var csm = addon.cmdSend1to1Message(users, message, ttl, bor);
-          if (csm !== "")
+          console.log(csm);
+          if (csm !== ""){
             res.send(csm);
+          }
           else {
             res.sendStatus(400);
           }
@@ -162,16 +169,20 @@ return new Promise(async (resolve, reject) => {
           console.log('attachment:', attachment);
           console.log('displayName:', displayName);
           var csra = await addon.cmdSendRoomAttachment(vGroupID, attachment, displayName, ttl, bor);
-          if (csra !== "")
+          console.log(csra);
+          if (csra !== ""){
             res.send(csra);
+          }
           else {
             res.sendStatus(400);
           }
         } else {
           var message = req.body.message;
           var csrm = await addon.cmdSendRoomMessage(vGroupID, message, ttl, bor);
-          if (csrm !== "")
+          console.log(csrm);
+          if (csrm !== ""){
             res.send(csrm);
+          }
           else {
             res.sendStatus(400);
           }
@@ -182,16 +193,23 @@ return new Promise(async (resolve, reject) => {
 
 
   app.get(endpoint + "/Statistics", async function(req, res) {
+    console.log('req.body:', req.body);
+    console.log('req.headers:', req.headers);
     var authHeader = req.get('Authorization');
-    authHeader = authHeader.split(' ');
-    var authToken = authHeader[1];
+    var authToken;
+    if (authHeader) {
+      authHeader = authHeader.split(' ');
+      authToken = authHeader[1];
+    }
     if (!authHeader || !checkCreds(authToken)) {
       res.statusCode = 401;
       return res.end('Access denied: invalid basic-auth token.');
     } else {
       var statistics = await addon.cmdGetStatistics();
-      if (statistics !== "")
+      console.log(statistics);
+      if (statistics !== ""){
         res.send(statistics);
+      }
       else {
         res.statusCode = 400;
         res.send(statistics);
@@ -202,14 +220,20 @@ return new Promise(async (resolve, reject) => {
 
 
   app.delete(endpoint + "/Statistics", async function(req, res) {
+    console.log('req.body:', req.body);
+    console.log('req.headers:', req.headers);
     var authHeader = req.get('Authorization');
-    authHeader = authHeader.split(' ');
-    var authToken = authHeader[1];
+    var authToken;
+    if (authHeader) {
+      authHeader = authHeader.split(' ');
+      authToken = authHeader[1];
+    }
     if (!authHeader || !checkCreds(authToken)) {
       res.statusCode = 401;
       return res.end('Access denied: invalid basic-auth token.');
     } else {
       var statistics = await addon.cmdClearStatistics();
+      console.log(statistics);
       if (statistics !== "") {
         res.send(statistics);
       } else {
@@ -222,9 +246,14 @@ return new Promise(async (resolve, reject) => {
 
 
   app.post(endpoint + "/Rooms", async function(req, res) {
+    console.log('req.body:', req.body);
+    console.log('req.headers:', req.headers);
     var authHeader = req.get('Authorization');
-    authHeader = authHeader.split(' ');
-    var authToken = authHeader[1];
+    var authToken;
+    if (authHeader) {
+      authHeader = authHeader.split(' ');
+      authToken = authHeader[1];
+    }
     if (!authHeader || !checkCreds(authToken)) {
       res.statusCode = 401;
       return res.end('Access denied: invalid basic-auth token.');
@@ -248,6 +277,7 @@ return new Promise(async (resolve, reject) => {
         masters.push(room.masters[i].name);
       }
       var car = await addon.cmdAddRoom(members, masters, title, description, ttl, bor);
+      console.log(car);
       if (car.vgroupid) {
         res.send(car);
       } else {
@@ -259,15 +289,21 @@ return new Promise(async (resolve, reject) => {
   });
 
   app.get(endpoint + "/Rooms/:vGroupID", async function(req, res) {
+    console.log('req.body:', req.body);
+    console.log('req.headers:', req.headers);
     var authHeader = req.get('Authorization');
-    authHeader = authHeader.split(' ');
-    var authToken = authHeader[1];
+    var authToken;
+    if (authHeader) {
+      authHeader = authHeader.split(' ');
+      authToken = authHeader[1];
+    }
     if (!authHeader || !checkCreds(authToken)) {
       res.statusCode = 401;
       return res.end('Access denied: invalid basic-auth token.');
     } else {
       var vGroupID = req.params.vGroupID;
       var cgr = await addon.cmdGetRoom(vGroupID);
+      console.log(cgr);
       if (cgr.vgroupid) {
         res.send(cgr);
       } else {
@@ -279,14 +315,20 @@ return new Promise(async (resolve, reject) => {
   });
 
   app.get(endpoint + "/Rooms", async function(req, res) {
+    console.log('req.body:', req.body);
+    console.log('req.headers:', req.headers);
     var authHeader = req.get('Authorization');
-    authHeader = authHeader.split(' ');
-    var authToken = authHeader[1];
+    var authToken;
+    if (authHeader) {
+      authHeader = authHeader.split(' ');
+      authToken = authHeader[1];
+    }
     if (!authHeader || !checkCreds(authToken)) {
       res.statusCode = 401;
       return res.end('Access denied: invalid basic-auth token.');
     } else {
       var cgr = await addon.cmdGetRooms();
+      console.log(cgr);
       if (cgr.rooms) {
         res.send(cgr);
       } else {
@@ -298,9 +340,14 @@ return new Promise(async (resolve, reject) => {
   });
 
   app.delete(endpoint + "/Rooms/:vGroupID", async function(req, res) {
+    console.log('req.body:', req.body);
+    console.log('req.headers:', req.headers);
     var authHeader = req.get('Authorization');
-    authHeader = authHeader.split(' ');
-    var authToken = authHeader[1];
+    var authToken;
+    if (authHeader) {
+      authHeader = authHeader.split(' ');
+      authToken = authHeader[1];
+    }
     if (!authHeader || !checkCreds(authToken)) {
       res.statusCode = 401;
       return res.end('Access denied: invalid basic-auth token.');
@@ -309,6 +356,7 @@ return new Promise(async (resolve, reject) => {
       var reason = req.query.reason;
       if (reason === 'leave') {
         var clr = await addon.cmdLeaveRoom(vGroupID);
+        console.log(clr);
         if (clr === "") {
           res.send(bot_username + " left room successfully.");
         } else {
@@ -316,7 +364,8 @@ return new Promise(async (resolve, reject) => {
           res.send(clr);
         }
       } else {
-        var cdr = await addon.cmdDeleteRoom(vGroupID)
+        var cdr = await addon.cmdDeleteRoom(vGroupID);
+        console.log(cdr);
         if (cdr === "") {
           res.send("Room deleted successfully.");
         } else {
@@ -330,9 +379,14 @@ return new Promise(async (resolve, reject) => {
 
   //ModifyRoom
   app.post(endpoint + "/Rooms/:vGroupID", async function(req, res) {
+    console.log('req.body:', req.body);
+    console.log('req.headers:', req.headers);
     var authHeader = req.get('Authorization');
-    authHeader = authHeader.split(' ');
-    var authToken = authHeader[1];
+    var authToken;
+    if (authHeader) {
+      authHeader = authHeader.split(' ');
+      authToken = authHeader[1];
+    }
     if (!authHeader || !checkCreds(authToken)) {
       res.statusCode = 401;
       return res.end('Access denied: invalid basic-auth token.');
@@ -363,6 +417,7 @@ return new Promise(async (resolve, reject) => {
         }
       }
       var cmr = await addon.cmdModifyRoom(vGroupID, members, masters, title, description, ttl, bor);
+      console.log(cmr);
       if (cmr === "") {
         res.send("Room modified successfully, unless bot is not a room moderator.");
       } else {
@@ -374,9 +429,14 @@ return new Promise(async (resolve, reject) => {
   });
 
   app.post(endpoint + "/GroupConvo", async function(req, res) {
+    console.log('req.body:', req.body);
+    console.log('req.headers:', req.headers);
     var authHeader = req.get('Authorization');
-    authHeader = authHeader.split(' ');
-    var authToken = authHeader[1];
+    var authToken;
+    if (authHeader) {
+      authHeader = authHeader.split(' ');
+      authToken = authHeader[1];
+    }
     if (!authHeader || !checkCreds(authToken)) {
       res.statusCode = 401;
       return res.end('Access denied: invalid basic-auth token.');
@@ -407,14 +467,20 @@ return new Promise(async (resolve, reject) => {
 
 
   app.get(endpoint + "/GroupConvo", async function(req, res) {
+    console.log('req.body:', req.body);
+    console.log('req.headers:', req.headers);
     var authHeader = req.get('Authorization');
-    authHeader = authHeader.split(' ');
-    var authToken = authHeader[1];
+    var authToken;
+    if (authHeader) {
+      authHeader = authHeader.split(' ');
+      authToken = authHeader[1];
+    }
     if (!authHeader || !checkCreds(authToken)) {
       res.statusCode = 401;
       return res.end('Access denied: invalid basic-auth token.');
     } else {
       var cggc = await addon.cmdGetGroupConvos();
+      console.log(cggc);
       if (cggc.groupconvos) {
         res.send(cggc);
       } else {
@@ -427,15 +493,21 @@ return new Promise(async (resolve, reject) => {
 
 
   app.get(endpoint + "/GroupConvo/:vGroupID", async function(req, res) {
+    console.log('req.body:', req.body);
+    console.log('req.headers:', req.headers);
     var authHeader = req.get('Authorization');
-    authHeader = authHeader.split(' ');
-    var authToken = authHeader[1];
+    var authToken;
+    if (authHeader) {
+      authHeader = authHeader.split(' ');
+      authToken = authHeader[1];
+    }
     if (!authHeader || !checkCreds(authToken)) {
       res.statusCode = 401;
       return res.end('Access denied: invalid basic-auth token.');
     } else {
       var vGroupID = req.params.vGroupID;
       var cggc = await addon.cmdGetGroupConvo(vGroupID);
+      console.log(cggc);
       if (cggc.vgroupid) {
         res.send(cggc);
       } else {
@@ -448,15 +520,21 @@ return new Promise(async (resolve, reject) => {
 
 
   app.delete(endpoint + "/GroupConvo/:vGroupID", async function(req, res) {
+    console.log('req.body:', req.body);
+    console.log('req.headers:', req.headers);
     var authHeader = req.get('Authorization');
-    authHeader = authHeader.split(' ');
-    var authToken = authHeader[1];
+    var authToken;
+    if (authHeader) {
+      authHeader = authHeader.split(' ');
+      authToken = authHeader[1];
+    }
     if (!authHeader || !checkCreds(authToken)) {
       res.statusCode = 401;
       return res.end('Access denied: invalid basic-auth token.');
     } else {
       var vGroupID = req.params.vGroupID;
       var cdgc = await addon.cmdDeleteGroupConvo(vGroupID);
+      console.log(cdgc);
       if (cdgc === "") {
         res.send(bot_username + " has left GroupConvo.");
       } else {
@@ -468,11 +546,15 @@ return new Promise(async (resolve, reject) => {
   });
 
 
-  //MAYBE: Switch to use Async callback OR NOT since we can't send callback functions over an http request
   app.get(endpoint + "/Messages", async function(req, res) {
+    console.log('req.body:', req.body);
+    console.log('req.headers:', req.headers);
     var authHeader = req.get('Authorization');
-    authHeader = authHeader.split(' ');
-    var authToken = authHeader[1];
+    var authToken;
+    if (authHeader) {
+      authHeader = authHeader.split(' ');
+      authToken = authHeader[1];
+    }
     if (!authHeader || !checkCreds(authToken)) {
       res.statusCode = 401;
       return res.end('Access denied: invalid basic-auth token.');
@@ -486,6 +568,7 @@ return new Promise(async (resolve, reject) => {
         console.log('count:', count)
         for (;;) {
           var message = addon.cmdGetReceivedMessage();
+          console.log(message);
           if (message === "{ }" || message === "" || !message) {
             index++;
             continue;
@@ -508,9 +591,14 @@ return new Promise(async (resolve, reject) => {
   //Finish later: These calls have to be added to the C++ client API first
 
   // app.post(endpoint + "/MsgRecvCallbackFunction", async function(req, res) {
+  // console.log('req.body:', req.body);
+  // console.log('req.headers:', req.headers);
   //   var authHeader = req.get('Authorization');
+  // var authToken;
+  // if (authHeader) {
   //   authHeader = authHeader.split(' ');
-  //   var authToken = authHeader[1];
+  //   authToken = authHeader[1];
+  // }
   //   if (!authHeader || !checkCreds(authToken)) {
   //     res.statusCode = 401;
   //     return res.end('Access denied: invalid basic-auth token.');
