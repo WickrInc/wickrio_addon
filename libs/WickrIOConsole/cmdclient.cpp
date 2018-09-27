@@ -677,17 +677,43 @@ bool CmdClient::chkClientsInterfaceExists(const QString& iface, int port)
     return false;
 }
 
+/**
+ * @brief CmdClient::cleanupClient
+ * This function is called if the getClientValues function fails. The client entry and
+ * the directory associated with a client will be deleted, if it did not exist before
+ * starting to create the client.
+ * @param clientName
+ * @param deleteIt
+ */
+void CmdClient::cleanupClient(const QString& clientName, bool deleteIt)
+{
+    if (deleteIt) {
+        if (! m_operation->m_ioDB->deleteClientUsingName(clientName)) {
+            qDebug() << "CONSOLE:There was a problem deleting the client!";
+        }
+
+        QString clientDbDirName = QString(WBIO_CLIENT_WORKINGDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(clientName);
+        QDir clientDbDir(clientDbDirName);
+        if (clientDbDir.exists()) {
+            if (!clientDbDir.removeRecursively()) {
+                qDebug() << "CONSOLE:Failed to remove the client directory and files!";
+            }
+        }
+    }
+}
+
 bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QString>& keyValuePairs, bool fromConfig)
 {
     bool quit = false;
+    bool clientDirExists;
     QString temp;
-    bool getInterfaceInfo = false;
 
     // Do not prompt for the username if from a config file
     if (!fromConfig) {
         // Get a unique user name
         do {
             temp = getNewValue(client->user, tr("Enter the user name"));
+            temp = temp.toLower();
 
             // Check if the user wants to quit the action
             if (handleQuit(temp, &quit) && quit) {
@@ -712,6 +738,11 @@ bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QStr
         }
     }
 
+    // Check to see if this client's directory exists, if not will have to delete if failure occurs
+    QString clientDbDirName = QString(WBIO_CLIENT_WORKINGDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
+    QDir clientDbDir(clientDbDirName);
+    clientDirExists = clientDbDir.exists();
+
     // The client name will be the username.  Replace the "@" character with the "_"
     client->name = client->user;
     client->name.replace("@", "_");
@@ -725,6 +756,7 @@ bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QStr
             temp = getNewValue(client->binary, tr("Enter the client type"), CHECK_LIST, possibleClientTypes);
             // Check if the user wants to quit the action
             if (handleQuit(temp, &quit) && quit) {
+                cleanupClient(client->name, clientDirExists);
                 return false;
             }
             binary = temp;
@@ -789,11 +821,13 @@ bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QStr
                         break;
                     }
                     if (temp.toLower() == "no" || temp.toLower() == "n" || temp.isEmpty()) {
+                        cleanupClient(client->name, clientDirExists);
                         return false;
                     }
 
                     // Check if the user wants to quit the action
                     if (handleQuit(temp, &quit) && quit) {
+                        cleanupClient(client->name, clientDirExists);
                         return false;
                     }
                 }
@@ -807,9 +841,11 @@ bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QStr
                 }
             } else if (returnCode == WIOPROVISION_FAILED) {
                 qDebug().noquote() << QString("CONSOLE:Failed to provision or login bot client %1!").arg(client->user);
+                cleanupClient(client->name, clientDirExists);
                 return false;
             } else if (returnCode == WIOPROVISION_USER_NOT_FOUND) {
                 qDebug().noquote() << QString("CONSOLE:%1 does not seem to exist. Please verify in the Admin Console.!").arg(client->user);
+                cleanupClient(client->name, clientDirExists);
                 return false;
             } else {
                 break;
@@ -838,6 +874,7 @@ bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QStr
 
             // Check if the user wants to quit the action
             if (handleQuit(temp, &quit) && quit) {
+                cleanupClient(client->name, clientDirExists);
                 return false;
             }
         }
@@ -1069,9 +1106,10 @@ bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QStr
                 temp = getNewValue(client->botType, tr("Enter the bot integration"), CHECK_LIST, possibleBotTypes);
                 // Check if the user wants to quit the action
                 if (handleQuit(temp, &quit)) {
-                    if (quit)
+                    if (quit) {
+                        cleanupClient(client->name, clientDirExists);
                         return false;
-                    else {
+                    } else {
                         temp = QString();
                         continue;
                     }
@@ -1122,22 +1160,26 @@ bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QStr
             if (!destDir.exists()) {
                 if (!destDir.mkpath(destPath)) {
                     qDebug() << "CONSOLE:Failed to create directory for integration bot software!";
+                    cleanupClient(client->name, clientDirExists);
                     return false;
                 }
             }
 
             // First copy the software to the client directory
             if (! integrationCopySW(client, swPath, destPath)) {
+                cleanupClient(client->name, clientDirExists);
                 return false;
             }
 
             // Second peform the installer if one does exist
             if (! integrationInstall(client, destPath)) {
+                cleanupClient(client->name, clientDirExists);
                 return false;
             }
 
             // Third peform the configure if one does exist
             if (! integrationConfigure(client, destPath, keyValuePairs)) {
+                cleanupClient(client->name, clientDirExists);
                 return false;
             }
 
@@ -1148,7 +1190,6 @@ bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QStr
 
         }
     }
-
 
     return !quit;
 }
