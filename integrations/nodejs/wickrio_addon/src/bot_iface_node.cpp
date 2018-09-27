@@ -38,6 +38,7 @@ void clientInit(const v8::FunctionCallbackInfo<v8::Value> & args) {
         return;
 }
 
+
 void closeClient(const v8::FunctionCallbackInfo<v8::Value> & args){
   Isolate* isolate = args.GetIsolate();
   delete botIface;
@@ -152,6 +153,7 @@ void cmdGetStatistics(const v8::FunctionCallbackInfo<v8::Value> & args){
         }
 }
 
+
 void cmdClearStatistics(const v8::FunctionCallbackInfo<v8::Value> & args){
         Isolate* isolate = args.GetIsolate();
         if (botIface == nullptr) {
@@ -178,6 +180,7 @@ void cmdClearStatistics(const v8::FunctionCallbackInfo<v8::Value> & args){
         }
 }
 
+
 void cmdGetRooms(const v8::FunctionCallbackInfo<v8::Value> & args){
         Isolate* isolate = args.GetIsolate();
         if (botIface == nullptr) {
@@ -203,6 +206,7 @@ void cmdGetRooms(const v8::FunctionCallbackInfo<v8::Value> & args){
                 return;
         }
 }
+
 
 void cmdAddRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
         Isolate* isolate = args.GetIsolate();
@@ -467,6 +471,7 @@ void cmdGetRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
         }
 }
 
+
 void cmdLeaveRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
         Isolate* isolate = args.GetIsolate();
         if (botIface == nullptr) {
@@ -507,6 +512,7 @@ void cmdLeaveRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
         }
 }
 
+
 void cmdDeleteRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
         Isolate* isolate = args.GetIsolate();
         if (botIface == nullptr) {
@@ -546,6 +552,7 @@ void cmdDeleteRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
                 return;
         }
 }
+
 
 void cmdAddGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args) {
         Isolate* isolate = args.GetIsolate();
@@ -669,6 +676,7 @@ void cmdDeleteGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args){
         }
 }
 
+
 void cmdGetGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args){
         Isolate* isolate = args.GetIsolate();
         if (botIface == nullptr) {
@@ -738,6 +746,7 @@ void cmdGetGroupConvos(const v8::FunctionCallbackInfo<v8::Value> & args){
         }
 }
 
+
 void cmdGetReceivedMessage(const v8::FunctionCallbackInfo<v8::Value> & args){
         Isolate* isolate = args.GetIsolate();
         if (botIface == nullptr) {
@@ -764,6 +773,7 @@ void cmdGetReceivedMessage(const v8::FunctionCallbackInfo<v8::Value> & args){
         }
 }
 
+
 std::string escapeString(const std::string& input) {
     std::ostringstream ss;
     for (auto iter = input.cbegin(); iter != input.cend(); iter++) {
@@ -775,6 +785,7 @@ std::string escapeString(const std::string& input) {
     }
     return ss.str();
 }
+
 
 void cmdSend1to1Message(const v8::FunctionCallbackInfo<v8::Value> & args) {
         Isolate* isolate = args.GetIsolate();
@@ -852,8 +863,6 @@ void cmdSend1to1Message(const v8::FunctionCallbackInfo<v8::Value> & args) {
                 return;
         }
 }
-
-
 
 
 void cmdSend1to1Attachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
@@ -943,6 +952,7 @@ void cmdSend1to1Attachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
                 return;
         }
 }
+
 
 void cmdSendRoomMessage(const v8::FunctionCallbackInfo<v8::Value> & args) {
         Isolate* isolate = args.GetIsolate();
@@ -1095,6 +1105,7 @@ void cmdSendRoomAttachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
         }
 }
 
+
 void cmdEncryptString(const v8::FunctionCallbackInfo<v8::Value> & args)
 {
         Isolate* isolate = args.GetIsolate();
@@ -1136,6 +1147,7 @@ void cmdEncryptString(const v8::FunctionCallbackInfo<v8::Value> & args)
                 return;
         }
 }
+
 
 void cmdDecryptString(const v8::FunctionCallbackInfo<v8::Value> & args)
 {
@@ -1179,7 +1191,7 @@ void cmdDecryptString(const v8::FunctionCallbackInfo<v8::Value> & args)
         }
 }
 
-// void sendBackToJs(const v8::FunctionCallbackInfo<v8::Value> & args);
+
 void init(Handle <Object> exports, Handle<Object> module) {
         //2nd param: what we call from Javascript
         //3rd param: the name of the actual function

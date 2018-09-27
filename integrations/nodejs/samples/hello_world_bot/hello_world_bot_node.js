@@ -6,21 +6,37 @@ module.exports = addon;
 process.stdin.resume(); //so the program will not close instantly
 
 function exitHandler(options, err) {
-    if (err)
-      console.log(err.stack);
-    if (options.exit)
-      addon.closeClient();
+  if (err) {
+    console.log('Error:',err.stack);
+    console.log(addon.closeClient());
+    return process.exit();
+  }
+  if (options.exit) {
+    console.log(addon.closeClient());
+    return process.exit();
+  } else if (options.pid) {
+    console.log(addon.closeClient());
+    return process.kill(process.pid);
+  }
 }
 
-//do something when app is closing
-process.on('exit', exitHandler.bind(null,{exit:true}));
-
-//catches ctrl+c event
-process.on('SIGINT', exitHandler.bind(null, {exit:true}));
+//catches ctrl+c and stop.sh events
+process.on('SIGINT', exitHandler.bind(null, {
+  exit: true
+}));
 
 // catches "kill pid" (for example: nodemon restart)
-process.on('SIGUSR1', exitHandler.bind(null, {exit:true}));
+process.on('SIGUSR1', exitHandler.bind(null, {
+  pid: true
+}));
+process.on('SIGUSR2', exitHandler.bind(null, {
+  pid: true
+}));
 
+//catches uncaught exceptions
+process.on('uncaughtException', exitHandler.bind(null, {
+  exit: true
+}));
 
 return new Promise(async (resolve, reject) => {
   if (process.argv[2] === undefined) {
@@ -89,39 +105,34 @@ return new Promise(async (resolve, reject) => {
     "Source code https://github.com/WickrInc/wickr-crypto-c. FAQ www.wickr.com/faq"
   ];
 
-  var wickrUsers = [];
-  helloWorldBot();
+  addon.cmdStartAsyncRecvMessages(listen);
 
-  function helloWorldBot() {
-    for (;;) {
-      var message = addon.cmdGetReceivedMessage();
-      if (message === "{ }" || message === "" || !message) {
-        continue;
-      } else {
-        var parsedData = JSON.parse(message);
-        // var wickrID = [parsedData.sender];
-        var vGroupID = parsedData.vgroupid;
-        var location = find(vGroupID);
-        if (location === -1) {
-          wickrUsers.push({
-            vGroupID: vGroupID,
-            index: 0
-          });
-        }
-        var current = getIndex(vGroupID);
-        if (current > 9) {
-          location = find(vGroupID);
-          wickrUsers[location].index = 0;
-        }
-        current = getIndex(vGroupID);
-        if (current <= 9 && current != -1) {
-          var csrm = addon.cmdSendRoomMessage(vGroupID, responseMessageList[current], '100', '60');
-          location = find(vGroupID);
-          wickrUsers[location].index = current + 1;
-        }
-      }
+  var wickrUsers = [];
+
+  function listen(message) {
+    var parsedData = JSON.parse(message);
+    var vGroupID = parsedData.vgroupid;
+    var location = find(vGroupID);
+    if (location === -1) {
+      wickrUsers.push({
+        vGroupID: vGroupID,
+        index: 0
+      });
     }
+    var current = getIndex(vGroupID);
+    if (current > 9) {
+      location = find(vGroupID);
+      wickrUsers[location].index = 0;
+    }
+    current = getIndex(vGroupID);
+    if (current <= 9 && current != -1) {
+      var csrm = addon.cmdSendRoomMessage(vGroupID, responseMessageList[current], '100', '60');
+      location = find(vGroupID);
+      wickrUsers[location].index = current + 1;
+    }
+
   }
+
 
   function find(vGroupID) {
     for (var i = 0; i < wickrUsers.length; i++) {

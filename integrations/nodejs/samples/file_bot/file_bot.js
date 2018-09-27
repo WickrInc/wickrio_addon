@@ -4,6 +4,40 @@ var fileExists = require('file-exists');
 
 process.title = "fileBot";
 module.exports = addon;
+process.stdin.resume(); //so the program will not close instantly
+
+function exitHandler(options, err) {
+  if (err) {
+    console.log(err.stack);
+    console.log(addon.closeClient());
+    return process.exit();
+  }
+  if (options.exit) {
+    console.log(addon.closeClient());
+    return process.exit();
+  } else if (options.pid) {
+    console.log(addon.closeClient());
+    return process.kill(process.pid);
+  }
+}
+
+//catches ctrl+c and stop.sh events
+process.on('SIGINT', exitHandler.bind(null, {
+  exit: true
+}));
+
+// catches "kill pid" (for example: nodemon restart)
+process.on('SIGUSR1', exitHandler.bind(null, {
+  pid: true
+}));
+process.on('SIGUSR2', exitHandler.bind(null, {
+  pid: true
+}));
+
+//catches uncaught exceptions
+process.on('uncaughtException', exitHandler.bind(null, {
+  exit: true
+}));
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -25,6 +59,7 @@ return new Promise(async (resolve, reject) => {
   addon.cmdStartAsyncRecvMessages(listen);
 
       async function listen(rMessage){
+        console.log(rMessage)
         var bor = "9000";
         var ttl = "9000";
         rMessage = JSON.parse(rMessage);
@@ -119,8 +154,6 @@ return new Promise(async (resolve, reject) => {
           console.log(rMessage);
         }
       }
-      // }
-  // }
 }).catch(error => {
   console.log('Error: ', error);
 });

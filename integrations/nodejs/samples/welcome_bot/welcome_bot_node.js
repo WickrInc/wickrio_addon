@@ -6,21 +6,37 @@ module.exports = addon;
 process.stdin.resume(); //so the program will not close instantly
 
 function exitHandler(options, err) {
-    if (err)
-      console.log(err.stack);
-    if (options.exit)
-      addon.closeClient();
+  if (err) {
+    console.log(err.stack);
+    console.log(addon.closeClient());
+    return process.exit();
+  }
+  if (options.exit) {
+    console.log(addon.closeClient());
+    return process.exit();
+  } else if (options.pid) {
+    console.log(addon.closeClient());
+    return process.kill(process.pid);
+  }
 }
 
-//do something when app is closing
-process.on('exit', exitHandler.bind(null,{exit:true}));
-
-//catches ctrl+c event
-process.on('SIGINT', exitHandler.bind(null, {exit:true}));
+//catches ctrl+c and stop.sh events
+process.on('SIGINT', exitHandler.bind(null, {
+  exit: true
+}));
 
 // catches "kill pid" (for example: nodemon restart)
-process.on('SIGUSR1', exitHandler.bind(null, {exit:true}));
+process.on('SIGUSR1', exitHandler.bind(null, {
+  pid: true
+}));
+process.on('SIGUSR2', exitHandler.bind(null, {
+  pid: true
+}));
 
+//catches uncaught exceptions
+process.on('uncaughtException', exitHandler.bind(null, {
+  exit: true
+}));
 
 return new Promise(async (resolve, reject) => {
   if (process.argv[2] === undefined) {
@@ -35,7 +51,6 @@ return new Promise(async (resolve, reject) => {
 
 }).then(result => {
   console.log(result);
-  addon.cmdStartAsyncRecvMessages(listen);
 
   var responseMessageList = [
     "Hey there! Thanks for messaging me! I have a few helpful but random tips I can share in response to your messages, " +
@@ -90,6 +105,8 @@ return new Promise(async (resolve, reject) => {
     "Source code https://github.com/WickrInc/wickr-crypto-c. FAQ www.wickr.com/faq"
   ];
 
+  addon.cmdStartAsyncRecvMessages(listen);
+
   var wickrUsers = [];
 
   function listen(message) {
@@ -115,7 +132,7 @@ return new Promise(async (resolve, reject) => {
         }
 
     }
-  
+
 
   function find(vGroupID) {
     for (var i = 0; i < wickrUsers.length; i++) {
