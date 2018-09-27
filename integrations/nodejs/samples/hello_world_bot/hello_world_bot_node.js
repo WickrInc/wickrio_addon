@@ -9,14 +9,14 @@ function exitHandler(options, err) {
   if (err) {
     console.log('Error:',err.stack);
     console.log(addon.closeClient());
-    return process.exit();
+    process.exit();
   }
   if (options.exit) {
     console.log(addon.closeClient());
-    return process.exit();
+    process.exit();
   } else if (options.pid) {
     console.log(addon.closeClient());
-    return process.kill(process.pid);
+    process.kill(process.pid);
   }
 }
 
