@@ -179,6 +179,10 @@ CmdClient::processHelp(const QStringList& cmdList)
                         << "  The quit command is used to exit this program.\n"
                         << "  WARNING: leaving this program will also put all of the WickrrIO bot clients\n"
                         << "  into the paused state.\n";
+            } else if (cmd == "restart") {
+                qDebug().nospace() << "CONSOLE:Restart command usage: restart <client number> -force\n"
+                        << "  The restart command will perform a pause and then a start on the specific\n"
+                        << "  WickrIO bot client..\n";
             } else if (cmd == "start") {
                 qDebug().nospace() << "CONSOLE:Start command usage: start <client number> [-force]\n"
                         << "  The start command is used to start a specific WickrIO bot client. The <client\n"
@@ -222,6 +226,7 @@ CmdClient::processHelp(const QStringList& cmdList)
         qDebug() << "CONSOLE:  modify <#>  - modifies a client with the specified index";
         qDebug() << "CONSOLE:  pause <#>   - pauses the client with the specified index";
         qDebug() << "CONSOLE:  quit        - leaves this program";
+        qDebug() << "CONSOLE:  restart <#> - performs a pause and start";
         qDebug() << "CONSOLE:  start <#>   - starts the client with the specified index";
         qDebug() << "CONSOLE:  upgrade <#> - upgrade integration software for client";
         if (m_root) qDebug() << "CONSOLE:  version     - display the version number of this software";
@@ -332,6 +337,20 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
     } else if (cmd == "quit") {
         retVal = false;
         isquit = true;
+    } else if (cmd == "restart") {
+        if (m_clients.length() == 0) {
+            qDebug() << "CONSOLE:There are no clients to restart!";
+        } else if (clientIndex == -1) {
+            if (m_clients.length() == 1) {
+                if (pauseClient(0, bForce) && waitForClientState(0, PROCSTATE_PAUSED))
+                    startClient(0, bForce);
+            } else {
+                qDebug() << "CONSOLE:Usage: start <index>";
+            }
+        } else {
+            if (pauseClient(clientIndex, bForce) && waitForClientState(clientIndex, PROCSTATE_PAUSED))
+                startClient(clientIndex, bForce);
+        }
     } else if (cmd == "start") {
         if (m_clients.length() == 0) {
             qDebug() << "CONSOLE:There are no clients to start!";
@@ -1668,19 +1687,17 @@ void CmdClient::slotReceivedMessage(QString type, QString value)
  * This function is used to pause a running client
  * @param clientIndex
  */
-void CmdClient::pauseClient(int clientIndex, bool force)
+bool CmdClient::pauseClient(int clientIndex, bool force)
 {
     if (!validateIndex(clientIndex)) {
        qDebug() << "CONSOLE:Invalid client index!";
-       return;
+       return false;
     }
 
     WickrBotClients *client = m_clients.at(clientIndex);
     WickrBotProcessState state;
     QString processName = WBIOServerCommon::getClientProcessName(client);
-
-
-
+    bool retVal=true;
 
     if (m_operation->m_ioDB->getProcessState(processName, &state)) {
         if (state.state == PROCSTATE_RUNNING) {
@@ -1688,7 +1705,7 @@ void CmdClient::pauseClient(int clientIndex, bool force)
                 QString prompt = QString(tr("Do you really want to pause the client with the name %1")).arg(client->user);
                 QString response = getNewValue("", prompt);
                 if (response.toLower() == "n" || response.toLower() == "no") {
-                    return;
+                    return false;
                 }
                 if (response.toLower() == "y" || response.toLower() == "yes") {
                     break;
@@ -1705,11 +1722,11 @@ void CmdClient::pauseClient(int clientIndex, bool force)
                     qDebug() << "CONSOLE:Please verify the client process is not running.";
                 }
             }
-            return;
+            return false;
         }
     } else {
         qDebug() << "CONSOLE:Could not get the clients state!";
-        return;
+        return false;
     }
 
     // check if there is a integration bot set, if so stop it from running
@@ -1738,6 +1755,7 @@ void CmdClient::pauseClient(int clientIndex, bool force)
             // Wait for it to start
             if(!runBotStopCmd->waitForStarted()) {
                 qDebug() << "Failed to run %1";
+                retVal = false;
             } else {
                 QStringList stopOutput;
 
@@ -1752,12 +1770,38 @@ void CmdClient::pauseClient(int clientIndex, bool force)
         }
     }
 
-
     if (! sendIPCCmd(client->name, true, WBIO_IPCCMDS_PAUSE)) {
         qDebug() << "CONSOLE:Failed to send message to client!";
     }
     closeClientIPC(client->name);
+    return retVal;
 }
+
+bool CmdClient::waitForClientState(int clientIndex, int targetState)
+{
+    WickrBotProcessState state;
+    WickrBotClients *client = m_clients.at(clientIndex);
+    QString processName = WBIOServerCommon::getClientProcessName(client);
+
+    int seconds = 0;
+    int limit = 60;
+    do {
+        QThread::sleep(1);
+
+        if (seconds++ >= 5){
+            seconds = 0;
+            qDebug() << "CONSOLE:Waiting for client state change!";
+        }
+        if (!m_operation->m_ioDB->getProcessState(processName, &state))
+            return false;
+        if (--limit <= 0) {
+            qDebug() << "CONSOLE:Timed out waiting for client to change state!";
+            break;
+        }
+    } while (state.state != targetState);
+    return state.state == targetState;
+}
+
 
 /**
  * @brief CmdClient::startClient

@@ -35,9 +35,11 @@ private:
     void listClients();
     void listInboundPorts();
     void modifyClient(int clientIndex);
-    void pauseClient(int clientIndex, bool force);
+    bool pauseClient(int clientIndex, bool force);
     void startClient(int clientIndex, bool force);
     void upgradeClient(int clientIndex);
+
+    bool waitForClientState(int clientIndex, int state);
 
     bool chkClientsUserExists(const QString& name);
     bool chkClientsInterfaceExists(const QString& iface, int port);
