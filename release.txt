@@ -1,4 +1,6 @@
-Release Notes from v4.26-release to v4.54.19-6:
+Release Notes from v4.26-release to v4.54.19-7:
+  * Add complete logging/output of web API
+  * Fix null error when starting app the first time
   * Switch web api back to http
   * Clean up addon package
   * Make Web Node.js API use basic auth
