@@ -39,7 +39,7 @@ process.on('uncaughtException', exitHandler.bind(null, {
   exit: true
 }));
 
-var bot_username, bot_port, bot_api_key, bot_api_auth_token;
+var bot_username, bot_port, bot_api_key, bot_api_auth_token, ssl_key_location, ssl_crt_location;
 
 return new Promise(async (resolve, reject) => {
   var client = await fs.readFileSync('client_bot_info.txt', 'utf-8');
@@ -48,6 +48,10 @@ return new Promise(async (resolve, reject) => {
   bot_port = client[1].substring(client[1].indexOf('=') + 1, client[1].length);
   bot_api_key = client[2].substring(client[2].indexOf('=') + 1, client[2].length);
   bot_api_auth_token = client[3].substring(client[3].indexOf('=') + 1, client[3].length);
+  https_choice = client[4].substring(client[4].indexOf('=') + 1, client[4].length);
+  ssl_key_location = client[5].substring(client[5].indexOf('=') + 1, client[5].length);
+  ssl_crt_location = client[6].substring(client[6].indexOf('=') + 1, client[6].length);
+
   // console.log(bot_username, bot_username.length);
   // console.log(bot_port);
   // console.log(bot_api_key);
@@ -63,25 +67,20 @@ return new Promise(async (resolve, reject) => {
   console.log(result);
   app.use(bodyParser.json());
 
-  //   const key = fs.readFileSync('encryption/private.key', 'utf8');
-  //   const cert = fs.readFileSync( 'encryption/primary.crt', 'utf8');
-  //   const ca = fs.readFileSync( 'encryption/intermediate.crt', 'utf8');
-  //
-  //   const credentials = {
-  //     key: key,
-  //     cert: cert,
-  //     ca: ca
-  //   };
-  //
-  //   https.createServer(credentials, app).listen(bot_port, () => {
-  // 	console.log('HTTPS Server running on port',bot_port);
-  // });
+  if (https_choice === 'yes' || https_choice === 'y') {
+    const credentials = {
+      key: fs.readFileSync(ssl_key_location, 'utf8'),
+      cert: fs.readFileSync(ssl_crt_location, 'utf8')
+    };
 
-  app.listen(bot_port, () => {
-    console.log('We are live on ' + bot_port);
-  });
-
-
+    https.createServer(credentials, app).listen(bot_port, () => {
+      console.log('HTTPS Server running on port', bot_port);
+    });
+  } else {
+    app.listen(bot_port, () => {
+      console.log('We are live on ' + bot_port);
+    });
+  }
   //Basic function to validate credentials for example
   function checkCreds(authToken) {
     var valid = true;
@@ -105,7 +104,7 @@ return new Promise(async (resolve, reject) => {
     // Check credentials
     if (!authHeader || !checkCreds(authToken)) {
       res.statusCode = 401;
-      // res.setHeader('WWW-Authenticate', 'Basic realm="example"')
+      // res.setHeader('WWW-Authenticate', 'Basic realm="example"') //try this out
       return res.end('Access denied: invalid basic-auth token.');
     } else {
       var ttl = "",
@@ -135,10 +134,9 @@ return new Promise(async (resolve, reject) => {
           console.log('displayName:', displayName);
           var s1t1a = addon.cmdSend1to1Attachment(users, attachment, displayName, ttl, bor);
           console.log(s1t1a);
-          if (s1t1a !== ""){
+          if (s1t1a !== "") {
             res.send(s1t1a);
-          }
-          else {
+          } else {
             res.sendStatus(400);
           }
         } else {
@@ -147,10 +145,9 @@ return new Promise(async (resolve, reject) => {
           console.log(users, message, ttl, bor);
           var csm = addon.cmdSend1to1Message(users, message, ttl, bor);
           console.log(csm);
-          if (csm !== ""){
+          if (csm !== "") {
             res.send(csm);
-          }
-          else {
+          } else {
             res.sendStatus(400);
           }
         }
@@ -170,20 +167,18 @@ return new Promise(async (resolve, reject) => {
           console.log('displayName:', displayName);
           var csra = await addon.cmdSendRoomAttachment(vGroupID, attachment, displayName, ttl, bor);
           console.log(csra);
-          if (csra !== ""){
+          if (csra !== "") {
             res.send(csra);
-          }
-          else {
+          } else {
             res.sendStatus(400);
           }
         } else {
           var message = req.body.message;
           var csrm = await addon.cmdSendRoomMessage(vGroupID, message, ttl, bor);
           console.log(csrm);
-          if (csrm !== ""){
+          if (csrm !== "") {
             res.send(csrm);
-          }
-          else {
+          } else {
             res.sendStatus(400);
           }
         }
@@ -207,10 +202,9 @@ return new Promise(async (resolve, reject) => {
     } else {
       var statistics = await addon.cmdGetStatistics();
       console.log(statistics);
-      if (statistics !== ""){
+      if (statistics !== "") {
         res.send(statistics);
-      }
-      else {
+      } else {
         res.statusCode = 400;
         res.send(statistics);
       }
