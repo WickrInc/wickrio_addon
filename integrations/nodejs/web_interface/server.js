@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const addon = require('wickrio_addon');
 const fs = require('fs');
 const app = express();
+process.title = "wickrioWebApi";
 process.stdin.resume(); //so the program will not close instantly
 
 function exitHandler(options, err) {
@@ -104,8 +105,9 @@ return new Promise(async (resolve, reject) => {
     // Check credentials
     if (!authHeader || !checkCreds(authToken)) {
       res.statusCode = 401;
+      console.log("-----INVALID AUTH-----")
       // res.setHeader('WWW-Authenticate', 'Basic realm="example"') //try this out
-      return res.end('Access denied: invalid basic-auth token.');
+      return res.send('Access denied: invalid basic-auth token.');
     } else {
       var ttl = "",
         bor = "";
@@ -117,17 +119,18 @@ return new Promise(async (resolve, reject) => {
         // var users = req.body.users;
         var users = [];
         for (var i in req.body.users) {
-          users.push(req.body.users[i].name.toString());
+          users.push(req.body.users[i].name);
         }
         if (req.body.attachment) {
           var attachment;
           var displayName = "";
           if (req.body.attachment.url) {
-            attachment = req.body.attachment.url.toString();
-            displayName = req.body.attachment.displayname.toString();
+            console.log('****attachment URL****')
+            attachment = req.body.attachment.url;
+            displayName = req.body.attachment.displayname;
           } else {
-            attachment = req.body.attachment.filename.toString();
-            displayName = req.body.attachment.displayname.toString();
+            attachment = req.body.attachment.filename;
+            displayName = req.body.attachment.displayname;
           }
           console.log('users:', users);
           console.log('attachment:', attachment);
@@ -140,7 +143,7 @@ return new Promise(async (resolve, reject) => {
             res.sendStatus(400);
           }
         } else {
-          var message = req.body.message.toString();
+          var message = req.body.message;
           console.log("send1to1Message");
           console.log(users, message, ttl, bor);
           var csm = addon.cmdSend1to1Message(users, message, ttl, bor);
@@ -152,16 +155,16 @@ return new Promise(async (resolve, reject) => {
           }
         }
       } else if (req.body.vgroupid) {
-        var vGroupID = req.body.vgroupid.toString();
+        var vGroupID = req.body.vgroupid;
         if (req.body.attachment) {
           var attachment;
           var displayName = "";
           if (req.body.attachment.url) {
-            attachment = req.body.attachment.url.toString();
-            displayName = req.body.attachment.displayname.toString();
+            attachment = req.body.attachment.url;
+            displayName = req.body.attachment.displayname;
           } else {
-            attachment = req.body.attachment.filename.toString();
-            displayName = req.body.attachment.displayname.toString();
+            attachment = req.body.attachment.filename;
+            displayName = req.body.attachment.displayname;
           }
           console.log('attachment:', attachment);
           console.log('displayName:', displayName);
@@ -253,8 +256,8 @@ return new Promise(async (resolve, reject) => {
       return res.end('Access denied: invalid basic-auth token.');
     } else {
       var room = req.body.room;
-      var title = room.title.toString();
-      var description = room.description.toString();
+      var title = room.title;
+      var description = room.description;
       var ttl = "",
         bor = "";
       if (room.ttl)
@@ -395,9 +398,9 @@ return new Promise(async (resolve, reject) => {
       if (req.body.bor)
         bor = req.body.bor.toString();
       if (req.body.title)
-        title = req.body.title.toString();
+        title = req.body.title;
       if (req.body.description)
-        description = req.body.description.toString();
+        description = req.body.description;
       var members = [],
         masters = [];
       if (req.body.members) {
