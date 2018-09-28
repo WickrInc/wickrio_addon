@@ -25,9 +25,29 @@ void
 MesgQueueIface::rxThread()
 {
     while (m_doReceive) {
+        int rc;
+
+        // Poll to see/wait for a reponse
+        zmq_pollitem_t  items[1];
+        items[0].socket = m_zTxSocket;
+        items[0].events = ZMQ_POLLIN;
+        rc = zmq_poll(items, 1, 5000);
+        if (rc == -1) {
+            const char *errstring = zmq_strerror(zmq_errno());
+            std::cout << "Error polling for reponse: " << errstring << "\n";
+            return;
+        }
+        // If there are no messages on the queue then start all over
+        if (rc == 0) {
+            continue;
+        }
+
+
+
+
         /* Create an empty ØMQ message */
         zmq_msg_t asyncMsgEvt;
-        int rc = zmq_msg_init (&asyncMsgEvt);
+        rc = zmq_msg_init (&asyncMsgEvt);
         if (rc != 0) {
             const char *errstring = zmq_strerror(zmq_errno());
             std::cout << "Error initializing message: " << errstring << "\n";
