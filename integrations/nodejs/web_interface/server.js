@@ -109,6 +109,14 @@ return new Promise(async (resolve, reject) => {
       // res.setHeader('WWW-Authenticate', 'Basic realm="example"') //try this out
       return res.send('Access denied: invalid basic-auth token.');
     } else {
+
+      if(!req.body.users && !req.body.vgroupid){
+        return res.send("Need a list of users OR a vGroupID to send a message.");
+      }
+      else if(!req.body.message && !req.body.attachment){
+        return res.send("Need a message OR an attachment to send a message.");
+      }
+
       var ttl = "",
         bor = "";
       if (req.body.ttl)
@@ -122,67 +130,79 @@ return new Promise(async (resolve, reject) => {
           users.push(req.body.users[i].name);
         }
         if (req.body.attachment) {
+          // if(!req.body.attachment.displayname){
+          //   return res.send("Attachment displayname must be set.")
+          // }
           var attachment;
           var displayName = "";
+          if(req.body.attachment.displayname)
+            displayName = req.body.attachment.displayname;
           if (req.body.attachment.url) {
             console.log('****attachment URL****')
             attachment = req.body.attachment.url;
-            displayName = req.body.attachment.displayname;
           } else {
             attachment = req.body.attachment.filename;
-            displayName = req.body.attachment.displayname;
           }
           console.log('users:', users);
           console.log('attachment:', attachment);
           console.log('displayName:', displayName);
           var s1t1a = addon.cmdSend1to1Attachment(users, attachment, displayName, ttl, bor);
-          console.log(s1t1a);
-          if (s1t1a !== "") {
+          if (s1t1a === "Sending message") {
+            console.log('140:',s1t1a);
             res.send(s1t1a);
           } else {
-            res.sendStatus(400);
-          }
+            res.statusCode = 400;
+            res.send(s1t1a);          }
         } else {
           var message = req.body.message;
           console.log("send1to1Message");
           console.log(users, message, ttl, bor);
           var csm = addon.cmdSend1to1Message(users, message, ttl, bor);
           console.log(csm);
-          if (csm !== "") {
+          if (csm === "Sending message") {
             res.send(csm);
           } else {
-            res.sendStatus(400);
+            res.statusCode = 400;
+            res.send(csm);
           }
         }
-      } else if (req.body.vgroupid) {
+      }
+      else if (req.body.vgroupid) {
         var vGroupID = req.body.vgroupid;
         if (req.body.attachment) {
+
+          //ASK if should add this or just convert it to empty string
+          // if(!req.body.attachment.displayname){
+          //   return res.send("Attachment displayname must be set.")
+          // }
           var attachment;
           var displayName = "";
+          if(req.body.attachment.displayname)
+            displayName = req.body.attachment.displayname;
           if (req.body.attachment.url) {
             attachment = req.body.attachment.url;
-            displayName = req.body.attachment.displayname;
           } else {
             attachment = req.body.attachment.filename;
-            displayName = req.body.attachment.displayname;
           }
           console.log('attachment:', attachment);
           console.log('displayName:', displayName);
           var csra = await addon.cmdSendRoomAttachment(vGroupID, attachment, displayName, ttl, bor);
           console.log(csra);
-          if (csra !== "") {
+          if (csra === "Sending message") {
             res.send(csra);
           } else {
-            res.sendStatus(400);
+            res.statusCode = 400;
+            res.send(csra);
           }
         } else {
           var message = req.body.message;
           var csrm = await addon.cmdSendRoomMessage(vGroupID, message, ttl, bor);
           console.log(csrm);
-          if (csrm !== "") {
+          if (csrm === "Sending message") {
             res.send(csrm);
           } else {
-            res.sendStatus(400);
+            res.statusCode = 400;
+            res.send(csrm);
           }
         }
       }
@@ -232,7 +252,7 @@ return new Promise(async (resolve, reject) => {
       var statistics = await addon.cmdClearStatistics();
       console.log(statistics);
       if (statistics !== "") {
-        res.send(statistics);
+        res.send("statistics cleared successfully.");
       } else {
         res.statusCode = 400;
         res.send(statistics);
@@ -256,6 +276,10 @@ return new Promise(async (resolve, reject) => {
       return res.end('Access denied: invalid basic-auth token.');
     } else {
       var room = req.body.room;
+      console.log("room.masters:",room.masters)
+      if(!room.title || !room.description || !room.members || !room.masters){
+        return res.send("To Create a secure room you must at least send the following Arguments: Title, description, members and masters.")
+      }
       var title = room.title;
       var description = room.description;
       var ttl = "",
@@ -389,6 +413,8 @@ return new Promise(async (resolve, reject) => {
       return res.end('Access denied: invalid basic-auth token.');
     } else {
       var vGroupID = req.params.vGroupID;
+      if(typeof vGroupID !== 'string')
+        return res.send("vGroupID must be a string.");
       var ttl = "",
         bor = "",
         title = "",
@@ -439,14 +465,15 @@ return new Promise(async (resolve, reject) => {
       return res.end('Access denied: invalid basic-auth token.');
     } else {
       var groupconvo = req.body.groupconvo;
+      if(!groupconvo.members)
+      return res.send("An array of GroupConvo members is required!")
       var ttl = "",
         bor = "";
       if (groupconvo.ttl)
         ttl = groupconvo.ttl.toString();
       if (groupconvo.bor)
         bor = groupconvo.bor.toString();
-      var members = [],
-        masters = [];
+      var members = [];
       for (var i in groupconvo.members) {
         members.push(groupconvo.members[i].name);
       }

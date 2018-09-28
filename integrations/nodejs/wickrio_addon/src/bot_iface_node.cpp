@@ -1055,10 +1055,15 @@ void cmdSendRoomAttachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
                 }
                 else if(i == 2) {
                         if(!args[i]->IsString()) {
-                                message = "SendRoomAttachment: ttl must be a string!";
+                                message = "SendRoomAttachment: displayname must be a string!";
                         }
                 }
                 else if(i == 3) {
+                        if(!args[i]->IsString()) {
+                                message = "SendRoomAttachment: ttl must be a string!";
+                        }
+                }
+                else if(i == 4) {
                         if(!args[i]->IsString()) {
                                 message = "SendRoomAttachment: bor must be a string!";
                         }
