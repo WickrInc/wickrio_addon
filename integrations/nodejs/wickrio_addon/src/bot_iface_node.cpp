@@ -245,18 +245,18 @@ void cmdAddRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
                         return;
                 }
         }
-        if(args.Length() == 6) {
-                string message;
-                if(!args[4]->IsString())
-                        message = "AddRoom: ttl must be a string!";
-                else if(!args[5]->IsString())
-                        message = "AddRoom: bor must be a string!";
-                if(!message.empty()) {
-                        auto error = v8::String::NewFromUtf8(isolate, message.c_str());
-                        args.GetReturnValue().Set(error);
-                        return;
-                }
-        }
+        // if(args.Length() == 6) {
+        //         string message;
+        //         if(!args[4]->IsString())
+        //                 message = "AddRoom: ttl must be a string!";
+        //         else if(!args[5]->IsString())
+        //                 message = "AddRoom: bor must be a string!";
+        //         if(!message.empty()) {
+        //                 auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+        //                 args.GetReturnValue().Set(error);
+        //                 return;
+        //         }
+        // }
         string command, response, ttl, bor;
         vector <string> members;
         Local<Array> arr = Local<Array>::Cast(args[0]);
@@ -291,13 +291,27 @@ void cmdAddRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
         v8::String::Utf8Value param4(args[3]->ToString());
         std::string description = std::string(*param4);
         if(args.Length() >= 5) {
+          if(!args[4]->IsString()){
+            // ttl = "";
+            cout << "\nttl:" << ttl << endl;
+          }
+          else {
                 v8::String::Utf8Value param5(args[4]->ToString());
                 ttl = std::string(*param5);
+                cout << "\nttl:" << typeid(ttl).name() << endl;
+            }
         }
         if(args.Length() == 6) {
+          if(!args[5]->IsString()){
+            bor = "";
+          }
+          else {
                 v8::String::Utf8Value param6(args[5]->ToString());
                 bor = std::string(*param6);
+                cout << "bor:" << bor << endl;
+              }
         }
+        cout << "\nbefore cmdStringAddRoom";
         botIface->cmdStringAddRoom(command, members, moderators, title, description, ttl, bor);
         if (botIface->send(command, response) != BotIface::SUCCESS) {
                 response = botIface->getLastErrorString();
@@ -311,6 +325,7 @@ void cmdAddRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
                         auto message = v8::String::NewFromUtf8(isolate, response.c_str());
                         args.GetReturnValue().Set(message);
                 }
+                cout << "\nafter cmdStringAddRoom";
                 return;
         }
 }
