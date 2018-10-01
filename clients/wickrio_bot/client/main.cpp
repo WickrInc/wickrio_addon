@@ -22,6 +22,7 @@
 #include "wickrIOIPCRuntime.h"
 #include "testClientRxDetails.h"
 #include "wickrIOJScriptService.h"
+#include "wickrIOAddonAsyncService.h"
 
 #ifdef WICKR_PLUGIN_SUPPORT
 Q_IMPORT_PLUGIN(WickrPlugin)
@@ -404,6 +405,17 @@ int main(int argc, char *argv[])
     WickrIOClientRuntime::setFileSendCleanup(true);
     WickrIOIPCRuntime::init(operation);
 
+    // Make sure that attachments are saved
+    WickrIOClientRuntime::cbSvcSetSaveAttachment(true);
+
+    /*
+     * Start the Addon Async message service and attach to the Client Runtime
+     */
+    WickrIOAddonAsyncService *asyncSvc = new WickrIOAddonAsyncService();
+    if (!WickrIOClientRuntime::addService(asyncSvc)) {
+        qDebug() << "Could not start the Addon Async service!";
+    }
+
     /*
      * Start the Javascript service and attach to the Client Runtime
      */
@@ -447,6 +459,14 @@ int main(int argc, char *argv[])
         requestHandler = new RequestHandler(operation, app);
         httpListener = new stefanfrings::HttpListener(settings,requestHandler,app);
         settings->endGroup();
+
+
+        /*
+         * Start the Integration software if there is any configured
+         */
+        WickrIOAddonAsyncService *asyncSvc = (WickrIOAddonAsyncService*)WickrIOClientRuntime::findService(WickrIOAddonAsyncService::asyncServiceBaseName);
+        if (asyncSvc)
+            asyncSvc->startScript();
 
 
         /*

@@ -313,7 +313,8 @@ WickrIOIPCSendThread::slotShutdown()
         m_zctx->stop();
         m_zctx->deleteLater();
     }
-    m_zctx = nullptr;    emit signalNotRunning();
+    m_zctx = nullptr;
+    emit signalNotRunning();
 }
 
 void
