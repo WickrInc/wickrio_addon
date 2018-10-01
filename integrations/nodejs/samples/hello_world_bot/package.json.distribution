@@ -1,11 +1,11 @@
 {
   "name": "hello_world_bot",
   "version": "1.0.0",
-  "description": "Wickr sample JavaScript Hello World Bot",
+  "description": "Wickr sample JavaScript Welcome Bot",
   "main": "hello_world_bot_node.js",
   "private": true,
   "dependencies": {
-  "nodemon": "^1.18.4",
+    "nodemon": "^1.18.4",
     "prompt": "^1.0.0",
     "wickrio_addon": "file:./wickrio_addon"
   },

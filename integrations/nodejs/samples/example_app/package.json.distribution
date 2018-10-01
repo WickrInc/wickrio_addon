@@ -7,7 +7,7 @@
   "dependencies": {
     "nodemon": "^1.18.4",
     "prompt": "^1.0.0",
-    "wickrio_addon": "file:../../wickrio_addon"
+    "wickrio_addon": "file:./wickrio_addon"
   },
   "scripts": {
     "start": "nodemon example_app_node.js",
