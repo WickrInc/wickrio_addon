@@ -159,9 +159,6 @@ bool TestClientRxDetails::processMessage(WickrDBObject *item)
 
                     int msgID = db->insertMessage(msg->getMsgTimestamp(), m_operation->m_client->id, saveDoc.toJson(QJsonDocument::Compact), (int)msg->getMsgClass(), 0);
                     WickrIOClientRuntime::cbSvcMessagesPending();
-                    WickrIOJScriptService *jsSvc = (WickrIOJScriptService*)WickrIOClientRuntime::findService(WickrIOJScriptService::jsServiceBaseName);
-                    if (jsSvc)
-                        jsSvc->messagesPending();
                 }
             }
 

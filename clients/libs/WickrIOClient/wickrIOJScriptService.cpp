@@ -8,6 +8,7 @@
 #include "wickrIOAPIInterface.h"
 #include "wickrIOCommon.h"
 #include "common/wickrUtil.h"
+#include "wickrIOAddonAsyncService.h"
 
 QString WickrIOJScriptService::jsServiceBaseName = "WickrIOJScriptThread";
 
@@ -51,20 +52,8 @@ void WickrIOJScriptService::startThreads()
     m_cbThread = new WickrIOJScriptThread(&m_thread,this);
 
     // Connect internal threads signals and slots
-    connect(this, &WickrIOJScriptService::signalMessagesPending,
-            m_cbThread, &WickrIOJScriptThread::slotProcessMessages, Qt::QueuedConnection);
     connect(this, &WickrIOJScriptService::signalStartScript,
             m_cbThread, &WickrIOJScriptThread::slotStartScript, Qt::QueuedConnection);
-
-    connect(m_cbThread, &WickrIOJScriptThread::signalAsyncMessagesState, this, &WickrIOJScriptService::signalAsyncMessagesState);
-    connect(m_cbThread, &WickrIOJScriptThread::signalAsyncMessageSent, this, &WickrIOJScriptService::signalAsyncMessageSent);
-    connect(m_cbThread, &WickrIOJScriptThread::signalAsyncEventsState, this, &WickrIOJScriptService::signalAsyncEventsState);
-    connect(m_cbThread, &WickrIOJScriptThread::signalAsyncEventSent, this, &WickrIOJScriptService::signalAsyncEventSent);
-
-    connect(this, &WickrIOJScriptService::signalSendAsyncMessage,
-            m_cbThread, &WickrIOJScriptThread::slotSendAsyncMessage, Qt::QueuedConnection);
-    connect(this, &WickrIOJScriptService::signalSendAsyncEvent,
-            m_cbThread, &WickrIOJScriptThread::slotSendAsyncEvent, Qt::QueuedConnection);
 
     // Perform startup here, creating and configuring ressources.
     m_thread.start();
@@ -86,18 +75,13 @@ void WickrIOJScriptService::stopThreads()
     qDebug("JSCRIPT THREAD: Shutdown Thread (%p)", &m_thread);
 }
 
-void WickrIOJScriptService::messagesPending()
-{
-    emit signalMessagesPending();
-}
-
 void WickrIOJScriptService::startScript()
 {
     emit signalStartScript();
 }
 
 /**
- * @brief WickrIOEventService::isHealthy
+ * @brief WickrIOJScriptService::isHealthy
  * This function will return false if the health of this services is in a bad state. For the
  * Event Handler this is typically related to a stuck event.
  * @return
@@ -105,26 +89,6 @@ void WickrIOJScriptService::startScript()
 bool WickrIOJScriptService::isHealthy()
 {
     return true;
-}
-
-bool WickrIOJScriptService::asyncMessagesState()
-{
-    return (m_cbThread ? m_cbThread->asyncMessagesState() : false);
-}
-
-bool WickrIOJScriptService::sendAsyncMessage(const QString& msg)
-{
-    emit signalSendAsyncMessage(msg);
-}
-
-bool WickrIOJScriptService::asyncEventsState()
-{
-    return (m_cbThread ? m_cbThread->asyncEventsState() : false);
-}
-
-bool WickrIOJScriptService::sendAsyncEvent(const QString& event)
-{
-    emit signalSendAsyncEvent(event);
 }
 
 
@@ -190,32 +154,7 @@ WickrIOJScriptThread::slotTimerExpire()
 {
     // If we are processing check if we are waiting for a response
     if (m_state == JSThreadState::JS_PROCESSING) {
-        if (m_asyncMesgSent) {
-            time_t now;
-            time(&now);
-            // If have not received a response in over 5 seconds then fail the message
-            if (now > (m_sentMessageTime + 5)) {
-                m_asyncMesgSent = false;
-                qDebug() << "Timed out waiting for async message response!";
-                emit signalAsyncMessageSent(false);
-            }
-        }
     }
-}
-
-void
-WickrIOJScriptThread::slotProcessMessages()
-{
-    // Don't want to start multiple processing to be initiated
-    if (m_state == JSThreadState::JS_PROCESSING)
-        return;
-
-    m_state = JSThreadState::JS_PROCESSING;
-
-#if 0
-    jScriptSendMessage();
-#endif
-    m_state = JSThreadState::JS_STARTED;
 }
 
 void
@@ -232,11 +171,6 @@ WickrIOJScriptThread::slotStartScript()
     m_zsocket->setObjectName("Replier.Socket.socket(REP)");
     connect(m_zsocket, &nzmqt::ZMQSocket::messageReceived,
             this, &WickrIOJScriptThread::slotMessageReceived, Qt::QueuedConnection);
-
-    m_async_zsocket = m_zctx->createSocket(nzmqt::ZMQSocket::TYP_REQ, this);
-    m_async_zsocket->setObjectName("Requester.Socket.socket(REQ)");
-    connect(m_async_zsocket, &nzmqt::ZMQSocket::messageReceived,
-            this, &WickrIOJScriptThread::slotAsyncResponseReceived, Qt::QueuedConnection);
 
     m_zctx->start();
 
@@ -266,65 +200,8 @@ WickrIOJScriptThread::slotStartScript()
         }
     }
 
-    // Create the socket file for the addon async messaging queue
-    {
-        QString queueName = QString(WBIO_ASYNC_TXSOCKET_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(operation->m_client->name);
-        m_async_zsocket->bindTo(queueName);
-
-        // Set the permission of the queue file so that normal user programs can access
-        QString queueFileName = QString(WBIO_ASYNC_SOCKETFILE_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(operation->m_client->name);
-        QFile zmqFile(queueFileName);
-        if(!zmqFile.setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner |
-                                   QFile::ReadUser | QFile::WriteUser | QFile::ExeUser  |
-                                   QFile::ReadGroup | QFile::WriteGroup | QFile::ExeGroup |
-                                   QFile::ReadOther | QFile::WriteOther | QFile::ExeOther)) {
-            qDebug("Something wrong setting permissions of the async messaging queue file!");
-        }
-    }
-
     m_state = JSThreadState::JS_STARTED;
 }
-
-/**********************************************************************************************
- * ASYNC MESSAGE HANDLING FUNCTIONS
- **********************************************************************************************/
-
-void
-WickrIOJScriptThread::slotSendAsyncMessage(QString msg)
-{
-    QList<QByteArray> request;
-    request += msg.toLocal8Bit();
-
-    if (msg.length() > 0)
-        qDebug() << "Sending async message:" << msg;
-    if (!m_async_zsocket->sendMessage(request)) {
-        qDebug() << "Failed to send async message!";
-        emit signalAsyncMessageSent(false);
-    } else {
-        time(&m_sentMessageTime);   // Set the time that message is sent for timeout
-        m_asyncMesgSent = true;
-    }
-}
-
-void
-WickrIOJScriptThread::slotSendAsyncEvent(QString event)
-{
-    //TODO: Add actual code to send the message to the node.js addon
-    emit signalAsyncEventSent(true);
-}
-
-void
-WickrIOJScriptThread::slotAsyncResponseReceived(const QList<QByteArray>& messages)
-{
-    for (QByteArray mesg : messages) {
-        if (m_asyncMesgSent) {
-            m_asyncMesgSent = false;
-            qDebug() << "Got async message response:" << QString(mesg);
-            emit signalAsyncMessageSent(QString(mesg) == "success");
-        }
-    }
-}
-
 
 /**********************************************************************************************
  * INCOMING MESSAGE HANDLING FUNCTIONS
@@ -466,30 +343,30 @@ WickrIOJScriptThread::processRequest(const QByteArray& request)
     // Asynchronous message and event handling
     else if (action == "start_async_messages") {
         if (apiInterface.startAsyncMessages(responseString)) {
-            if (apiInterface.processAsyncMessages() != m_processAsyncMessages) {
-                m_processAsyncMessages = apiInterface.processAsyncMessages();
-                emit signalAsyncMessagesState(m_processAsyncMessages);
+            WickrIOAddonAsyncService *asyncSvc = (WickrIOAddonAsyncService*)WickrIOClientRuntime::findService(WickrIOAddonAsyncService::asyncServiceBaseName);
+            if (asyncSvc) {
+                asyncSvc->setAsyncMessagesState(true);
             }
         }
     } else if (action == "stop_async_messages") {
         if (apiInterface.stopAsyncMessages(responseString)) {
-            if (apiInterface.processAsyncMessages() != m_processAsyncMessages) {
-                m_processAsyncMessages = apiInterface.processAsyncMessages();
-                emit signalAsyncMessagesState(m_processAsyncMessages);
+            WickrIOAddonAsyncService *asyncSvc = (WickrIOAddonAsyncService*)WickrIOClientRuntime::findService(WickrIOAddonAsyncService::asyncServiceBaseName);
+            if (asyncSvc) {
+                asyncSvc->setAsyncMessagesState(false);
             }
         }
     } else if (action == "start_async_events") {
         if (apiInterface.startAsyncEvents(responseString)) {
-            if (apiInterface.processAsyncEvents() != m_processAsyncEvents) {
-                m_processAsyncEvents = apiInterface.processAsyncEvents();
-                emit signalAsyncEventsState(m_processAsyncEvents);
+            WickrIOAddonAsyncService *asyncSvc = (WickrIOAddonAsyncService*)WickrIOClientRuntime::findService(WickrIOAddonAsyncService::asyncServiceBaseName);
+            if (asyncSvc) {
+                asyncSvc->setAsyncEventsState(true);
             }
         }
     } else if (action == "stop_async_events") {
         if (apiInterface.stopAsyncEvents(responseString)) {
-            if (apiInterface.processAsyncEvents() != m_processAsyncEvents) {
-                m_processAsyncEvents = apiInterface.processAsyncEvents();
-                emit signalAsyncEventsState(m_processAsyncEvents);
+            WickrIOAddonAsyncService *asyncSvc = (WickrIOAddonAsyncService*)WickrIOClientRuntime::findService(WickrIOAddonAsyncService::asyncServiceBaseName);
+            if (asyncSvc) {
+                asyncSvc->setAsyncEventsState(false);
             }
         }
     } else if (action == "encrypt_string") {

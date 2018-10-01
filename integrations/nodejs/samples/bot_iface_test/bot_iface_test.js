@@ -3,6 +3,40 @@ var fs = require('fs');
 
 process.title = "ifaceTest";
 module.exports = addon;
+process.stdin.resume(); //so the program will not close instantly
+
+function exitHandler(options, err) {
+  if (err) {
+    console.log(err.stack);
+    console.log(addon.closeClient());
+    process.exit();
+  }
+  if (options.exit) {
+    console.log(addon.closeClient());
+    process.exit();
+  } else if (options.pid) {
+    console.log(addon.closeClient());
+    process.kill(process.pid);
+  }
+}
+
+//catches ctrl+c and stop.sh events
+process.on('SIGINT', exitHandler.bind(null, {
+  exit: true
+}));
+
+// catches "kill pid" (for example: nodemon restart)
+process.on('SIGUSR1', exitHandler.bind(null, {
+  pid: true
+}));
+process.on('SIGUSR2', exitHandler.bind(null, {
+  pid: true
+}));
+
+//catches uncaught exceptions
+process.on('uncaughtException', exitHandler.bind(null, {
+  exit: true
+}));
 
 return new Promise(async (resolve, reject) => {
   if (process.argv[2] === undefined) {
@@ -10,6 +44,8 @@ return new Promise(async (resolve, reject) => {
     client = client.trim();
     var response = await addon.clientInit(client);
     resolve(response);
+
+
   } else {
     var response = await addon.clientInit(process.argv[2]);
     resolve(response);
@@ -17,13 +53,13 @@ return new Promise(async (resolve, reject) => {
 
 }).then(result => {
 console.log(result);
-var vGroupID = "S11fc5a644b5dd64e71ad670c49a164421eb3cfb0b383275cb14606e35c2508a";
+var vGroupID = "S90ee5a3ea4c27d619636e6e83f074dfa9a13090f23ae5d31fe9604830e13034";
 var members = ['wickraaron@wickrautomation.com'];
 var members1;
 var moderators = ['wickraaron@wickrautomation.com'];
 var bor = "600";
 var ttl = "100";
-var title = "West World";
+var title = "East Coast";
 var description = "The Good Room";
 var message = "Testing time!"
 var attachment = "/opt/WickrIODebug/package.json";

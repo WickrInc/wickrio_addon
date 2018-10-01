@@ -44,15 +44,9 @@ public:
     explicit WickrIOJScriptService();
     virtual ~WickrIOJScriptService();
 
-    void messagesPending();
     void startScript();
 
     bool isHealthy();
-
-    bool asyncMessagesState();
-    bool sendAsyncMessage(const QString& msg);
-    bool asyncEventsState();
-    bool sendAsyncEvent(const QString& event);
 
     static QString jsServiceBaseName;
 
@@ -69,15 +63,7 @@ private:
     void stopThreads();
 
 signals:
-    void signalMessagesPending();
     void signalStartScript();
-
-    void signalAsyncMessagesState(bool state);
-    void signalSendAsyncMessage(QString msg);
-    void signalAsyncMessageSent(bool result);
-    void signalAsyncEventsState(bool state);
-    void signalSendAsyncEvent(QString event);
-    void signalAsyncEventSent(bool result);
 
 };
 
@@ -102,9 +88,6 @@ public:
     WickrIOJScriptThread(QThread *thread, WickrIOJScriptService *swbSvc, QObject *parent=0);
     virtual ~WickrIOJScriptThread();
 
-    bool asyncMessagesState() { return m_processAsyncMessages; }
-    bool asyncEventsState() { return m_processAsyncEvents; }
-
 private:
     WickrIOJScriptService  *m_parent;
     JSThreadState           m_state;
@@ -116,12 +99,6 @@ private:
     // ZeroMQ definitions
     nzmqt::ZMQContext   *m_zctx = nullptr;
     nzmqt::ZMQSocket    *m_zsocket = nullptr;
-    nzmqt::ZMQSocket    *m_async_zsocket = nullptr;
-
-    // Settings for async messages and events
-    bool m_processAsyncMessages = false;
-    bool m_processAsyncEvents = false;
-    bool m_asyncMesgSent = false;           // true if waiting for a response
 
     bool initJScriptCallback();
     bool stopJScriptCallback();
@@ -132,23 +109,13 @@ private:
     QString processRequest(const QByteArray& request);
 
 signals:
-    void signalAsyncMessagesState(bool state);
-    void signalAsyncMessageSent(bool result);
-    void signalAsyncEventsState(bool state);
-    void signalAsyncEventSent(bool result);
 
 public slots:
     void slotTimerExpire();
 
     void slotMessageReceived(const QList<QByteArray>&);
-    void slotAsyncResponseReceived(const QList<QByteArray>&);
 
-    void slotProcessMessages();
     void slotStartScript();
-
-    void slotSendAsyncMessage(QString msg);
-    void slotSendAsyncEvent(QString event);
-
 };
 
 #endif // WICKRIOJSCRIPTSERVICE_H

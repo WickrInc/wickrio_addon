@@ -3,6 +3,40 @@ var fs = require('fs');
 
 process.title = "exampleApp";
 module.exports = addon;
+process.stdin.resume(); //so the program will not close instantly
+
+function exitHandler(options, err) {
+  if (err) {
+    console.log(err.stack);
+    console.log(addon.closeClient());
+    process.exit();
+  }
+  if (options.exit) {
+    console.log(addon.closeClient());
+    process.exit();
+  } else if (options.pid) {
+    console.log(addon.closeClient());
+    process.kill(process.pid);
+  }
+}
+
+//catches ctrl+c and stop.sh events
+process.on('SIGINT', exitHandler.bind(null, {
+  exit: true
+}));
+
+// catches "kill pid" (for example: nodemon restart)
+process.on('SIGUSR1', exitHandler.bind(null, {
+  pid: true
+}));
+process.on('SIGUSR2', exitHandler.bind(null, {
+  pid: true
+}));
+
+//catches uncaught exceptions
+process.on('uncaughtException', exitHandler.bind(null, {
+  exit: true
+}));
 
 return new Promise(async (resolve, reject) => {
   if (process.argv[2] === undefined) {
@@ -16,24 +50,20 @@ return new Promise(async (resolve, reject) => {
   }
 
 }).then(result => {
-console.log(result);
-var members = ['wickraaron@wickrautomation.com'];
-var message = "Testing time!"
-var bor = "60"; //optional
-var ttl = "100"; //optional
+  console.log(result);
+  addon.cmdStartAsyncRecvMessages(listen);
+  var members = ['wickraaron@wickrautomation.com'];
+  var message = "Testing time!"
+  var bor = "60"; //optional
+  var ttl = "100"; //optional
 
-var sMessage = addon.cmdSend1to1Message(members, message, ttl , bor);
-console.log(sMessage);
+  var sMessage = addon.cmdSend1to1Message(members, message, ttl, bor);
+  console.log(sMessage);
 
-//Infinite loop waiting for incoming messgaes into the bot
-for(;;){
-var rMessage = addon.cmdGetReceivedMessage();
-if(rMessage === "{ }" || rMessage === "" || !rMessage){
-  continue;
-}
-else
-  console.log(rMessage);
-}
+  function listen(message) {
+    console.log(message);
+  }
+
 }).catch(error => {
-      console.log('Error: ', error);
-    });
+  console.log('Error: ', error);
+});

@@ -13,12 +13,17 @@
 
 WBParse_QAMQPQueue::WBParse_QAMQPQueue(ParserOperationData *operation)
 {
+    qRegisterMetaType<QAmqpMessage>("QAmqpMessages");
+
     m_operation = operation;
     m_queueState = QSTATE_IDLE;
 
     QObject::connect(&m_client, SIGNAL(connected()), this, SLOT(connected()));
     QObject::connect(&m_client, SIGNAL(error(QAMQP::Error)), this, SLOT(error(QAMQP::Error)));
     QObject::connect(&m_client, SIGNAL(socketError(QAbstractSocket::SocketError)), this, SLOT(socketError(QAbstractSocket::SocketError)));
+
+    // handle message acknowledgements
+    connect(this, &WBParse_QAMQPQueue::signalAckMessage, this, &WBParse_QAMQPQueue::slotAckMessage, Qt::QueuedConnection);
 
     m_client.setUsername(operation->queueUsername);
     m_client.setPassword(operation->queuePassword);
@@ -53,13 +58,10 @@ bool WBParse_QAMQPQueue::timerCall()
     }
 
     if (m_queueState != QSTATE_RUNNING) {
-        qDebug() << "The Queue State is not running yet";
+//        qDebug() << "The Queue State is not running yet";
         return true;
     }
 
-    if (m_ackMessages.size() > 0) {
-        this->ackMessage();
-    }
     return true;
 }
 
@@ -255,17 +257,13 @@ void WBParse_QAMQPQueue::messageReceived()
             }
         }
     }
-    m_ackMessages.append(m_currentMessage);
+
+    // Emit a signal to ack this message
+    emit signalAckMessage(m_currentMessage);
 }
 
-void WBParse_QAMQPQueue::ackMessage()
+void WBParse_QAMQPQueue::slotAckMessage(QAmqpMessage ackMsg)
 {
-    qDebug() <<  QString("Acknowledging %1 messages").arg(m_ackMessages.count());
-
-    for (int i=0; i<m_ackMessages.size(); i++) {
-        QAmqpMessage msg = m_ackMessages.at(i);
-        m_queue->ack(msg);
-    }
-    m_ackMessages.clear();
+    m_queue->ack(ackMsg);
 }
 

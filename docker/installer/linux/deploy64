@@ -88,7 +88,7 @@ prefix=~/tmp/wio_${integration_type}_docker${bldtype}-deb
 debian=~/tmp/wio_${integration_type}_docker${bldtype}-deb/DEBIAN
 bindir=$prefix/usr/bin
 libdir=$prefix/usr/lib/wio_docker${bldtype}
-docdir=$prefix/usr/share/doc/wio_docker${bldtype}
+docdir=$prefix/usr/share/doc/wickr
 plugins=$prefix/usr/lib/wio_docker${bldtype}/plugins
 addonsdir=$prefix/usr/lib/wio_docker${bldtype}/node.addons
 
@@ -157,6 +157,11 @@ if test -n "$integrations_sw_dir" ; then
   mkdir -p $dstintegrationsdir
   cp -r "$integrations_sw_dir" "$dstintegrationsdir"
 fi
+
+#
+# copy the license file
+#
+cp ${current}/../../../docs/license/Wickr_api_bot_license.txt $docdir
 
 #
 # Run chrpath so binaries can find libraries

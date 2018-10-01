@@ -179,6 +179,10 @@ CmdClient::processHelp(const QStringList& cmdList)
                         << "  The quit command is used to exit this program.\n"
                         << "  WARNING: leaving this program will also put all of the WickrrIO bot clients\n"
                         << "  into the paused state.\n";
+            } else if (cmd == "restart") {
+                qDebug().nospace() << "CONSOLE:Restart command usage: restart <client number> -force\n"
+                        << "  The restart command will perform a pause and then a start on the specific\n"
+                        << "  WickrIO bot client..\n";
             } else if (cmd == "start") {
                 qDebug().nospace() << "CONSOLE:Start command usage: start <client number> [-force]\n"
                         << "  The start command is used to start a specific WickrIO bot client. The <client\n"
@@ -222,6 +226,7 @@ CmdClient::processHelp(const QStringList& cmdList)
         qDebug() << "CONSOLE:  modify <#>  - modifies a client with the specified index";
         qDebug() << "CONSOLE:  pause <#>   - pauses the client with the specified index";
         qDebug() << "CONSOLE:  quit        - leaves this program";
+        qDebug() << "CONSOLE:  restart <#> - performs a pause and start";
         qDebug() << "CONSOLE:  start <#>   - starts the client with the specified index";
         qDebug() << "CONSOLE:  upgrade <#> - upgrade integration software for client";
         if (m_root) qDebug() << "CONSOLE:  version     - display the version number of this software";
@@ -332,6 +337,20 @@ bool CmdClient::processCommand(QStringList cmdList, bool &isquit)
     } else if (cmd == "quit") {
         retVal = false;
         isquit = true;
+    } else if (cmd == "restart") {
+        if (m_clients.length() == 0) {
+            qDebug() << "CONSOLE:There are no clients to restart!";
+        } else if (clientIndex == -1) {
+            if (m_clients.length() == 1) {
+                if (pauseClient(0, bForce) && waitForClientState(0, PROCSTATE_PAUSED))
+                    startClient(0, bForce);
+            } else {
+                qDebug() << "CONSOLE:Usage: start <index>";
+            }
+        } else {
+            if (pauseClient(clientIndex, bForce) && waitForClientState(clientIndex, PROCSTATE_PAUSED))
+                startClient(clientIndex, bForce);
+        }
     } else if (cmd == "start") {
         if (m_clients.length() == 0) {
             qDebug() << "CONSOLE:There are no clients to start!";
@@ -658,17 +677,43 @@ bool CmdClient::chkClientsInterfaceExists(const QString& iface, int port)
     return false;
 }
 
+/**
+ * @brief CmdClient::cleanupClient
+ * This function is called if the getClientValues function fails. The client entry and
+ * the directory associated with a client will be deleted, if it did not exist before
+ * starting to create the client.
+ * @param clientName
+ * @param deleteIt
+ */
+void CmdClient::cleanupClient(const QString& clientName, bool deleteIt)
+{
+    if (deleteIt) {
+        if (! m_operation->m_ioDB->deleteClientUsingName(clientName)) {
+            qDebug() << "CONSOLE:There was a problem deleting the client!";
+        }
+
+        QString clientDbDirName = QString(WBIO_CLIENT_WORKINGDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(clientName);
+        QDir clientDbDir(clientDbDirName);
+        if (clientDbDir.exists()) {
+            if (!clientDbDir.removeRecursively()) {
+                qDebug() << "CONSOLE:Failed to remove the client directory and files!";
+            }
+        }
+    }
+}
+
 bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QString>& keyValuePairs, bool fromConfig)
 {
     bool quit = false;
+    bool clientDirExists;
     QString temp;
-    bool getInterfaceInfo = false;
 
     // Do not prompt for the username if from a config file
     if (!fromConfig) {
         // Get a unique user name
         do {
             temp = getNewValue(client->user, tr("Enter the user name"));
+            temp = temp.toLower();
 
             // Check if the user wants to quit the action
             if (handleQuit(temp, &quit) && quit) {
@@ -693,6 +738,11 @@ bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QStr
         }
     }
 
+    // Check to see if this client's directory exists, if not will have to delete if failure occurs
+    QString clientDbDirName = QString(WBIO_CLIENT_WORKINGDIR_FORMAT).arg(WBIO_DEFAULT_DBLOCATION).arg(client->name);
+    QDir clientDbDir(clientDbDirName);
+    clientDirExists = clientDbDir.exists();
+
     // The client name will be the username.  Replace the "@" character with the "_"
     client->name = client->user;
     client->name.replace("@", "_");
@@ -706,6 +756,7 @@ bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QStr
             temp = getNewValue(client->binary, tr("Enter the client type"), CHECK_LIST, possibleClientTypes);
             // Check if the user wants to quit the action
             if (handleQuit(temp, &quit) && quit) {
+                cleanupClient(client->name, clientDirExists);
                 return false;
             }
             binary = temp;
@@ -770,11 +821,13 @@ bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QStr
                         break;
                     }
                     if (temp.toLower() == "no" || temp.toLower() == "n" || temp.isEmpty()) {
+                        cleanupClient(client->name, clientDirExists);
                         return false;
                     }
 
                     // Check if the user wants to quit the action
                     if (handleQuit(temp, &quit) && quit) {
+                        cleanupClient(client->name, clientDirExists);
                         return false;
                     }
                 }
@@ -788,9 +841,11 @@ bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QStr
                 }
             } else if (returnCode == WIOPROVISION_FAILED) {
                 qDebug().noquote() << QString("CONSOLE:Failed to provision or login bot client %1!").arg(client->user);
+                cleanupClient(client->name, clientDirExists);
                 return false;
             } else if (returnCode == WIOPROVISION_USER_NOT_FOUND) {
                 qDebug().noquote() << QString("CONSOLE:%1 does not seem to exist. Please verify in the Admin Console.!").arg(client->user);
+                cleanupClient(client->name, clientDirExists);
                 return false;
             } else {
                 break;
@@ -819,6 +874,7 @@ bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QStr
 
             // Check if the user wants to quit the action
             if (handleQuit(temp, &quit) && quit) {
+                cleanupClient(client->name, clientDirExists);
                 return false;
             }
         }
@@ -1050,9 +1106,10 @@ bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QStr
                 temp = getNewValue(client->botType, tr("Enter the bot integration"), CHECK_LIST, possibleBotTypes);
                 // Check if the user wants to quit the action
                 if (handleQuit(temp, &quit)) {
-                    if (quit)
+                    if (quit) {
+                        cleanupClient(client->name, clientDirExists);
                         return false;
-                    else {
+                    } else {
                         temp = QString();
                         continue;
                     }
@@ -1103,22 +1160,26 @@ bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QStr
             if (!destDir.exists()) {
                 if (!destDir.mkpath(destPath)) {
                     qDebug() << "CONSOLE:Failed to create directory for integration bot software!";
+                    cleanupClient(client->name, clientDirExists);
                     return false;
                 }
             }
 
             // First copy the software to the client directory
             if (! integrationCopySW(client, swPath, destPath)) {
+                cleanupClient(client->name, clientDirExists);
                 return false;
             }
 
             // Second peform the installer if one does exist
             if (! integrationInstall(client, destPath)) {
+                cleanupClient(client->name, clientDirExists);
                 return false;
             }
 
             // Third peform the configure if one does exist
             if (! integrationConfigure(client, destPath, keyValuePairs)) {
+                cleanupClient(client->name, clientDirExists);
                 return false;
             }
 
@@ -1129,7 +1190,6 @@ bool CmdClient::getClientValues(WickrBotClients *client, const QMap<QString,QStr
 
         }
     }
-
 
     return !quit;
 }
@@ -1347,7 +1407,7 @@ CmdClient::runBotScript(const QString& destPath, const QString& configure, Wickr
                     runScript->write(endpoint.toLatin1());
                 } else if (bytes.contains("HUBOT_URL_PORT")) {
                     QString cbackPortPrompt = QString("Enter the port the %1 integration will listen on").arg(client->botType);
-                    cbackPort = getNewValue(cbackPort, cbackPortPrompt);
+                    cbackPort = getNewValue(cbackPort, cbackPortPrompt, CHECK_EMPTY_OK);
                     QString outString = QString("%1\n").arg(cbackPort);
                     runScript->write(outString.toLatin1());
                 } else {
@@ -1370,7 +1430,7 @@ CmdClient::runBotScript(const QString& destPath, const QString& configure, Wickr
                     QString prompt = bytes.right(bytes.length()-7).remove(QRegExp("[\\n\\t\\r]"));     // size of string - sizeof "PROMPT:"
                     QString curVal;
                     prompt = prompt.remove(QRegExp("[\\n\\t\\r]"));
-                    QString input = getNewValue(curVal, prompt);
+                    QString input = getNewValue(curVal, prompt, CHECK_EMPTY_OK);
 
                     input.append("\n");
                     runScript->write(input.toLatin1());
@@ -1668,19 +1728,17 @@ void CmdClient::slotReceivedMessage(QString type, QString value)
  * This function is used to pause a running client
  * @param clientIndex
  */
-void CmdClient::pauseClient(int clientIndex, bool force)
+bool CmdClient::pauseClient(int clientIndex, bool force)
 {
     if (!validateIndex(clientIndex)) {
        qDebug() << "CONSOLE:Invalid client index!";
-       return;
+       return false;
     }
 
     WickrBotClients *client = m_clients.at(clientIndex);
     WickrBotProcessState state;
     QString processName = WBIOServerCommon::getClientProcessName(client);
-
-
-
+    bool retVal=true;
 
     if (m_operation->m_ioDB->getProcessState(processName, &state)) {
         if (state.state == PROCSTATE_RUNNING) {
@@ -1688,7 +1746,7 @@ void CmdClient::pauseClient(int clientIndex, bool force)
                 QString prompt = QString(tr("Do you really want to pause the client with the name %1")).arg(client->user);
                 QString response = getNewValue("", prompt);
                 if (response.toLower() == "n" || response.toLower() == "no") {
-                    return;
+                    return false;
                 }
                 if (response.toLower() == "y" || response.toLower() == "yes") {
                     break;
@@ -1705,11 +1763,11 @@ void CmdClient::pauseClient(int clientIndex, bool force)
                     qDebug() << "CONSOLE:Please verify the client process is not running.";
                 }
             }
-            return;
+            return false;
         }
     } else {
         qDebug() << "CONSOLE:Could not get the clients state!";
-        return;
+        return false;
     }
 
     // check if there is a integration bot set, if so stop it from running
@@ -1738,6 +1796,7 @@ void CmdClient::pauseClient(int clientIndex, bool force)
             // Wait for it to start
             if(!runBotStopCmd->waitForStarted()) {
                 qDebug() << "Failed to run %1";
+                retVal = false;
             } else {
                 QStringList stopOutput;
 
@@ -1752,12 +1811,38 @@ void CmdClient::pauseClient(int clientIndex, bool force)
         }
     }
 
-
     if (! sendIPCCmd(client->name, true, WBIO_IPCCMDS_PAUSE)) {
         qDebug() << "CONSOLE:Failed to send message to client!";
     }
     closeClientIPC(client->name);
+    return retVal;
 }
+
+bool CmdClient::waitForClientState(int clientIndex, int targetState)
+{
+    WickrBotProcessState state;
+    WickrBotClients *client = m_clients.at(clientIndex);
+    QString processName = WBIOServerCommon::getClientProcessName(client);
+
+    int seconds = 0;
+    int limit = 60;
+    do {
+        QThread::sleep(1);
+
+        if (seconds++ >= 5){
+            seconds = 0;
+            qDebug() << "CONSOLE:Waiting for client state change!";
+        }
+        if (!m_operation->m_ioDB->getProcessState(processName, &state))
+            return false;
+        if (--limit <= 0) {
+            qDebug() << "CONSOLE:Timed out waiting for client to change state!";
+            break;
+        }
+    } while (state.state != targetState);
+    return state.state == targetState;
+}
+
 
 /**
  * @brief CmdClient::startClient
