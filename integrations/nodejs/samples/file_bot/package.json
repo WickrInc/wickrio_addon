@@ -5,12 +5,12 @@
   "main": "file_bot.js",
   "private": true,
   "dependencies": {
-    "file-exists": "^5.0.1",
+    "nodemon": "^1.18.4",
     "prompt": "^1.0.0",
     "wickrio_addon": "file:../../wickrio_addon"
   },
   "scripts": {
-    "start": "node file_bot.js",
+    "start": "nodemon file_bot.js",
     "stop": "pkill --signal SIGINT fileBot"
   }
 }
