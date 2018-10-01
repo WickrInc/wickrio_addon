@@ -246,25 +246,6 @@ int main(int argc, char *argv[])
     settings->setValue(WBSETTINGS_LOGGING_OUTPUT_FILENAME, outputFile);
     settings->endGroup();
 
-#if 0
-    settings->beginGroup(WBSETTINGS_LISTENER_HEADER);
-    settings->setValue(WBSETTINGS_LISTENER_PORT, newClient->port);
-    // If using localhost interface then do not need the host entry in the settings
-    if (newClient->iface == "localhost") {
-        settings->remove(WBSETTINGS_LISTENER_IF);
-    } else {
-        settings->setValue(WBSETTINGS_LISTENER_IF, newClient->iface);
-    }
-    // If is HTTPS then save the SSL settings, otherwise remove them
-    if (newClient->isHttps) {
-        settings->setValue(WBSETTINGS_LISTENER_SSLKEY, newClient->sslKeyFile);
-        settings->setValue(WBSETTINGS_LISTENER_SSLCERT, newClient->sslCertFile);
-    } else {
-        settings->remove(WBSETTINGS_LISTENER_SSLKEY);
-        settings->remove(WBSETTINGS_LISTENER_SSLCERT);
-    }
-    settings->endGroup();
-#endif
     settings->beginGroup(WBSETTINGS_ATTACH_HEADER);
     settings->setValue(WBSETTINGS_ATTACH_DIRNAME, attachDir);
     settings->endGroup();
@@ -295,10 +276,6 @@ int main(int argc, char *argv[])
     QObject::connect(WICKRBOT, &WickrIOEClientMain::signalStarted, [=]() {
     });
 
-    /*
-     * When the login is successful create the HTTP listner to receive
-     * the Web API requests.
-     */
     QObject::connect(WICKRBOT, &WickrIOEClientMain::signalLoginSuccess, [=]() {
         qDebug() << "CONSOLE:Successfully logged in as new user!";
         qDebug() << "CONSOLE:Our work is done here, logging off!";

@@ -28,19 +28,10 @@
 Q_IMPORT_PLUGIN(WickrPlugin)
 #endif
 
-#ifdef Q_OS_MAC
-#include "platforms/mac/extras/WickrAppDelegate-C-Interface.h"
-extern void wickr_powersetup(void);
-#endif
-
-#include <httpserver/httplistener.h>
-
 #include "wickrIOClientMain.h"
 #include "wickrIOIPCService.h"
 #include "wickrbotutils.h"
 #include "operationdata.h"
-
-#include "requesthandler.h"
 
 extern int versionForLogin();
 extern QString getPlatform();
@@ -49,8 +40,6 @@ extern QString getBuildString();
 extern QString getAppVersion();
 
 OperationData *operation = NULL;
-RequestHandler *requestHandler = NULL;
-stefanfrings::HttpListener *httpListener = NULL;
 
 /** Search the configuration file */
 QString
@@ -453,15 +442,6 @@ int main(int argc, char *argv[])
      */
     QObject::connect(WICKRBOT, &WickrIOClientMain::signalLoginSuccess, [=]() {
         /*
-         * Configure and start the TCP listener
-         */
-        settings->beginGroup(WBSETTINGS_LISTENER_HEADER);
-        requestHandler = new RequestHandler(operation, app);
-        httpListener = new stefanfrings::HttpListener(settings,requestHandler,app);
-        settings->endGroup();
-
-
-        /*
          * Start the Integration software if there is any configured
          */
         WickrIOAddonAsyncService *asyncSvc = (WickrIOAddonAsyncService*)WickrIOClientRuntime::findService(WickrIOAddonAsyncService::asyncServiceBaseName);
@@ -489,8 +469,6 @@ int main(int argc, char *argv[])
     WickrIOIPCRuntime::shutdown();
     WickrIOClientRuntime::shutdown();
 
-    httpListener->deleteLater();
-    requestHandler->deleteLater();
     QCoreApplication::processEvents();
 
     WICKRBOT->deleteLater();
