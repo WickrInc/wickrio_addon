@@ -6,6 +6,7 @@ const fs = require('fs');
 const app = express();
 process.title = "wickrioWebApi";
 process.stdin.resume(); //so the program will not close instantly
+process.setMaxListeners(0);
 
 function exitHandler(options, err) {
   if (err) {
@@ -43,7 +44,7 @@ process.on('uncaughtException', exitHandler.bind(null, {
 var bot_username, bot_port, bot_api_key, bot_api_auth_token, ssl_key_location, ssl_crt_location;
 
 return new Promise(async (resolve, reject) => {
-  var client = await fs.readFileSync('client_bot_info.txt', 'utf-8');
+  var client = fs.readFileSync('client_bot_info.txt', 'utf-8');
   client = client.split('\n');
   bot_username = client[0].substring(client[0].indexOf('=') + 1, client[0].length);
   bot_port = client[1].substring(client[1].indexOf('=') + 1, client[1].length);
@@ -85,8 +86,11 @@ return new Promise(async (resolve, reject) => {
   //Basic function to validate credentials for example
   function checkCreds(authToken) {
     var valid = true;
+    console.log('authToken pre base64 decode:', authToken);
+    const authStr = new Buffer(authToken, 'base64').toString();
+    console.log('authToken post base64 decode:',authStr);
     //implement authToken verification in here
-    if (authToken !== bot_api_auth_token)
+    if (authStr !== bot_api_auth_token)
       valid = false;
     return valid;
   }
@@ -105,7 +109,6 @@ return new Promise(async (resolve, reject) => {
     // Check credentials
     if (!authHeader || !checkCreds(authToken)) {
       res.statusCode = 401;
-      console.log("-----INVALID AUTH-----")
       // res.setHeader('WWW-Authenticate', 'Basic realm="example"') //try this out
       return res.send('Access denied: invalid basic-auth token.');
     } else {
@@ -116,7 +119,6 @@ return new Promise(async (resolve, reject) => {
       else if(!req.body.message && !req.body.attachment){
         return res.send("Need a message OR an attachment to send a message.");
       }
-
       var ttl = "",
         bor = "";
       if (req.body.ttl)
@@ -138,7 +140,6 @@ return new Promise(async (resolve, reject) => {
           if(req.body.attachment.displayname)
             displayName = req.body.attachment.displayname;
           if (req.body.attachment.url) {
-            console.log('****attachment URL****')
             attachment = req.body.attachment.url;
           } else {
             attachment = req.body.attachment.filename;
@@ -466,7 +467,7 @@ return new Promise(async (resolve, reject) => {
     } else {
       var groupconvo = req.body.groupconvo;
       if(!groupconvo.members)
-      return res.send("An array of GroupConvo members is required!")
+      return res.send("An array of GroupConvo members is required")
       var ttl = "",
         bor = "";
       if (groupconvo.ttl)
@@ -588,24 +589,15 @@ return new Promise(async (resolve, reject) => {
       if (req.query.count)
         count = req.query.count;
       var msgArray = [];
-      for (var i in count) {
-        console.log('count:', count)
-        for (;;) {
-          var message = addon.cmdGetReceivedMessage();
-          console.log(message);
+      for (var i=0; i < count; i++) {
+          var message = await addon.cmdGetReceivedMessage();
           if (message === "{ }" || message === "" || !message) {
-            index++;
             continue;
           } else {
-            index++;
             msgArray.push(JSON.parse(message));
             console.log(message);
-            if (index >= count)
-              break;
           }
-        }
       }
-      console.log('msgArray.length:', msgArray.length);
       res.send(msgArray);
       res.end();
     }
@@ -641,7 +633,7 @@ return new Promise(async (resolve, reject) => {
 
 
   // app.get(endpoint + "/MsgRecvCallback", async function(req, res) {
-  //   // var callbackURL = await fs.readFileSync("callbackAddress.txt");
+  //   // var callbackURL = await fs.readFile("callbackAddress.txt");
   //   var response = {
   //     "callbackurl": callbackURL
   //   };
@@ -649,7 +641,7 @@ return new Promise(async (resolve, reject) => {
   // });
   //
   // app.delete(endpoint + "/MsgRecvCallback", async function(req, res) {
-  //   // var callbackURL = await fs.WriteFileSync("callbackAddress.txt", "");
+  //   // var callbackURL = await fs.WriteFile("callbackAddress.txt", "");
   //   res.send('SUCCESS');
   // });
 
