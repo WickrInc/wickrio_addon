@@ -1,11 +1,11 @@
 {
   "name": "wickrio_web_api",
   "version": "1.0.0",
-  "description": "WickrIO Web Interface Node.JS API",
+  "description": "WickrIO Node.JS API Web Interface",
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "start": "nodemon server.js",
+    "start": "node server.js",
     "stop": "pkill --signal SIGINT wickrioWebApi"
   },
   "keywords": [
@@ -21,6 +21,7 @@
   "dependencies": {
     "basic-auth": "^2.0.1",
     "body-parser": "^1.18.3",
+    "crypto-js": "^3.1.9-1",
     "express": "^4.16.3",
     "mongodb": "^3.1.1",
     "wickrio_addon": "file:../wickrio_addon"
