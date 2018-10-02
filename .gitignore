@@ -1,0 +1,47 @@
+autobuild-*/
+build
+
+.DS_Store
+.AppleDouble
+.LSOverride
+
+Icon
+
+._*
+
+*.slo
+*.lo
+*.o
+*.a
+*.la
+*.lai
+
+# Installer
+*.swp
+*.msi
+*-cache
+
+# Qt-es
+
+*.pro.user
+*.pro.user.*
+moc_*.cpp
+qrc_*.cpp
+ui_*.h
+Makefile*
+plugins/build-*
+*-build-*
+
+# QtCreator
+
+*.autosave
+
+export/*
+localRepo/*
+
+CMakeLists.txt.user
+
+node_modules
+package-lock.json
+client_bot_username.txt
+SetCallback_extra_code.cpp
