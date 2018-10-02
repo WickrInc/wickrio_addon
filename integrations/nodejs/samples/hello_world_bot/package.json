@@ -1,7 +1,7 @@
 {
   "name": "hello_world_bot",
   "version": "1.0.0",
-  "description": "Wickr sample JavaScript Welcome Bot",
+  "description": "Wickr sample JavaScript Hello World Bot",
   "main": "hello_world_bot_node.js",
   "private": true,
   "dependencies": {
