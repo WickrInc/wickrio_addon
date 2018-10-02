@@ -250,6 +250,9 @@ int main(int argc, char *argv[])
     settings->setValue(WBSETTINGS_ATTACH_DIRNAME, attachDir);
     settings->endGroup();
 
+    settings->beginGroup(WBSETTINGS_CONFIG_HEADER);
+    settings->setValue(WBSETTINGS_CONFIG_ATTACHLIFE, 60);
+    settings->endGroup();
 
     settings->sync();
 

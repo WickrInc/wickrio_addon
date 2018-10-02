@@ -36,6 +36,7 @@
 
 #define WBSETTINGS_CONFIG_HEADER        "configuration"
 #define WBSETTINGS_CONFIG_DORECEIVE     "doreceive"
+#define WBSETTINGS_CONFIG_ATTACHLIFE    "attachLifeMinutes"
 #define WBSETTINGS_CONFIG_SERVER        "servername"
 
 #define WBSETTINGS_CONSOLESVR_HEADER    "console"

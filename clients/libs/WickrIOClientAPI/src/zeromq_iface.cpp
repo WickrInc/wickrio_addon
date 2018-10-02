@@ -29,7 +29,7 @@ MesgQueueIface::rxThread()
 
         // Poll to see/wait for a reponse
         zmq_pollitem_t  items[1];
-        items[0].socket = m_zTxSocket;
+        items[0].socket = m_zRxSocket;
         items[0].events = ZMQ_POLLIN;
         rc = zmq_poll(items, 1, 5000);
         if (rc == -1) {

@@ -125,6 +125,10 @@ private:
     bool m_processAsyncEvents = false;
     bool m_asyncMesgSent = false;           // true if waiting for a response
 
+    // Statistics
+    long m_failures = 0;
+    long m_transmitted = 0;
+
     bool initJScriptCallback();
     bool stopJScriptCallback();
 
@@ -132,9 +136,7 @@ private:
     bool jScriptSendMessage();
 
 signals:
-    void signalAsyncMessagesState(bool state);
     void signalAsyncMessageSent(bool result);
-    void signalAsyncEventsState(bool state);
     void signalAsyncEventSent(bool result);
 
 public slots:

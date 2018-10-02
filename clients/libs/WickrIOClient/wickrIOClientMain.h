@@ -77,6 +77,11 @@ private:
     QString m_userName;
     bool    m_autologin = false;
 
+    // Attachment lifetime handling
+    int     m_attachmentLifeMins=0;     // How long attachments should live in minutes (0 is forever)
+    long    m_attachmentLifeSecs=0;     // Seconds since last check of attachments
+    long    m_attachmentLifeFreq=60;    // How many seconds between check of attachment lifecycles
+
     // Timer definitions
     void startTimer()
     {
@@ -93,6 +98,8 @@ private:
     void stopAndExit(int procState);
 
     bool sendConsoleMsg(const QString& cmd, const QString& value);
+
+    void cleanupAttachments();
 
 private slots:
     void slotDoTimerWork();

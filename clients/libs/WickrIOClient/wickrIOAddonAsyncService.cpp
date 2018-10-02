@@ -54,9 +54,7 @@ void WickrIOAddonAsyncService::startThreads()
     connect(this, &WickrIOAddonAsyncService::signalStartScript,
             m_cbThread, &WickrIOAddonAsyncThread::slotStartScript, Qt::QueuedConnection);
 
-    connect(m_cbThread, &WickrIOAddonAsyncThread::signalAsyncMessagesState, this, &WickrIOAddonAsyncService::signalAsyncMessagesState);
     connect(m_cbThread, &WickrIOAddonAsyncThread::signalAsyncMessageSent, this, &WickrIOAddonAsyncService::signalAsyncMessageSent);
-    connect(m_cbThread, &WickrIOAddonAsyncThread::signalAsyncEventsState, this, &WickrIOAddonAsyncService::signalAsyncEventsState);
     connect(m_cbThread, &WickrIOAddonAsyncThread::signalAsyncEventSent, this, &WickrIOAddonAsyncService::signalAsyncEventSent);
 
     connect(this, &WickrIOAddonAsyncService::signalAsyncMessagesState,
@@ -204,9 +202,13 @@ WickrIOAddonAsyncThread::slotTimerExpire()
             time(&now);
             // If have not received a response in over 5 seconds then fail the message
             if (now > (m_sentMessageTime + 5)) {
-                m_asyncMesgSent = false;
                 qDebug() << "Timed out waiting for async message response!";
                 emit signalAsyncMessageSent(false);
+                m_failures++;
+
+                //TODOShould reset the socket
+
+                m_asyncMesgSent = false;
             }
         }
     }
@@ -218,7 +220,6 @@ WickrIOAddonAsyncThread::slotStartScript()
     // Don't want to start multiple processing to be initiated
     if (m_state == AddonAsyncThreadState::ADDONASYNC_PROCESSING)
         return;
-    m_state = AddonAsyncThreadState::ADDONASYNC_PROCESSING;
 
     m_zctx = nzmqt::createDefaultContext();
 
@@ -255,7 +256,7 @@ WickrIOAddonAsyncThread::slotStartScript()
         }
     }
 
-    m_state = AddonAsyncThreadState::ADDONASYNC_STARTED;
+    m_state = AddonAsyncThreadState::ADDONASYNC_PROCESSING;
 }
 
 /**********************************************************************************************
@@ -265,19 +266,32 @@ WickrIOAddonAsyncThread::slotStartScript()
 void WickrIOAddonAsyncThread::slotAsyncMessagesState(bool state)
 {
     m_processAsyncMessages = state;
+
+    if (state) {
+        WickrIOClientRuntime::cbSvcMessagesPending();
+    }
 }
 
 void
 WickrIOAddonAsyncThread::slotSendAsyncMessage(QString msg)
 {
+    // Not started yet or message was sent and waiting for a response
+    if (m_state != AddonAsyncThreadState::ADDONASYNC_PROCESSING || m_asyncMesgSent) {
+        qDebug() << "AsyncSend: Waiting for a response, can't send!";
+        emit signalAsyncMessageSent(false);
+        return;
+    }
+
     QList<QByteArray> request;
     request += msg.toLocal8Bit();
 
     if (msg.length() > 0)
         qDebug() << "Sending async message:" << msg;
+
     if (!m_async_zsocket->sendMessage(request)) {
         qDebug() << "Failed to send async message!";
         emit signalAsyncMessageSent(false);
+        m_failures++;
     } else {
         time(&m_sentMessageTime);   // Set the time that message is sent for timeout
         m_asyncMesgSent = true;
