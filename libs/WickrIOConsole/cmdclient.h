@@ -30,14 +30,17 @@ private:
     void processHelp(const QStringList& cmdList);
 
     bool getClientValues(WickrBotClients *client, const QMap<QString,QString>& keyValuePairs, bool fromConfig=false);
+    void cleanupClient(const QString& clientName, bool deleteIt=true);
     void addClient();
     void deleteClient(int clientIndex);
     void listClients();
     void listInboundPorts();
     void modifyClient(int clientIndex);
-    void pauseClient(int clientIndex, bool force);
+    bool pauseClient(int clientIndex, bool force);
     void startClient(int clientIndex, bool force);
     void upgradeClient(int clientIndex);
+
+    bool waitForClientState(int clientIndex, int state);
 
     bool chkClientsUserExists(const QString& name);
     bool chkClientsInterfaceExists(const QString& iface, int port);

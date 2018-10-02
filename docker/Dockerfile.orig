@@ -29,7 +29,8 @@ RUN apt-get update \
   && gdebi -n QTDEBFILE \
   && gdebi -n INTEGRATIONDEBFILE \
   && gdebi -n BOTDEBFILE \
-  && gdebi -n CONSOLEDEBFILE
+  && gdebi -n CONSOLEDEBFILE \
+  && rm -f *.deb
 ARG DEBIAN_FRONTEND=readline
 
 COPY start.sh ./start.sh

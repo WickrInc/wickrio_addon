@@ -68,11 +68,6 @@ else {
 }
 
 #
-# Include the Wickr IO common HTTP files
-#
-include($${DEPTH}/shared/common_http/common_http.pri)
-
-#
 # Include the Wickr Client Base library
 #
 #include($${DEPTH}/libs/WickrBase/WickrBase.pri)

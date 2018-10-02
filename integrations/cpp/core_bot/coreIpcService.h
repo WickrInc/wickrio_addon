@@ -1,18 +1,15 @@
-#ifndef WICKRIOJSCRIPTSERVICE_H
-#define WICKRIOJSCRIPTSERVICE_H
+#ifndef COREIPCSERVICE_H
+#define COREIPCSERVICE_H
 
 #include <QObject>
 #include <QThread>
-#include "common/wickrNetworkUtil.h"
 
-#include "operationdata.h"
-#include "wickrIOAppSettings.h"
-#include "wickrIOServiceBase.h"
+#include "common/wickrNetworkUtil.h"
 
 #include "nzmqt/nzmqt.hpp"
 
 // Forward declaration
-class WickrIOJScriptThread;
+class CoreIpcThread;
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -36,35 +33,32 @@ enum JSThreadState { JS_UNINITIALIZED = 0, // Unitialized
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-class WickrIOJScriptService : public WickrIOServiceBase
+class CoreIpcService : public QObject
 {
     Q_OBJECT
-
 public:
-    explicit WickrIOJScriptService();
-    virtual ~WickrIOJScriptService();
+    explicit CoreIpcService(QObject *parent = nullptr);
+    ~CoreIpcService();
 
-    void startScript();
-
-    bool isHealthy();
-
-    static QString jsServiceBaseName;
-
-private:
     // General purpose thread lock used for common threaded related queries/updates(hence ReadWrite).
     // NOTE: Other required service specific locks should be defined and managed by the specialized services.
     mutable QReadWriteLock m_lock;
 
-    WickrServiceState       m_state;
-    QThread                 m_thread;
-    WickrIOJScriptThread   *m_cbThread;
+    WickrServiceState   m_state;
+    QThread             m_thread;
+    CoreIpcThread    *m_cbThread=nullptr;
 
     void startThreads();
     void stopThreads();
+    void startListening();
+
+    static QString jsServiceBaseName;
 
 signals:
-    void signalStartScript();
+    void signalStateChange(bool shutdown);
+    void signalStartIpcListening();
 
+public slots:
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -75,47 +69,29 @@ signals:
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-/**
- * @brief The WickrIOJScriptThread class
- */
-class WickrIOJScriptThread : public QObject
+class CoreIpcThread : public QObject
 {
     Q_OBJECT
-
 public:
-    static QString jsStringState(JSThreadState state);
-
-    WickrIOJScriptThread(QThread *thread, WickrIOJScriptService *swbSvc, QObject *parent=0);
-    virtual ~WickrIOJScriptThread();
+    explicit CoreIpcThread(QThread *thread, CoreIpcService *ipcSvc, QObject *parent = nullptr);
+    ~CoreIpcThread();
 
 private:
-    WickrIOJScriptService  *m_parent;
+    CoreIpcService   *m_parent;
     JSThreadState           m_state;
-
-    bool                    m_jsCallbackInitialized = false;
-    QTimer                  m_timer;
-    time_t                  m_sentMessageTime;
 
     // ZeroMQ definitions
     nzmqt::ZMQContext   *m_zctx = nullptr;
     nzmqt::ZMQSocket    *m_zsocket = nullptr;
 
-    bool initJScriptCallback();
-    bool stopJScriptCallback();
-
-    bool jScriptStartScript();
-    bool jScriptSendMessage();
-
-    QString processRequest(const QByteArray& request);
-
 signals:
+    void signalStateChange(bool shutdown);
 
 public slots:
-    void slotTimerExpire();
-
+    void slotStartIpcListening();
     void slotMessageReceived(const QList<QByteArray>&);
-
-    void slotStartScript();
 };
 
-#endif // WICKRIOJSCRIPTSERVICE_H
+
+
+#endif // COREIPCSERVICE_H

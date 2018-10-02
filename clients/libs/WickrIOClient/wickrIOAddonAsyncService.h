@@ -1,5 +1,5 @@
-#ifndef WICKRIOJSCRIPTSERVICE_H
-#define WICKRIOJSCRIPTSERVICE_H
+#ifndef WICKRIOADDONASYNCSERVICE_H
+#define WICKRIOADDONASYNCSERVICE_H
 
 #include <QObject>
 #include <QThread>
@@ -12,7 +12,7 @@
 #include "nzmqt/nzmqt.hpp"
 
 // Forward declaration
-class WickrIOJScriptThread;
+class WickrIOAddonAsyncThread;
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -22,11 +22,11 @@ class WickrIOJScriptThread;
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-// WickrIOJScript Thread State
-enum JSThreadState { JS_UNINITIALIZED = 0, // Unitialized
-                     JS_STARTED,           // Thread started state, enteres this state only on initial startup.
-                     JS_PROCESSING,        // Currently processing messages
-                     JS_FINISHED };        // Disconnected from switchboard
+// WickrIOAddonAsync Thread State
+enum AddonAsyncThreadState { ADDONASYNC_UNINITIALIZED = 0, // Unitialized
+                             ADDONASYNC_STARTED,           // Thread started state, enteres this state only on initial startup.
+                             ADDONASYNC_PROCESSING,        // Currently processing messages
+                             ADDONASYNC_FINISHED };        // Disconnected from switchboard
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -36,19 +36,28 @@ enum JSThreadState { JS_UNINITIALIZED = 0, // Unitialized
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-class WickrIOJScriptService : public WickrIOServiceBase
+class WickrIOAddonAsyncService : public WickrIOServiceBase
 {
     Q_OBJECT
 
 public:
-    explicit WickrIOJScriptService();
-    virtual ~WickrIOJScriptService();
+    explicit WickrIOAddonAsyncService();
+    virtual ~WickrIOAddonAsyncService();
 
     void startScript();
 
     bool isHealthy();
 
-    static QString jsServiceBaseName;
+    void setAsyncMessagesState(bool state);
+    bool asyncMessagesState();
+    bool sendAsyncMessage(const QString& msg);
+
+    void setAsyncEventsState(bool state);
+    bool asyncEventsState();
+    bool sendAsyncEvent(const QString& event);
+
+
+    static QString asyncServiceBaseName;
 
 private:
     // General purpose thread lock used for common threaded related queries/updates(hence ReadWrite).
@@ -57,13 +66,21 @@ private:
 
     WickrServiceState       m_state;
     QThread                 m_thread;
-    WickrIOJScriptThread   *m_cbThread;
+    WickrIOAddonAsyncThread   *m_cbThread;
 
     void startThreads();
     void stopThreads();
 
 signals:
     void signalStartScript();
+
+    void signalAsyncMessagesState(bool state);
+    void signalSendAsyncMessage(QString msg);
+    void signalAsyncMessageSent(bool result);
+
+    void signalAsyncEventsState(bool state);
+    void signalSendAsyncEvent(QString event);
+    void signalAsyncEventSent(bool result);
 
 };
 
@@ -76,21 +93,24 @@ signals:
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- * @brief The WickrIOJScriptThread class
+ * @brief The WickrIOAddonAsyncThread class
  */
-class WickrIOJScriptThread : public QObject
+class WickrIOAddonAsyncThread : public QObject
 {
     Q_OBJECT
 
 public:
-    static QString jsStringState(JSThreadState state);
+    static QString jsStringState(AddonAsyncThreadState state);
 
-    WickrIOJScriptThread(QThread *thread, WickrIOJScriptService *swbSvc, QObject *parent=0);
-    virtual ~WickrIOJScriptThread();
+    WickrIOAddonAsyncThread(QThread *thread, WickrIOAddonAsyncService *swbSvc, QObject *parent=0);
+    virtual ~WickrIOAddonAsyncThread();
+
+    bool asyncMessagesState() { return m_processAsyncMessages; }
+    bool asyncEventsState() { return m_processAsyncEvents; }
 
 private:
-    WickrIOJScriptService  *m_parent;
-    JSThreadState           m_state;
+    WickrIOAddonAsyncService    *m_parent;
+    AddonAsyncThreadState       m_state;
 
     bool                    m_jsCallbackInitialized = false;
     QTimer                  m_timer;
@@ -98,7 +118,16 @@ private:
 
     // ZeroMQ definitions
     nzmqt::ZMQContext   *m_zctx = nullptr;
-    nzmqt::ZMQSocket    *m_zsocket = nullptr;
+    nzmqt::ZMQSocket    *m_async_zsocket = nullptr;
+
+    // Settings for async messages and events
+    bool m_processAsyncMessages = false;
+    bool m_processAsyncEvents = false;
+    bool m_asyncMesgSent = false;           // true if waiting for a response
+
+    // Statistics
+    long m_failures = 0;
+    long m_transmitted = 0;
 
     bool initJScriptCallback();
     bool stopJScriptCallback();
@@ -106,16 +135,21 @@ private:
     bool jScriptStartScript();
     bool jScriptSendMessage();
 
-    QString processRequest(const QByteArray& request);
-
 signals:
+    void signalAsyncMessageSent(bool result);
+    void signalAsyncEventSent(bool result);
 
 public slots:
     void slotTimerExpire();
-
-    void slotMessageReceived(const QList<QByteArray>&);
+    void slotAsyncResponseReceived(const QList<QByteArray>&);
 
     void slotStartScript();
+
+    void slotAsyncMessagesState(bool state);
+    void slotSendAsyncMessage(QString msg);
+    void slotAsyncEventsState(bool state);
+    void slotSendAsyncEvent(QString event);
+
 };
 
-#endif // WICKRIOJSCRIPTSERVICE_H
+#endif // WICKRIOADDONASYNCSERVICE_H

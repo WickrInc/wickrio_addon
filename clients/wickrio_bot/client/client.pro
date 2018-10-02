@@ -67,11 +67,6 @@ else {
 }
 
 #
-# Include the Wickr IO common HTTP files
-#
-include($${DEPTH}/shared/common_http/common_http.pri)
-
-#
 # Include the Wickr Client library
 #
 include(../../libs/WickrIOClient/WickrIOClient.pri)
@@ -143,12 +138,10 @@ RESOURCES += \
 
 SOURCES += \
     main.cpp \
-    requesthandler.cpp \
     testClientRxDetails.cpp
 
 HEADERS += \
     testClientConfigInfo.h \
-    requesthandler.h \
     testClientConfigInfo.h \
     testClientRxDetails.h
 

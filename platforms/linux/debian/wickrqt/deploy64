@@ -45,9 +45,9 @@ cp -a $QTSRCDIR/lib/libQt5NetworkAuth.* $libdir/
 cp -a $QTSRCDIR/lib/libQt5Network.* $libdir/
 cp -a $QTSRCDIR/lib/libQt5Sql.* $libdir/
 cp -a $QTSRCDIR/lib/libQt5WebChannel.* $libdir/
-cp -a $QTSRCDIR/lib/libQt5WebEngineCore.* $libdir/
-cp -a $QTSRCDIR/lib/libQt5WebEngine.* $libdir/
-cp -a $QTSRCDIR/lib/libQt5WebEngineWidgets.* $libdir/
+#cp -a $QTSRCDIR/lib/libQt5WebEngineCore.* $libdir/
+#cp -a $QTSRCDIR/lib/libQt5WebEngine.* $libdir/
+#cp -a $QTSRCDIR/lib/libQt5WebEngineWidgets.* $libdir/
 cp -a $QTSRCDIR/lib/libQt5WebSockets.* $libdir/
 cp -a $QTSRCDIR/lib/libQt5Widgets.* $libdir/
 cp -a $QTSRCDIR/lib/libicu* $libdir/

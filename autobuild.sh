@@ -594,5 +594,14 @@ fi
 
 rm -rf docker/packages
 
+
+#
+# send a message to the bot room
+#
+botMessage="Version ${versionForDocker} of ${wickrIOBotImage} has been posted to Docker Hub"
+
+curl -v -H "Content-Type: application/json" -H "Authorization: Basic 123456789012345678901234" -X POST http://10.30.20.102:4001/Apps/abcdef/Messages -d "{\"vgroupid\" : \"S61908c3e173c91689e78714a546880404fe138580a4a08b51de83d8ced00b60\", \"message\" : \"${botMessage}\"}"
+
+
 echo "\n********************************************************************************"
 echo "Fished: `date`"

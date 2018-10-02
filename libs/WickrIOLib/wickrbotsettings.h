@@ -10,6 +10,9 @@
 #define WBSETTINGS_HELP_HEADER          "help"
 #define WBSETTINGS_HELP_SHOW_WELCOME    "welcome"
 
+#define WBSETTINGS_LICENSE_HEADER       "license"
+#define WBSETTINGS_LICENSE_ACCEPTED     "accepted"
+
 #define WBSETTINGS_LISTENER_HEADER      "listener"
 #define WBSETTINGS_LISTENER_PORT        "port"
 #define WBSETTINGS_LISTENER_IF          "host"
@@ -33,6 +36,7 @@
 
 #define WBSETTINGS_CONFIG_HEADER        "configuration"
 #define WBSETTINGS_CONFIG_DORECEIVE     "doreceive"
+#define WBSETTINGS_CONFIG_ATTACHLIFE    "attachLifeMinutes"
 #define WBSETTINGS_CONFIG_SERVER        "servername"
 
 #define WBSETTINGS_CONSOLESVR_HEADER    "console"
