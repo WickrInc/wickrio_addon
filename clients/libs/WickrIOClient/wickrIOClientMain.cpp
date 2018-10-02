@@ -4,6 +4,9 @@
 #include <QJsonValue>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QFileInfo>
+#include <QFileInfoList>
+#include <QDir>
 
 #include "wickrbotsettings.h"
 #include "wickrIOClientMain.h"
@@ -420,6 +423,36 @@ void WickrIOClientMain::setIPC(WickrIOIPCService *ipc)
     connect(ipc, &WickrIOIPCService::signalReceivedMessage, this, &WickrIOClientMain::slotReceivedMessage);
 }
 
+void WickrIOClientMain::cleanupAttachments()
+{
+    if (m_operation->attachmentsDir.isEmpty())
+        return;
+
+    // if have reached the desired frequencey time then check the files
+    if (++m_attachmentLifeSecs > m_attachmentLifeFreq) {
+        m_attachmentLifeSecs = 0;
+
+        QDir directory(m_operation->attachmentsDir);
+        QFileInfoList list = directory.entryInfoList(QDir::Files);
+        for (QFileInfo fileInfo : list) {
+            QDateTime filecreated = fileInfo.birthTime();
+            if (! filecreated.isValid())
+                filecreated = fileInfo.lastModified();
+
+            QDateTime now = QDateTime::currentDateTime();
+            qint64 secondsDiff = filecreated.secsTo(now);
+            qint64 minsDiff = secondsDiff / 60;
+
+            // If the file is older than the lifetime then delete it
+            if (minsDiff > m_attachmentLifeMins) {
+                qDebug() << "Deleting:" << fileInfo.fileName();
+                QFile file2del(m_operation->attachmentsDir + "/" + fileInfo.fileName());
+                file2del.remove();
+            }
+        }
+    }
+}
+
 void WickrIOClientMain::slotDoTimerWork()
 {
     // If there is a duration set then check if it is time to stop running
@@ -446,6 +479,10 @@ void WickrIOClientMain::slotDoTimerWork()
     if (m_rxService != nullptr && !m_rxService->isHealthy()) {
         qDebug() << "Receive Service is NOT healthy!";
     }
+
+    // If there is an attachment lifetype then check if any files need to go
+    if (m_attachmentLifeMins != 0)
+        cleanupAttachments();
 }
 
 /**
@@ -762,6 +799,9 @@ bool WickrIOClientMain::parseSettings(QSettings *settings)
     // Set the Base URL for communications to the server
     WickrURLs::setBaseURL(m_serverName);
 
+    if (settings->contains(WBSETTINGS_CONFIG_ATTACHLIFE)) {
+        m_attachmentLifeMins = settings->value(WBSETTINGS_CONFIG_ATTACHLIFE, 0).toInt();
+    }
     settings->endGroup();
     return true;
 }

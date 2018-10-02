@@ -22,24 +22,16 @@
 #include "wickrIOIPCRuntime.h"
 #include "testClientRxDetails.h"
 #include "wickrIOJScriptService.h"
+#include "wickrIOAddonAsyncService.h"
 
 #ifdef WICKR_PLUGIN_SUPPORT
 Q_IMPORT_PLUGIN(WickrPlugin)
 #endif
 
-#ifdef Q_OS_MAC
-#include "platforms/mac/extras/WickrAppDelegate-C-Interface.h"
-extern void wickr_powersetup(void);
-#endif
-
-#include <httpserver/httplistener.h>
-
 #include "wickrIOClientMain.h"
 #include "wickrIOIPCService.h"
 #include "wickrbotutils.h"
 #include "operationdata.h"
-
-#include "requesthandler.h"
 
 extern int versionForLogin();
 extern QString getPlatform();
@@ -48,8 +40,6 @@ extern QString getBuildString();
 extern QString getAppVersion();
 
 OperationData *operation = NULL;
-RequestHandler *requestHandler = NULL;
-stefanfrings::HttpListener *httpListener = NULL;
 
 /** Search the configuration file */
 QString
@@ -404,6 +394,17 @@ int main(int argc, char *argv[])
     WickrIOClientRuntime::setFileSendCleanup(true);
     WickrIOIPCRuntime::init(operation);
 
+    // Make sure that attachments are saved
+    WickrIOClientRuntime::cbSvcSetSaveAttachment(true);
+
+    /*
+     * Start the Addon Async message service and attach to the Client Runtime
+     */
+    WickrIOAddonAsyncService *asyncSvc = new WickrIOAddonAsyncService();
+    if (!WickrIOClientRuntime::addService(asyncSvc)) {
+        qDebug() << "Could not start the Addon Async service!";
+    }
+
     /*
      * Start the Javascript service and attach to the Client Runtime
      */
@@ -441,12 +442,11 @@ int main(int argc, char *argv[])
      */
     QObject::connect(WICKRBOT, &WickrIOClientMain::signalLoginSuccess, [=]() {
         /*
-         * Configure and start the TCP listener
+         * Start the Integration software if there is any configured
          */
-        settings->beginGroup(WBSETTINGS_LISTENER_HEADER);
-        requestHandler = new RequestHandler(operation, app);
-        httpListener = new stefanfrings::HttpListener(settings,requestHandler,app);
-        settings->endGroup();
+        WickrIOAddonAsyncService *asyncSvc = (WickrIOAddonAsyncService*)WickrIOClientRuntime::findService(WickrIOAddonAsyncService::asyncServiceBaseName);
+        if (asyncSvc)
+            asyncSvc->startScript();
 
 
         /*
@@ -469,8 +469,6 @@ int main(int argc, char *argv[])
     WickrIOIPCRuntime::shutdown();
     WickrIOClientRuntime::shutdown();
 
-    httpListener->deleteLater();
-    requestHandler->deleteLater();
     QCoreApplication::processEvents();
 
     WICKRBOT->deleteLater();

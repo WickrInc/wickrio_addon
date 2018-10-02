@@ -1,59 +1,6 @@
-Release Notes from v4.26-release to v4.54.8-4:
-  * Added code to support the async messaging. If the async messaging is on,…
-  * Initial part of async messaging and events. [ci skip[
-  * Moving the bot to build using Qt 5.10.1
-  * Fix bot mentioning regex
-  * Change to parsing vGroupID as a string
-  * Change welcome bot to use cmdSendRoomMessage instead of cmdSend1to1Message
-  * Add Room, Messages and GroupConvo endpoints for Web Interface
-  * Fix install.sh scripts for file_bot
-  * Add regex bot mentioning and command processing for file_bot
-  * Support better command line, with a history and editing the command line [ci skip]
-  * Fix configure.sh, add VERSION files, add upgrade.sh for file_bot
-  * Add bot mentioning parsing to file bot
-  * Prealpha v4.52
-  * # Conflicts:
-  * #   BUILD_NUMBER
-  * #   clients/libs/WickrIOClient/wickrBuildNumbers.h
-  * #   integrations/nodejs/installer/generate
-  * #   release.txt
-  * Add distribution method for samples - Aaron-nodejs02
-  * Update the generate script to all the generate.sh files in the samples…
-  * Fix compliance bot
-  * Paul fix clientserver ipc
-  * Commit initial work associated with using ZeroMQ instead of IPC code [ci skip]
-  * Make Wickr Node.js addon distributable
-  * Improve fileBot
-  * Ported changes to save delete and recall messages [ci skip]
-  * Add filebot sample
-  * Remove the check and prompt if the IPC value is 0
-  * Add start and stop to welcomeBot
-  * Add check for client bot's name argument
-  * Edit package.json files for samples and addon
-  * Create package (tar.gz) of the node.js samples
-  * Update addon and API cmake files
-  * Makr addon a library
-  * Add SendAttachment functions, modified docs
-  * Fix the sending a filename for the URL sending, still neeed to fix for non url sending [ci skip]
-  * Fix merge
-  * Remove RabbitMQ code
-  * Changes to perform an easy setup of a new client. Reorganized alot of software…
-  * Fix function response messages, add new example app
-  * Revert welcome_bot_node to pre-async state, Add better error checking to bot_iface_node
-  * Add amqp arguments to init()
-  * Add rabbitmq installation to dockerfile
-  * Add WelcomeBot and ComplianceBot scripts
-  * Paul dockerinteractivestart
-  * Add error checks and fixes
-  * Create one package for wickrio bot docker installation [ci skip]
-  * Add type and error checking
-  * Add error checking and sending response back to Node.js code
-  * Add error checking
-  * Add rest of functions from bot_iface.cpp
-  * cmdGetStatistics addon implementation
-  * Moving the integrations to a separate installer [ci skip]
-  * Initial Commit for Node.js/C++ Addon [ci skip]
-  * Initial work for nodejs addon work
-  * Integration installation and configuration changes
-  * Parser Restart Handling
-  * Add new directory
+Release Notes from v4.54-release to v4.54.21-3:
+  * Update and fix filebot integration
+  * make an integration of the core bot
+  * Process ttl and bor as strings in addon when sent as undefined
+  * Add error handling for web API
+  * Prevent crashing when missing/incorrect field names are sent

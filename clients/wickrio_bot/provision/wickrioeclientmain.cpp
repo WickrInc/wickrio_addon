@@ -11,6 +11,7 @@
 #include "wickrbotprocessstate.h"
 #include "wickrbotutils.h"
 #include "wickrbotactiondatabase.h"
+#include "wickrIOReturnCodes.h"
 
 #include "user/wickrUser.h"
 #include "libinterface/libwickrcore.h"
@@ -179,15 +180,21 @@ void WickrIOEClientMain::slotRegisterOnline(bool online)
 {
     if (!online) {
         m_loginSuccess = false;
-        emit signalLoginFailure();
+        emit signalLoginFailure(WIOPROVISION_USER_NOT_FOUND);
     }
 }
 
 void WickrIOEClientMain::slotProvisionFailed(const QString& errorString)
 {
+    // Provision failed, so lets try to login to see if that works
+    m_loginHdlr.addLogin(m_client->user, m_client->password);
+    m_loginHdlr.initiateLogin();
+
+#if 0
     qDebug().noquote().nospace() << "CONSOLE:" << errorString;
     m_loginSuccess = false;
     emit signalLoginFailure();
+#endif
 }
 
 void WickrIOEClientMain::slotProvisionPageChanged(WickrIOProvisionHdlr::Page page)
@@ -255,10 +262,17 @@ void WickrIOEClientMain::slotLoginSuccess()
     emit signalLoginSuccess();
 }
 
-void WickrIOEClientMain::slotLoginFailure()
+void WickrIOEClientMain::slotLoginFailure(int returnCode)
 {
-    m_loginSuccess = false;
-    emit signalLoginFailure();
+    // If we get User Exists return code it was a new registration try
+    // Try to login to make sure teh password is correct.
+    if (returnCode == WIOPROVISION_USER_EXISTS) {
+        m_loginHdlr.addLogin(m_client->user, m_client->password);
+        m_loginHdlr.initiateLogin();
+    } else {
+        m_loginSuccess = false;
+        emit signalLoginFailure(returnCode);
+    }
 }
 
 /**

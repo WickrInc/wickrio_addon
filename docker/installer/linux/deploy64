@@ -15,6 +15,7 @@
 # $5 = release build flag (true for release)
 # $6 = integrations software directory
 # $7 = Output directory
+# $8 = integration type (i.e. wickrio, welcome)
 
 set -e
 current=`dirname $0`
@@ -27,6 +28,7 @@ install_extension=$4
 release_flag=$5
 integrations_sw_dir=$6
 output_dir=$7
+integration_type=$8
 
 if test -z "$release_flag" ; then
 	release_flag="false"; fi
@@ -51,6 +53,7 @@ echo build_extension=$build_extension
 echo install_extension=$install_extension
 echo release_flag=$release_flag
 echo integrations_sw_dir=$integrations_sw_dir
+echo integration_type=$integration_type
 
 #
 # Setup the version number(s)
@@ -81,11 +84,11 @@ echo bldtype=$bldtype
 echo BldType=$BldType
 echo version=$version
 
-prefix=~/tmp/wio_docker${bldtype}-deb
-debian=~/tmp/wio_docker${bldtype}-deb/DEBIAN
+prefix=~/tmp/wio_${integration_type}_docker${bldtype}-deb
+debian=~/tmp/wio_${integration_type}_docker${bldtype}-deb/DEBIAN
 bindir=$prefix/usr/bin
 libdir=$prefix/usr/lib/wio_docker${bldtype}
-docdir=$prefix/usr/share/doc/wio_docker${bldtype}
+docdir=$prefix/usr/share/doc/wickr
 plugins=$prefix/usr/lib/wio_docker${bldtype}/plugins
 addonsdir=$prefix/usr/lib/wio_docker${bldtype}/node.addons
 
@@ -98,9 +101,9 @@ sdkplatform=$current/../../../wickr-sdk/platforms/linux/generic-64
 libzmqlibs=$current/../../../libs/third_party/libzmq/build/lib
 
 # Client definitions
-menus=$prefix/usr/share/applications
+#menus=$prefix/usr/share/applications
 pixmaps=$prefix/usr/share/pixmaps
-messages=$prefix/usr/share/indicators/messages/applications
+#messages=$prefix/usr/share/indicators/messages/applications
 appdata=$prefix/usr/share/appdata
 
 # Cleanup the target location (i.e. remove the target directory)
@@ -118,7 +121,7 @@ mkdir -p $dstintegrationsdir
 
 # Client directories
 mkdir -p $pixmaps
-mkdir -p $menus
+#mkdir -p $menus
 mkdir -p $appdata
 
 #
@@ -128,7 +131,9 @@ cp -a ${build_dir}/services/consolecmd/WickrIOConsoleCmd$srcBldType $bindir
 cp -a ${build_dir}/services/clientserver_process/WickrIOSvr$srcBldType $bindir
 cp -a ${build_dir}/clients/wickrio_bot/client/wickrio_bot$BldType $bindir
 cp -a ${build_dir}/clients/wickrio_bot/provision/provision$BldType $bindir/wickrio_prov$BldType
-#cp -a ${build_dir}/clients/core_bot/client/core_bot$BldType $bindir
+if [ "$integration_type" = "welcome" ]; then
+  cp -a ${build_dir}/clients/core_bot/client/core_bot$BldType $bindir
+fi
 
 if [ "$release_flag" = "true" ]; then
   cp -a ${build_dir}/libs/QtWebApp/libQtWebApp.* $libdir
@@ -154,13 +159,20 @@ if test -n "$integrations_sw_dir" ; then
 fi
 
 #
+# copy the license file
+#
+cp ${current}/../../../docs/license/Wickr_api_bot_license.txt $docdir
+
+#
 # Run chrpath so binaries can find libraries
 #
 chrpath -r "/usr/local/wickr/Qt-5.10/lib:/usr/lib/wio_docker${bldtype}" $bindir/WickrIOConsoleCmd$srcBldType
 chrpath -r "/usr/local/wickr/Qt-5.10/lib:/usr/lib/wio_docker${bldtype}" $bindir/WickrIOSvr$srcBldType
 chrpath -r "/usr/local/wickr/Qt-5.10/lib:/usr/lib/wio_docker${bldtype}" $bindir/wickrio_bot$BldType
 chrpath -r "/usr/local/wickr/Qt-5.10/lib:/usr/lib/wio_docker${bldtype}" $bindir/wickrio_prov$BldType
-#chrpath -r "/usr/local/wickr/Qt-5.10/lib:/usr/lib/wio_docker${bldtype}" $bindir/core_bot$BldType
+if [ "$integration_type" = "welcome" ]; then
+  chrpath -r "/usr/local/wickr/Qt-5.10/lib:/usr/lib/wio_docker${bldtype}" $bindir/core_bot$BldType
+fi
 
 #
 # Change the contents appropriately for Beta version Release versions
@@ -181,8 +193,8 @@ else
 fi
 cp -a $libzmqlibs/*.so $libzmqlibs/*.so.* $libdir/
 rm -f $plugins/sqldrivers/*
-mkdir -p $messages
-echo "/usr/share/applications/wio_wickrio_bot${bldtype}.client" >$messages/wio_docker${bldtype}
+#mkdir -p $messages
+#echo "/usr/share/applications/wio_wickrio_bot${bldtype}.client" >$messages/wio_docker${bldtype}
 
 #
 # Generate the MD5 SUM value
@@ -202,14 +214,14 @@ chmod 644 $optdir/WickrIOSvr$srcBldType.ini
 #
 # Create the actual package
 #
-rm -f wio_docker${bldtype}_*.deb
+rm -f wio_${integration_type}_docker${bldtype}_*.deb
 fakeroot chown -R root:root $prefix
 
-fakeroot dpkg -b wio_docker${bldtype}-deb/ wio_docker${bldtype}_${version}_amd64.deb
-sha256sum wio_docker${bldtype}_${version}_amd64.deb >wio_docker${bldtype}_${version}_amd64.sha256
+fakeroot dpkg -b wio_${integration_type}_docker${bldtype}-deb/ wio_${integration_type}_docker${bldtype}_${version}_amd64.deb
+sha256sum wio_${integration_type}_docker${bldtype}_${version}_amd64.deb >wio_${integration_type}_docker${bldtype}_${version}_amd64.sha256
 
 if test -d "$output_dir" ; then
-    echo "copying wio_docker${bldtype}_${version}_amd64.* to $output_dir/"
-    cp wio_docker${bldtype}_${version}_amd64.* "$output_dir/" 
+    echo "copying wio_${integration_type}_docker${bldtype}_${version}_amd64.* to $output_dir/"
+    cp wio_${integration_type}_docker${bldtype}_${version}_amd64.* "$output_dir/" 
 fi
 

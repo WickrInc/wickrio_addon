@@ -18,10 +18,12 @@
 #include <QSqlQuery>
 #include <QSqlError>
 
-#ifdef Q_OS_LINUX
 #include <signal.h>
 #include <unistd.h>
-#endif
+#include <sys/ioctl.h>
+#include <readline/readline.h>
+#include <iostream>
+#include <termios.h>
 
 #include "operationdata.h"
 #include "wickrIOCommon.h"
@@ -75,6 +77,102 @@ void catchUnixSignals(const std::vector<int>& quitSignals,
 }
 #endif
 
+
+/**
+ * @brief acceptLicense
+ * This function will display the associated license if one exists
+ * @return true if the license is accepted
+ */
+
+bool acceptLicense()
+{
+    bool acceptLicense = false;
+
+    // Before proceeding make sure the license has been approved
+    QString licenseFileName = "/usr/share/doc/wickr/Wickr_api_bot_license.txt";
+    QFile   licenseFile(licenseFileName);
+    if (!licenseFile.exists())
+        return true;
+
+    if (licenseFile.open(QIODevice::ReadOnly))
+    {
+        QString savedLine;
+        struct termios oldTermios, newTermios;
+        tcgetattr(STDIN_FILENO, &oldTermios);
+        newTermios = oldTermios;
+        cfmakeraw(&newTermios);
+
+
+        QTextStream in(&licenseFile);
+        while (!in.atEnd()) {
+            // Calculate the number of lines that can be displayed
+            struct winsize w;
+            ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+            int lines = w.ws_row - 1;   // Account for the continue statement
+            int cols = w.ws_col;
+
+            bool done=false;
+
+            // If there are any lines left over from the previous buffer
+            if (!savedLine.isEmpty()) {
+                qDebug().noquote() << savedLine;
+                lines -= (savedLine.length() / cols) + 1;
+                savedLine.clear();
+            }
+
+            for (int i=0; i<lines; i++) {
+                if (in.atEnd()) {
+                    done=true;
+                    break;
+                }
+                QString line = in.readLine();
+
+                if (line.length() > cols) {
+                    int useLines = line.length() / cols;
+                    if (i+useLines >= lines) {
+                        savedLine=line;
+                        break;
+                    }
+                    i += useLines;
+                }
+                qDebug().noquote() << line;
+            }
+
+            if (!done) {
+                tcsetattr(STDIN_FILENO, TCSANOW, &newTermios);
+                fflush(stdin);
+                std::cout << "Enter any character to continue:";
+                char c = getchar();
+                std::cout << "\r                                \r";
+                tcsetattr(STDIN_FILENO, TCSANOW, &oldTermios);
+            }
+        }
+        licenseFile.close();
+
+        // See if the user accepts the license agreement
+        tcsetattr(STDIN_FILENO, TCSANOW, &newTermios);
+        bool badResponse = true;
+        while (badResponse) {
+            fflush(stdin);
+            std::cout << "\n\rDo you accept the Terms and Conditions set forth above? (Y/N)";
+            char c = (char)getchar();
+            std::cout << "\n\r";
+            QChar qchar = c;
+            if (qchar.toLower() == 'y') {
+                acceptLicense = true;
+                break;
+            }
+            if (qchar.toLower() == 'n') {
+                acceptLicense = false;
+                break;
+            }
+        }
+        fflush(stdin);
+        tcsetattr(STDIN_FILENO, TCSANOW, &oldTermios);
+    }
+    return acceptLicense;
+}
+
 Q_IMPORT_PLUGIN(QSQLCipherDriverPlugin)
 
 /**
@@ -85,22 +183,26 @@ Q_IMPORT_PLUGIN(QSQLCipherDriverPlugin)
  */
 int main(int argc, char *argv[])
 {
+    QString dirname = QString("/opt/%1/logs").arg(WBIO_GENERAL_TARGET);
+    QString filename = QString("%1/%2.output").arg(dirname).arg(WBIO_CLIENTSERVER_TARGET);
+    QString logname =  QString("%1/%2.log").arg(dirname).arg(WBIO_CLIENTSERVER_TARGET);
+    WBIOCommon::makeDirectory(dirname);
 
-    QString filename;
-    QString dirname;
-    QString logname;
+    QSettings *settings = WBIOServerCommon::getSettings();
+    settings->beginGroup(WBSETTINGS_LICENSE_HEADER);
+    bool licenseAccpeted = settings->value(WBSETTINGS_LICENSE_ACCEPTED, false).toBool();
+    settings->endGroup();
 
-#ifdef Q_OS_WIN
-    dirname = QString("%1/%2/%3/logs")
-            .arg(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation))
-            .arg(WBIO_ORGANIZATION)
-            .arg(WBIO_GENERAL_TARGET);
-#elif defined(Q_OS_LINUX)
-    dirname = QString("/opt/%1/logs").arg(WBIO_GENERAL_TARGET);
-#endif
-
-    filename = QString("%1/%2.output").arg(dirname).arg(WBIO_CLIENTSERVER_TARGET);
-    logname =  QString("%1/%2.log").arg(dirname).arg(WBIO_CLIENTSERVER_TARGET);
+    if (!licenseAccpeted) {
+        if (!acceptLicense()) {
+            qDebug().noquote() << "Cannot continue!";
+            exit(1);
+        }
+        settings->beginGroup(WBSETTINGS_LICENSE_HEADER);
+        settings->setValue(WBSETTINGS_LICENSE_ACCEPTED, true);
+        settings->endGroup();
+        settings->sync();
+    }
 
     bool debugOutput = false;
     for( int argidx = 1; argidx < argc; argidx++ ) {
@@ -111,7 +213,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    WBIOCommon::makeDirectory(dirname);
     logs.setupLog(logname);
     logs.logSetOutput(filename);
 

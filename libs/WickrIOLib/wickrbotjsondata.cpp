@@ -352,7 +352,12 @@ bool WickrBotJsonData::processSendMessageJsonDoc(const QJsonObject &operationObj
         }
         m_userNames.clear();
         m_userIDs.clear();
-    } else {
+    } else if (operationObject.contains(APIJSON_UNAME)) {
+        value = operationObject[APIJSON_UNAME];
+        QString id = value.toString();
+        m_userIDs.append(id);
+    }
+    else {
         m_operation->log_handler->error("Does not contain users or vgroupid!");
         return false;
     }

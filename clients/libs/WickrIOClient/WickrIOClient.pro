@@ -108,7 +108,8 @@ HEADERS += \
     wickrIOWatchdogService.h \
     wickrIOServiceBase.h \
     wickrIOProcessInbox.h \
-    wickrIOJScriptService.h
+    wickrIOJScriptService.h \
+    wickrIOAddonAsyncService.h
 
 SOURCES += \
     clientconfigurationinfo.cpp \
@@ -127,4 +128,5 @@ SOURCES += \
     wickrIOWatchdogService.cpp \
     wickrIOServiceBase.cpp \
     wickrIOProcessInbox.cpp \
-    wickrIOJScriptService.cpp
+    wickrIOJScriptService.cpp \
+    wickrIOAddonAsyncService.cpp

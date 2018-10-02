@@ -121,7 +121,9 @@ HEADERS += \
     wickriotokens.h  \
     wickriomessage.h \
     wickrbotclientdatabase.h \
-    wickrIOIPCRuntime.h
+    wickrIOIPCRuntime.h \
+    qtLocalPeer.h \
+    qtSingleApplication.h
 
 SOURCES += \
     wickrIOAppSettings.cpp \
@@ -150,4 +152,6 @@ SOURCES += \
     wickriotokens.cpp  \
     wickriomessage.cpp \
     wickrbotclientdatabase.cpp \
-    wickrIOIPCRuntime.cpp
+    wickrIOIPCRuntime.cpp \
+    qtLocalPeer.cpp \
+    qtSingleApplication.cpp

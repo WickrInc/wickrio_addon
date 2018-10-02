@@ -101,6 +101,9 @@ void mainThread()
                       << "    stop_async_messages\n"
                       << "    start_async_events\n"
                       << "    stop_async_events\n"
+                      << "\nSecurity commands:\n"
+                      << "    encrypt_string\n"
+                      << "    decrypt_string\n"
                       << "\nMisc. commands:\n"
                       << "    quit\n"
                       << "    help\n";
@@ -335,6 +338,20 @@ void mainThread()
             pBotIface->cmdStringStartAsyncRecvEvents(command, asyncEvent);
         } else if (input == "stop_async_events") {
             pBotIface->cmdStringStopAsyncRecvEvents(command);
+        } else if (input == "encrypt_string") {
+            string string2encrypt;
+            if (!getInput("Enter string to encrypt: ", string2encrypt, true)) {
+                done = true;
+                continue;
+            }
+            pBotIface->cmdStringEncryptString(command, string2encrypt);
+        } else if (input == "decrypt_string") {
+            string string2decrypt;
+            if (!getInput("Enter string to encrypt: ", string2decrypt, true)) {
+                done = true;
+                continue;
+            }
+            pBotIface->cmdStringDecryptString(command, string2decrypt);
         } else {
             std::cout << "Unknown command: " << input << "\n";
             continue;

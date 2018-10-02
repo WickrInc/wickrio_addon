@@ -6,6 +6,7 @@
 #include "user/wickrUser.h"
 
 #include "clientversioninfo.h"
+#include "wickrIOReturnCodes.h"
 
 WickrIOLoginHdlr::WickrIOLoginHdlr() :
     m_curLoginIndex(0),
@@ -99,7 +100,7 @@ void WickrIOLoginHdlr::slotRegisterOnPrem(const QString &username, const QString
  */
 void WickrIOLoginHdlr::slotRegisterUser(const QString &wickrid, const QString &password, const QString &salt, const QString &transactionid, bool newUser, bool sync, bool isRekey)
 {
-    qDebug().noquote().nospace() << "CONSOLE:Begin register user context.";
+    qDebug().noquote().nospace() << QString("CONSOLE:Begin register %1 user context.").arg(newUser ? "new" : "existing");
 
     QString hash = !salt.isEmpty() ? cryptoGetHash(password, salt) : QString();
 
@@ -130,7 +131,7 @@ void WickrIOLoginHdlr::initiateLogin()
 {
     if (m_consecutiveLoginFailures >= m_logins.size()) {
         m_loginState = LoginsFailed;
-        emit signalLoginFailed();
+        emit signalLoginFailed(WIOPROVISION_FAILED);
     } else {
         m_loginState = InProcess;
         QString userid = m_logins.at(m_curLoginIndex)->m_name;
@@ -141,10 +142,16 @@ void WickrIOLoginHdlr::initiateLogin()
         WickrDBAdapter::setDBNameForUser( userid );
 
         if (creatingUser) {
-            // If the database already exists then cannot do a Registration!
+            // If the database already exists then cannot do a Registration for a new user
             if( WickrDBAdapter::doesDBExist() ) {
+#if 0
                 qDebug() << "Creating user will fail because DB already exists!";
-                emit signalLoginFailed();
+                emit signalLoginFailed(WIOPROVISION_FAILED);
+#else
+                // Try to login
+                QString transID, salt;
+                slotRegisterUser(userid, password, salt, transID, false, true, false);
+#endif
             } else {
                 qDebug() << "Starting registration to create user " << userid;
                 QString salt;
@@ -179,7 +186,11 @@ void WickrIOLoginHdlr::slotRegistrationDone(WickrRegisterUserContext *c)
         // If we failed because of something other than bad credentials then show the result
         if (c->apiCode().getValue() == BAD_SYNC_CREDENTIALS) {
             qDebug().noquote().nospace() << "CONSOLE:" << c->errorString();
-            emit signalLoginFailed();
+            emit signalLoginFailed(WIOPROVISION_BAD_CREDENTIALS);
+        } else if (c->apiCode().getValue() == USER_ALREADY_EXISTS) {
+            emit signalLoginFailed(WIOPROVISION_USER_EXISTS);
+        } else if (c->errorString().contains("Cannot register if there is an existing account")) {
+            emit signalLoginFailed(WIOPROVISION_USER_EXISTS);
         } else {
             qDebug().noquote().nospace() << "CONSOLE:" << c->errorString();
             emit signalOnlineFlag(false);

@@ -6,7 +6,7 @@
 #include <QString>
 #include <QSettings>
 
-typedef enum { CHECK_DIR, CHECK_FILE, CHECK_NONE, CHECK_INT, CHECK_BOOL, CHECK_LIST, CHECK_MULTI_LIST } CheckType;
+typedef enum { CHECK_DIR, CHECK_FILE, CHECK_NONE, CHECK_INT, CHECK_BOOL, CHECK_LIST, CHECK_MULTI_LIST, CHECK_EMPTY_OK } CheckType;
 
 class CmdBase : public QObject
 {

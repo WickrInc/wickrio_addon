@@ -7,7 +7,6 @@ WickrBotMain *WickrBotMain::theBot;
 
 WickrBotMain::WickrBotMain(ParserOperationData *operation) :
     m_operation(operation),
-    m_qamqp(NULL),
     m_logcountdown(LOG_COUNTDOWN),
     m_seccount(0),
     m_qfailures(0)
@@ -28,7 +27,7 @@ bool WickrBotMain::startTheClient(){
     qDebug() << "Entering startTheClient with parser";
 
     // Open the database if needed
-    if (m_operation->m_botDB == NULL) {
+    if (m_operation->m_botDB == nullptr) {
         m_operation->m_botDB = new WickrIOClientDatabase(m_operation->databaseDir);
     }
     emit signalStarted();
@@ -60,7 +59,7 @@ void WickrBotMain::doTimerWork()
         QCoreApplication::exit(1);
     }
 
-    if (m_qamqp == NULL) {
+    if (m_qamqp == nullptr) {
         m_qamqp = new WBParse_QAMQPQueue(m_operation);
     } else {
         // If the Queue handler fails then delete the queue handler.
@@ -69,7 +68,7 @@ void WickrBotMain::doTimerWork()
         if (! m_qamqp->timerCall()) {
             m_operation->log_handler->log("Message queue handler failed.  Deleting handler.");
             delete  m_qamqp;
-            m_qamqp = NULL;
+            m_qamqp = nullptr;
 
             m_qfailures++;
         } else if (! m_qamqp->isRunning()) {

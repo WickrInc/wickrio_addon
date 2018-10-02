@@ -38,6 +38,7 @@ void clientInit(const v8::FunctionCallbackInfo<v8::Value> & args) {
         return;
 }
 
+
 void closeClient(const v8::FunctionCallbackInfo<v8::Value> & args){
   Isolate* isolate = args.GetIsolate();
   delete botIface;
@@ -85,9 +86,6 @@ void messages_callback(uv_async_t *async_data)
 }
 
 // Addon function which gets called from Javascript and gets passed a callback
-/*
- *
- */
 void cmdStartAsyncRecvMessages(const v8::FunctionCallbackInfo<v8::Value> & args)
 {
   string command, response;
@@ -155,6 +153,7 @@ void cmdGetStatistics(const v8::FunctionCallbackInfo<v8::Value> & args){
         }
 }
 
+
 void cmdClearStatistics(const v8::FunctionCallbackInfo<v8::Value> & args){
         Isolate* isolate = args.GetIsolate();
         if (botIface == nullptr) {
@@ -181,6 +180,7 @@ void cmdClearStatistics(const v8::FunctionCallbackInfo<v8::Value> & args){
         }
 }
 
+
 void cmdGetRooms(const v8::FunctionCallbackInfo<v8::Value> & args){
         Isolate* isolate = args.GetIsolate();
         if (botIface == nullptr) {
@@ -206,6 +206,7 @@ void cmdGetRooms(const v8::FunctionCallbackInfo<v8::Value> & args){
                 return;
         }
 }
+
 
 void cmdAddRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
         Isolate* isolate = args.GetIsolate();
@@ -234,27 +235,6 @@ void cmdAddRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
                 auto error = v8::String::NewFromUtf8(isolate, message.c_str());
                 args.GetReturnValue().Set(error);
                 return;
-        }
-        if(args.Length() == 5) {
-                string message;
-                if(!args[4]->IsString()) {
-                        message= "AddRoom: ttl must be a string!";
-                        auto error = v8::String::NewFromUtf8(isolate, message.c_str());
-                        args.GetReturnValue().Set(error);
-                        return;
-                }
-        }
-        if(args.Length() == 6) {
-                string message;
-                if(!args[4]->IsString())
-                        message = "AddRoom: ttl must be a string!";
-                else if(!args[5]->IsString())
-                        message = "AddRoom: bor must be a string!";
-                if(!message.empty()) {
-                        auto error = v8::String::NewFromUtf8(isolate, message.c_str());
-                        args.GetReturnValue().Set(error);
-                        return;
-                }
         }
         string command, response, ttl, bor;
         vector <string> members;
@@ -289,14 +269,14 @@ void cmdAddRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
         std::string title = std::string(*param3);
         v8::String::Utf8Value param4(args[3]->ToString());
         std::string description = std::string(*param4);
-        if(args.Length() >= 5) {
+          if(args[4]->IsString()){
                 v8::String::Utf8Value param5(args[4]->ToString());
                 ttl = std::string(*param5);
-        }
-        if(args.Length() == 6) {
+            }
+          if(args[5]->IsString()){
                 v8::String::Utf8Value param6(args[5]->ToString());
                 bor = std::string(*param6);
-        }
+              }
         botIface->cmdStringAddRoom(command, members, moderators, title, description, ttl, bor);
         if (botIface->send(command, response) != BotIface::SUCCESS) {
                 response = botIface->getLastErrorString();
@@ -356,16 +336,6 @@ void cmdModifyRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
                                 message = "ModifyRoom: Description must be a string!";
                         }
                 }
-                else if(i == 5) {
-                        if(!args[i]->IsString()) {
-                                message = "ModifyRoom: ttl must be a string!";
-                        }
-                }
-                else if(i == 6) {
-                        if(!args[i]->IsString()) {
-                                message = "ModifyRoom: bor must be a string!";
-                        }
-                }
                 if(!message.empty()) {
                         auto error = v8::String::NewFromUtf8(isolate, message.c_str());
                         args.GetReturnValue().Set(error);
@@ -407,10 +377,14 @@ void cmdModifyRoom(const v8::FunctionCallbackInfo<v8::Value> & args) {
         std::string title = std::string(*param4);
         v8::String::Utf8Value param5(args[4]->ToString());
         std::string description = std::string(*param5);
+        if(args[5]->IsString()){
         v8::String::Utf8Value param6(args[5]->ToString());
         ttl = std::string(*param6);
+        }
+        if(args[6]->IsString()){
         v8::String::Utf8Value param7(args[6]->ToString());
         bor = std::string(*param7);
+        }
         botIface->cmdStringModifyRoom(command, vGroupID, members, moderators, title, description, ttl, bor);
         if (botIface->send(command, response) != BotIface::SUCCESS) {
                 response = botIface->getLastErrorString();
@@ -470,6 +444,7 @@ void cmdGetRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
         }
 }
 
+
 void cmdLeaveRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
         Isolate* isolate = args.GetIsolate();
         if (botIface == nullptr) {
@@ -509,6 +484,7 @@ void cmdLeaveRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
                 return;
         }
 }
+
 
 void cmdDeleteRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
         Isolate* isolate = args.GetIsolate();
@@ -550,6 +526,7 @@ void cmdDeleteRoom(const v8::FunctionCallbackInfo<v8::Value> & args){
         }
 }
 
+
 void cmdAddGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args) {
         Isolate* isolate = args.GetIsolate();
         if (botIface == nullptr) {
@@ -585,34 +562,20 @@ void cmdAddGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args) {
                 std::string str = std::string(*param1);
                 members.push_back(str);
         }
-        if(args.Length() == 2) {
-                string message;
-                if(!args[1]->IsString())
-                        message= "AddGroupConvo: ttl must be a string!";
-                if(!message.empty()) {
-                        auto error = v8::String::NewFromUtf8(isolate, message.c_str());
-                        args.GetReturnValue().Set(error);
-                        return;
-                }
-                v8::String::Utf8Value param2(args[1]->ToString());
-                ttl = std::string(*param2);
+        string message;
+        if(!message.empty()) {
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
         }
-        if(args.Length() == 3) {
-                string message;
-                if(!args[1]->IsString())
-                        message = "AddGroupConvo: ttl must be a string!";
-                else if(!args[2]->IsString())
-                        message = "AddGroupConvo: bor must be a string!";
-                if(!message.empty()) {
-                        auto error = v8::String::NewFromUtf8(isolate, message.c_str());
-                        args.GetReturnValue().Set(error);
-                        return;
-                }
+                if(args[1]->IsString()){
                 v8::String::Utf8Value param2(args[1]->ToString());
                 ttl = std::string(*param2);
+              }
+                if(args[2]->IsString()){
                 v8::String::Utf8Value param3(args[2]->ToString());
                 bor = std::string(*param3);
-        }
+              }
         botIface->cmdStringAddGroupConvo(command, members, ttl, bor);
         if (botIface->send(command, response) != BotIface::SUCCESS) {
                 response = botIface->getLastErrorString();
@@ -671,6 +634,7 @@ void cmdDeleteGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args){
                 return;
         }
 }
+
 
 void cmdGetGroupConvo(const v8::FunctionCallbackInfo<v8::Value> & args){
         Isolate* isolate = args.GetIsolate();
@@ -741,6 +705,7 @@ void cmdGetGroupConvos(const v8::FunctionCallbackInfo<v8::Value> & args){
         }
 }
 
+
 void cmdGetReceivedMessage(const v8::FunctionCallbackInfo<v8::Value> & args){
         Isolate* isolate = args.GetIsolate();
         if (botIface == nullptr) {
@@ -767,6 +732,7 @@ void cmdGetReceivedMessage(const v8::FunctionCallbackInfo<v8::Value> & args){
         }
 }
 
+
 std::string escapeString(const std::string& input) {
     std::ostringstream ss;
     for (auto iter = input.cbegin(); iter != input.cend(); iter++) {
@@ -778,6 +744,7 @@ std::string escapeString(const std::string& input) {
     }
     return ss.str();
 }
+
 
 void cmdSend1to1Message(const v8::FunctionCallbackInfo<v8::Value> & args) {
         Isolate* isolate = args.GetIsolate();
@@ -806,16 +773,6 @@ void cmdSend1to1Message(const v8::FunctionCallbackInfo<v8::Value> & args) {
                                 message = "Send1to1Message: message must be a string!";
                         }
                 }
-                else if(i == 2) {
-                        if(!args[i]->IsString()) {
-                                message = "Send1to1Message: ttl must be a string!";
-                        }
-                }
-                else if(i == 3) {
-                        if(!args[i]->IsString()) {
-                                message = "Send1to1Message: bor must be a string!";
-                        }
-                }
                 if(!message.empty()) {
                         auto error = v8::String::NewFromUtf8(isolate, message.c_str());
                         args.GetReturnValue().Set(error);
@@ -823,7 +780,7 @@ void cmdSend1to1Message(const v8::FunctionCallbackInfo<v8::Value> & args) {
                 }
         }
         string command, response;
-        std::string placeHolder;
+        std::string placeHolder, ttl, bor;
         vector <string> users;
         Local<Array> arr = Local<Array>::Cast(args[0]);
         for(int i=0; i<arr->Length(); i++) {
@@ -835,10 +792,14 @@ void cmdSend1to1Message(const v8::FunctionCallbackInfo<v8::Value> & args) {
         v8::String::Utf8Value param2(args[1]->ToString());
         std::string message = std::string(*param2);
         message = escapeString(message);
+      if(args[2]->IsString()) {
         v8::String::Utf8Value param3(args[2]->ToString());
         std::string ttl = std::string(*param3);
+      }
+      if(args[3]->IsString()) {
         v8::String::Utf8Value param4(args[3]->ToString());
         std::string bor = std::string(*param4);
+      }
         botIface->cmdStringSendMessage(command, placeHolder, users, message, ttl, bor);
         if (botIface->send(command, response) != BotIface::SUCCESS) {
                 response = botIface->getLastErrorString();
@@ -855,8 +816,6 @@ void cmdSend1to1Message(const v8::FunctionCallbackInfo<v8::Value> & args) {
                 return;
         }
 }
-
-
 
 
 void cmdSend1to1Attachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
@@ -890,16 +849,6 @@ void cmdSend1to1Attachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
                                 message = "Send1to1Attachment: displayname must be a string!";
                         }
                 }
-                else if(i == 3) {
-                        if(!args[i]->IsString()) {
-                                message = "Send1to1Attachment: ttl must be a string!";
-                        }
-                }
-                else if(i == 4) {
-                        if(!args[i]->IsString()) {
-                                message = "Send1to1Attachment: bor must be a string!";
-                        }
-                }
                 if(!message.empty()) {
                         auto error = v8::String::NewFromUtf8(isolate, message.c_str());
                         args.GetReturnValue().Set(error);
@@ -907,7 +856,7 @@ void cmdSend1to1Attachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
                 }
         }
         string command, response;
-        std::string placeHolder;
+        std::string placeHolder, ttl, bor;
         vector <string> users;
         Local<Array> arr = Local<Array>::Cast(args[0]);
         for(int i=0; i<arr->Length(); i++) {
@@ -921,10 +870,18 @@ void cmdSend1to1Attachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
         v8::String::Utf8Value param3(args[2]->ToString());
         std::string displayname = std::string(*param3);
         displayname = escapeString(displayname);
+        if (args.Length() == 4) {
+        if(args[3]->IsString()) {
         v8::String::Utf8Value param4(args[3]->ToString());
-        std::string ttl = std::string(*param4);
+        ttl = std::string(*param4);
+      }
+    }
+        if (args.Length() == 5) {
+        if(args[4]->IsString()) {
         v8::String::Utf8Value param5(args[4]->ToString());
-        std::string bor = std::string(*param5);
+        bor = std::string(*param5);
+      }
+    }
         if(displayname.length() > 0){
           botIface->cmdStringSendAttachment(command, placeHolder, users, attachment, displayname, ttl, bor);
         }
@@ -946,6 +903,7 @@ void cmdSend1to1Attachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
                 return;
         }
 }
+
 
 void cmdSendRoomMessage(const v8::FunctionCallbackInfo<v8::Value> & args) {
         Isolate* isolate = args.GetIsolate();
@@ -974,33 +932,31 @@ void cmdSendRoomMessage(const v8::FunctionCallbackInfo<v8::Value> & args) {
                                 message = "SendRoomMessage: message must be a string!";
                         }
                 }
-                else if(i == 2) {
-                        if(!args[i]->IsString()) {
-                                message = "SendRoomMessage: ttl must be a string!";
-                        }
-                }
-                else if(i == 3) {
-                        if(!args[i]->IsString()) {
-                                message = "SendRoomMessage: bor must be a string!";
-                        }
-                }
                 if(!message.empty()) {
                         auto error = v8::String::NewFromUtf8(isolate, message.c_str());
                         args.GetReturnValue().Set(error);
                         return;
                 }
         }
-        string command, response;
+        string command, response, ttl, bor;
         v8::String::Utf8Value param1(args[0]->ToString());
         std::string vGroupID = std::string(*param1);
         vector <string> placeHolder;
         v8::String::Utf8Value param2(args[1]->ToString());
         std::string message = std::string(*param2);
         message = escapeString(message);
+        if (args.Length() == 3) {
+          if(args[2]->IsString()) {
         v8::String::Utf8Value param3(args[2]->ToString());
-        std::string ttl = std::string(*param3);
+        ttl = std::string(*param3);
+      }
+      }
+      if (args.Length() == 4) {
+        if(args[3]->IsString()) {
         v8::String::Utf8Value param4(args[3]->ToString());
-        std::string bor = std::string(*param4);
+        bor = std::string(*param4);
+      }
+      }
         botIface->cmdStringSendMessage(command, vGroupID, placeHolder, message, ttl, bor);
         if (botIface->send(command, response) != BotIface::SUCCESS) {
                 response = botIface->getLastErrorString();
@@ -1048,12 +1004,7 @@ void cmdSendRoomAttachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
                 }
                 else if(i == 2) {
                         if(!args[i]->IsString()) {
-                                message = "SendRoomAttachment: ttl must be a string!";
-                        }
-                }
-                else if(i == 3) {
-                        if(!args[i]->IsString()) {
-                                message = "SendRoomAttachment: bor must be a string!";
+                                message = "SendRoomAttachment: displayname must be a string!";
                         }
                 }
                 if(!message.empty()) {
@@ -1062,7 +1013,7 @@ void cmdSendRoomAttachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
                         return;
                 }
         }
-        string command, response;
+        string command, response, ttl, bor;
         v8::String::Utf8Value param1(args[0]->ToString());
         std::string vGroupID = std::string(*param1);
         vector <string> placeHolder;
@@ -1072,10 +1023,14 @@ void cmdSendRoomAttachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
         v8::String::Utf8Value param3(args[2]->ToString());
         std::string displayname = std::string(*param3);
         displayname = escapeString(displayname);
+        if(args[3]->IsString()) {
         v8::String::Utf8Value param4(args[3]->ToString());
-        std::string ttl = std::string(*param4);
+        ttl = std::string(*param4);
+      }
+        if(args[4]->IsString()) {
         v8::String::Utf8Value param5(args[4]->ToString());
-        std::string bor = std::string(*param5);
+        bor = std::string(*param5);
+      }
         if(displayname.length() > 0){
           botIface->cmdStringSendAttachment(command, vGroupID, placeHolder, attachment, displayname, ttl, bor);
         }
@@ -1098,7 +1053,93 @@ void cmdSendRoomAttachment(const v8::FunctionCallbackInfo<v8::Value> & args) {
         }
 }
 
-// void sendBackToJs(const v8::FunctionCallbackInfo<v8::Value> & args);
+
+void cmdEncryptString(const v8::FunctionCallbackInfo<v8::Value> & args)
+{
+        Isolate* isolate = args.GetIsolate();
+        if (botIface == nullptr) {
+                string message = "Bot Interface has not been initialized!";
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        if (args.Length() < 1) {
+                string message = "EncryptString: requires 1 string argument!";
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        if (!args[0]->IsString()) {
+                string message = "EncryptString: argument must be a string!";
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        string command, response;
+        v8::String::Utf8Value param1(args[0]->ToString());
+        std::string string2encrypt = std::string(*param1);
+
+        botIface->cmdStringEncryptString(command, string2encrypt);
+        if (botIface->send(command, response) != BotIface::SUCCESS) {
+                response = botIface->getLastErrorString();
+                string message = "Failed to create Encrypt String command! " + response;
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        else {
+                if (response.length() > 0) {
+                        auto message = v8::String::NewFromUtf8(isolate, response.c_str());
+                        args.GetReturnValue().Set(message);
+                }
+                return;
+        }
+}
+
+
+void cmdDecryptString(const v8::FunctionCallbackInfo<v8::Value> & args)
+{
+        Isolate* isolate = args.GetIsolate();
+        if (botIface == nullptr) {
+                string message = "Bot Interface has not been initialized!";
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        if (args.Length() < 1) {
+                string message = "DecryptString: requires 1 string argument!";
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        if (!args[0]->IsString()) {
+                string message = "DecryptString: argument must be a string!";
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        string command, response;
+        v8::String::Utf8Value param1(args[0]->ToString());
+        std::string string2decrypt = std::string(*param1);
+
+        botIface->cmdStringDecryptString(command, string2decrypt);
+        if (botIface->send(command, response) != BotIface::SUCCESS) {
+                response = botIface->getLastErrorString();
+                string message = "Failed to create Decrypt String command! " + response;
+                auto error = v8::String::NewFromUtf8(isolate, message.c_str());
+                args.GetReturnValue().Set(error);
+                return;
+        }
+        else {
+                if (response.length() > 0) {
+                        auto message = v8::String::NewFromUtf8(isolate, response.c_str());
+                        args.GetReturnValue().Set(message);
+                }
+                return;
+        }
+}
+
+
 void init(Handle <Object> exports, Handle<Object> module) {
         //2nd param: what we call from Javascript
         //3rd param: the name of the actual function
@@ -1122,6 +1163,8 @@ void init(Handle <Object> exports, Handle<Object> module) {
         NODE_SET_METHOD(exports, "cmdSend1to1Attachment", cmdSend1to1Attachment);
         NODE_SET_METHOD(exports, "cmdSendRoomMessage", cmdSendRoomMessage);
         NODE_SET_METHOD(exports, "cmdSendRoomAttachment", cmdSendRoomAttachment);
+        NODE_SET_METHOD(exports, "cmdEncryptString", cmdEncryptString);
+        NODE_SET_METHOD(exports, "cmdDecryptString", cmdDecryptString);
 }
 
 // associates the module name with initialization logic

@@ -13,6 +13,8 @@
 # The build is created in ../autobuild-release or ../autobuild-beta.  The
 # build directory is cleared by default on each run.
 
+echo "\n********************************************************************************"
+echo "Starting: `date`"
 
 QTVER="5.10.1"
 DEVID="Wickr, LLC"
@@ -73,6 +75,7 @@ case "$btype" in
         svc_build_ext="debug"
         svc_install_ext="Debug"
         MAKE_DEFINES="-DWICKR_BETA=WICKR_BETA"
+        wb_rpath_binary="wio_docker-beta"
         ;;
     alpha)
         qtype="CONFIG+=debug CONFIG+=wickr_compliance_bot CONFIG+=use_wickr_npl"
@@ -83,6 +86,7 @@ case "$btype" in
         svc_build_ext="debug"
         svc_install_ext="Debug"
         MAKE_DEFINES="-DWICKR_ALPHA=WICKR_ALPHA"
+        wb_rpath_binary="wio_docker-alpha"
         ;;
     release)
         qtype="CONFIG+=wickr_compliance_bot CONFIG+=use_wickr_npl"
@@ -93,6 +97,7 @@ case "$btype" in
         svc_build_ext=""
         svc_install_ext=""
         MAKE_DEFINES="-DWICKR_PRODUCTION=WICKR_PRODUCTION"
+        wb_rpath_binary="wio_docker"
         ;;
 esac
 
@@ -114,18 +119,18 @@ case "$product-$btype" in
     cloud-alpha)
         lin_appid="d4fb30fa00bb481ba75f356572890aee"
         doComplianceBot=""
-        doBroadcastBot="true"
+        doWickrIOBot="true"
         doWelcomeBot=""
         doCoreBot="true"
         consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
         integrationDeb="wio_integration-debug_${version}-${bld}.deb"
         complianceDeb=""
         complianceExe=""
-        wickrIODockerDeb="wio_docker-alpha_${version}-${bld}~alpha_amd64.deb"
+        wickrIODockerDeb="wio_wickrio_docker-alpha_${version}-${bld}~alpha_amd64.deb"
         wickrIOExe="WickrIOSvrDebug"
         wickrIOBotImage="bot-cloud-alpha"
-        welcomeDeb=""
-        welcomeExe="welcome_botAlpha"
+        welcomeDockerDeb="wio_welcome_docker-alpha_${version}-${bld}~alpha_amd64.deb"
+        welcomeBotImage="bot-cloud-welcome-alpha"
         coreDeb="wio_core_bot-alpha_${version}-${bld}~alpha_amd64.deb"
         coreExe="core_botAlpha"
         coreImage="bot-cloud-core-alpha"
@@ -133,18 +138,18 @@ case "$product-$btype" in
     cloud-beta)
         lin_appid="37d0f566718d43148155c9370c06ca12"
         doComplianceBot=""
-        doBroadcastBot="true"
+        doWickrIOBot="true"
         doWelcomeBot=""
         doCoreBot="true"
         consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
         integrationDeb="wio_integration-debug_${version}-${bld}.deb"
         complianceDeb=""
         complianceExe=""
-        wickrIODockerDeb="wio_docker-beta_${version}-${bld}~beta_amd64.deb"
+        wickrIODockerDeb="wio_wickrio_docker-beta_${version}-${bld}~beta_amd64.deb"
         wickrIOExe="WickrIOSvrDebug"
         wickrIOBotImage="bot-cloud-beta"
-        welcomeDeb=""
-        welcomeExe=""
+        welcomeDockerDeb="wio_welcome_docker-beta_${version}-${bld}~beta_amd64.deb"
+        welcomeBotImage="bot-cloud-welcome-beta"
         coreDeb="wio_core_bot-beta_${version}-${bld}~beta_amd64.deb"
         coreExe="core_botBeta"
         coreImage="bot-cloud-core-beta"
@@ -152,18 +157,18 @@ case "$product-$btype" in
     cloud-release)
         lin_appid="f103c55c06af44559256019b1c73412b"
         doComplianceBot=""
-        doBroadcastBot="true"
+        doWickrIOBot="true"
         doWelcomeBot=""
         doCoreBot="true"
         consoleDeb="wio_console_${version}-${bld}_amd64.deb"
         integrationDeb="wio_integration_${version}-${bld}.deb"
         complianceDeb=""
         complianceExe=""
-        wickrIODockerDeb="wio_docker_${version}-${bld}_amd64.deb"
+        wickrIODockerDeb="wio_wickrio_docker_${version}-${bld}_amd64.deb"
         wickrIOExe="WickrIOSvr"
         wickrIOBotImage="bot-cloud"
-        welcomeDeb=""
-        welcomeExe=""
+        welcomeDockerDeb="wio_welcome_docker_${version}-${bld}_amd64.deb"
+        welcomeBotImage="bot-cloud-welcome"
         coreDeb="wio_core_bot_${version}-${bld}_amd64.deb"
         coreExe="core_bot"
         coreImage="bot-cloud-core"
@@ -171,19 +176,18 @@ case "$product-$btype" in
     messenger-alpha)
         lin_appid="97bd02efd50d4eeca41aa82acac745d6"
         doComplianceBot=""
-        doBroadcastBot="true"
+        doWickrIOBot="true"
         doWelcomeBot="true"
         doCoreBot="true"
         consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
         integrationDeb="wio_integration-debug_${version}-${bld}.deb"
         complianceDeb=""
         complianceExe=""
-        wickrIODockerDeb=""
-        wickrIOExe=""
+        wickrIODockerDeb="wio_wickrio_docker-alpha_${version}-${bld}~alpha_amd64.deb"
+        wickrIOExe="WickrIOSvrDebug"
         wickrIOBotImage=""
-        welcomeDeb="wio_welcome_bot-alpha_${version}-${bld}~alpha_amd64.deb"
-        welcomeExe="welcome_botAlpha"
-        welcomeImage="bot-messenger-welcome-alpha"
+        welcomeDockerDeb="wio_welcome_docker-alpha_${version}-${bld}~alpha_amd64.deb"
+        welcomeBotImage="bot-messenger-welcome-alpha"
         coreDeb="wio_core_bot-alpha_${version}-${bld}~alpha_amd64.deb"
         coreExe="core_botAlpha"
         coreImage="bot-messenger-core-alpha"
@@ -191,19 +195,18 @@ case "$product-$btype" in
     messenger-beta)
         lin_appid="6bf25f5f8b7b4bbfa333d9354e5351ca"
         doComplianceBot=""
-        doBroadcastBot="true"
+        doWickrIOBot="true"
         doWelcomeBot="true"
         doCoreBot="true"
         consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
         integrationDeb="wio_integration-debug_${version}-${bld}.deb"
         complianceDeb=""
         complianceExe=""
-        wickrIODockerDeb=""
-        wickrIOExe=""
+        wickrIODockerDeb="wio_wickrio_docker-beta_${version}-${bld}~alpha_amd64.deb"
+        wickrIOExe="WickrIOSvrDebug"
         wickrIOBotImage=""
-        welcomeDeb=""
-        welcomeExe=""
-        welcomeImage=""
+        welcomeDockerDeb=""
+        welcomeBotImage=""
         coreDeb="wio_core_bot-beta${version}-${bld}~beta.deb"
         coreExe="core_botBeta"
         coreImage="bot-messenger-core-beta"
@@ -211,18 +214,17 @@ case "$product-$btype" in
     messenger-release)
         lin_appid="3affc0dd77b249e492c8cea29441ee60"
         doComplianceBot=""
-        doBroadcastBot="true"
+        doWickrIOBot="true"
         doWelcomeBot="true"
         doCoreBot="true"
         consoleDeb="wio_console_${version}-${bld}_amd64.deb"
         integrationDeb="wio_integration_${version}-${bld}.deb"
         complianceDeb=""
-        wickrIODockerDeb=""
-        wickrIOExe=""
+        wickrIODockerDeb="wio_wickrio_docker_${version}-${bld}~alpha_amd64.deb"
+        wickrIOExe="WickrIOSvr"
         wickrIOBotImage=""
-        welcomeDeb="wio_welcome_bot_${version}-${bld}_amd64.deb"
-        welcomeExe="welcome_bot"
-        welcomeImage="bot-messenger-welcome"
+        welcomeDockerDeb="wio_welcome_docker_${version}-${bld}~alpha_amd64.deb"
+        welcomeBotImage="bot-messenger-welcome"
         coreDeb="wio_core_bot_${version}-${bld}_amd64.deb"
         coreExe="core_bot"
         coreImage="bot-messenger-core"
@@ -230,7 +232,7 @@ case "$product-$btype" in
     enterprise-alpha)
         lin_appid="7723eb32e3434bf6b724c4b04dd35306"
         doComplianceBot="true"
-        doBroadcastBot="true"
+        doWickrIOBot="true"
         doWelcomeBot=""
         doCoreBot=""
         consoleDeb="wio_console-debug_${version}-${bld}~debug_amd64.deb"
@@ -238,18 +240,18 @@ case "$product-$btype" in
         complianceDeb="wio_compliance_bot-alpha_${version}-${bld}~alpha_amd64.deb"
         complianceExe="compliance_provAlpha"
         complianceImage="bot-enterprise-compliance-alpha"
-        wickrIODockerDeb="wio_docker-alpha_${version}-${bld}~alpha_amd64.deb"
+        wickrIODockerDeb="wio_wickrio_docker-alpha_${version}-${bld}~alpha_amd64.deb"
         wickrIOExe="WickrIOSvrDebug"
         wickrIOBotImage="bot-enterprise-alpha"
-        welcomeDeb=""
-        welcomeExe=""
+        welcomeDockerDeb=""
+        welcomeBotImage=""
         coreDeb=""
         coreExe=""
         ;;
     enterprise-release)
         lin_appid="fe01942f8e394217a6d6e4d594738152"
         doComplianceBot="true"
-        doBroadcastBot="true"
+        doWickrIOBot="true"
         doWelcomeBot=""
         doCoreBot=""
         consoleDeb="wio_console_${version}-${bld}_amd64.deb"
@@ -257,11 +259,11 @@ case "$product-$btype" in
         complianceDeb="wio_compliance_bot_${version}-${bld}_amd64.deb"
         complianceExe="compliance_prov"
         complianceImage="bot-enterprise-compliance"
-        wickrIODockerDeb="wio_docker_${version}-${bld}_amd64.deb"
+        wickrIODockerDeb="wio_wickrio_docker_${version}-${bld}_amd64.deb"
         wickrIOExe="WickrIOSvr"
         wickrIOBotImage="bot-enterprise"
-        welcomeDeb=""
-        welcomeExe=""
+        welcomeDockerDeb=""
+        welcomeBotImage=""
         coreDeb=""
         coreExe=""
         ;;
@@ -301,13 +303,17 @@ esac
 build=autobuild-$btype
 deploy="$abs/$build/bots.deploy"
 output="$abs/autobuild-output/wickrio_$1_$2"
-integrations_output="$output/integrations/software"
+wickrio_integrations_output="$output/integrations/wickrio/software"
+welcome_integrations_output="$output/integrations/welcome/software"
 
 export PATH QTDIR INCLUDE LIB LIBPATH BUILD_CMD
 echo "building $type"
 
 mkdir -p $build
 rm -rf "$build"/*
+
+echo "\n********************************************************************************"
+echo "Begin make: `date`"
 
 set -e
 make
@@ -316,6 +322,9 @@ make $bldtype WICKR_DEFINES=$MAKE_DEFINES
 make $bldtype.install
 (cd $build ; qmake ../wickr-wickrio.pro $qmake $qtype)
 (cd $build ; $BUILD_CMD)
+
+echo "\n********************************************************************************"
+echo "Begin Node.js Addon: `date`"
 
 #
 # Build the node addon
@@ -332,9 +341,12 @@ mkdir -p "$output"
 
 echo "Deploy directory: $deploy"
 
-#====================================================================================================================================
+#====================================================================================
 # Create the Compliance Bot installer
 #
+echo "\n********************************************************************************"
+echo "Begin Compliance Bot Installer: `date`"
+
 if test ! -z "$doComplianceBot" ; then
     echo "Create compliance_bot for $product $btype"
     build_number=`cat $abs/BUILD_NUMBER`
@@ -342,29 +354,25 @@ if test ! -z "$doComplianceBot" ; then
     $abs/clients/compliance_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
 fi
 
-#====================================================================================================================================
+#====================================================================================
 # Create the WickrIO Bot installer
 #
-if test ! -z "$doBroadcastBot" ; then
+echo "\n********************************************************************************"
+echo "Begin WickrIO Bot Installer: `date`"
+
+if test ! -z "$doWickrIOBot" ; then
     echo "Create wickrio_bot for $product $btype"
     build_number=`cat $abs/BUILD_NUMBER`
     binary_dir="$abs/$build"
     $abs/clients/wickrio_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
 fi
 
-#====================================================================================================================================
-# Create the Welcome Bot installer
-#
-if test ! -z "$doWelcomeBot" ; then
-    echo "Create welcome_bot for $product $btype"
-    build_number=`cat $abs/BUILD_NUMBER`
-    binary_dir="$abs/$build"
-    $abs/clients/welcome_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
-fi
-
-#====================================================================================================================================
+#====================================================================================
 # Create the Core Bot installer
 #
+echo "\n********************************************************************************"
+echo "Begin Core Bot Installer: `date`"
+
 if test ! -z "$doCoreBot" ; then
     echo "Create core_bot for $product $btype"
     build_number=`cat $abs/BUILD_NUMBER`
@@ -372,67 +380,115 @@ if test ! -z "$doCoreBot" ; then
     $abs/clients/core_bot/installers/linux/scripts/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$deploy"
 fi
 
-#====================================================================================================================================
+#====================================================================================
 # Create the hubot integration software
 #
+echo "\n********************************************************************************"
+echo "Begin Hubot Integration: `date`"
+
 echo "Getting the Hubot integration software from the wickr-integrations submodule"
 mkdir -p $output/hubot
-(cd $abs/wickr-integrations; ./compress.sh $output/hubot $version)
+(cd $abs/wickr-integrations; ./compress.sh $output/hubot $version $abs/integrations/nodejs/wickrio_addon)
 hubotswdir=$output/hubot
 hubotsoftware=$output/hubot/hubot_$version.tar.gz
 hubotversion=$output/hubot/VERSION
 
 #
-# Copy the hubot software to the integrations software director
+# Copy the hubot software to the integrations software directory
 #
-mkdir -p $integrations_output/hubot
-cp $hubotsoftware $integrations_output/hubot/software.tar.gz
-cp $hubotversion $integrations_output/hubot
+mkdir -p $wickrio_integrations_output/hubot
+cp $hubotsoftware $wickrio_integrations_output/hubot/software.tar.gz
+cp $hubotversion $wickrio_integrations_output/hubot
 
 echo "going to create the Samples package"
-(cd $abs/integrations/nodejs/installer; ./generate $build_number "$integrations_output" "$deploy")
+(cd $abs/integrations/nodejs/installer; ./generate $build_number "$wickrio_integrations_output" "$deploy" "wickrio")
 
 
-#====================================================================================================================================
-# Create the Docker container image
+#====================================================================================
+# Create the Docker container image for the WickrIO Bot docker images
 #
+echo "\n********************************************************************************"
+echo "Begin WickrIO Docker Container: `date`"
+
 if test ! -z "$wickrIODockerDeb" ; then
     echo "Create docker package for $product $btype"
     build_number=`cat $abs/BUILD_NUMBER`
     binary_dir="$abs/$build"
-    $abs/docker/installer/linux/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$integrations_output" "$deploy"
+    $abs/docker/installer/linux/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$wickrio_integrations_output" "$deploy" "wickrio"
 fi
 
-#====================================================================================================================================
+#====================================================================================
+# Create the welcome bot integrations
+#
+echo "\n********************************************************************************"
+echo "Begin Welcome Bot Integrations: `date`"
+
+echo "Getting the Welcome Parser integration software from the welcome-integrations submodule"
+mkdir -p $welcome_integrations_output/welcome_parser
+welcome_parser_binary_dir="$abs/$build/integrations/cpp/welcome_bot/parser"
+(cd $abs/integrations/cpp/welcome_bot/parser && ./generate.sh "$welcome_parser_binary_dir" "$welcome_integrations_output/welcome_parser" "$install_ext" "$wb_rpath_binary")
+
+echo "going to create the Samples package"
+(cd $abs/integrations/nodejs/installer; ./generate $build_number "$welcome_integrations_output" "$deploy" "welcome")
+
+#====================================================================================
+# Create the Docker container image for the Welcome Bot docker images
+#
+echo "\n********************************************************************************"
+echo "Begin WelcomeBot Docker Container: `date`"
+
+if test ! -z "$welcomeDockerDeb" ; then
+    echo "Create docker package for $product $btype"
+    build_number=`cat $abs/BUILD_NUMBER`
+    binary_dir="$abs/$build"
+    $abs/docker/installer/linux/deploy64 $binary_dir $build_number "$build_ext" "$install_ext" $isrelease "$welcome_integrations_output" "$deploy" "welcome"
+fi
+
+#====================================================================================
 # Create the Integrations Software Package
 #
+echo "\n********************************************************************************"
+echo "Begin Integrations Software Package: `date`"
+
 echo "going to create the integration software package"
 build_number=`cat $abs/BUILD_NUMBER`
 $abs/integrations/installer/linux/scripts/deploy64 $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$hubotswdir" "$deploy"
 
-#====================================================================================================================================
+#====================================================================================
 # Create the Services Software Package
 #
+echo "\n********************************************************************************"
+echo "Begin Services Software Package: `date`"
+
 echo "going to create $btype for services"
 build_number=`cat $abs/BUILD_NUMBER`
 $abs/services/installer/linux/scripts/deploy64 $binary_dir $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$deploy"
 
-#====================================================================================================================================
+#====================================================================================
 # Create the Console Software Package
 #
+echo "\n********************************************************************************"
+echo "Begin Console Software Package: `date`"
+
 echo "going to create $btype for console command package (for Docker)"
 build_number=`cat $abs/BUILD_NUMBER`
 $abs/services/installer/linux/scripts/consoleCmd_deploy64 $binary_dir $build_number "$svc_build_ext" "$svc_install_ext" $isrelease "$deploy"
 
-#====================================================================================================================================
+#====================================================================================
 # Create the Wickr 64 Software Package
 #
+echo "\n********************************************************************************"
+echo "Begin Wickr Qt Software Package: `date`"
+
 echo "going to create Qt library package"
 $abs/platforms/linux/debian/wickrqt/deploy64 "$deploy"
 
-#====================================================================================================================================
+#====================================================================================
 # Create the package for deployment
 #
+echo "\n********************************************************************************"
+echo "Begin Package for Deployment: `date`"
+
 (cd $deploy ; zip -r "$output/bots-${version}.zip" *.deb *.sha256 *.tar.gz)
 
 echo "ZIP File: $output/bots-${version}.zip"
@@ -497,6 +553,10 @@ if test ! -z "$wickrIODockerDeb" ; then
     cp ${deploy}/${wickrIODockerDeb} docker/packages
 fi
 
+if test ! -z "$welcomeDockerDeb" ; then
+    cp ${deploy}/${welcomeDockerDeb} docker/packages
+fi
+
 if test ! -z "$integrationDeb" ; then
     cp ${deploy}/${integrationDeb} docker/packages
 fi
@@ -505,19 +565,43 @@ if test ! -z "$coreDeb" ; then
     cp ${deploy}/${coreDeb} docker/packages
 fi
 
+
 if test ! -z "$complianceDeb" ; then
+    echo "\n********************************************************************************"
+    echo "Begin ComplianceBot Docker Container: `date`"
+
     cp ${deploy}/${complianceDeb} docker/packages
     (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${complianceDeb}" "${complianceExe}" "${complianceImage}" "${versionForDocker}" "${integrationDeb}")
 fi
 
 if test ! -z "$wickrIODockerDeb" ; then
-    cp ${deploy}/${wickrIODockerDeb} docker/packages
-    (cd docker; ./dockerSetup "${wickrQTDeb}" "${wickrIODockerDeb}" "${wickrIOExe}" "${wickrIOBotImage}" "${versionForDocker}")
+    echo "\n********************************************************************************"
+    echo "Begin WickrIOBot Docker Container: `date`"
+
+    if test ! -z "$wickrIOBotImage" ; then
+        (cd docker; ./dockerSetup "${wickrQTDeb}" "${wickrIODockerDeb}" "${wickrIOExe}" "${wickrIOBotImage}" "${versionForDocker}")
+    fi
 fi
 
-if test ! -z "$welcomeDeb" ; then
-    cp ${deploy}/${welcomeDeb} docker/packages
-    (cd docker; ./dockerSetup "${wickrQTDeb}" "${consoleDeb}" "${welcomeDeb}" "${welcomeExe}" "${welcomeImage}" "${versionForDocker}" "${integrationDeb}")
+if test ! -z "$welcomeDockerDeb" ; then
+    echo "\n********************************************************************************"
+    echo "Begin WelcomeBot Docker Container: `date`"
+
+    if test ! -z "$welcomeBotImage" ; then
+        (cd docker; ./dockerSetup "${wickrQTDeb}" "${welcomeDockerDeb}" "${wickrIOExe}" "${welcomeBotImage}" "${versionForDocker}")
+    fi
 fi
 
 rm -rf docker/packages
+
+
+#
+# send a message to the bot room
+#
+botMessage="Version ${versionForDocker} of ${wickrIOBotImage} has been posted to Docker Hub"
+
+curl -v -H "Content-Type: application/json" -H "Authorization: Basic 123456789012345678901234" -X POST http://10.30.20.102:4001/Apps/abcdef/Messages -d "{\"vgroupid\" : \"S61908c3e173c91689e78714a546880404fe138580a4a08b51de83d8ced00b60\", \"message\" : \"${botMessage}\"}"
+
+
+echo "\n********************************************************************************"
+echo "Fished: `date`"

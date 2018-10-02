@@ -2,7 +2,7 @@
 #include "wickriodatabase.h"
 #include "common/wickrHttpRequest.h"
 #include "wickrIOClientRuntime.h"
-#include "wickrIOJScriptService.h"
+#include "wickrIOAddonAsyncService.h"
 
 WickrIOCallbackService::WickrIOCallbackService()
     : m_lock(QReadWriteLock::Recursive)
@@ -140,11 +140,11 @@ WickrIOCallbackThread::isAsyncMessageSet()
     /*
      * Start the Integration software if there is any configured
      */
-    WickrIOJScriptService *jsSvc = (WickrIOJScriptService*)WickrIOClientRuntime::findService(WickrIOJScriptService::jsServiceBaseName);
-    if (!jsSvc)
+    WickrIOAddonAsyncService *asyncSvc = (WickrIOAddonAsyncService*)WickrIOClientRuntime::findService(WickrIOAddonAsyncService::asyncServiceBaseName);
+    if (!asyncSvc)
         return false;
 
-    return jsSvc->asyncMessagesState();
+    return asyncSvc->asyncMessagesState();
 }
 
 bool
@@ -153,12 +153,12 @@ WickrIOCallbackThread::sendAsyncMessage()
     /*
      * Start the Integration software if there is any configured
      */
-    WickrIOJScriptService *jsSvc = (WickrIOJScriptService*)WickrIOClientRuntime::findService(WickrIOJScriptService::jsServiceBaseName);
-    if (!jsSvc)
+    WickrIOAddonAsyncService *asyncSvc = (WickrIOAddonAsyncService*)WickrIOClientRuntime::findService(WickrIOAddonAsyncService::asyncServiceBaseName);
+    if (!asyncSvc)
         return false;
 
     if (!m_asyncMessageSignalSet) {
-        connect(jsSvc, &WickrIOJScriptService::signalAsyncMessageSent,
+        connect(asyncSvc, &WickrIOAddonAsyncService::signalAsyncMessageSent,
                 this, &WickrIOCallbackThread::slotAsyncMessageSent, Qt::QueuedConnection);
         m_asyncMessageSignalSet = true;
     }
@@ -178,7 +178,7 @@ WickrIOCallbackThread::sendAsyncMessage()
         WickrIOMessage rxMsg;
         if (db->getMessage(msgIDs.at(0), &rxMsg)) {
             m_postedMsgID = rxMsg.id;
-            if (jsSvc->sendAsyncMessage(rxMsg.json)) {
+            if (asyncSvc->sendAsyncMessage(rxMsg.json)) {
                 return true;
             }
         }

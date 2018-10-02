@@ -139,6 +139,57 @@ WickrIOAPIInterface::updateAndValidateMembers(QString& responseString, const QSt
     return true;
 }
 
+bool
+WickrIOAPIInterface::updateAndUserIDs(QString& responseString, const QStringList& userIDs)
+{
+    QStringList memberSearchList;
+    foreach (QString userID, userIDs) {
+        WickrStatus status(0);
+
+        QString userIDHashSecure = WickrCore::WickrUser::activeSessionGetSecureAlias(userID, status);
+        if (status.isError()) {
+            m_operation->log_handler->error("Error hashing userID!");
+            responseString = "Problem hashing userID!";
+            return false;
+        }
+
+        QByteArray userIDSecure = encryptUserDataString(userID, status);
+        if (status.isError()) {
+            m_operation->log_handler->error("Error encrypting userID!");
+            responseString = "Problem encrypting userID!";
+            return false;
+        }
+
+        WickrCore::WickrUser *user;
+        user = WickrCore::WickrUser::getUserWithID(userIDHashSecure,
+                                                   0,
+                                                   userIDSecure,
+                                                   0,
+                                                   0,
+                                                   0,
+                                                   0,
+                                                   0,
+                                                   false,
+                                                   false,
+                                                   false,
+                                                   kWickrUserVerificationStatusVerified,
+                                                   false,
+                                                   false,
+                                                   0,
+                                                   false,
+                                                   0,
+                                                   QString(),
+                                                   false,
+                                                   0,
+                                                   QString());
+        if (!user) {
+            m_operation->log_handler->error("cannot find/create user with ID = " + userID);
+            return false;
+        }
+    }
+    return true;
+}
+
 /**
  * @brief WickrIOAPIInterface::deleteConvo
  * Will delete local convo (secure room or 1-to-1). If secure room, will kick off
@@ -206,6 +257,7 @@ WickrIOAPIInterface::sendMessage(const QByteArray& json, QString& responseString
         }
 
         QStringList userNames = jsonHandler->getUserNames();
+        QStringList userIDs = jsonHandler->getUserIDs();
         QString vGroupID = jsonHandler->getVGroupID();
 
         // If there is a message and the length is too long return error
@@ -213,12 +265,20 @@ WickrIOAPIInterface::sendMessage(const QByteArray& json, QString& responseString
                 (jsonHandler->m_message.length() > WickrCore::WickrRuntime::getEnvironmentMgr()->maxMessageSize())) {
             responseString = "Message length too long";
         }
-        else if (userNames.isEmpty() && vGroupID.isEmpty()) {
+        else if (userNames.isEmpty() && vGroupID.isEmpty() && userIDs.isEmpty()) {
             responseString = "No users identified";
         } else if (!userNames.isEmpty()){
             // Update and validate the input list of usernames.  If false is returned then
             // there was an error processing the list, or the user was invalid!
             if (updateAndValidateMembers(responseString, userNames)) {
+                if (jsonHandler->postEntry4SendMessage()) {
+                    retValue = true;
+                } else {
+                    responseString = "Failed sending message";
+                }
+            }
+        } else if (!userIDs.isEmpty()) {
+            if (updateAndUserIDs(responseString, userIDs)) {
                 if (jsonHandler->postEntry4SendMessage()) {
                     retValue = true;
                 } else {

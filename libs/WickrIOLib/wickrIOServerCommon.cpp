@@ -263,11 +263,8 @@ WBIOServerCommon::initClientApps()
         for (QString pkgBot : packagedBots) {
             QString botSw = QString(WBIO_INTEGRATION_SWFILE).arg(WBIO_INTEGRATIONS_DIR).arg(pkgBot);
 
-            // Currently hubot uses the HTTP interface
-            bool usesHttp = (pkgBot == "hubot");
-
             // Assume that all of the shell scripts are there
-            WBIOBotTypes *bot = new WBIOBotTypes(pkgBot, pkgBot, false, usesHttp, APIURL_MSGRECVCBACK, botSw,
+            WBIOBotTypes *bot = new WBIOBotTypes(pkgBot, pkgBot, false, false, APIURL_MSGRECVCBACK, botSw,
                                                  "install.sh", "configure.sh", "start.sh", "stop.sh", "upgrade.sh" );
             WBIOServerCommon::m_supportedBots.append(bot);
 
