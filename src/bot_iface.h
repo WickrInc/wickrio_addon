@@ -21,6 +21,7 @@ public:
     enum BotIfaceStatus {
         SUCCESS = 0,
         FAILURE,
+        SEND_FAILURE,
 
         INIT_FAILED,
         QEXCEPTION,
