@@ -12,7 +12,6 @@ Icon
 *.slo
 *.lo
 *.o
-*.a
 *.la
 *.lai
 
