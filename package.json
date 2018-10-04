@@ -1,15 +1,11 @@
 {
-  "name": "wickrio_addon",
-  "version": "4.54.22",
+  "name": "wickrio_addon2",
+  "version": "4.54.24",
   "description": "Wickr's Node.js C++ Addon for a JavaScript API interface",
-  "main": "./build/Release/wickrio_addon",
+  "main": "wickrio_addon",
   "license": "MIT",
   "dependencies": {
-    "cmake-js": "^3.7.3",
     "nan": "^2.11.0"
-  },
-  "scripts": {
-    "install": "cmake-js compile"
   },
   "repository": {
     "type": "git",
