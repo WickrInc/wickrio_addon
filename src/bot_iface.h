@@ -47,6 +47,7 @@ public:
      */
     string getLastErrorString() { return m_lastError; }
     void clearLastError() { m_lastError = ""; }
+    int getLastErrorCode() { return m_lastErrorCode; }
 
 
     /*
@@ -121,6 +122,7 @@ private:
 
     string          m_clientName;           // Name of the client interfacing with
     string          m_lastError = "";       // Last error string
+    int             m_lastErrorCode = 0;    // Last error code value
 
     // Generic function to set the fields associated with an add/modify room command
     BotIfaceStatus setRoomFields(string& command,
