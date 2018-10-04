@@ -6,8 +6,7 @@ set(CMAKE_CXX_STANDARD 11)
 # Name of the project (will be the name of the plugin)
 project (wickrio_addon)
 
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../clients/libs/WickrIOClientAPI/build
-  ${CMAKE_CURRENT_SOURCE_DIR}/../exports/libs)
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
 # Declare the source files location
 file(GLOB SOURCE_FILES "src/*.cpp" "src/*.h")
@@ -22,8 +21,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
 target_include_directories(${PROJECT_NAME} PRIVATE
   ${CMAKE_JS_INC}
   /usr/local/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/../../../clients/libs/WickrIOClientAPI/src
-  ${CMAKE_CURRENT_SOURCE_DIR}/../exports/include
   ./node_modules/nan)
 
 target_link_libraries(${PROJECT_NAME} ${CMAKE_JS_LIB} libWickrIOClientAPI.a ${CMAKE_DL_LIBS})
