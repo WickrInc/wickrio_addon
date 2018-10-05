@@ -43,13 +43,17 @@ var attachmentURL = "<https://www.alsop-louie.com/wp-content/uploads/2017/03/wic
 var displayname = "Logo.png";
 
 var cmd1 = addon.cmdSend1to1Message(members, message, ttl, bor);  
-console.log(cmd1); //if successful should print "Sending message"
+//if successful should print "Sending message"
+console.log(cmd1);
 
 var cmd2 = addon.cmdAddRoom(members, moderators, title, description, ttl, bor);
-console.log(cmd2); //if successful should print a json with vgroupid of the newly created room
+//if successful should print a json with vgroupid of the newly created room
+console.log(cmd2);
 
-var cmd3 = addon.cmdSendRoomAttachment(vGroupID, attachmentURL, displayname); //Notice: ttl and bor arguments are omitted and command will still work
-console.log(cmd3); //if successful should print "Sending message"
+//Notice: in this example the ttl and bor arguments are omitted and command will still work
+var cmd3 = addon.cmdSendRoomAttachment(vGroupID, attachmentURL, displayname);
+//if successful should print "Sending message"
+console.log(cmd3);
 
 console.log(addon.closeClient());
 ```
