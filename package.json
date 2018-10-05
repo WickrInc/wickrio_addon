@@ -1,15 +1,8 @@
 {
-<<<<<<< HEAD
-  "name": "wickrio_addon",
-  "version": "4.54.23",
-  "description": "Wickr Node.js C++ Addon for a JavaScript interface",
-  "main": "./build/Release/wickrio_addon",
-=======
   "name": "wickrio_addon2",
   "version": "4.54.23",
   "description": "Wickr's Node.js C++ Addon for a JavaScript API interface",
   "main": "wickrio_addon",
->>>>>>> b8a9d1891c87f1e07978db01ba6b46b0236a9c32
   "license": "MIT",
   "dependencies": {
     "nan": "^2.11.0"
