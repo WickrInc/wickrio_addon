@@ -1,5 +1,5 @@
 {
-  "name": "wickrio_addon2",
+  "name": "wickrio_addon",
   "version": "4.62.02",
   "description": "Wickr's Node.js C++ Addon for a JavaScript API interface",
   "main": "wickrio_addon",
