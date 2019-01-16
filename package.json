@@ -5,7 +5,7 @@
   "main": "wickrio_addon",
   "license": "MIT",
   "dependencies": {
-    "nan": "^2.11.0"
+    "nan": "^2.12.1"
   },
   "repository": {
     "type": "git",
