@@ -12,7 +12,7 @@ This is the Node.js C++ Addon that provides access to Wickr's bot client.  This 
 
 Before you can use the WickrIO addon, you will need to have Wickr's bot client. The WickrIO bot packages contain several sample bots that use this addon.
 
-NOTE: The WickrIO bot package is not currently available to the general public. 
+NOTE: The WickrIO bot package is not currently available to the general public.
 
 ## Usage and example:
 
@@ -31,7 +31,7 @@ module.exports = addon;
 var client = "bot_username";
 var response = addon.clientInit(client);
 
-var vGroupID = "S9d0b36ac51c5a71f8d8dd28b8614c273084fd9785c22788df672fb6c8e0ae88";
+var vGroupID = 'vGroupID_number';
 var members = ['wickr_username'];
 var moderators = ['wickr_username'];
 var bor = "600";  //OPTIONAL
