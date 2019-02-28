@@ -12,7 +12,7 @@ This is the Node.js C++ Addon that provides access to Wickr's bot client.  This 
 
 Before you can use the WickrIO addon, you will need to have Wickr's bot client. The WickrIO bot packages contain several sample bots that use this addon.
 
-NOTE: The WickrIO bot package is not currently available to the general public. 
+NOTE: The WickrIO bot package is not currently available to the general public.
 
 ## Usage and example:
 
@@ -22,38 +22,120 @@ Interaction with the WickrIO Node.js addon has the following sequence of operati
 2. You will need to initialize the WickrIO Node.js addon interface, but calling the API's clientInit() function. This API requires the name of the WickrIO client as an argument. This identifies which client the addon will interact with.
 3. Interact with the WickrIO client using the WickrIO Node.js addon APIs.
 
-The following is an example of how to interact with the WickrIO bot client using the WickrIO Node.hs addon:
+The following is an example of how to interact with the WickrIO bot client using the WickrIO Node.js addon and Bot API toolkit:
 
 ```javascript
-var addon = require('wickrio_addon');
-module.exports = addon;
+const WickrIOAPI = require('wickrio_addon');
+const WickrIOBotAPI = require('wickrio-bot-api');
+const WickrUser = WickrIOBotAPI.WickrUser;
 
-var client = "bot_username";
-var response = addon.clientInit(client);
+process.stdin.resume(); //so the program will not close instantly
 
-var vGroupID = "S9d0b36ac51c5a71f8d8dd28b8614c273084fd9785c22788df672fb6c8e0ae88";
-var members = ['wickr_username'];
-var moderators = ['wickr_username'];
-var bor = "600";  //OPTIONAL
-var ttl = "1000"; //OPTIONAL
-var title = "Example Room";
-var description = "The Good Room";
-var message = "Testing time!"
-var attachmentURL = "<https://www.alsop-louie.com/wp-content/uploads/2017/03/wickr-logo-2-crop.png>"
-var displayname = "Logo.png";
+var bot, tokens, bot_username, bot_client_port, bot_client_server;
+var tokens = JSON.parse(process.env.tokens);
 
-var cmd1 = addon.cmdSend1to1Message(members, message, ttl, bor);  
-//if successful should print "Sending message"
-console.log(cmd1);
+async function exitHandler(options, err) {
+  var closed = await bot.close();
+  console.log(closed);
+  if (err) {
+    console.log("Exit Error:", err);
+    process.exit();
+  }
+  if (options.exit) {
+    process.exit();
+  } else if (options.pid) {
+    process.kill(process.pid);
+  }
+}
 
-var cmd2 = addon.cmdAddRoom(members, moderators, title, description, ttl, bor);
-//if successful should print a json with vgroupid of the newly created room
-console.log(cmd2);
+//catches ctrl+c and stop.sh events
+process.on('SIGINT', exitHandler.bind(null, {
+  exit: true
+}));
 
-//Notice: in this example the ttl and bor arguments are omitted and command will still work
-var cmd3 = addon.cmdSendRoomAttachment(vGroupID, attachmentURL, displayname);
-//if successful should print "Sending message"
-console.log(cmd3);
+// catches "kill pid" (for example: nodemon restart)
+process.on('SIGUSR1', exitHandler.bind(null, {
+  pid: true
+}));
+process.on('SIGUSR2', exitHandler.bind(null, {
+  pid: true
+}));
 
-console.log(addon.closeClient());
+//catches uncaught exceptions
+process.on('uncaughtException', exitHandler.bind(null, {
+  exit: true
+}));
+
+async function main() {
+  try {
+    var status;
+    if (process.argv[2] === undefined) {
+      bot_username = tokens.BOT_USERNAME.value;
+      bot = new WickrIOBotAPI.WickrIOBot();
+      status = await bot.start(bot_username)
+    } else {
+      bot = new WickrIOBotAPI.WickrIOBot();
+      status = await bot.start(process.argv[2])
+    }
+    console.log(status)
+    if (!status)
+      exitHandler(null, {
+        exit: true,
+        reason: 'Client not able to start'
+      });
+    ///////////////////////
+    //Start coding below
+    ///////////////////////
+    await bot.startListening(listen); //Passes a callback function that will receive incoming messages into the bot client
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+
+async function listen(message) {
+  try {
+    var parsedMessage = bot.parseMessage(message); //Parses an incoming message and returns and object with command, argument, vGroupID and Sender fields
+    if (!parsedMessage) {
+      return;
+    }
+    console.log('parsedMessage:', parsedMessage);
+    var wickrUser;
+    var command = parsedMessage.command;
+    var message = parsedMessage.message;
+    var argument = parsedMessage.argument;
+    var userEmail = parsedMessage.userEmail;
+    var vGroupID = parsedMessage.vgroupid;
+    var convoType = parsedMessage.convoType;
+    var personal_vGroupID = "";
+    if (convoType === 'personal')
+      personal_vGroupID = vGroupID;
+    var found = bot.getUser(userEmail); //Check if a user exists in the database and get his position in the database
+    if (!found) {
+      wickrUser = new WickrUser(userEmail, {
+        index: 0,
+        personal_vGroupID: personal_vGroupID,
+        command: "",
+        argument: ""
+      });
+      var added = bot.addUser(wickrUser);
+      console.log(added);
+    }
+    var user = bot.getUser(userEmail);
+    user.token = "example_token_A1234";
+
+    //how to determine the command a user sent and handling it
+    if (command === '/help') {
+      var reply = "What can I help you with?";
+      var sMessage = WickrIOAPI.cmdSendRoomMessage(vGroupID, reply); //Respond back to the user or room with a message(using vGroupID)
+      var users = [userEmail];
+      var sMessage = WickrIOAPI.cmdSend1to1Message(users, reply); //Respond back to the user(using user wickrEmail)
+      console.log(sMessage);
+    }
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+main();
 ```
