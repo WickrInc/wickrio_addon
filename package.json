@@ -4,6 +4,13 @@
   "description": "Wickr's Node.js C++ Addon for a JavaScript API interface",
   "main": "wickrio_addon",
   "license": "MIT",
+  "keywords": [
+    "github",
+    "wickr",
+    "bot",
+    "wickrio",
+    "integration"
+  ],
   "dependencies": {
     "nan": "^2.12.1"
   },

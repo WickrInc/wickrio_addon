@@ -10,6 +10,8 @@ This is the Node.js C++ Addon that provides access to Wickr's bot client.  This 
 * Create, modify, leave, delete and configure secure rooms
 * Create and leave group conversations
 
+For full documentation please visit: [https://wickrinc.github.io/wickrio-docs](https://wickrinc.github.io/wickrio-docs)
+
 Before you can use the WickrIO addon, you will need to have Wickr's bot client. The WickrIO bot packages contain several sample bots that use this addon.
 
 NOTE: The WickrIO bot package is not currently available to the general public.
