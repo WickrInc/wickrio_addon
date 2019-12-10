@@ -14,6 +14,8 @@ For full documentation please visit: [https://wickrinc.github.io/wickrio-docs/#d
 
 Before you can use the WickrIO addon, you will need to have Wickr's bot client. The WickrIO bot packages contain several sample bots that use this addon.
 
+NOTE: versions 5.38.17 and older will require version 8 of node. Versions 5.44.2 and newer will require version 10 of node.
+
 ## Usage and example:
 
 Interaction with the WickrIO Node.js addon has the following sequence of operations:
