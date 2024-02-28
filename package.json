@@ -1,6 +1,6 @@
 {
   "name": "wickrio_addon",
-  "version": "6.20.01",
+  "version": "6.34.01",
   "description": "Wickr's Node.js C++ Addon for a JavaScript API interface",
   "main": "wickrio_addon",
   "license": "MIT",
