@@ -1,8 +1,9 @@
 {
   "name": "wickrio_addon",
-  "version": "7.1.1-beta.01",
-  "description": "WickrIO's Javascript bot API's",
-  "main": "src/wickrio_addon.js",
+  "version": "5.113.04",
+  "description": "Wickr's Javascript addon",
+  "main": "./index.js",
+  "type": "module",
   "license": "MIT",
   "keywords": [
     "github",
@@ -14,6 +15,9 @@
   "dependencies": {
     "zeromq": "^6.0.0-beta.19",
     "nan": "^2.13.2"
+  },
+  "engines": {
+    "node": "^10"
   },
   "repository": {
     "type": "git",
