@@ -181,7 +181,7 @@ class WickrIOAddon extends EventEmitter {
     return result.result;
   }
   
-  async cmdSetMsgCallback(event) {
+  async cmdSetMsgCallback(callback) {
     console.log('in cmdSetMsgCallback')
 
     const command = '{ "action" : "set_urlcallback", "callback" : "' + callback + '" }';
@@ -191,20 +191,20 @@ class WickrIOAddon extends EventEmitter {
     return result.result;
   }
   
-  async cmdGetMsgCallback(event) {
+  async cmdGetMsgCallback() {
     console.log('in cmdGetMsgCallback')
 
-    command = '{ "action" : "get_urlcallback" }';
+    const command = '{ "action" : "get_urlcallback" }';
 
     // Send command to the engine
     const result = await this.zmqCommands.sendMessage(command);
     return result.result;
   }
   
-  async cmdDeleteMsgCallback(event) {
+  async cmdDeleteMsgCallback() {
     console.log('in cmdDeleteMsgCallback')
 
-    command = '{ "action" : "delete_urlcallback" }';
+    const command = '{ "action" : "delete_urlcallback" }';
 
     // Send command to the engine
     const result = await this.zmqCommands.sendMessage(command);
@@ -224,7 +224,7 @@ class WickrIOAddon extends EventEmitter {
   async cmdGetEventCallback() {
     console.log('in cmdGetEventCallback')
 
-    command = '{ "action" : "get_eventurlcallback" }';
+    const command = '{ "action" : "get_eventurlcallback" }';
 
     // Send command to the engine
     const result = await this.zmqCommands.sendMessage(command);
@@ -234,7 +234,7 @@ class WickrIOAddon extends EventEmitter {
   async cmdDeleteEventCallback() {
     console.log('in cmdDeleteEventCallback')
 
-    command = '{ "action" : "delete_eventurlcallback" }';
+    const command = '{ "action" : "delete_eventurlcallback" }';
 
     // Send command to the engine
     const result = await this.zmqCommands.sendMessage(command);
@@ -252,7 +252,7 @@ class WickrIOAddon extends EventEmitter {
   async cmdGetStatistics() {
     console.log('in cmdGetStatistics')
 
-    command = '{ "action" : "get_statistics" }';
+    const command = '{ "action" : "get_statistics" }';
 
     // Send command to the engine
     const result = await this.zmqCommands.sendMessage(command);
@@ -262,7 +262,7 @@ class WickrIOAddon extends EventEmitter {
   async cmdClearStatistics() {
     console.log('in cmdClearStatistics')
 
-    command = '{ "action" : "clear_statistics" }';
+    const command = '{ "action" : "clear_statistics" }';
 
     // Send command to the engine
     const result = await this.zmqCommands.sendMessage(command);
@@ -280,7 +280,7 @@ class WickrIOAddon extends EventEmitter {
   async cmdGetRooms() {
     console.log('in cmdGetRooms')
 
-    command = '{ "action" : "get_rooms" }';
+    const command = '{ "action" : "get_rooms" }';
 
     // Send command to the engine
     const result = await this.zmqCommands.sendMessage(command);
@@ -395,8 +395,7 @@ class WickrIOAddon extends EventEmitter {
     if (vGroupID === undefined) {
       throw 'GetRoom: vGroupID must be set!';
       return 'Failure'
-    }
-
+    }eeeeeasdfdasdf
     let commandObj = { 
       action : "get_room",
       vgroupid : vGroupID,
@@ -535,7 +534,7 @@ class WickrIOAddon extends EventEmitter {
   async cmdGetGroupConvos() {
     console.log('in cmdGetGroupConvos')
 
-    command = '{ "action" : "get_groupconvos" }';
+    const command = '{ "action" : "get_groupconvos" }';
 
     // Send command to the engine
     const result = await this.zmqCommands.sendMessage(command);
@@ -553,7 +552,7 @@ class WickrIOAddon extends EventEmitter {
   async cmdGetReceivedMessage() {
     console.log('in cmdGetReceivedMessage')
 
-    command = '{ "action" : "get_received_messages" }';
+    const command = '{ "action" : "get_received_messages" }';
 
     // Send command to the engine
     const result = await this.zmqCommands.sendMessage(command);
@@ -594,7 +593,7 @@ class WickrIOAddon extends EventEmitter {
 
     for (const user of users) {
       const userObject = { name : user };
-      commandObj.members.push(userObject)
+      commandObj.users.push(userObject)
     }
     if (messageID?.length > 0) {
       commandObj.message_id = messageID
@@ -602,10 +601,10 @@ class WickrIOAddon extends EventEmitter {
     if (flags?.length > 0) {
       commandObj.flags = []
       for (const flag of flags) {
-        commandObj.members.push(flags)
+        commandObj.flags.push(flags)
       }
     }
-    if (messageMetaData) {
+    if (messageMetaData && messageMetaData.length > 0) {
       const messageMetaObject = JSON.parse(messageMetaData);
       commandObj.messagemeta = messageMetaObject
     }
@@ -660,9 +659,9 @@ class WickrIOAddon extends EventEmitter {
 
     for (const user of users) {
       const userObject = { name : user };
-      commandObj.members.push(userObject)
+      commandObj.users.push(userObject)
     }
-    if (messageMetaData) {
+    if (messageMetaData && messageMetaData.length > 0) {
       const messageMetaObject = JSON.parse(messageMetaData);
       commandObj.messagemeta = messageMetaObject
     }
@@ -725,7 +724,7 @@ class WickrIOAddon extends EventEmitter {
         commandObj.members.push(flags)
       }
     }
-    if (messageMetaData) {
+    if (messageMetaData && messageMetaData.length > 0) {
       const messageMetaObject = JSON.parse(messageMetaData);
       commandObj.messagemeta = messageMetaObject
     }
@@ -782,7 +781,7 @@ class WickrIOAddon extends EventEmitter {
         commandObj.members.push(flags)
       }
     }
-    if (messageMetaData) {
+    if (messageMetaData && messageMetaData.length > 0) {
       const messageMetaObject = JSON.parse(messageMetaData);
       commandObj.messagemeta = messageMetaObject
     }
@@ -835,7 +834,7 @@ class WickrIOAddon extends EventEmitter {
       commandObj.attachment.filename = attachment
     }
 
-    if (messageMetaData) {
+    if (messageMetaData && messageMetaData.length > 0) {
       const messageMetaObject = JSON.parse(messageMetaData);
       commandObj.messagemeta = messageMetaObject
     }
@@ -897,7 +896,7 @@ class WickrIOAddon extends EventEmitter {
       commandObj.attachment.filename = attachment
     }
 
-    if (messageMetaData) {
+    if (messageMetaData && messageMetaData.length > 0) {
       const messageMetaObject = JSON.parse(messageMetaData);
       commandObj.messagemeta = messageMetaObject
     }
@@ -965,7 +964,7 @@ class WickrIOAddon extends EventEmitter {
       commandObj.attachment.filename = attachment
     }
 
-    if (messageMetaData) {
+    if (messageMetaData && messageMetaData.length > 0) {
       const messageMetaObject = JSON.parse(messageMetaData);
       commandObj.messagemeta = messageMetaObject
     }
@@ -1033,7 +1032,7 @@ class WickrIOAddon extends EventEmitter {
       commandObj.attachment.filename = attachment
     }
 
-    if (messageMetaData) {
+    if (messageMetaData && messageMetaData.length > 0) {
       const messageMetaObject = JSON.parse(messageMetaData);
       commandObj.messagemeta = messageMetaObject
     }
@@ -1099,7 +1098,7 @@ class WickrIOAddon extends EventEmitter {
         commandObj.members.push(flags)
       }
     }
-    if (messageMetaData) {
+    if (messageMetaData && messageMetaData.length > 0) {
       const messageMetaObject = JSON.parse(messageMetaData);
       commandObj.messagemeta = messageMetaObject
     }
@@ -1149,11 +1148,7 @@ class WickrIOAddon extends EventEmitter {
       commandObj.attachment.filename = attachment
     }
 
-    for (const user of users) {
-      const userObject = { name : user };
-      commandObj.members.push(userObject)
-    }
-    if (messageMetaData) {
+    if (messageMetaData && messageMetaData.length > 0) {
       const messageMetaObject = JSON.parse(messageMetaData);
       commandObj.messagemeta = messageMetaObject
     }
@@ -1165,9 +1160,6 @@ class WickrIOAddon extends EventEmitter {
     }
     if (bor?.length > 0) {
       commandObj.bor = bor
-    }
-    if (isLowPriority) {
-      commandObj.low_priority = true
     }
     if (deleteWhenSent) {
       commandObj.deletewhensent = true
@@ -1211,7 +1203,7 @@ class WickrIOAddon extends EventEmitter {
         commandObj.members.push(flags)
       }
     }
-    if (messageMetaData) {
+    if (messageMetaData && messageMetaData.length > 0) {
       const messageMetaObject = JSON.parse(messageMetaData);
       commandObj.messagemeta = messageMetaObject
     }
@@ -1268,7 +1260,7 @@ class WickrIOAddon extends EventEmitter {
         commandObj.members.push(flags)
       }
     }
-    if (messageMetaData) {
+    if (messageMetaData && messageMetaData.length > 0) {
       const messageMetaObject = JSON.parse(messageMetaData);
       commandObj.messagemeta = messageMetaObject
     }
@@ -1313,7 +1305,7 @@ class WickrIOAddon extends EventEmitter {
       commandObj.attachment.filename = attachment
     }
 
-    if (messageMetaData) {
+    if (messageMetaData && messageMetaData.length > 0) {
       const messageMetaObject = JSON.parse(messageMetaData);
       commandObj.messagemeta = messageMetaObject
     }
@@ -1379,7 +1371,7 @@ class WickrIOAddon extends EventEmitter {
       commandObj.attachment.filename = attachment
     }
 
-    if (messageMetaData) {
+    if (messageMetaData && messageMetaData.length > 0) {
       const messageMetaObject = JSON.parse(messageMetaData);
       commandObj.messagemeta = messageMetaObject
     }
@@ -1442,7 +1434,7 @@ class WickrIOAddon extends EventEmitter {
       commandObj.attachment.filename = attachment
     }
 
-    if (messageMetaData) {
+    if (messageMetaData && messageMetaData.length > 0) {
       const messageMetaObject = JSON.parse(messageMetaData);
       commandObj.messagemeta = messageMetaObject
     }
@@ -1511,7 +1503,7 @@ class WickrIOAddon extends EventEmitter {
       commandObj.attachment.filename = attachment
     }
 
-    if (messageMetaData) {
+    if (messageMetaData && messageMetaData.length > 0) {
       const messageMetaObject = JSON.parse(messageMetaData);
       commandObj.messagemeta = messageMetaObject
     }
@@ -1755,17 +1747,26 @@ class WickrIOAddon extends EventEmitter {
     }
 
     if (page !== undefined) {
-      commandObj.page = page
-      commandObj.size = size
+      if (typeof page === 'number') {
+        commandObj.page = page
+      } else {
+        commandObj.page = Number(page)
+      }
+      if (typeof size === 'number') {
+        commandObj.size = size
+      } else {
+        commandObj.size = Number(size)
+      }
     }
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
     const result = await this.zmqCommands.sendMessage(command);
-    if (result.success)
-      result.result;
-    else
+    if (result.success) {
+      return result.result;
+    } else {
       return 'Failure';
+    }
   }
   
   async cmdGetSecurityGroups(page, size) {
@@ -1785,8 +1786,16 @@ class WickrIOAddon extends EventEmitter {
     }
 
     if (page !== undefined) {
-      commandObj.page = page
-      commandObj.size = size
+      if (typeof page === 'number') {
+        commandObj.page = page
+      } else {
+        commandObj.page = Number(page)
+      }
+      if (typeof size === 'number') {
+        commandObj.size = size
+      } else {
+        commandObj.size = Number(size)
+      }
     }
     const command = JSON.stringify(commandObj);
 
@@ -1820,8 +1829,16 @@ class WickrIOAddon extends EventEmitter {
     }
 
     if (page !== undefined) {
-      commandObj.page = page
-      commandObj.size = size
+      if (typeof page === 'number') {
+        commandObj.page = page
+      } else {
+        commandObj.page = Number(page)
+      }
+      if (typeof size === 'number') {
+        commandObj.size = size
+      } else {
+        commandObj.size = Number(size)
+      }
     }
     const command = JSON.stringify(commandObj);
 
@@ -1869,8 +1886,16 @@ class WickrIOAddon extends EventEmitter {
     if (type === undefined || type === 'summary') {
       commandObj.type = 'summary'
       if (page !== undefined) {
-        commandObj.page = page
-        commandObj.size = size
+        if (typeof page === 'number') {
+          commandObj.page = page
+        } else {
+          commandObj.page = Number(page)
+        }
+        if (typeof size === 'number') {
+          commandObj.size = size
+        } else {
+          commandObj.size = Number(size)
+        }
       }
     } else {
       commandObj.type = 'full'
@@ -1964,6 +1989,7 @@ class WickrIOAddon extends EventEmitter {
     }
 
     const command = JSON.stringify(commandObj);
+    console.log('cmdAddMessageID: command:', command)
 
     // Send command to the engine
     const result = await this.zmqCommands.sendMessage(command);
@@ -2033,8 +2059,17 @@ class WickrIOAddon extends EventEmitter {
 
     const commandObj = {
       action : 'get_message_id_table',
-      page : page,
-      size : size,
+    }
+
+    if (typeof page === 'number') {
+      commandObj.page = page
+    } else {
+      commandObj.page = Number(page)
+    }
+    if (typeof size === 'number') {
+      commandObj.size = size
+    } else {
+      commandObj.size = Number(size)
     }
 
     if (sender?.length > 0) {
@@ -2159,7 +2194,7 @@ class WickrIOAddon extends EventEmitter {
       action : 'get_verfication_list',
     }
 
-    if (mode.length) {
+    if (mode?.length && mode === 'all') {
       commandObj.mode = 'all'
     }
 

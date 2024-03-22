@@ -26,6 +26,9 @@ class ZMQCommands {
     this.asyncQName = 'ipc:///opt/WickrIO/clients/' + botname + '/tmp/2';
     this.heartbeatQName = 'ipc:///opt/WickrIO/clients/' + botname + '/tmp/1';
 
+    this.sendInProgress = false
+    this.lastSentMessage = ''
+
     this.requestSocket = new zmq.Request
     //this.requestSocket.sendTimeout = 5000;
     this.requestSocket.connect(this.requestQName)
@@ -40,7 +43,7 @@ class ZMQCommands {
     this.asyncSocket.connect(this.asyncQName)
     console.log('ZMQCommands: async socket bound to', this.asyncQName);
 
-    this.sendMessageAsync = (message) => 
+    this.sendMessageAsync = (message) => {
       new Promise((resolve, reject) => {
 
         let safeMessage = message.replace(/[\u007f-\uffff]/g,
@@ -111,6 +114,7 @@ class ZMQCommands {
           reject(false);
         }
       })
+    }
   }
 
   async startup() {
@@ -294,6 +298,9 @@ class ZMQCommands {
 
     const result = await this.requestSocket.receive();
 
+    // Save the current message just in case
+    this.lastSentMessage = message
+
     if (result === undefined || result.length === 0) {
       return( {
         success : false,
@@ -347,6 +354,7 @@ class ZMQCommands {
     return(response);
   } catch(err) {
     console.error(err);
+    console.error('last message:', this.lastSentMessage )
 
     return( {
       success : false,
@@ -429,6 +437,124 @@ class ZMQCommands {
       return undefined
     }
     */
+  }
+
+
+
+  sendMessageAsyncGood(message) {
+    return new Promise((resolve, reject) => {
+
+      let safeMessage = message.replace(/[\u007f-\uffff]/g,
+      function(c) {
+        return '\\u'+('0000'+c.charCodeAt(0).toString(16)).slice(-4);
+      });
+
+      try {
+        this.requestSocket.send(message).then(results => {
+          console.log('message sent, now will receive')
+          const [msgs] = this.requestSocket.receive().then((result) => {
+
+
+            if (result === undefined || result.length === 0) {
+              resolve( {
+                success : false,
+                return_code : '',
+                result : '',
+              });
+            }
+      
+            if (result.length > 1) {
+              console.log('sendMessage: response has more than one response!')
+            }
+      
+            if (Array.isArray(result)) {
+              console.log('result is an array')
+              console.log('result lenght=', result.length)
+            }
+            const receive_result = result[0];
+      
+            let response = {};
+      
+            if (receive_result === undefined) {
+              resolve(response);
+            }
+      
+            const receive_msg = receive_result.toString();
+
+            // Parse the error code from teh beginning of the response
+            const pos = receive_msg.search(':');
+            if (pos === -1) {
+              response = {
+                success : true,
+                return_code : '0',
+                result : receive_msg,
+              };
+              resolve(response);
+            }
+      
+            const retVal = receive_msg.substring(0, pos);
+      
+            response = {
+              success : (retVal === '0'),
+              return_code : retVal,
+              result : receive_msg.substring(pos+1),
+            };
+      //    console.log('sendMessage: response=', response)
+      
+            resolve(response);
+          })
+          .catch(error => console.err(err))
+
+          return msgs
+        }).catch(error => console.err(err))
+      } catch (err) {
+        console.log(err);
+        reject(false);
+      }
+    })
+  }
+
+
+  sleepDone() {
+    console.log('sleep done')
+  }
+
+  sleep(ms) {
+    setTimeout(this.sleepDone, ms)
+  }
+
+
+
+
+
+  sendMessageSync(message) {
+    if (this.sendInProgress) {
+      throw 'sendMessage: already sending!';
+    } else {
+      this.sendInProgress = true
+    }
+
+    let sendResult = undefined
+
+    this.sendMessageAsyncGood(message)
+      .then(result => {
+        sendResult = result
+      })
+      .catch((err) => {
+        console.log('sendMessageSync: failed')
+      });
+
+    let sleepCalls = 15000
+    while (sleepCalls > 0 && sendResult === undefined) {
+      this.sleep(1000)
+      sleepCalls--
+    }
+
+    if (sleepCalls === 0) {
+      console.log('sendMessage timed out!')
+    }
+    this.sendInProgress = false
+    return sendResult
   }
 
   async getMessageOld() {
