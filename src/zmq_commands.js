@@ -30,7 +30,7 @@ class ZMQCommands {
     this.lastSentMessage = ''
 
     this.requestSocket = new zmq.Request
-    //this.requestSocket.sendTimeout = 5000;
+    this.requestSocket.sendTimeout = -1;
     this.requestSocket.connect(this.requestQName)
     console.log('ZMQCommands: request socket bound to', this.requestQName);
 
@@ -71,7 +71,6 @@ class ZMQCommands {
         
               if (Array.isArray(result)) {
                 console.log('result is an array')
-                console.log('result lenght=', result.length)
               }
               const receive_result = result[0];
         
@@ -292,6 +291,7 @@ class ZMQCommands {
   });
 
   try {
+    console.log('Sending message:, ',message);
     await this.requestSocket.send(message);
   
     console.log('message sent, now will receive')
@@ -315,7 +315,6 @@ class ZMQCommands {
 
     if (Array.isArray(result)) {
       console.log('result is an array')
-      console.log('result lenght=', result.length)
     }
     const receive_result = result[0];
 
