@@ -743,7 +743,7 @@ class WickrIOAddon extends EventEmitter {
     }
 
     const command = JSON.stringify(commandObj);
-
+  
     // Send command to the engine
     const result = await this.zmqCommands.sendMessage(command);
     if (result.success)
@@ -862,7 +862,7 @@ class WickrIOAddon extends EventEmitter {
     }
 
     const command = JSON.stringify(commandObj);
-
+   
     // Send command to the engine
     const result = await this.zmqCommands.sendMessage(command);
     if (result.success)
@@ -1114,7 +1114,7 @@ class WickrIOAddon extends EventEmitter {
     }
 
     const command = JSON.stringify(commandObj);
-
+   
     // Send command to the engine
     const result = await this.zmqCommands.sendMessage(command);
     if (result.success)
@@ -1333,7 +1333,7 @@ class WickrIOAddon extends EventEmitter {
     }
 
     const command = JSON.stringify(commandObj);
-
+  
     // Send command to the engine
     const result = await this.zmqCommands.sendMessage(command);
     if (result.success)
@@ -1729,7 +1729,7 @@ class WickrIOAddon extends EventEmitter {
     // Send command to the engine
     const result = await this.zmqCommands.sendMessage(command);
     if (result.success)
-      result.result;
+      return result.result;
     else
       return 'Failure';
   }
@@ -1806,7 +1806,9 @@ class WickrIOAddon extends EventEmitter {
     // Send command to the engine
     const result = await this.zmqCommands.sendMessage(command);
     if (result.success)
+      {
       return result.result;
+      }
     else
       return 'Failure';
   }
@@ -1917,7 +1919,7 @@ class WickrIOAddon extends EventEmitter {
     // Send command to the engine
     const result = await this.zmqCommands.sendMessage(command);
     if (result.success)
-      result.result;
+      return result.result;
     else
       return 'Failure';
   }
@@ -1954,7 +1956,7 @@ class WickrIOAddon extends EventEmitter {
     // Send command to the engine
     const result = await this.zmqCommands.sendMessage(command);
     if (result.success)
-      result.result;
+      return result.result;
     else
       return 'Failure';
   }
