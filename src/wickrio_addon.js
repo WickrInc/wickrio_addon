@@ -1,11 +1,12 @@
 const EventEmitter = require('events')
 const ZMQCommands = require('./zmq_commands')
+const SQSCommands = require('./sqs_commands')
 
 let clientName='';
 
 async function messages_callback_func(asyncInfo) {
   while (asyncInfo.clientInited === true) {
-    const message = await asyncInfo.zmqCommands.getMessage();
+    const message = await asyncInfo.queueCommands.getMessage();
 
     if (message !== undefined) {
       if (asyncInfo.messageCallback != undefined)
@@ -14,10 +15,12 @@ async function messages_callback_func(asyncInfo) {
       if (asyncInfo.testcount > 0) {
         asyncInfo.testcount--;
 
+        /*
         if (asyncInfo.messageCallback != undefined) {
           asyncInfo.messageCallback('this is a test message!');
           throw 'messages_callback: sent test message!';
         }
+        */
       }
     }
   }
@@ -26,7 +29,7 @@ async function messages_callback_func(asyncInfo) {
 class WickrIOAddon extends EventEmitter {
   constructor() {
     super()
-    this.zmqCommands = undefined;
+    this.queueCommands = undefined;
     this.messageCallback = undefined;
     this.asyncReceive = false;
     this.clientName = undefined;
@@ -35,7 +38,7 @@ class WickrIOAddon extends EventEmitter {
     this.testcount = 2;
   }
 
-  clientInit(username) {
+  clientInit(username, sqsRegion, sqsMessageQueue, sqsRequestQueue, sqsResponseQueue) {
     this.clientInited = true;
 
 //    throw 'IN clientInit!';
@@ -43,7 +46,16 @@ class WickrIOAddon extends EventEmitter {
     console.log('in clientInit')
     this.clientName=username;
 
-    this.zmqCommands = new ZMQCommands(username)
+    // if the SQS queues are set then use the SQS apis
+    if (sqsMessageQueue && sqsRequestQueue && sqsResponseQueue) {
+      this.queueCommands = new SQSCommands(username,
+                                           sqsRegion,
+                                           sqsMessageQueue,
+                                           sqsRequestQueue,
+                                           sqsResponseQueue);
+    } else {
+      this.queueCommands = new ZMQCommands(username)
+    }
     return 'Bot Interface initialized successfully!';
   }
 
@@ -56,7 +68,7 @@ class WickrIOAddon extends EventEmitter {
     try {
       console.log('entering isConnected')
 
-      await this.zmqCommands.sendMessage('{ "action" : "ping" }').then(results => {
+      await this.queueCommands.sendMessage('{ "action" : "ping" }').then(results => {
         if (results === undefined || results.result === undefined)
           return false
         return true
@@ -72,7 +84,7 @@ class WickrIOAddon extends EventEmitter {
       console.log(err)
     }
     */
-    const result = await this.zmqCommands.sendMessage('{ "action" : "ping" }');
+    const result = await this.queueCommands.sendMessage('{ "action" : "ping" }');
     if (result === undefined || result.result === undefined)
         return false;
     return true
@@ -81,7 +93,7 @@ class WickrIOAddon extends EventEmitter {
   async getClientState() {
     console.log('in getClientState')
 
-    const result = await this.zmqCommands.sendMessage('{ "action" : "get_state" }');
+    const result = await this.queueCommands.sendMessage('{ "action" : "get_state" }');
     return result.result;
   }
 
@@ -97,7 +109,7 @@ class WickrIOAddon extends EventEmitter {
   async messages_callback(asyncInfo) {
     return new Promise(async function(resolve, reject) {
       while (asyncInfo.asyncReceive === true) {
-        const message = await asyncInfo.zmqCommands.getMessage();
+        const message = await asyncInfo.queueCommands.getMessage();
 
         if (message != undefined) {
           if (asyncInfo.messageCallback != undefined)
@@ -132,7 +144,7 @@ class WickrIOAddon extends EventEmitter {
     */
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage('{ "action" : "start_async_messages" }');
+    const result = await this.queueCommands.sendMessage('{ "action" : "start_async_messages" }');
     return result.result;
   }
 
@@ -147,7 +159,7 @@ class WickrIOAddon extends EventEmitter {
   async cmdSetStreamingOff() {
     console.log('in cmdSetStreamingOff')
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage('{ "action" : "set_streaming", "type" : "off" }');
+    const result = await this.queueCommands.sendMessage('{ "action" : "set_streaming", "type" : "off" }');
     return 'Success';
   }
 
@@ -159,7 +171,7 @@ class WickrIOAddon extends EventEmitter {
               ', "attachments" : "' + attachmentLoc + '" }';
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     return 'Success';
   }
 
@@ -177,7 +189,7 @@ class WickrIOAddon extends EventEmitter {
     const command = '{ "action" : "post_event", "event" : "' + event + '" }';
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     return result.result;
   }
   
@@ -187,7 +199,7 @@ class WickrIOAddon extends EventEmitter {
     const command = '{ "action" : "set_urlcallback", "callback" : "' + callback + '" }';
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     return result.result;
   }
   
@@ -197,7 +209,7 @@ class WickrIOAddon extends EventEmitter {
     const command = '{ "action" : "get_urlcallback" }';
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     return result.result;
   }
   
@@ -207,7 +219,7 @@ class WickrIOAddon extends EventEmitter {
     const command = '{ "action" : "delete_urlcallback" }';
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     return result.result;
   }
   
@@ -217,7 +229,7 @@ class WickrIOAddon extends EventEmitter {
     const command = '{ "action" : "set_eventurlcallback", "callback" : "' + callback + '" }';
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     return result.result;
   }
 
@@ -227,7 +239,7 @@ class WickrIOAddon extends EventEmitter {
     const command = '{ "action" : "get_eventurlcallback" }';
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     return result.result;
   }
   
@@ -237,7 +249,7 @@ class WickrIOAddon extends EventEmitter {
     const command = '{ "action" : "delete_eventurlcallback" }';
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     return result.result;
   }
 
@@ -255,7 +267,7 @@ class WickrIOAddon extends EventEmitter {
     const command = '{ "action" : "get_statistics" }';
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     return result.result;
   }
   
@@ -265,7 +277,7 @@ class WickrIOAddon extends EventEmitter {
     const command = '{ "action" : "clear_statistics" }';
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     return result.result;
   }
 
@@ -283,7 +295,7 @@ class WickrIOAddon extends EventEmitter {
     const command = '{ "action" : "get_rooms" }';
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     return result.result;
   }
   
@@ -331,7 +343,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -385,7 +397,7 @@ class WickrIOAddon extends EventEmitter {
     
     const command = JSON.stringify(commandObj);
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -407,7 +419,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     return result.result;
   }
   
@@ -427,7 +439,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     return result.result;
   }
 
@@ -447,7 +459,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     return result.result;
   }
 
@@ -488,7 +500,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -511,7 +523,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     return result.result;
   }
   
@@ -531,7 +543,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     return result.result;
   }
   
@@ -541,7 +553,7 @@ class WickrIOAddon extends EventEmitter {
     const command = '{ "action" : "get_groupconvos" }';
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     return result.result;
   }
   
@@ -559,7 +571,7 @@ class WickrIOAddon extends EventEmitter {
     const command = '{ "action" : "get_received_messages" }';
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     return result.result;
   }
 
@@ -625,7 +637,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return 'Success';
     else
@@ -688,7 +700,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return 'Success';
     else
@@ -745,7 +757,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
   
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return 'Success';
     else
@@ -802,7 +814,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return 'Success';
     else
@@ -864,7 +876,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
    
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return 'Success';
     else
@@ -926,7 +938,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return 'Success';
     else
@@ -994,7 +1006,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return 'Success';
     else
@@ -1062,7 +1074,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return 'Success';
     else
@@ -1116,7 +1128,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
    
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return 'Success';
     else
@@ -1172,7 +1184,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return 'Success';
     else
@@ -1221,7 +1233,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return 'Success';
     else
@@ -1278,7 +1290,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return 'Success';
     else
@@ -1335,7 +1347,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
   
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return 'Success';
     else
@@ -1401,7 +1413,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return 'Success';
     else
@@ -1461,7 +1473,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return 'Success';
     else
@@ -1530,7 +1542,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return 'Success';
     else
@@ -1555,7 +1567,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -1572,7 +1584,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -1590,7 +1602,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return 'Success';
     else
@@ -1607,7 +1619,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -1624,7 +1636,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return 'Success';
     else
@@ -1640,7 +1652,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return 'Success';
     else
@@ -1653,7 +1665,7 @@ class WickrIOAddon extends EventEmitter {
     const command = '{ "action" : "set_control", "' + controlKey + '" : "' + controlValue + '" }';
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return 'Success';
     else
@@ -1678,7 +1690,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -1727,7 +1739,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -1765,7 +1777,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success) {
       return result.result;
     } else {
@@ -1804,7 +1816,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       {
       return result.result;
@@ -1849,7 +1861,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -1917,7 +1929,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -1954,7 +1966,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -1997,7 +2009,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -2020,7 +2032,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -2043,7 +2055,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -2084,7 +2096,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -2107,7 +2119,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -2143,7 +2155,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -2172,7 +2184,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -2206,7 +2218,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -2237,7 +2249,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -2248,7 +2260,7 @@ class WickrIOAddon extends EventEmitter {
     console.log('in cmdVerifyAll')
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage('{ "action" : "verify_all" }');
+    const result = await this.queueCommands.sendMessage('{ "action" : "verify_all" }');
     if (result.success)
       return result.result;
     else
@@ -2271,7 +2283,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -2310,7 +2322,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -2321,7 +2333,7 @@ class WickrIOAddon extends EventEmitter {
     console.log('in cmdGetServerInfo')
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage('{ "action" : "get_server_info" }');
+    const result = await this.queueCommands.sendMessage('{ "action" : "get_server_info" }');
     if (result.success)
       return result.result;
     else
@@ -2349,7 +2361,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -2377,7 +2389,7 @@ class WickrIOAddon extends EventEmitter {
     const command = JSON.stringify(commandObj);
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage(command);
+    const result = await this.queueCommands.sendMessage(command);
     if (result.success)
       return result.result;
     else
@@ -2396,7 +2408,7 @@ class WickrIOAddon extends EventEmitter {
     console.log('in cmdGetTrnasmitQueueInfo')
 
     // Send command to the engine
-    const result = await this.zmqCommands.sendMessage('{ "action" : "get_transmit_queue_info" }');
+    const result = await this.queueCommands.sendMessage('{ "action" : "get_transmit_queue_info" }');
     if (result.success)
       return result.result;
     else
@@ -2413,6 +2425,11 @@ class WickrIOAddon extends EventEmitter {
 
 }
 
+module.exports = {
+  WickrIOAddon,
+}
+
+/*
 const wickrio_addon = new WickrIOAddon();
 
 module.exports = {
@@ -2508,4 +2525,4 @@ module.exports = {
   cmdGetTransmitQueueInfo : wickrio_addon.cmdGetTransmitQueueInfo,
 
 };
-
+*/
