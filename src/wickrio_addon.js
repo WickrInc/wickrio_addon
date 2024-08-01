@@ -27,13 +27,14 @@ async function messages_callback_func(asyncInfo) {
 }
 
 class WickrIOAddon extends EventEmitter {
-  constructor() {
+  constructor(debugOn) {
     super()
     this.queueCommands = undefined;
     this.messageCallback = undefined;
     this.asyncReceive = false;
     this.clientName = undefined;
     this.clientInited = false;
+    this.debug = debugOn
 
     this.testcount = 2;
   }
@@ -43,7 +44,7 @@ class WickrIOAddon extends EventEmitter {
 
 //    throw 'IN clientInit!';
 
-    console.log('in clientInit')
+    if (this.debug) console.log('in clientInit')
     this.clientName=username;
 
     // if the SQS queues are set then use the SQS apis
@@ -52,9 +53,10 @@ class WickrIOAddon extends EventEmitter {
                                            sqsRegion,
                                            sqsMessageQueue,
                                            sqsRequestQueue,
-                                           sqsResponseQueue);
+                                           sqsResponseQueue,
+                                           this.debug);
     } else {
-      this.queueCommands = new ZMQCommands(username)
+      this.queueCommands = new ZMQCommands(username, this.debug)
     }
     return 'Bot Interface initialized successfully!';
   }
@@ -66,7 +68,7 @@ class WickrIOAddon extends EventEmitter {
   async isConnected(delay) {
   /*
     try {
-      console.log('entering isConnected')
+      if (this.debug) console.log('entering isConnected')
 
       await this.queueCommands.sendMessage('{ "action" : "ping" }').then(results => {
         if (results === undefined || results.result === undefined)
@@ -77,7 +79,7 @@ class WickrIOAddon extends EventEmitter {
         return false
       });
   
-      console.log('leaving isConnected')
+      if (this.debug) console.log('leaving isConnected')
     } catch(err) {
       const stack = err.stack
       console.log(stack)
@@ -91,7 +93,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async getClientState() {
-    console.log('in getClientState')
+    if (this.debug) console.log('in getClientState')
 
     const result = await this.queueCommands.sendMessage('{ "action" : "get_state" }');
     return result.result;
@@ -133,13 +135,13 @@ class WickrIOAddon extends EventEmitter {
     this.messageCallback = callback;
     this.asyncReceive = true;
 
-    console.log('in cmdStartAsyncRecvMessages')
+    if (this.debug) console.log('in cmdStartAsyncRecvMessages')
 
     messages_callback_func(this)
     /*
     await msgCallback.then(
-      function(value) { console.log('async message rx finished'); },
-      function(value) { console.log('async message rx failed'); }
+      function(value) { if (this.debug) console.log('async message rx finished'); },
+      function(value) { if (this.debug) console.log('async message rx failed'); }
     );
     */
 
@@ -152,19 +154,19 @@ class WickrIOAddon extends EventEmitter {
     this.asyncReceive = false;
     this.messageCallback = undefined;
 
-    console.log('in cmdStopAsyncRecvMessages')
+    if (this.debug) console.log('in cmdStopAsyncRecvMessages')
     return 'Success';
   }
 
   async cmdSetStreamingOff() {
-    console.log('in cmdSetStreamingOff')
+    if (this.debug) console.log('in cmdSetStreamingOff')
     // Send command to the engine
     const result = await this.queueCommands.sendMessage('{ "action" : "set_streaming", "type" : "off" }');
     return 'Success';
   }
 
   async cmdSetFileStreaming(dest, baseName, maxSize, attachmentLoc) {
-    console.log('in cmdSetFileStreaming')
+    if (this.debug) console.log('in cmdSetFileStreaming')
 
     const command = '{ "action" : "set_streaming", "type" : "file", "destination" : "' + dest +
               '",  "base_name" : "' + baseName + '", "max_file_size" : ' + maxSize + 
@@ -184,7 +186,7 @@ class WickrIOAddon extends EventEmitter {
   ///////////////////////////////////////////////////////////////////////////////////////////
 
   async cmdPostEvent(event) {
-    console.log('in cmdPostEvent')
+    if (this.debug) console.log('in cmdPostEvent')
 
     const command = '{ "action" : "post_event", "event" : "' + event + '" }';
 
@@ -194,7 +196,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdSetMsgCallback(callback) {
-    console.log('in cmdSetMsgCallback')
+    if (this.debug) console.log('in cmdSetMsgCallback')
 
     const command = '{ "action" : "set_urlcallback", "callback" : "' + callback + '" }';
 
@@ -204,7 +206,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdGetMsgCallback() {
-    console.log('in cmdGetMsgCallback')
+    if (this.debug) console.log('in cmdGetMsgCallback')
 
     const command = '{ "action" : "get_urlcallback" }';
 
@@ -214,7 +216,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdDeleteMsgCallback() {
-    console.log('in cmdDeleteMsgCallback')
+    if (this.debug) console.log('in cmdDeleteMsgCallback')
 
     const command = '{ "action" : "delete_urlcallback" }';
 
@@ -224,7 +226,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdSetEventCallback(callback) {
-    console.log('in cmdSetEventCallback')
+    if (this.debug) console.log('in cmdSetEventCallback')
 
     const command = '{ "action" : "set_eventurlcallback", "callback" : "' + callback + '" }';
 
@@ -234,7 +236,7 @@ class WickrIOAddon extends EventEmitter {
   }
 
   async cmdGetEventCallback() {
-    console.log('in cmdGetEventCallback')
+    if (this.debug) console.log('in cmdGetEventCallback')
 
     const command = '{ "action" : "get_eventurlcallback" }';
 
@@ -244,7 +246,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdDeleteEventCallback() {
-    console.log('in cmdDeleteEventCallback')
+    if (this.debug) console.log('in cmdDeleteEventCallback')
 
     const command = '{ "action" : "delete_eventurlcallback" }';
 
@@ -262,7 +264,7 @@ class WickrIOAddon extends EventEmitter {
   ///////////////////////////////////////////////////////////////////////////////////////////
 
   async cmdGetStatistics() {
-    console.log('in cmdGetStatistics')
+    if (this.debug) console.log('in cmdGetStatistics')
 
     const command = '{ "action" : "get_statistics" }';
 
@@ -272,7 +274,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdClearStatistics() {
-    console.log('in cmdClearStatistics')
+    if (this.debug) console.log('in cmdClearStatistics')
 
     const command = '{ "action" : "clear_statistics" }';
 
@@ -290,7 +292,7 @@ class WickrIOAddon extends EventEmitter {
   ///////////////////////////////////////////////////////////////////////////////////////////
 
   async cmdGetRooms() {
-    console.log('in cmdGetRooms')
+    if (this.debug) console.log('in cmdGetRooms')
 
     const command = '{ "action" : "get_rooms" }';
 
@@ -300,7 +302,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdAddRoom(members, moderators, title, description, ttl, bor) {
-    console.log('in cmdAddRoom')
+    if (this.debug) console.log('in cmdAddRoom')
 
     if (! Array.isArray(members)) {
       throw 'AddRoom: list of Members must be an array!';
@@ -351,7 +353,7 @@ class WickrIOAddon extends EventEmitter {
   }
 
   async cmdModifyRoom(vGroupID, members, moderators, title, description, ttl, bor) {
-    console.log('in cmdModifyRoom')
+    if (this.debug) console.log('in cmdModifyRoom')
 
     if (vGroupID === undefined) {
       throw 'ModifyRoom: vGroupID must be set!';
@@ -405,7 +407,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdGetRoom(vGroupID) {
-    console.log('in cmdGetRoom')
+    if (this.debug) console.log('in cmdGetRoom')
 
     if (vGroupID === undefined) {
       throw 'GetRoom: vGroupID must be set!';
@@ -424,7 +426,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdLeaveRoom(vGroupID) {
-    console.log('in cmdLeaveRoom')
+    if (this.debug) console.log('in cmdLeaveRoom')
 
     if (vGroupID === undefined) {
       throw 'LeaveRoom: vGroupID must be set!';
@@ -444,7 +446,7 @@ class WickrIOAddon extends EventEmitter {
   }
 
   async cmdDeleteRoom(vGroupID) {
-    console.log('in cmdDeleteRoom')
+    if (this.debug) console.log('in cmdDeleteRoom')
 
     if (vGroupID === undefined) {
       throw 'DeleteRoom: vGroupID must be set!';
@@ -472,7 +474,7 @@ class WickrIOAddon extends EventEmitter {
   ///////////////////////////////////////////////////////////////////////////////////////////
 
   async cmdAddGroupConvo(members, ttl, bor) {
-    console.log('in cmdAddGroupConvo')
+    if (this.debug) console.log('in cmdAddGroupConvo')
 
     if (! Array.isArray(members)) {
       throw 'AddGroupConvo: list of Members must be an array!';
@@ -508,7 +510,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdDeleteGroupConvo(vGroupID) {
-    console.log('in cmdDeleteGroupConvo')
+    if (this.debug) console.log('in cmdDeleteGroupConvo')
 
     if (vGroupID === undefined) {
       throw 'DeleteGroupConvo: vGroupID must be set!';
@@ -528,7 +530,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdGetGroupConvo(vGroupID) {
-    console.log('in cmdGetGroupConvo')
+    if (this.debug) console.log('in cmdGetGroupConvo')
 
     if (vGroupID === undefined) {
       throw 'GetGroupConvo: vGroupID must be set!';
@@ -548,7 +550,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdGetGroupConvos() {
-    console.log('in cmdGetGroupConvos')
+    if (this.debug) console.log('in cmdGetGroupConvos')
 
     const command = '{ "action" : "get_groupconvos" }';
 
@@ -566,7 +568,7 @@ class WickrIOAddon extends EventEmitter {
   ///////////////////////////////////////////////////////////////////////////////////////////
 
   async cmdGetReceivedMessage() {
-    console.log('in cmdGetReceivedMessage')
+    if (this.debug) console.log('in cmdGetReceivedMessage')
 
     const command = '{ "action" : "get_received_messages" }';
 
@@ -584,7 +586,7 @@ class WickrIOAddon extends EventEmitter {
   ///////////////////////////////////////////////////////////////////////////////////////////
 
   async cmdSend1to1Message(users, message, ttl, bor, messageID, flags, messageMetaData, isLowPriority) {
-    console.log('in cmdSend1to1Message')
+    if (this.debug) console.log('in cmdSend1to1Message')
 
     if (! Array.isArray(users)) {
       throw 'Send1to1Message: list of Users must be an array!';
@@ -645,7 +647,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdSend1to1Attachment(users, attachment, displayName, ttl, bor, messageMetaData, deleteWhenSent, isLowPriority) {
-    console.log('in cmdSend1to1Attachment')
+    if (this.debug) console.log('in cmdSend1to1Attachment')
 
     if (! Array.isArray(users)) {
       throw 'Send1to1Attachment: list of Users must be an array!';
@@ -708,7 +710,7 @@ class WickrIOAddon extends EventEmitter {
   }
 
   async cmdSendMessageUserNameFile(userNameFile, message, ttl, bor, messageID, flags, messageMetaData, isLowPriority) {
-    console.log('in cmdSendMessageUserNameFile')
+    if (this.debug) console.log('in cmdSendMessageUserNameFile')
 
     if (userNameFile === undefined) {
       throw 'SendMessageUserNameFile: User Name file must be set!';
@@ -765,7 +767,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdSendMessageUserHashFile(userHashFile, message, ttl, bor, messageID, flags, messageMetaData, isLowPriority) {
-    console.log('in cmdSendMessageUserHashFile')
+    if (this.debug) console.log('in cmdSendMessageUserHashFile')
 
     if (userNameFile === undefined) {
       throw 'SendMessageUserHashFile: User Hash file must be set!';
@@ -822,7 +824,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdSendAttachmentUserNameFile(userNameFile, attachment, displayName, ttl, bor, messageID, messageMetaData, message, deleteWhenSent) {
-    console.log('in cmdSendAttachmentUserNameFile')
+    if (this.debug) console.log('in cmdSendAttachmentUserNameFile')
 
     if (userNameFile === undefined) {
       throw 'SendMessageUserNameFile: User Name file must be set!';
@@ -884,7 +886,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdSendAttachmentUserHashFile(userIDFile, attachment, displayName, ttl, bor, messageID, messageMetaData, message, deleteWhenSent) {
-    console.log('in cmdSendAttachmentUserHashFile')
+    if (this.debug) console.log('in cmdSendAttachmentUserHashFile')
 
     if (userIDFile === undefined) {
       throw 'SendMessageUserHashFile: User Hash file must be set!';
@@ -946,7 +948,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdSendVoiceMemoUserNameFile(userNameFile, attachment, displayName, duration, ttl, bor, messageID, messageMetaData, message) {
-    console.log('in cmdSendVoiceMemoUserNameFile')
+    if (this.debug) console.log('in cmdSendVoiceMemoUserNameFile')
 
     if (userNameFile === undefined) {
       throw 'SendMessageUserNameFile: User Name file must be set!';
@@ -1014,7 +1016,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdSendVoiceMemoUserHashFile(userIDFile, attachment, displayName, duration, ttl, bor, messageID, messageMetaData, message) {
-    console.log('in cmdSendVoiceMemoUserHashFile')
+    if (this.debug) console.log('in cmdSendVoiceMemoUserHashFile')
 
     if (userIDFile === undefined) {
       throw 'SendMessageUserHashFile: User Id file must be set!';
@@ -1082,7 +1084,7 @@ class WickrIOAddon extends EventEmitter {
   }
 
   async cmdSendRoomMessage(vGroupID, message, ttl, bor, messageID, flags, messageMetaData) {
-    console.log('in cmdSendRoomMessage')
+    if (this.debug) console.log('in cmdSendRoomMessage')
 
     if (vGroupID === undefined || vGroupID.length === 0) {
       throw 'SendRoomMessage: vGroupID must be set!';
@@ -1136,7 +1138,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdSendRoomAttachment(vGroupID, attachment, displayName, ttl, bor, messageMetaData, deleteWhenSent) {
-    console.log('in cmdSendRoomAttachment')
+    if (this.debug) console.log('in cmdSendRoomAttachment')
 
     if (vGroupID === undefined || vGroupID.length === 0) {
       throw 'SendRoomAttachment: vGroupID must be set!';
@@ -1192,7 +1194,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdSendNetworkMessage(message, ttl, bor, messageID, flags, messageMetaData) {
-    console.log('in cmdSendNetworkMessage')
+    if (this.debug) console.log('in cmdSendNetworkMessage')
 
     if (message === undefined) {
       throw 'SendNetworkMessage: message must be set!';
@@ -1241,7 +1243,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdSendSecurityGroupMessage(message, securityGroups, ttl, bor, messageID, flags, messageMetaData) {
-    console.log('in cmdSendSecurityGroupMessage')
+    if (this.debug) console.log('in cmdSendSecurityGroupMessage')
 
     if (securityGroups === undefined || ! Array.isArray(securityGroups) || securityGroups.length === 0) {
       throw 'SendSecurityGroupMessage: security groups must be set!';
@@ -1298,7 +1300,7 @@ class WickrIOAddon extends EventEmitter {
   }
 
   async cmdSendNetworkAttachment(attachment, displayName, ttl, bor, messageID, message, messageMetaData, deleteWhenSent) {
-    console.log('in cmdSendNetworkAttachment')
+    if (this.debug) console.log('in cmdSendNetworkAttachment')
 
     if (attachment === undefined) {
       throw 'SendRoomAttachment: attachment must be set!';
@@ -1355,7 +1357,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdSendSecurityGroupAttachment(securityGroups, attachment, displayName, ttl, bor, messageID, message, messageMetaData, deleteWhenSent) {
-    console.log('in cmdSendSecurityGroupAttachment')
+    if (this.debug) console.log('in cmdSendSecurityGroupAttachment')
 
     if (securityGroups === undefined || ! Array.isArray(securityGroups) || securityGroups.length === 0) {
       throw 'SendSecurityGroupAttachment: security groups must be set!';
@@ -1421,7 +1423,7 @@ class WickrIOAddon extends EventEmitter {
   }
 
   async cmdSendNetworkVoiceMemo(attachment, displayName, duration, ttl, bor, messageID, message, messageMetaData) {
-    console.log('in cmdSendNetworkVoiceMemo')
+    if (this.debug) console.log('in cmdSendNetworkVoiceMemo')
 
     if (attachment === undefined) {
       throw 'SendNetworkVoiceMemo: attachment must be set!';
@@ -1481,7 +1483,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdSendSecurityGroupVoiceMemo(securityGroups, attachment, displayName, duration, ttl, bor, messageID, message, messageMetaData) {
-    console.log('in cmdSendSecurityGroupVoiceMemo')
+    if (this.debug) console.log('in cmdSendSecurityGroupVoiceMemo')
 
     if (securityGroups === undefined || ! Array.isArray(securityGroups) || securityGroups.length === 0) {
       throw 'SendSecurityGroupVoiceMemo: security groups must be set!';
@@ -1558,7 +1560,7 @@ class WickrIOAddon extends EventEmitter {
   ///////////////////////////////////////////////////////////////////////////////////////////
 
   async cmdEncryptString(value) {
-    console.log('in cmdEncryptString')
+    if (this.debug) console.log('in cmdEncryptString')
 
     const commandObj = {
       action : 'encrypt_string',
@@ -1575,7 +1577,7 @@ class WickrIOAddon extends EventEmitter {
   }
 
   async cmdDecryptString(value) {
-    console.log('in cmdDecryptString')
+    if (this.debug) console.log('in cmdDecryptString')
 
     const commandObj = {
       action : 'decrypt_string',
@@ -1592,7 +1594,7 @@ class WickrIOAddon extends EventEmitter {
   }
 
   async cmdAddKeyValue(key, value) {
-    console.log('in cmdAddKeyValue')
+    if (this.debug) console.log('in cmdAddKeyValue')
 
     const commandObj = {
       action : 'add_keyvalue',
@@ -1610,7 +1612,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdGetKeyValue(key) {
-    console.log('in cmdGetKeyValue')
+    if (this.debug) console.log('in cmdGetKeyValue')
 
     const commandObj = {
       action : 'get_keyvalue',
@@ -1627,7 +1629,7 @@ class WickrIOAddon extends EventEmitter {
   }
 
   async cmdDeleteKeyValue(key) {
-    console.log('in cmdDeleteKeyValue')
+    if (this.debug) console.log('in cmdDeleteKeyValue')
 
     const commandObj = {
       action : 'delete_keyvalue',
@@ -1644,7 +1646,7 @@ class WickrIOAddon extends EventEmitter {
   }
 
   async cmdClearAllKeyValues() {
-    console.log('in cmdClearAllKeyValues')
+    if (this.debug) console.log('in cmdClearAllKeyValues')
 
     const commandObj = {
       action : 'clearall_keyvalues',
@@ -1660,7 +1662,7 @@ class WickrIOAddon extends EventEmitter {
   }
 
   async cmdSetControl(controlKey, controlValue) {
-    console.log('in cmdSetControl')
+    if (this.debug) console.log('in cmdSetControl')
 
     const command = '{ "action" : "set_control", "' + controlKey + '" : "' + controlValue + '" }';
 
@@ -1681,7 +1683,7 @@ class WickrIOAddon extends EventEmitter {
   ///////////////////////////////////////////////////////////////////////////////////////////
 
   async cmdGetNetworkRooms(network) {
-    console.log('in cmdGetNetworkRooms')
+    if (this.debug) console.log('in cmdGetNetworkRooms')
 
     const commandObj = {
       action : 'get_network_rooms',
@@ -1698,7 +1700,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdAddNetworkRoom(network, securityGroups, title, description, ttl, bor) {
-    console.log('in cmdAddNetworkRoom')
+    if (this.debug) console.log('in cmdAddNetworkRoom')
 
     if (attachment === undefined) {
       throw 'SendSecurityGroupVoiceMemo: attachment must be set!';
@@ -1747,7 +1749,7 @@ class WickrIOAddon extends EventEmitter {
   }
 
   async cmdGetDirectory(page, size) {
-    console.log('in cmdGetDirectory')
+    if (this.debug) console.log('in cmdGetDirectory')
 
     if (page === undefined && size !== undefined) {
       throw 'GetDirectory: page is undefined and size is defined!';
@@ -1786,7 +1788,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdGetSecurityGroups(page, size) {
-    console.log('in cmdGetSecurityGroups')
+    if (this.debug) console.log('in cmdGetSecurityGroups')
 
     if (page === undefined && size !== undefined) {
       throw 'GetSecurityGroups: page is undefined and size is defined!';
@@ -1826,7 +1828,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdGetSecurityGroupDirectory(securityGroup, page, size) {
-    console.log('in cmdGetSecurityGroupDirectory')
+    if (this.debug) console.log('in cmdGetSecurityGroupDirectory')
 
     if (securityGroup === undefined) {
       throw 'GetSecurityGroupDirectory: security group must be entered!';
@@ -1877,7 +1879,7 @@ class WickrIOAddon extends EventEmitter {
   ///////////////////////////////////////////////////////////////////////////////////////////
   
   async cmdGetMessageStatus(messageID, type, page, size, filter, usersFilter) {
-    console.log('in cmdGetMessageStatus')
+    if (this.debug) console.log('in cmdGetMessageStatus')
 
     if (messageID === undefined) {
       throw 'GetMessageStatus: Message ID must be entered!';
@@ -1937,7 +1939,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdSetMessageStatus(messageID, user, status, statusMessage) {
-    console.log('in cmdSetMessageStatus')
+    if (this.debug) console.log('in cmdSetMessageStatus')
 
     if (messageID === undefined) {
       throw 'SetMessageStatus: Message ID must be entered!';
@@ -1974,7 +1976,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdAddMessageID(messageID, sender, target, dateSent, message) {
-    console.log('in cmdAddMessageID')
+    if (this.debug) console.log('in cmdAddMessageID')
 
     if (messageID === undefined || messageID.length === 0) {
       throw 'AddMessageID: Message ID must be entered!';
@@ -2017,7 +2019,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdDeleteMessageID(messageID) {
-    console.log('in cmdDeleteMessageID')
+    if (this.debug) console.log('in cmdDeleteMessageID')
 
     if (messageID === undefined || messageID.length === 0) {
       throw 'DeleteMessageID: Message ID must be entered!';
@@ -2040,7 +2042,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdGetMessageIDEntry(messageID) {
-    console.log('in cmdGetMessageIDEntry')
+    if (this.debug) console.log('in cmdGetMessageIDEntry')
 
     if (messageID === undefined || messageID.length === 0) {
       throw 'GetMessageIDEntry: Message ID must be entered!';
@@ -2063,7 +2065,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdGetMessageIDTable(page, size, sender) {
-    console.log('in cmdGetMessageIDTable')
+    if (this.debug) console.log('in cmdGetMessageIDTable')
 
     if (page === undefined || page.length === 0) {
       throw 'GetMessageIDTable: page must be entered!';
@@ -2104,7 +2106,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdCancelMessageID(messageID) {
-    console.log('in cmdCancelMessageID')
+    if (this.debug) console.log('in cmdCancelMessageID')
 
     if (messageID === undefined || messageID.length === 0) {
       throw 'CancelMessageID: Message ID must be entered!';
@@ -2135,7 +2137,7 @@ class WickrIOAddon extends EventEmitter {
   ///////////////////////////////////////////////////////////////////////////////////////////
 
   async cmdSendDeleteMessage(vGroupID, msgID) {
-    console.log('in cmdSendDeleteMessage')
+    if (this.debug) console.log('in cmdSendDeleteMessage')
 
     if (vGroupID === undefined || vGroupID.length === 0) {
       throw 'SendDeleteMessage: vGroupID must be entered!';
@@ -2163,7 +2165,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdSendRecallMessage(vGroupID, msgID) {
-    console.log('in cmdSendRecallMessage')
+    if (this.debug) console.log('in cmdSendRecallMessage')
 
     if (vGroupID === undefined || vGroupID.length === 0) {
       throw 'SendRecallMessage: vGroupID must be entered!';
@@ -2200,7 +2202,7 @@ class WickrIOAddon extends EventEmitter {
   ///////////////////////////////////////////////////////////////////////////////////////////
 
   async cmdGetVerificationList(mode) {
-    console.log('in cmdGetVerificationList')
+    if (this.debug) console.log('in cmdGetVerificationList')
 
     if (mode?.length > 0 && mode !== 'all') {
       throw 'GetVerificationList: mode must be all!';
@@ -2226,7 +2228,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdVerifyUsers(users) {
-    console.log('in cmdVerifyUsers')
+    if (this.debug) console.log('in cmdVerifyUsers')
 
     if (! Array.isArray(users)) {
       throw 'VerifyUsers: list of Users must be an array!';
@@ -2257,7 +2259,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdVerifyAll() {
-    console.log('in cmdVerifyAll')
+    if (this.debug) console.log('in cmdVerifyAll')
 
     // Send command to the engine
     const result = await this.queueCommands.sendMessage('{ "action" : "verify_all" }');
@@ -2268,7 +2270,7 @@ class WickrIOAddon extends EventEmitter {
   }
 
   async cmdSetVerificationMode(mode) {
-    console.log('in cmdSetVerificationMode')
+    if (this.debug) console.log('in cmdSetVerificationMode')
 
     if (mode === undefined || mode.length === 0) {
       throw 'SetVerificationMode: mode must be set!';
@@ -2299,7 +2301,7 @@ class WickrIOAddon extends EventEmitter {
   ///////////////////////////////////////////////////////////////////////////////////////////
 
   async cmdGetUserInfo(users) {
-    console.log('in cmdGetUserInfo')
+    if (this.debug) console.log('in cmdGetUserInfo')
 
     if (! Array.isArray(users)) {
       throw 'GetUserInfo: list of Users must be an array!';
@@ -2330,7 +2332,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdGetServerInfo() {
-    console.log('in cmdGetServerInfo')
+    if (this.debug) console.log('in cmdGetServerInfo')
 
     // Send command to the engine
     const result = await this.queueCommands.sendMessage('{ "action" : "get_server_info" }');
@@ -2341,12 +2343,12 @@ class WickrIOAddon extends EventEmitter {
   }
 
   async cmdGetClientInfo() {
-    console.log('in cmdGetClientInfo')
+    if (this.debug) console.log('in cmdGetClientInfo')
     return { name : this.clientName };
   }
 
   async cmdSetAvatar(fileName) {
-    console.log('in cmdSetAvatar')
+    if (this.debug) console.log('in cmdSetAvatar')
 
     if (fileName === undefined || fileName.length === 0) {
       throw 'SetAvatar: Avatar file name must be set!';
@@ -2369,7 +2371,7 @@ class WickrIOAddon extends EventEmitter {
   }
   
   async cmdGetBotsList(networkID, tokenCredentials) {
-    console.log('in cmdGetBotsList')
+    if (this.debug) console.log('in cmdGetBotsList')
 
     if (networkID === undefined || networkID.length === 0) {
       throw 'GetBotsList: networkID must be set!';
@@ -2405,7 +2407,7 @@ class WickrIOAddon extends EventEmitter {
   ///////////////////////////////////////////////////////////////////////////////////////////
 
   async cmdGetTransmitQueueInfo() {
-    console.log('in cmdGetTrnasmitQueueInfo')
+    if (this.debug) console.log('in cmdGetTrnasmitQueueInfo')
 
     // Send command to the engine
     const result = await this.queueCommands.sendMessage('{ "action" : "get_transmit_queue_info" }');

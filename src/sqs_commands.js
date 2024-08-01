@@ -12,7 +12,7 @@ const SQS = require('@aws-sdk/client-sqs')
 const deasync = require('deasync')
 
 class SQSCommands {
-  constructor(botname, sqsRegion, messageQueue, requestQueue, responseQueue) {
+  constructor(botname, sqsRegion, messageQueue, requestQueue, responseQueue, debugOn) {
     this.botname = botname
     if (sqsRegion)
       this.sqsRegion = sqsRegion
@@ -25,6 +25,7 @@ class SQSCommands {
 
     this.sendInProgress = false
     this.lastSentMessage = ''
+    this.debug = debugOn
 
     this.client = new SQS.SQSClient({ region: this.sqsRegion });
 
@@ -53,7 +54,7 @@ class SQSCommands {
     });
 
     try {
-      console.log('Sending message:, ',message);
+      if (this.debug) console.log('Sending message:, ',message);
 
       // Update the sequence number
       this.reqSeqNum++;
@@ -81,9 +82,9 @@ class SQSCommands {
       });
     
       const sendRsp = await this.client.send(command);
-//      console.log(sendRsp);
+//      if (this.debug) console.log(sendRsp);
       
-      console.log('message sent, now will receive')
+      if (this.debug) console.log('message sent, now will receive')
 
       const result = await this.getMessage(this.rspQueue, this.reqSeqNum)
 
@@ -102,7 +103,7 @@ class SQSCommands {
 
       let receive_result = ''
       if (Array.isArray(result)) {
-        console.log('result is an array')
+        if (this.debug) console.log('result is an array')
         receive_result = result[0];
       } else {
         receive_result = result
@@ -129,7 +130,7 @@ class SQSCommands {
           return_code : '0',
           result : receive_msg,
         };
-        console.log('sendMessage: response=', response)
+        if (this.debug) console.log('sendMessage: response=', response)
         return(response);
       }
 
@@ -140,7 +141,7 @@ class SQSCommands {
         return_code : retVal,
         result : receive_msg.substring(pos+1),
       };
-    console.log('sendMessage: response=', response)
+    if (this.debug) console.log('sendMessage: response=', response)
 
       return(response);
     } catch(err) {
@@ -166,7 +167,7 @@ class SQSCommands {
 
       try {
         this.requestSocket.send(message).then(results => {
-          console.log('message sent, now will receive')
+          if (this.debug) console.log('message sent, now will receive')
           const [msgs] = this.requestSocket.receive().then((result) => {
 
 
@@ -179,12 +180,12 @@ class SQSCommands {
             }
       
             if (result.length > 1) {
-              console.log('sendMessage: response has more than one response!')
+              if (this.debug) console.log('sendMessage: response has more than one response!')
             }
       
             if (Array.isArray(result)) {
-              console.log('result is an array')
-              console.log('result lenght=', result.length)
+              if (this.debug) console.log('result is an array')
+              if (this.debug) console.log('result lenght=', result.length)
             }
             const receive_result = result[0];
       
@@ -214,7 +215,7 @@ class SQSCommands {
               return_code : retVal,
               result : receive_msg.substring(pos+1),
             };
-      //    console.log('sendMessage: response=', response)
+      //    if (this.debug) console.log('sendMessage: response=', response)
       
             resolve(response);
           })
@@ -231,7 +232,7 @@ class SQSCommands {
 
 
   sleepDone() {
-    console.log('sleep done')
+    if (this.debug) console.log('sleep done')
   }
 
   sleep(ms) {
@@ -351,4 +352,3 @@ class SQSCommands {
 }
 
 module.exports = SQSCommands
-
