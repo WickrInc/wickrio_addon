@@ -1,6 +1,6 @@
 {
   "name": "wickrio_addon",
-  "version": "7.1.3-beta.04",
+  "version": "7.1.3-beta.05",
   "description": "WickrIO's Javascript bot API's",
   "main": "src/wickrio_addon.js",
   "license": "MIT",
@@ -12,7 +12,7 @@
     "integration"
   ],
   "dependencies": {
-    "zeromq": "6.0.0-beta.20",
+    "zeromq": "6.0.2",
     "nan": "^2.13.2",
     "deasync": "^0.1.29"
   },
