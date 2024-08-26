@@ -1415,8 +1415,8 @@ class WickrIOAddon extends EventEmitter {
       throw 'SendNetworkVoiceMemo: attachment must be set!';
       return 'Failure'
     }
-    if (duration?.length === 0 || !duration.isNumber()) {
-      throw 'SendNetworkVoiceMemo: duration must be set as a number!';
+    if (duration?.length === 0 || !(typeof duration == 'string')) {
+      throw 'SendNetworkVoiceMemo: duration must be String!';
       return 'Failure'
     }
 
