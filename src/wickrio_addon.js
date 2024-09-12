@@ -1944,7 +1944,7 @@ class WickrIOAddon extends EventEmitter {
       action : 'set_message_status',
       message_id : messageID,
       user : user,
-      status : status,
+      status : parseInt(status),
     }
 
     if (statusMessage?.length > 0) {
