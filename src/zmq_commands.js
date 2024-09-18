@@ -1,4 +1,7 @@
 const zmq = require("zeromq")
+const { Mutex } = require('async-mutex')
+
+const mutex = new Mutex();
 
 /*
 const {
