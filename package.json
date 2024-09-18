@@ -14,7 +14,8 @@
   "dependencies": {
     "zeromq": "^6.0.0-beta.19",
     "nan": "^2.13.2",
-    "deasync":"^0.1.29"
+    "deasync":"^0.1.29",
+    "async-mutex":"^0.5.0"
   },
   "repository": {
     "type": "git",
