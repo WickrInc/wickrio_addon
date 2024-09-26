@@ -23,7 +23,7 @@ const deasync = require('deasync')
 */
 
 class ZMQCommands {
-  constructor(botname) {
+  constructor(botname, debugOn) {
     this.botname = botname
     this.requestQName = 'ipc:///opt/WickrIO/clients/' + botname + '/tmp/0';
     this.asyncQName = 'ipc:///opt/WickrIO/clients/' + botname + '/tmp/2';
@@ -31,6 +31,7 @@ class ZMQCommands {
 
     this.sendInProgress = false
     this.lastSentMessage = ''
+    this.debug = debugOn
 
     this.requestSocket = new zmq.Request
     this.requestSocket.sendTimeout = -1;
@@ -56,7 +57,7 @@ class ZMQCommands {
 
         try {
           this.requestSocket.send(message).then(results => {
-            console.log('message sent, now will receive')
+            if (this.debug) console.log('message sent, now will receive')
             const [msgs] = this.requestSocket.receive().then((result) => {
 
 
@@ -73,7 +74,7 @@ class ZMQCommands {
               }
         
               if (Array.isArray(result)) {
-                console.log('result is an array')
+                if (this.debug) console.log('result is an array')
               }
               const receive_result = result[0];
         
@@ -103,7 +104,7 @@ class ZMQCommands {
                 return_code : retVal,
                 result : receive_msg.substring(pos+1),
               };
-        //    console.log('sendMessage: response=', response)
+        //    if (this.debug) console.log('sendMessage: response=', response)
         
               resolve(response);
             })
@@ -240,10 +241,10 @@ class ZMQCommands {
   });
 
   try {
-    console.log('Sending message:, ',message);
+    if (this.debug) console.log('Sending message:, ',message);
     await this.requestSocket.send(message);
   
-    console.log('message sent, now will receive')
+    if (this.debug) console.log('message sent, now will receive')
 
     const result = await this.requestSocket.receive();
 
@@ -263,7 +264,7 @@ class ZMQCommands {
     }
 
     if (Array.isArray(result)) {
-      console.log('result is an array')
+      if (this.debug) console.log('result is an array')
     }
     const receive_result = result[0];
 
@@ -297,7 +298,7 @@ class ZMQCommands {
       return_code : retVal,
       result : receive_msg.substring(pos+1),
     };
-//    console.log('sendMessage: response=', response)
+//    if (this.debug) console.log('sendMessage: response=', response)
 
     return(response);
   } catch(err) {
@@ -357,7 +358,7 @@ class ZMQCommands {
 
     const response = await sendMessageWorker(this.requestSocket, message)
     if (response) {
-      console.log(response)
+      if (this.debug) console.log(response)
       return response
     } else {
       return {}
@@ -399,7 +400,7 @@ class ZMQCommands {
 
       try {
         this.requestSocket.send(message).then(results => {
-          console.log('message sent, now will receive')
+          if (this.debug) console.log('message sent, now will receive')
           const [msgs] = this.requestSocket.receive().then((result) => {
 
 
@@ -416,8 +417,8 @@ class ZMQCommands {
             }
       
             if (Array.isArray(result)) {
-              console.log('result is an array')
-              console.log('result lenght=', result.length)
+              if (this.debug) console.log('result is an array')
+              if (this.debug) console.log('result lenght=', result.length)
             }
             const receive_result = result[0];
       
@@ -447,7 +448,7 @@ class ZMQCommands {
               return_code : retVal,
               result : receive_msg.substring(pos+1),
             };
-      //    console.log('sendMessage: response=', response)
+      //    if (this.debug) console.log('sendMessage: response=', response)
       
             resolve(response);
           })
@@ -456,7 +457,7 @@ class ZMQCommands {
           return msgs
         }).catch(error => console.err(err))
       } catch (err) {
-        console.log(err);
+        if (this.debug) console.log(err);
         reject(false);
       }
     })
@@ -464,7 +465,7 @@ class ZMQCommands {
 
 
   sleepDone() {
-    console.log('sleep done')
+    if (this.debug) console.log('sleep done')
   }
 
   sleep(ms) {
@@ -532,8 +533,8 @@ class ZMQCommands {
       await this.asyncSocket.send(message);
 
       if (Array.isArray(result)) {
-        console.log('result is an array')
-        console.log('result length=', result.length)
+        if (this.debug) console.log('result is an array')
+        if (this.debug) console.log('result length=', result.length)
       }
       const receive_result = result[0];
   
