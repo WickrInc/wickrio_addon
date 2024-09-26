@@ -1,10 +1,10 @@
 # WickrIO API Addon
 
-Wickr's Node.js C++ Addon for a JavaScript API interface
+This is the Node.js low level API's to the WickrIO bot engine
 
 ## Description:
 
-This is the Node.js C++ Addon that provides access to Wickr's bot client.  This WickrIO addon interface supports a set of Wickr client functionality that you can access via your Javascript code. You will be able to do the following Wickr operations:
+This is the Node.js low leve API's that provide access to the WickrIO's bot client.  You will be able to do at least the following operations:
 
 * Send and receive messages and files
 * Create, modify, leave, delete and configure secure rooms
@@ -14,7 +14,7 @@ For full documentation please visit: [https://wickrinc.github.io/wickrio-docs/#d
 
 Before you can use the WickrIO addon, you will need to have Wickr's bot client. The WickrIO bot packages contain several sample bots that use this addon.
 
-NOTE: Versions 6.26 and newer will require version 18 of node.
+NOTE: versions 7.1.1 and older do not rely on a specific version of node.
 
 ## Usage and example:
 
@@ -147,7 +147,7 @@ main();
 This software is distributed under the [Apache License, version 2.0](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 ```
-   Copyright 2021 Wickr, Inc.
+   Copyright 2024 Wickr, Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
