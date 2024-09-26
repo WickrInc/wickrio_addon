@@ -1,4 +1,7 @@
 const zmq = require("zeromq")
+const { Mutex } = require('async-mutex')
+
+const mutex = new Mutex();
 
 /*
 const {
@@ -147,144 +150,90 @@ class ZMQCommands {
   }
 
   async sendMessage(message) {
-    /*
-    const result = this.sendMessageAsync(message);
-    return result
-*/
 
-    /*
-    var done = true;
-    var result = {};
+    const release = await mutex.acquire();
+    let response = {};
+    let result = {}
 
-    const sendMessagePromise = this.sendMessageAsync(message).then(
-      // on value
-      function(value) {
-        done = true;
-        result = value;
-        return value;
-      },
-      // on exception
-      function(reason) {
-        done = true;
-        throw reason;
-      }
-    );
-
-    while (!done) {
-      deasync.runLoopOnce();
-    }
-    return result;
-    */
-
-
-    /*
-    const send2ZMQ = (message) =>
-    new Promise((resolve, reject) => {
-      let safeMessage = message.replace(/[\u007f-\uffff]/g,
-      function(c) {
-        return '\\u'+('0000'+c.charCodeAt(0).toString(16)).slice(-4);
+    let safeMessage = message.replace(/[\u007f-\uffff]/g,
+      function (c) {
+        return '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4);
       });
 
-      try {
-        this.requestSocket.send(message)
-      } catch(err) {
-      }
-    })
+    try {
+      
+      console.log('Sending message:, ', message);
+
+      await this.requestSocket.send(message);
+
+      console.log('message sent, now will receive')
+      result = await this.requestSocket.receive();
+
+      // Save the current message just in case
+      this.lastSentMessage = message
 
 
-    const recvFromZMQ = () =>
-    new Promise((resolve, reject) => {
-      const [msgs] = this.requestSocket.receive().then((result) => {
-        if (result === undefined || result.length === 0) {
-          resolve( {
+    } catch (err) {
+      console.error(err);
+      console.error('last message:', this.lastSentMessage)
+
+      return ({
+        success: false,
+        return_code: '500',
+        result: err,
+      });
+    }
+    finally {
+      release()
+    }
+
+    if (result === undefined || result.length === 0) {
+          return( {
             success : false,
             return_code : '',
             result : '',
           });
         }
-  
-        if (result.length > 1) {
+    
+    if (result.length > 1) {
           console.log('sendMessage: response has more than one response!')
         }
-  
-        if (Array.isArray(result)) {
-          if (this.debug) console.log('result is an array')
-          if (this.debug) console.log('result lenght=', result.length)
+    
+    if (Array.isArray(result)) {
+          console.log('result is an array')
         }
-        const receive_result = result[0];
-  
-        let response = {};
-  
-        if (receive_result === undefined) {
-          resolve(response);
-        }
-  
-        const receive_msg = receive_result.toString();
 
-        // Parse the error code from teh beginning of the response
-        const pos = receive_msg.search(':');
-        if (pos === -1) {
-          response = {
-            success : true,
-            return_code : '0',
-            result : receive_msg,
-          };
-          resolve(response);
-        }
-  
-        const retVal = receive_msg.substring(0, pos);
-  
+    const receive_result = result[0]
+      if (receive_result === undefined) {
+        return ({
+          success: false,
+          return_code: '500',
+          result: 'Response from engine is undefined!',
+        });
+      }
+
+      const receive_msg = receive_result.toString();
+
+      // Parse the error code from teh beginning of the response
+      const pos = receive_msg.search(':');
+      if (pos === -1) {
         response = {
-          success : (retVal === '0'),
-          return_code : retVal,
-          result : receive_msg.substring(pos+1),
+          success: true,
+          return_code: '0',
+          result: receive_msg,
         };
-  //    if (this.debug) console.log('sendMessage: response=', response)
-  
-        resolve(response);
-      })
-    })
-
-
-
-    var done = true;
-    var result = undefined;
-
-    send2ZMQ(message).then(
-      // on value
-      function () {
-          done = true;
-          return;
-      },
-      // on exception
-      function (reason) {
-          done = true;
-          throw reason;
+        return (response);
       }
-    );
 
-    while (!done)
-      deasync.runLoopOnce();
+      const retVal = receive_msg.substring(0, pos);
 
-    done = false;
-    recvFromZMQ().then(
-      // on value
-      function (value) {
-          done = true;
-          result = value;
-          return value;
-      },
-      // on exception
-      function (reason) {
-          done = true;
-          throw reason;
-      }
-    );
-
-    while (!done)
-      deasync.runLoopOnce();
-*/
-
+      response = {
+        success: (retVal === '0'),
+        return_code: retVal,
+        result: receive_msg.substring(pos + 1),
+      };
+      return (response);
+  }
 
   let safeMessage = message.replace(/[\u007f-\uffff]/g,
   function(c) {
