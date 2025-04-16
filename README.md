@@ -14,7 +14,7 @@ For full documentation please visit: [https://wickrinc.github.io/wickrio-docs/#d
 
 Before you can use the WickrIO addon, you will need to have Wickr's bot client. The WickrIO bot packages contain several sample bots that use this addon.
 
-NOTE: versions 7.1.1 and older do not rely on a specific version of node.
+NOTE: Versions 7.1.1 and above do not rely on a specific version of node and the Wickrio Addon uses ZeroMq making the WickrIO Bot APIs asynchronous. Please use this [example](https://wickrinc.github.io/wickrio-docs/#installation-version-6-48-announcement) code to update your custom integration. 
 
 ## Usage and example:
 
