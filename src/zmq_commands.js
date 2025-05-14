@@ -162,7 +162,7 @@ class ZMQCommands {
 
     try {
       
-      console.log('Sending message:, ', message);
+      console.log('Sending message:, ', JSON.parse(message).action);
 
       await this.requestSocket.send(message);
 
@@ -200,7 +200,7 @@ class ZMQCommands {
         }
     
     if (Array.isArray(result)) {
-          console.log('result is an array')
+        if (this.debug) console.log('result is an array')
         }
 
     const receive_result = result[0]
@@ -263,7 +263,7 @@ class ZMQCommands {
       
             if (Array.isArray(result)) {
               if (this.debug) console.log('result is an array')
-              if (this.debug) console.log('result lenght=', result.length)
+              if (this.debug) console.log('result length=', result.length)
             }
             const receive_result = result[0];
       
