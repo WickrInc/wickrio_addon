@@ -1,0 +1,172 @@
+tests:
+  cmdSend1to1Message:
+    - case: basic message with single user
+      args: [['user1'], "Hello World", null, null, null, null]
+      expect:
+        action: send_message
+        message: "Hello World"
+        users: [{ name: user1 }]
+      expectNotPresent: ['flags', 'ttl', 'bor', 'message_id']
+
+    - case: message with multiple users and flags
+      args: [['user1', 'user2'], "Test message", null, null, null, ['urgent', 'encrypted']]
+      expect:
+        action: send_message
+        message: "Test message"
+        users: [{ name: user1 }, { name: user2 }]
+        flags: ['urgent', 'encrypted']
+
+    - case: complete message with all parameters
+      args: [['user1'], "Complete test", "3600", "7200", "msg123", ['flag1'], '{"priority": "high"}', true]
+      expect:
+        action: send_message
+        message: "Complete test"
+        users: [{ name: user1 }]
+        ttl: "3600"
+        bor: "7200"
+        message_id: msg123
+        flags: ['flag1']
+        messagemeta: { priority: high }
+        low_priority: true
+
+    - case: empty flags array should not include flags property
+      args: [['user1'], "Test", null, null, null, []]
+      expect:
+        action: send_message
+        message: "Test"
+      expectNotPresent: ['flags']
+
+    - case: invalid flags parameter should throw error
+      args: [['user1'], "Test", null, null, null, "not-an-array"]
+      throws: flags must be an array if set
+
+    - case: missing users should throw error
+      args: [[], "Test", null, null, null, null]
+      throws: list of Users must be an array
+
+    - case: invalid users parameter should throw error
+      args: ["not-an-array", "Test", null, null, null, null]
+      throws: list of Users must be an array
+
+    - case: missing message should throw error
+      args: [['user1'], null, null, null, null, null]
+      throws: message must be set
+
+  cmdSendRoomMessage:
+    - case: basic room message
+      args: ["Sabc123", "Hello room", null, null, null, null]
+      expect:
+        action: send_message
+        message: "Hello room"
+        vgroupid: Sabc123
+
+    - case: room message with flags
+      args: ["Sabc123", "Broadcast message", "1800", "3600", "7a2d95a8", ['broadcast', 'important']]
+      expect:
+        action: send_message
+        message: "Broadcast message"
+        vgroupid: Sabc123
+        ttl: "1800"
+        bor: "3600"
+        message_id: 7a2d95a8
+        flags: ['broadcast', 'important']
+
+    - case: missing vGroupID should throw error
+      args: [null, "Test message", null, null, null, null]
+      throws: vGroupID must be set
+
+    - case: empty vGroupID should throw error
+      args: ["", "Test message", null, null, null, null]
+      throws: vGroupID must be set
+
+  cmdSendNetworkMessage:
+    - case: basic network message
+      args: ["Network announcement", null, null, null, null]
+      expect:
+        action: send_message_network
+        message: "Network announcement"
+
+    - case: network message with metadata
+      args: ["Important update", "7200", "14400", "7a2d95a8", ['system'], '{"level": "critical"}']
+      expect:
+        action: send_message_network
+        message: "Important update"
+        ttl: "7200"
+        bor: "14400"
+        message_id: 7a2d95a8
+        flags: ['system']
+        messagemeta: { level: critical }
+
+    - case: missing message should throw error
+      args: [null, null, null, null, null]
+      throws: message must be set
+
+  cmdAddRoom:
+    - case: basic room creation
+      args: [['member1', 'member2'], ['moderator1'], "Test Room", "A test room", null, null]
+      expect:
+        action: add_room
+        room:
+          members: [{ name: member1 }, { name: member2 }]
+          masters: [{ name: moderator1 }]
+          title: "Test Room"
+          description: "A test room"
+
+    - case: room with TTL and BOR
+      args: [['user1'], ['admin1'], "Secure Room", null, "3600", "7200"]
+      expect:
+        action: add_room
+        room:
+          members: [{ name: user1 }]
+          masters: [{ name: admin1 }]
+          title: "Secure Room"
+          ttl: "3600"
+          bor: "7200"
+
+    - case: invalid members parameter should throw error
+      args: ["not-an-array", ['mod1'], "Room", null, null, null]
+      throws: list of Members must be an array
+
+    - case: invalid moderators parameter should throw error
+      args: [['user1'], "not-an-array", "Room", null, null, null]
+      throws: list of Moderators must be an array
+
+  cmdGetRooms:
+    - case: get all rooms
+      args: []
+      expect:
+        action: get_rooms
+
+  cmdGetClientInfo:
+    - case: get client info
+      args: []
+      expectResult: { name: test-bot }  # clientName set by clientInit in test setup
+
+  cmdEncryptString:
+    - case: encrypt a string
+      args: ["secret message"]
+      expect:
+        action: encrypt_string
+        string: "secret message"
+
+  cmdDecryptString:
+    - case: decrypt a string
+      args: ["encrypted_data"]
+      expect:
+        action: decrypt_string
+        string: "encrypted_data"
+
+  cmdAddKeyValue:
+    - case: add key-value pair
+      args: ["mykey", "myvalue"]
+      expect:
+        action: add_keyvalue
+        key: mykey
+        value: myvalue
+
+  cmdGetKeyValue:
+    - case: get value by key
+      args: ["mykey"]
+      expect:
+        action: get_keyvalue
+        key: mykey
