@@ -1,10 +1,10 @@
 # WickrIO API Addon
 
-This is the Node.js low level API's to the WickrIO bot engine
+This is the Node.js low level APIs to the WickrIO bot engine
 
 ## Description:
 
-This is the Node.js low leve API's that provide access to the WickrIO's bot client.  You will be able to do at least the following operations:
+This is the Node.js low level APIs that provide access to the WickrIO's bot client.  You will be able to do at least the following operations:
 
 * Send and receive messages and files
 * Create, modify, leave, delete and configure secure rooms
