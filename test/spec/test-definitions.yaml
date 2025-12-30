@@ -22,8 +22,8 @@ tests:
         action: send_message
         message: "Complete test"
         users: [{ name: user1 }]
-        ttl: "3600"
-        bor: "7200"
+        ttl: 3600
+        bor: 7200
         message_id: msg123
         flags: ['flag1']
         messagemeta: { priority: high }
@@ -66,8 +66,8 @@ tests:
         action: send_message
         message: "Broadcast message"
         vgroupid: Sabc123
-        ttl: "1800"
-        bor: "3600"
+        ttl: 1800
+        bor: 3600
         message_id: 7a2d95a8
         flags: ['broadcast', 'important']
 
@@ -91,8 +91,8 @@ tests:
       expect:
         action: send_message_network
         message: "Important update"
-        ttl: "7200"
-        bor: "14400"
+        ttl: 7200
+        bor: 14400
         message_id: 7a2d95a8
         flags: ['system']
         messagemeta: { level: critical }
@@ -120,8 +120,16 @@ tests:
           members: [{ name: user1 }]
           masters: [{ name: admin1 }]
           title: "Secure Room"
-          ttl: "3600"
-          bor: "7200"
+          ttl: 3600
+          bor: 7200
+
+    - case: invalid TTL values should throw an error
+      args: [['user1'], ['admin1'], "Secure Room", null, "badttl", "7200"]
+      throws: 'TTL must be a positive number'
+
+    - case: invalid BOR values should throw an error
+      args: [['user1'], ['admin1'], "Secure Room", null, "3600", "-100"]
+      throws: 'BOR must be a positive number'
 
     - case: invalid members parameter should throw error
       args: ["not-an-array", ['mod1'], "Room", null, null, null]
@@ -129,6 +137,52 @@ tests:
 
     - case: invalid moderators parameter should throw error
       args: [['user1'], "not-an-array", "Room", null, null, null]
+      throws: list of Moderators must be an array
+
+  cmdModifyRoom:
+    - case: basic room modification
+      args: ["Sabc123", ['member1', 'member2'], ['moderator1'], "Updated Room", "Updated description", null, null]
+      expect:
+        action: modify_room
+        vgroupid: Sabc123
+        members: [{ name: member1 }, { name: member2 }]
+        masters: [{ name: moderator1 }]
+        title: "Updated Room"
+        description: "Updated description"
+
+    - case: modify room with TTL and BOR
+      args: ["Sabc123", ['user1'], ['admin1'], "Secure Room", null, "3600", "7200"]
+      expect:
+        action: modify_room
+        vgroupid: Sabc123
+        members: [{ name: user1 }]
+        masters: [{ name: admin1 }]
+        title: "Secure Room"
+        ttl: 3600
+        bor: 7200
+
+    - case: invalid TTL values should throw an error
+      args: ["Sabc123", ['user1'], ['admin1'], "Room", null, "badttl", "7200"]
+      throws: 'TTL must be a positive number'
+
+    - case: invalid BOR values should throw an error
+      args: ["Sabc123", ['user1'], ['admin1'], "Room", null, "3600", "❤"]
+      throws: 'BOR must be a positive number'
+
+    - case: missing vGroupID should throw error
+      args: [null, ['user1'], ['admin1'], "Room", null, null, null]
+      throws: vGroupID must be set
+
+    - case: empty vGroupID should throw error
+      args: ['', ['user1'], ['admin1'], "Room", null, null, null]
+      throws: vGroupID must be set
+
+    - case: invalid members parameter should throw error
+      args: ["Sabc123", "not-an-array", ['mod1'], "Room", null, null, null]
+      throws: list of Members must be an array
+
+    - case: invalid moderators parameter should throw error
+      args: ["Sabc123", ['user1'], "not-an-array", "Room", null, null, null]
       throws: list of Moderators must be an array
 
   cmdGetRooms:

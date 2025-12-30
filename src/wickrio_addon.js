@@ -1,6 +1,7 @@
 const EventEmitter = require('events')
 const ZMQCommands = require('./zmq_commands')
 const SQSCommands = require('./sqs_commands')
+const { parseTtl, parseBor } = require('./util')
 
 let clientName='';
 
@@ -311,12 +312,8 @@ class WickrIOAddon extends EventEmitter {
     if (description?.length > 0) {
       commandObj.room.description = description
     }
-    if (ttl?.length > 0) {
-      commandObj.room.ttl = ttl
-    }
-    if (bor?.length > 0) {
-      commandObj.room.bor = bor
-    }
+    commandObj.room.ttl = parseTtl(ttl)
+    commandObj.room.bor = parseBor(bor)
 
     const command = JSON.stringify(commandObj);
 
@@ -328,10 +325,10 @@ class WickrIOAddon extends EventEmitter {
       return 'Failure';
   }
 
-  async cmdModifyRoom(vGroupID, members, moderators, title, description, ttl, bor) {
+  async cmdModifyRoom(vgroupid, members, moderators, title, description, ttl, bor) {
     if (this.debug) console.log('in cmdModifyRoom')
 
-    if (vGroupID === undefined) {
+    if (typeof vgroupid !== 'string' || vgroupid.length == 0) {
       throw 'ModifyRoom: vGroupID must be set!';
       return 'Failure'
     }
@@ -346,10 +343,10 @@ class WickrIOAddon extends EventEmitter {
     }
 
     let commandObj = { 
-      action : "modify_room",
-      vgroupid : vGroupID,
-      members : [],
-      masters : [],
+      action: "modify_room",
+      vgroupid,
+      members: [],
+      masters: [],
   };
 
     for (const member of members) {
@@ -366,12 +363,8 @@ class WickrIOAddon extends EventEmitter {
     if (description?.length > 0) {
       commandObj.description = description
     }
-    if (ttl?.length > 0) {
-      commandObj.ttl = ttl
-    }
-    if (bor?.length > 0) {
-      commandObj.bor = bor
-    }
+    commandObj.ttl = parseTtl(ttl)
+    commandObj.bor = parseBor(bor)
     
     const command = JSON.stringify(commandObj);
     // Send command to the engine
@@ -460,12 +453,8 @@ class WickrIOAddon extends EventEmitter {
       const memberObject = { name : member };
       commandObj.groupconvo.members.push(memberObject)
     }
-    if (ttl?.length > 0) {
-      commandObj.groupconvo.ttl = ttl
-    }
-    if (bor?.length > 0) {
-      commandObj.groupconvo.bor = bor
-    }
+    commandObj.groupconvo.ttl = parseTtl(ttl)
+    commandObj.groupconvo.bor = parseBor(bor)
 
     const command = JSON.stringify(commandObj);
 
@@ -578,12 +567,8 @@ class WickrIOAddon extends EventEmitter {
       const messageMetaObject = JSON.parse(messageMetaData);
       commandObj.messagemeta = messageMetaObject
     }
-    if (ttl?.length > 0) {
-      commandObj.ttl = ttl
-    }
-    if (bor?.length > 0) {
-      commandObj.bor = bor
-    }
+    commandObj.ttl = parseTtl(ttl)
+    commandObj.bor = parseBor(bor)
     if (isLowPriority) {
       commandObj.low_priority = true
     }
@@ -638,12 +623,8 @@ class WickrIOAddon extends EventEmitter {
     if (displayName?.length > 0) {
       commandObj.attachment.displayname = displayName
     }
-    if (ttl?.length > 0) {
-      commandObj.ttl = ttl
-    }
-    if (bor?.length > 0) {
-      commandObj.bor = bor
-    }
+    commandObj.ttl = parseTtl(ttl)
+    commandObj.bor = parseBor(bor)
     if (isLowPriority) {
       commandObj.low_priority = true
     }
@@ -698,12 +679,8 @@ class WickrIOAddon extends EventEmitter {
       const messageMetaObject = JSON.parse(messageMetaData);
       commandObj.messagemeta = messageMetaObject
     }
-    if (ttl?.length > 0) {
-      commandObj.ttl = ttl
-    }
-    if (bor?.length > 0) {
-      commandObj.bor = bor
-    }
+    commandObj.ttl = parseTtl(ttl);
+    commandObj.bor = parseBor(bor);
     if (isLowPriority) {
       commandObj.low_priority = true
     }
@@ -755,12 +732,8 @@ class WickrIOAddon extends EventEmitter {
       const messageMetaObject = JSON.parse(messageMetaData);
       commandObj.messagemeta = messageMetaObject
     }
-    if (ttl?.length > 0) {
-      commandObj.ttl = ttl
-    }
-    if (bor?.length > 0) {
-      commandObj.bor = bor
-    }
+    commandObj.ttl = parseTtl(ttl);
+    commandObj.bor = parseBor(bor);
     if (isLowPriority) {
       commandObj.low_priority = true
     }
@@ -811,12 +784,8 @@ class WickrIOAddon extends EventEmitter {
     if (displayName?.length > 0) {
       commandObj.attachment.displayname = displayName
     }
-    if (ttl?.length > 0) {
-      commandObj.ttl = ttl
-    }
-    if (bor?.length > 0) {
-      commandObj.bor = bor
-    }
+    commandObj.ttl = parseTtl(ttl);
+    commandObj.bor = parseBor(bor);
     if (messageID?.length > 0) {
       commandObj.message_id = messageID
     }
@@ -873,12 +842,8 @@ class WickrIOAddon extends EventEmitter {
     if (displayName?.length > 0) {
       commandObj.attachment.displayname = displayName
     }
-    if (ttl?.length > 0) {
-      commandObj.ttl = ttl
-    }
-    if (bor?.length > 0) {
-      commandObj.bor = bor
-    }
+    commandObj.ttl = parseTtl(ttl);
+    commandObj.bor = parseBor(bor);
     if (messageID?.length > 0) {
       commandObj.message_id = messageID
     }
@@ -941,12 +906,8 @@ class WickrIOAddon extends EventEmitter {
     if (displayName?.length > 0) {
       commandObj.attachment.displayname = displayName
     }
-    if (ttl?.length > 0) {
-      commandObj.ttl = ttl
-    }
-    if (bor?.length > 0) {
-      commandObj.bor = bor
-    }
+    commandObj.ttl = parseTtl(ttl);
+    commandObj.bor = parseBor(bor);
     if (messageID?.length > 0) {
       commandObj.message_id = messageID
     }
@@ -1009,12 +970,8 @@ class WickrIOAddon extends EventEmitter {
     if (displayName?.length > 0) {
       commandObj.attachment.displayname = displayName
     }
-    if (ttl?.length > 0) {
-      commandObj.ttl = ttl
-    }
-    if (bor?.length > 0) {
-      commandObj.bor = bor
-    }
+    commandObj.ttl = parseTtl(ttl);
+    commandObj.bor = parseBor(bor);
     if (messageID?.length > 0) {
       commandObj.message_id = messageID
     }
@@ -1072,12 +1029,8 @@ class WickrIOAddon extends EventEmitter {
       const messageMetaObject = JSON.parse(messageMetaData);
       commandObj.messagemeta = messageMetaObject
     }
-    if (ttl?.length > 0) {
-      commandObj.ttl = ttl
-    }
-    if (bor?.length > 0) {
-      commandObj.bor = bor
-    }
+    commandObj.ttl = parseTtl(ttl);
+    commandObj.bor = parseBor(bor);
 
     const command = JSON.stringify(commandObj);
    
@@ -1125,12 +1078,8 @@ class WickrIOAddon extends EventEmitter {
     if (displayName?.length > 0) {
       commandObj.attachment.displayname = displayName
     }
-    if (ttl?.length > 0) {
-      commandObj.ttl = ttl
-    }
-    if (bor?.length > 0) {
-      commandObj.bor = bor
-    }
+    commandObj.ttl = parseTtl(ttl);
+    commandObj.bor = parseBor(bor);
     if (deleteWhenSent) {
       commandObj.deletewhensent = true
     }
@@ -1177,12 +1126,8 @@ class WickrIOAddon extends EventEmitter {
       const messageMetaObject = JSON.parse(messageMetaData);
       commandObj.messagemeta = messageMetaObject
     }
-    if (ttl?.length > 0) {
-      commandObj.ttl = ttl
-    }
-    if (bor?.length > 0) {
-      commandObj.bor = bor
-    }
+    commandObj.ttl = parseTtl(ttl);
+    commandObj.bor = parseBor(bor);
 
     const command = JSON.stringify(commandObj);
 
@@ -1234,12 +1179,8 @@ class WickrIOAddon extends EventEmitter {
       const messageMetaObject = JSON.parse(messageMetaData);
       commandObj.messagemeta = messageMetaObject
     }
-    if (ttl?.length > 0) {
-      commandObj.ttl = ttl
-    }
-    if (bor?.length > 0) {
-      commandObj.bor = bor
-    }
+    commandObj.ttl = parseTtl(ttl);
+    commandObj.bor = parseBor(bor);
 
     const command = JSON.stringify(commandObj);
 
@@ -1282,12 +1223,8 @@ class WickrIOAddon extends EventEmitter {
     if (displayName?.length > 0) {
       commandObj.attachment.displayname = displayName
     }
-    if (ttl?.length > 0) {
-      commandObj.ttl = ttl
-    }
-    if (bor?.length > 0) {
-      commandObj.bor = bor
-    }
+    commandObj.ttl = parseTtl(ttl);
+    commandObj.bor = parseBor(bor);
     if (messageID?.length > 0) {
       commandObj.message_id = messageID
     }
@@ -1348,12 +1285,8 @@ class WickrIOAddon extends EventEmitter {
     if (displayName?.length > 0) {
       commandObj.attachment.displayname = displayName
     }
-    if (ttl?.length > 0) {
-      commandObj.ttl = ttl
-    }
-    if (bor?.length > 0) {
-      commandObj.bor = bor
-    }
+    commandObj.ttl = parseTtl(ttl);
+    commandObj.bor = parseBor(bor);
     if (messageID?.length > 0) {
       commandObj.message_id = messageID
     }
@@ -1411,12 +1344,8 @@ class WickrIOAddon extends EventEmitter {
     if (displayName?.length > 0) {
       commandObj.attachment.displayname = displayName
     }
-    if (ttl?.length > 0) {
-      commandObj.ttl = ttl
-    }
-    if (bor?.length > 0) {
-      commandObj.bor = bor
-    }
+    commandObj.ttl = parseTtl(ttl);
+    commandObj.bor = parseBor(bor);
     if (messageID?.length > 0) {
       commandObj.message_id = messageID
     }
@@ -1480,12 +1409,8 @@ class WickrIOAddon extends EventEmitter {
     if (displayName?.length > 0) {
       commandObj.attachment.displayname = displayName
     }
-    if (ttl?.length > 0) {
-      commandObj.ttl = ttl
-    }
-    if (bor?.length > 0) {
-      commandObj.bor = bor
-    }
+    commandObj.ttl = parseTtl(ttl);
+    commandObj.bor = parseBor(bor);
     if (messageID?.length > 0) {
       commandObj.message_id = messageID
     }
