@@ -1,8 +1,9 @@
 {
   "name": "wickrio_addon",
-  "version": "7.1.7",
+  "version": "7.1.8",
   "description": "WickrIO's Javascript bot API's",
   "main": "src/wickrio_addon.js",
+  "types": "./index.d.ts",
   "license": "MIT",
   "keywords": [
     "github",
@@ -12,11 +13,11 @@
     "integration"
   ],
   "dependencies": {
-    "@aws-sdk/client-sqs": "^3.272.0",
+    "@aws-sdk/client-sqs": "^3.992.0",
     "async-mutex": "^0.5.0",
     "deasync": "^0.1.29",
     "nan": "^2.13.2",
-    "zeromq": "6.0.4"
+    "zeromq": "^6.0.4"
   },
   "scripts": {
     "test": "jest",
