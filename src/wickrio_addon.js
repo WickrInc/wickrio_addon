@@ -268,6 +268,81 @@ class WickrIOAddon extends EventEmitter {
     return result.result;
   }
 
+  async cmdIncrementMetric(name, value = 1) {
+    if (this.debug) console.log('in cmdIncrementMetric')
+
+    if (typeof name !== 'string' || name.length == 0) {
+      throw 'IncrementMetric: metric name must be set!';
+    }
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+      throw 'IncrementMetric: metric value must be a number!';
+    }
+
+    const commandObj = {
+      action : 'increment_metric',
+      name : name,
+      value : value,
+    }
+    const command = JSON.stringify(commandObj);
+
+    // Send command to the engine
+    const result = await this.queueCommands.sendMessage(command);
+    if (result.success)
+      return 'Success';
+    else
+      return 'Failure';
+  }
+
+  async cmdSetMetric(name, value) {
+    if (this.debug) console.log('in cmdSetMetric')
+
+    if (typeof name !== 'string' || name.length == 0) {
+      throw 'SetMetric: metric name must be set!';
+    }
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+      throw 'SetMetric: metric value must be a number!';
+    }
+
+    const commandObj = {
+      action : 'set_metric',
+      name : name,
+      value : value,
+    }
+    const command = JSON.stringify(commandObj);
+
+    // Send command to the engine
+    const result = await this.queueCommands.sendMessage(command);
+    if (result.success)
+      return 'Success';
+    else
+      return 'Failure';
+  }
+
+  async cmdObserveMetric(name, value) {
+    if (this.debug) console.log('in cmdObserveMetric')
+
+    if (typeof name !== 'string' || name.length == 0) {
+      throw 'ObserveMetric: metric name must be set!';
+    }
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+      throw 'ObserveMetric: metric value must be a number!';
+    }
+
+    const commandObj = {
+      action : 'observe_metric',
+      name : name,
+      value : value,
+    }
+    const command = JSON.stringify(commandObj);
+
+    // Send command to the engine
+    const result = await this.queueCommands.sendMessage(command);
+    if (result.success)
+      return 'Success';
+    else
+      return 'Failure';
+  }
+
   async cmdGetRooms() {
     if (this.debug) console.log('in cmdGetRooms')
 

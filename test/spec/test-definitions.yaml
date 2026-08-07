@@ -224,3 +224,91 @@ tests:
       expect:
         action: get_keyvalue
         key: mykey
+
+  cmdIncrementMetric:
+    - case: increment metric with explicit value
+      args: ["API_Requests", 5]
+      expect:
+        action: increment_metric
+        name: API_Requests
+        value: 5
+
+    - case: increment metric defaults to one
+      args: ["API_Requests"]
+      expect:
+        action: increment_metric
+        name: API_Requests
+        value: 1
+
+    - case: missing metric name should throw error
+      args: [null, 1]
+      throws: metric name must be set
+
+    - case: empty metric name should throw error
+      args: ["", 1]
+      throws: metric name must be set
+
+    - case: non numeric metric value should throw error
+      args: ["API_Requests", "not-a-number"]
+      throws: metric value must be a number
+
+  cmdSetMetric:
+    - case: set gauge metric to absolute value
+      args: ["Broadcast_Queue_Depth", 12]
+      expect:
+        action: set_metric
+        name: Broadcast_Queue_Depth
+        value: 12
+
+    - case: set gauge metric to zero
+      args: ["Broadcast_Queue_Depth", 0]
+      expect:
+        action: set_metric
+        name: Broadcast_Queue_Depth
+        value: 0
+
+    - case: missing metric name should throw error
+      args: [null, 1]
+      throws: metric name must be set
+
+    - case: missing metric value should throw error
+      args: ["Broadcast_Queue_Depth"]
+      throws: metric value must be a number
+
+  cmdObserveMetric:
+    - case: observe timer metric value
+      args: ["Api_Request_Duration_Ms", 88]
+      expect:
+        action: observe_metric
+        name: Api_Request_Duration_Ms
+        value: 88
+
+    - case: observe fractional value
+      args: ["Api_Request_Duration_Ms", 12.5]
+      expect:
+        action: observe_metric
+        name: Api_Request_Duration_Ms
+        value: 12.5
+
+    - case: observe zero value
+      args: ["Api_Request_Duration_Ms", 0]
+      expect:
+        action: observe_metric
+        name: Api_Request_Duration_Ms
+        value: 0
+
+    - case: missing metric name should throw error
+      args: [null, 1]
+      throws: metric name must be set
+
+    - case: empty metric name should throw error
+      args: ["", 1]
+      throws: metric name must be set
+
+    - case: missing metric value should throw error
+      args: ["Api_Request_Duration_Ms"]
+      throws: metric value must be a number
+
+    - case: non numeric metric value should throw error
+      args: ["Api_Request_Duration_Ms", "not-a-number"]
+      throws: metric value must be a number
