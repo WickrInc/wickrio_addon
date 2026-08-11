@@ -88,6 +88,23 @@ export class WickrIOAddon extends EventEmitter {
   cmdClearStatistics(): Promise<string>;
 
   // ---------------------------------------------------------------------------
+  // Metrics
+  // ---------------------------------------------------------------------------
+
+  /** Increment a counter metric. */
+  cmdIncrementMetric(name: string, value?: number): Promise<string>;
+
+  /** Set a gauge metric to an absolute value. */
+  cmdSetMetric(name: string, value: number): Promise<string>;
+
+  /**
+   * Record one observation of a timer/histogram metric. Observations are
+   * aggregated over each interval into a statistic set (average, min, max), for
+   * distributions such as request durations.
+   */
+  cmdObserveMetric(name: string, value: number): Promise<string>;
+
+  // ---------------------------------------------------------------------------
   // Rooms
   // ---------------------------------------------------------------------------
 
