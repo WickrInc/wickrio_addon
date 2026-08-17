@@ -3,6 +3,13 @@ const ZMQCommands = require('./zmq_commands')
 const SQSCommands = require('./sqs_commands')
 const { parseTtl, parseBor } = require('./util')
 
+function buildMetricName(name, dimensions) {
+  const keys = dimensions ? Object.keys(dimensions).sort() : []
+  return keys.length > 0
+    ? name + '\n' + keys.map(k => k + '=' + dimensions[k]).join('\n')
+    : name
+}
+
 let clientName='';
 
 async function messages_callback_func(asyncInfo) {
@@ -268,7 +275,7 @@ class WickrIOAddon extends EventEmitter {
     return result.result;
   }
 
-  async cmdIncrementMetric(name, value = 1) {
+  async cmdIncrementMetric(name, value = 1, dimensions = {}) {
     if (this.debug) console.log('in cmdIncrementMetric')
 
     if (typeof name !== 'string' || name.length == 0) {
@@ -280,7 +287,7 @@ class WickrIOAddon extends EventEmitter {
 
     const commandObj = {
       action : 'increment_metric',
-      name : name,
+      name : buildMetricName(name, dimensions),
       value : value,
     }
     const command = JSON.stringify(commandObj);
@@ -293,7 +300,7 @@ class WickrIOAddon extends EventEmitter {
       return 'Failure';
   }
 
-  async cmdSetMetric(name, value) {
+  async cmdSetMetric(name, value, dimensions = {}) {
     if (this.debug) console.log('in cmdSetMetric')
 
     if (typeof name !== 'string' || name.length == 0) {
@@ -305,7 +312,7 @@ class WickrIOAddon extends EventEmitter {
 
     const commandObj = {
       action : 'set_metric',
-      name : name,
+      name : buildMetricName(name, dimensions),
       value : value,
     }
     const command = JSON.stringify(commandObj);
@@ -318,7 +325,7 @@ class WickrIOAddon extends EventEmitter {
       return 'Failure';
   }
 
-  async cmdObserveMetric(name, value) {
+  async cmdObserveMetric(name, value, dimensions = {}) {
     if (this.debug) console.log('in cmdObserveMetric')
 
     if (typeof name !== 'string' || name.length == 0) {
@@ -330,7 +337,7 @@ class WickrIOAddon extends EventEmitter {
 
     const commandObj = {
       action : 'observe_metric',
-      name : name,
+      name : buildMetricName(name, dimensions),
       value : value,
     }
     const command = JSON.stringify(commandObj);
