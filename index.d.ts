@@ -193,7 +193,8 @@ export class WickrIOAddon extends EventEmitter {
     bor?: string,
     messageMetaData?: string,
     deleteWhenSent?: boolean,
-    isLowPriority?: boolean
+    isLowPriority?: boolean,
+    messageID?: string
   ): Promise<string>;
 
   // ---------------------------------------------------------------------------

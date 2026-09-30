@@ -665,7 +665,7 @@ class WickrIOAddon extends EventEmitter {
       return 'Failure';
   }
   
-  async cmdSend1to1Attachment(users, attachment, displayName, ttl, bor, messageMetaData, deleteWhenSent, isLowPriority) {
+  async cmdSend1to1Attachment(users, attachment, displayName, ttl, bor, messageMetaData, deleteWhenSent, isLowPriority, messageID) {
     if (this.debug) console.log('in cmdSend1to1Attachment')
 
     if (! Array.isArray(users)) {
@@ -712,6 +712,9 @@ class WickrIOAddon extends EventEmitter {
     }
     if (deleteWhenSent) {
       commandObj.deletewhensent = true
+    }
+    if (messageID?.length > 0) {
+      commandObj.message_id = messageID
     }
 
     const command = JSON.stringify(commandObj);
