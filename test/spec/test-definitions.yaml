@@ -52,6 +52,36 @@ tests:
       args: [['user1'], null, null, null, null, null]
       throws: message must be set
 
+  cmdSend1to1Attachment:
+    - case: basic file attachment with single user
+      args: [['user1'], "/tmp/file.dat"]
+      expect:
+        action: send_message
+        attachment: { filename: "/tmp/file.dat" }
+        users: [{ name: user1 }]
+      expectNotPresent: ['message_id', 'low_priority', 'ttl', 'bor']
+
+    - case: complete attachment with all parameters
+      args: [['user1'], "/tmp/file.dat", "file.dat", "3600", "7200", '{"priority": "high"}', true, true, "msg123"]
+      expect:
+        action: send_message
+        attachment: { filename: "/tmp/file.dat", displayname: "file.dat" }
+        users: [{ name: user1 }]
+        ttl: 3600
+        bor: 7200
+        messagemeta: { priority: high }
+        deletewhensent: true
+        low_priority: true
+        message_id: msg123
+
+    - case: url attachment without display name should throw error
+      args: [['user1'], "https://example.com/image.png"]
+      throws: display name must be set for url attachments
+
+    - case: missing attachment should throw error
+      args: [['user1']]
+      throws: attachment must be set
+
   cmdSendRoomMessage:
     - case: basic room message
       args: ["Sabc123", "Hello room", null, null, null, null]
